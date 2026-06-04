@@ -40,7 +40,7 @@ export default function RootLayout({ children }) {
               <div className="nav-label">Councils</div>
               
               <details className="nav-item-group" style={{ cursor: 'pointer' }}>
-                <summary className="nav-item" style={{ display: 'flex', alignItems: 'center' }}>
+                <summary id="nav-s1" className="nav-item" style={{ display: 'flex', alignItems: 'center' }}>
                   <span style={{ marginRight: '10px' }}>👥</span> S1 Personnel
                   <span className="dropdown-arrow">▼</span>
                 </summary>
@@ -51,16 +51,16 @@ export default function RootLayout({ children }) {
                 </div>
               </details>
 
-              <div className="nav-item"><span style={{ marginRight: '10px' }}>🛡️</span> S2 Security</div>
-              <div className="nav-item"><span style={{ marginRight: '10px' }}>⌖</span> S3 Operations</div>
-              <div className="nav-item"><span style={{ marginRight: '10px' }}>📦</span> S4 Logistics</div>
-              <div className="nav-item"><span style={{ marginRight: '10px' }}>📊</span> S5 Plans &amp; Programs</div>
-              <div className="nav-item"><span style={{ marginRight: '10px' }}>📡</span> S6 Signal</div>
-              <div className="nav-item"><span style={{ marginRight: '10px' }}>🤝</span> S7 Civil-Military</div>
-              <div className="nav-item"><span style={{ marginRight: '10px' }}>📚</span> S8 Education &amp; Training</div>
-              <div className="nav-item"><span style={{ marginRight: '10px' }}>💰</span> S10 Finance</div>
-              <div className="nav-item"><span style={{ marginRight: '10px' }}>🏃</span> Athletic Council</div>
-              <div className="nav-item"><span style={{ marginRight: '10px' }}>🎓</span> Academic Council</div>
+              <div id="nav-s2" className="nav-item"><span style={{ marginRight: '10px' }}>🛡️</span> S2 Security</div>
+              <div id="nav-s3" className="nav-item"><span style={{ marginRight: '10px' }}>⌖</span> S3 Operations</div>
+              <div id="nav-s4" className="nav-item"><span style={{ marginRight: '10px' }}>📦</span> S4 Logistics</div>
+              <div id="nav-s5" className="nav-item"><span style={{ marginRight: '10px' }}>📊</span> S5 Plans &amp; Programs</div>
+              <div id="nav-s6" className="nav-item"><span style={{ marginRight: '10px' }}>📡</span> S6 Signal</div>
+              <div id="nav-s7" className="nav-item"><span style={{ marginRight: '10px' }}>🤝</span> S7 Civil-Military</div>
+              <div id="nav-s8" className="nav-item"><span style={{ marginRight: '10px' }}>📚</span> S8 Education &amp; Training</div>
+              <div id="nav-s10" className="nav-item"><span style={{ marginRight: '10px' }}>💰</span> S10 Finance</div>
+              <div id="nav-athletic" className="nav-item"><span style={{ marginRight: '10px' }}>🏃</span> Athletic Council</div>
+              <div id="nav-academic" className="nav-item"><span style={{ marginRight: '10px' }}>🎓</span> Academic Council</div>
             </div>
             
             <div style={{ marginTop: 'auto', padding: '1.5rem', borderTop: '1px solid var(--border-color)' }}>

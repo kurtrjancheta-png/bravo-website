@@ -124,6 +124,17 @@ a {
   font-weight: 600;
 }
 
+/* Gold glow when hovering linked org chart cards */
+.nav-glow-gold {
+  outline: 2px solid var(--accent-gold) !important;
+  outline-offset: -2px;
+  background-color: rgba(212, 175, 55, 0.08) !important;
+  color: var(--text-primary) !important;
+  border-left-color: var(--accent-gold) !important;
+  transition: all 0.15s ease !important;
+  border-radius: 4px;
+}
+
 /* Dropdown / Accordion Styling */
 details > summary {
   list-style: none;
