@@ -1,61 +1,78 @@
 import { getSheetData } from '../../lib/googleSheets';
 import PFTDashboard from './PFTDashboard';
 
-// ===== CONFIGURE THESE =====
 // PFT Google Sheet ID
 const PFT_SHEET_ID = process.env.PFT_SHEET_ID || '1YfwRNbWer8QDtqSyw7A3jxHAOrWSl6p6tW-7zI074yM';
 
-// Tab names in the Google Sheet for each PFT type (override via env vars)
+// Tab names in the Google Sheet for each PFT type
 const MOCK_PFT_TAB = process.env.MOCK_PFT_TAB || 'MOCK PFT';
 const PFT1_TAB = process.env.PFT1_TAB || 'PFT 1';
 const PFT2_TAB = process.env.PFT2_TAB || 'PFT 2';
 
 export const revalidate = 30;
 
-// Count remarks from rows, only including valid cadet rows
-function countRemarks(rows, isMock = false) {
-  const counts = { passed: 0, failed: 0, smc: 0, fad: 0, total: 0 };
+function createEmptyData() {
+  return {
+    passed: [], failed: [], smc: [], fad: []
+  };
+}
 
-  // Valid rows based on Google Sheet structure (0-indexed array where 0 = Row 2)
-  // 1CL: Rows 2-35 (index 0-33)
-  // 2CL: Rows 41-80 (index 39-78)
-  // 3CL: Rows 87-126 (index 85-124)
-  const isValidRow = (index) => {
-    return (index >= 0 && index <= 33) ||
-           (index >= 39 && index <= 78) ||
-           (index >= 85 && index <= 124);
+// Parses rows and groups them by Class and Status
+function parsePFTData(rows) {
+  const data = {
+    'all': createEmptyData(),
+    '1cl': createEmptyData(),
+    '2cl': createEmptyData(),
+    '3cl': createEmptyData()
   };
 
   rows.forEach((row, i) => {
-    if (!isValidRow(i)) return;
+    let cadetClass = null;
+    
+    // 1CL: Rows 2-35 (index 0-33)
+    if (i >= 0 && i <= 33) cadetClass = '1cl';
+    // 2CL: Rows 41-80 (index 39-78)
+    else if (i >= 39 && i <= 78) cadetClass = '2cl';
+    // 3CL: Rows 87-126 (index 85-124)
+    else if (i >= 85 && i <= 124) cadetClass = '3cl';
 
-    // Find the "remarks" column (case-insensitive)
+    if (!cadetClass) return; // Skip invalid rows
+
+    // Find remarks and name columns
     const remarksKey = Object.keys(row).find(k => k.toLowerCase().includes('remarks'));
+    const nameKey = Object.keys(row).find(k => k.toLowerCase().includes('name') || k.includes('1CL'));
+    
     if (!remarksKey) return;
 
     const val = (typeof row[remarksKey] === 'string' ? row[remarksKey] : '').trim().toUpperCase();
-    if (!val || val === 'REMARKS') return; // Skip empty and header duplicates
+    if (!val || val === 'REMARKS') return;
 
-    counts.total++;
+    const name = nameKey ? (typeof row[nameKey] === 'string' ? row[nameKey] : '').trim() : 'Unknown Cadet';
+
+    const cadet = { name };
 
     if (val.includes('PASSED') || val === 'P') {
-      counts.passed++;
+      data[cadetClass].passed.push(cadet);
+      data['all'].passed.push(cadet);
     } else if (val.includes('FAILED') || val === 'F') {
-      counts.failed++;
+      data[cadetClass].failed.push(cadet);
+      data['all'].failed.push(cadet);
     } else if (val.includes('SMC')) {
-      counts.smc++;
+      data[cadetClass].smc.push(cadet);
+      data['all'].smc.push(cadet);
     } else if (val.includes('FAD') || val.includes('GUARD') || val.includes('SIQ')) {
-      counts.fad++;
+      data[cadetClass].fad.push(cadet);
+      data['all'].fad.push(cadet);
     }
   });
 
-  return counts;
+  return data;
 }
 
 export default async function PFTTracker() {
-  let mockData = { passed: 0, failed: 0, smc: 0, fad: 0, total: 0 };
-  let pft1Data = { passed: 0, failed: 0, smc: 0, fad: 0, total: 0 };
-  let pft2Data = { passed: 0, failed: 0, smc: 0, fad: 0, total: 0 };
+  let mockData = null;
+  let pft1Data = null;
+  let pft2Data = null;
 
   if (PFT_SHEET_ID) {
     const [mockRows, pft1Rows, pft2Rows] = await Promise.all([
@@ -64,13 +81,12 @@ export default async function PFTTracker() {
       getSheetData(PFT_SHEET_ID, PFT2_TAB),
     ]);
 
-    mockData = countRemarks(mockRows, true);
+    mockData = parsePFTData(mockRows);
     
     // Per user request, PFT 1 and PFT 2 do not have recorded scores yet, 
-    // so we zero them out to ignore copied template data.
-    // When they are ready, you can change these back to: countRemarks(pft1Rows)
-    pft1Data = { passed: 0, failed: 0, smc: 0, fad: 0, total: 0 };
-    pft2Data = { passed: 0, failed: 0, smc: 0, fad: 0, total: 0 };
+    // so we parse them as empty arrays to ignore template data.
+    pft1Data = parsePFTData([]);
+    pft2Data = parsePFTData([]);
   }
 
   return (
@@ -83,7 +99,7 @@ export default async function PFTTracker() {
       {!PFT_SHEET_ID ? (
         <div className="info-card" style={{ borderLeft: '4px solid #f59e0b' }}>
           <h3 style={{ color: '#d97706' }}>Sheet Not Configured</h3>
-          <p>Set the <code>PFT_SHEET_ID</code> environment variable in Vercel to your PFT Google Sheet ID. Optionally set <code>MOCK_PFT_TAB</code>, <code>PFT1_TAB</code>, <code>PFT2_TAB</code> for custom tab names.</p>
+          <p>Set the <code>PFT_SHEET_ID</code> environment variable in Vercel.</p>
         </div>
       ) : (
         <PFTDashboard

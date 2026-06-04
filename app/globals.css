@@ -689,3 +689,120 @@ tr:last-child td {
   color: var(--text-secondary);
   text-align: right;
 }
+
+/* --- PIE CHART HOVER & CLICK EFFECTS --- */
+.pft-pie-path {
+  transition: transform 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
+  transform-origin: center;
+  cursor: pointer;
+}
+
+.pft-pie-path:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+  z-index: 10;
+}
+
+.pft-legend-item {
+  transition: opacity 0.2s;
+}
+
+.pft-legend-item:hover {
+  opacity: 0.7;
+}
+
+/* --- DRILL-DOWN CADET LIST VIEW --- */
+.cadet-list-container {
+  margin-top: 3rem;
+  padding: 2rem;
+  background: white;
+  border: 1px solid var(--accent-gold);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cadet-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.cadet-list-header h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.cadet-list-badge {
+  background: var(--bg-secondary);
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.cadet-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.cadet-list-item {
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.cadet-list-item:hover {
+  border-color: var(--accent-gold);
+  background: white;
+}
+
+.cadet-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.cadet-list-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.cadet-list-close {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cadet-list-close:hover {
+  background: var(--text-primary);
+  color: white;
+}
