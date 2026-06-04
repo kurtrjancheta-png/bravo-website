@@ -2,8 +2,8 @@ import { getSheetData } from '../../lib/googleSheets';
 
 // User provided this specific sheet ID for the Task Org
 const TASK_ORG_SHEET_ID = '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
-// User can override the tab name in Vercel if needed, defaults to 'Task Organization'
-const SHEET_NAME = process.env.TASK_ORG_SHEET_NAME || 'Task Organization';
+// User can override the tab name in Vercel if needed, defaults to 'TASK ORGANIZATION'
+const SHEET_NAME = process.env.TASK_ORG_SHEET_NAME || 'TASK ORGANIZATION';
 
 export default async function TaskOrganization() {
   const allRows = await getSheetData(TASK_ORG_SHEET_ID, SHEET_NAME);
