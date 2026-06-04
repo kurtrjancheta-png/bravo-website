@@ -44,14 +44,17 @@ export default function RootLayout({ children }) {
             <div className="nav-section">
               <div className="nav-label">Councils</div>
               
-              <div className="nav-item-group">
-                <div className="nav-item"><span style={{ marginRight: '10px' }}>👥</span> S1 Personnel</div>
-                <div style={{ marginLeft: '1rem', borderLeft: '1px solid var(--border-color)', paddingLeft: '0.5rem', marginTop: '0.25rem', marginBottom: '0.75rem' }}>
+              <details className="nav-item-group" style={{ cursor: 'pointer' }}>
+                <summary className="nav-item" style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ marginRight: '10px' }}>👥</span> S1 Personnel
+                  <span className="dropdown-arrow">▼</span>
+                </summary>
+                <div style={{ marginLeft: '1.5rem', borderLeft: '1px solid var(--border-color)', paddingLeft: '0.5rem', marginTop: '0.25rem', marginBottom: '0.5rem' }}>
                   <Link href="/task-organization">
-                    <div className="nav-item" style={{ fontSize: '0.85rem', padding: '0.4rem 1rem' }}>↳ Task Organization</div>
+                    <div className="nav-item" style={{ fontSize: '0.85rem', padding: '0.4rem 1rem' }}>Task Organization</div>
                   </Link>
                 </div>
-              </div>
+              </details>
 
               <div className="nav-item"><span style={{ marginRight: '10px' }}>🛡️</span> S2 Security</div>
               <div className="nav-item"><span style={{ marginRight: '10px' }}>⚙️</span> S3 Operations</div>

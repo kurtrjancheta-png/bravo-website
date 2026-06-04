@@ -124,6 +124,26 @@ a {
   font-weight: 600;
 }
 
+/* Dropdown / Accordion Styling */
+details > summary {
+  list-style: none;
+}
+details > summary::-webkit-details-marker {
+  display: none;
+}
+details[open] > summary {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+details[open] > summary .dropdown-arrow {
+  transform: rotate(180deg);
+}
+.dropdown-arrow {
+  margin-left: auto;
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+}
+
 /* Main Content Wrapper */
 .main-wrapper {
   margin-left: var(--sidebar-width);
