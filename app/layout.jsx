@@ -60,7 +60,17 @@ export default function RootLayout({ children }) {
               <div id="nav-s7" className="nav-item"><span style={{ marginRight: '10px' }}>🤝</span> S7 Civil-Military</div>
               <div id="nav-s8" className="nav-item"><span style={{ marginRight: '10px' }}>📚</span> S8 Education &amp; Training</div>
               <div id="nav-s10" className="nav-item"><span style={{ marginRight: '10px' }}>💰</span> S10 Finance</div>
-              <div id="nav-athletic" className="nav-item"><span style={{ marginRight: '10px' }}>🏃</span> Athletic Council</div>
+              <details className="nav-item-group" style={{ cursor: 'pointer' }}>
+                <summary id="nav-athletic" className="nav-item" style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ marginRight: '10px' }}>🏃</span> Athletic Council
+                  <span className="dropdown-arrow">▼</span>
+                </summary>
+                <div style={{ marginLeft: '1.5rem', borderLeft: '1px solid var(--border-color)', paddingLeft: '0.5rem', marginTop: '0.25rem', marginBottom: '0.5rem' }}>
+                  <Link href="/pft-tracker">
+                    <div className="nav-item" style={{ fontSize: '0.85rem', padding: '0.4rem 1rem' }}>PFT Tracker</div>
+                  </Link>
+                </div>
+              </details>
               <div id="nav-academic" className="nav-item"><span style={{ marginRight: '10px' }}>🎓</span> Academic Council</div>
             </div>
             
