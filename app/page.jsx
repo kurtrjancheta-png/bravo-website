@@ -20,12 +20,16 @@ export default async function Home() {
   return (
     <div>
       {/* Hero Banner */}
-      <div className="hero-banner">
-        <h1 className="hero-title">BRAVO COMPANY</h1>
-        <div className="hero-subtitle">
-          <span style={{ color: 'var(--accent-gold)' }}>&#9656;</span> DIGITAL BULLETIN BOARD SYSTEM
+      <div className="hero-banner" style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1rem' }}>
+          <img src="/logo.png" alt="Bravo Company Logo" style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
+          <div>
+            <h1 className="hero-title" style={{ marginBottom: '0.2rem' }}>BRAVO COMPANY</h1>
+            <div className="hero-subtitle">
+              <span style={{ color: 'var(--accent-gold)' }}>&#9656;</span> DIGITAL BULLETIN BOARD SYSTEM
+            </div>
+          </div>
         </div>
-        
         <div className="hero-stats">
           <div className="stat-item">
             <span className="stat-value">{announcements.length || '-'}</span>

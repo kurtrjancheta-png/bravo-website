@@ -16,7 +16,9 @@ export default function RootLayout({ children }) {
           {/* Left Sidebar */}
           <aside className="sidebar">
             <div className="sidebar-header">
-              <div className="logo-circle">B</div>
+              <div className="logo-circle" style={{ padding: 0, overflow: 'hidden', background: 'transparent' }}>
+                <img src="/logo.png" alt="Bravo Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
               <div>
                 <div className="company-title">BRAVO CO.</div>
                 <div className="company-subtitle">DIGITAL BULLETIN BOARD</div>
@@ -33,7 +35,9 @@ export default function RootLayout({ children }) {
               <div className="nav-item"><span style={{ marginRight: '10px' }}>⭐</span> Company Staff</div>
               <div className="nav-item"><span style={{ marginRight: '10px' }}>📅</span> Event Calendar</div>
               <div className="nav-item"><span style={{ marginRight: '10px' }}>📱</span> Smartphone Rack</div>
-              <div className="nav-item"><span style={{ marginRight: '10px' }}>📇</span> Company Roster</div>
+              <Link href="/roster">
+                <div className="nav-item"><span style={{ marginRight: '10px' }}>📇</span> Company Roster</div>
+              </Link>
               <div className="nav-item"><span style={{ marginRight: '10px' }}>📋</span> EXO Punishment List</div>
             </div>
 
