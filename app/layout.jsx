@@ -29,16 +29,11 @@ export default function RootLayout({ children }) {
                   <span style={{ marginRight: '10px' }}>🏠</span> Home Overview
                 </div>
               </Link>
-              <Link href="/announcements">
-                <div className="nav-item">
-                  <span style={{ marginRight: '10px' }}>📢</span> Announcements
-                </div>
-              </Link>
-              <Link href="/trackers">
-                <div className="nav-item">
-                  <span style={{ marginRight: '10px' }}>📊</span> Trackers
-                </div>
-              </Link>
+              <div className="nav-item"><span style={{ marginRight: '10px' }}>⭐</span> Company Staff</div>
+              <div className="nav-item"><span style={{ marginRight: '10px' }}>📅</span> Event Calendar</div>
+              <div className="nav-item"><span style={{ marginRight: '10px' }}>📱</span> Smartphone Rack</div>
+              <div className="nav-item"><span style={{ marginRight: '10px' }}>📇</span> Company Roster</div>
+              <div className="nav-item"><span style={{ marginRight: '10px' }}>📋</span> EXO Punishment List</div>
             </div>
 
             <div className="nav-section">
@@ -57,13 +52,28 @@ export default function RootLayout({ children }) {
               </details>
 
               <div className="nav-item"><span style={{ marginRight: '10px' }}>🛡️</span> S2 Security</div>
-              <div className="nav-item"><span style={{ marginRight: '10px' }}>⚙️</span> S3 Operations</div>
+              <div className="nav-item"><span style={{ marginRight: '10px' }}>⌖</span> S3 Operations</div>
               <div className="nav-item"><span style={{ marginRight: '10px' }}>📦</span> S4 Logistics</div>
+              <div className="nav-item"><span style={{ marginRight: '10px' }}>📊</span> S5 Plans &amp; Programs</div>
+              <div className="nav-item"><span style={{ marginRight: '10px' }}>📡</span> S6 Signal</div>
+              <div className="nav-item"><span style={{ marginRight: '10px' }}>🤝</span> S7 Civil-Military</div>
+              <div className="nav-item"><span style={{ marginRight: '10px' }}>📚</span> S8 Education &amp; Training</div>
+              <div className="nav-item"><span style={{ marginRight: '10px' }}>💰</span> S10 Finance</div>
+              <div className="nav-item"><span style={{ marginRight: '10px' }}>🏃</span> Athletic Council</div>
+              <div className="nav-item"><span style={{ marginRight: '10px' }}>🎓</span> Academic Council</div>
             </div>
             
             <div style={{ marginTop: 'auto', padding: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
-               <div className="nav-label" style={{ padding: 0, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+               <div className="nav-label" style={{ padding: 0, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <div className="live-indicator"></div> SYSTEM LIVE
+               </div>
+               <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <div className="badge-outline" style={{ cursor: 'pointer', flex: 1, justifyContent: 'center' }}>
+                     ⚙️ DARK MODE
+                  </div>
+                  <div className="badge-outline" style={{ cursor: 'pointer', padding: '0.35rem 1rem' }}>
+                     🔒
+                  </div>
                </div>
             </div>
           </aside>
