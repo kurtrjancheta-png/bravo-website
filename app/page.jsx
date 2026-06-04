@@ -22,7 +22,7 @@ export default async function Home() {
       {/* Hero Banner */}
       <div className="hero-banner" style={{ display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1rem' }}>
-          <img src="/logo.png" alt="Bravo Company Logo" style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
+          <img src="/logo.png" alt="Bravo Company Logo" style={{ width: '80px', height: '80px', objectFit: 'contain', mixBlendMode: 'multiply' }} />
           <div>
             <h1 className="hero-title" style={{ marginBottom: '0.2rem' }}>BRAVO COMPANY</h1>
             <div className="hero-subtitle">

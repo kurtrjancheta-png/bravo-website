@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { driveUrlToImage } from '../../lib/googleSheets';
 
 export default function SOIGenerator({ soiData }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -11,6 +12,15 @@ export default function SOIGenerator({ soiData }) {
   const getField = (row, fieldName) => {
     const key = Object.keys(row).find(k => k.toLowerCase().includes(fieldName.toLowerCase()));
     return key && row[key] ? String(row[key]) : 'N/A';
+  };
+
+  const formatClass = (cls) => {
+    const normalized = cls.toUpperCase();
+    if (normalized === '1CL') return '1ST';
+    if (normalized === '2CL') return '2ND';
+    if (normalized === '3CL') return '3RD';
+    if (normalized === '4CL') return '4TH';
+    return normalized;
   };
 
   const handleSearch = () => {
@@ -111,12 +121,16 @@ export default function SOIGenerator({ soiData }) {
         }}>
           {/* Header */}
           <div style={{ background: 'var(--bg-tertiary)', padding: '2rem', color: 'white', display: 'flex', alignItems: 'center', gap: '2rem' }}>
-            <div style={{ width: '120px', height: '120px', background: '#333', borderRadius: '8px', border: '3px solid var(--accent-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-               <span style={{ fontSize: '3rem' }}>👤</span>
+            <div style={{ width: '120px', height: '120px', background: '#333', borderRadius: '8px', border: '3px solid var(--accent-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+               {getField(selectedCadet, 'PICTURE') !== 'N/A' ? (
+                  <img src={driveUrlToImage(getField(selectedCadet, 'PICTURE'))} alt="Cadet Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+               ) : (
+                  <span style={{ fontSize: '3rem' }}>👤</span>
+               )}
             </div>
             <div>
               <div style={{ color: 'var(--accent-gold)', fontWeight: 800, letterSpacing: '0.1em', marginBottom: '0.25rem' }}>
-                {getField(selectedCadet, 'CLASS')} CLASS CADET
+                {formatClass(getField(selectedCadet, 'CLASS'))} CLASS CADET
               </div>
               <h2 style={{ fontSize: '2.5rem', margin: 0, textTransform: 'uppercase' }}>
                 {getField(selectedCadet, 'FIRST NAME')} {getField(selectedCadet, 'MIDDLE NAME')} {getField(selectedCadet, 'SURNAME')}

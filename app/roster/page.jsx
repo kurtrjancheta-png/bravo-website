@@ -1,14 +1,16 @@
 import { getSheetData } from '../../lib/googleSheets';
 import SOIGenerator from './SOIGenerator';
+import DispositionDashboard from './DispositionDashboard';
 
 const SHEET_ID = '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
 
 export const revalidate = 30;
 
 export default async function RosterPage() {
-  const [rosterRows, soiRows] = await Promise.all([
+  const [rosterRows, soiRows, dispositionRows] = await Promise.all([
     getSheetData(SHEET_ID, 'ROSTER'),
-    getSheetData(SHEET_ID, 'SOI')
+    getSheetData(SHEET_ID, 'SOI'),
+    getSheetData(SHEET_ID, 'DISPOSITION')
   ]);
 
   // Group by class based on requested row indices.
@@ -60,6 +62,9 @@ export default async function RosterPage() {
 
       {/* SOI Generator at the top */}
       <SOIGenerator soiData={soiRows} />
+
+      {/* Disposition Dashboard */}
+      <DispositionDashboard dispositionData={dispositionRows} />
 
       {/* Roster Sections */}
       <div className="roster-sections" style={{ marginTop: '3rem' }}>

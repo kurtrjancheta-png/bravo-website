@@ -1,12 +1,12 @@
-/* Bravo Company Red, Black, and White Motif */
+/* White, Gray, and Gold Dashboard Motif */
 :root {
   --bg-primary: #ffffff; /* White */
   --bg-secondary: #f4f5f7; /* Light Gray for Sidebar and subtle areas */
-  --bg-tertiary: #111111; /* Black for the Hero Banner */
+  --bg-tertiary: #2d3748; /* Dark Gray for the Hero Banner */
   
-  --accent-gold: #e33a24; /* Bravo Red Accent */
-  --accent-gold-light: #fcdcd8;
-  --accent-gold-dark: #b52e1d;
+  --accent-gold: #d4af37; /* Gold Tertiary Accent */
+  --accent-gold-light: #fef9c3;
+  --accent-gold-dark: #b5952f;
   
   --text-primary: #1a202c; /* Near Black */
   --text-secondary: #718096; /* Gray Text */
