@@ -17,6 +17,8 @@ function PersonCard({ person }) {
     }
   };
 
+  const hasImage = person.picture && person.picture.length > 0;
+
   return (
     <div className="org-node-wrapper">
       <div
@@ -24,7 +26,15 @@ function PersonCard({ person }) {
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="avatar-placeholder">👤</div>
+        {hasImage ? (
+          <img
+            src={person.picture}
+            alt={person.designation}
+            className="avatar-image"
+          />
+        ) : (
+          <div className="avatar-placeholder">👤</div>
+        )}
         <div className="org-designation">{person.designation}</div>
         <div className="org-name">{person.name}</div>
       </div>
@@ -33,6 +43,10 @@ function PersonCard({ person }) {
 }
 
 export default function OrgChart({ cmdr, firstSgt, exo, sStaff, specialStaff, platoonLeaders }) {
+  const hasCmdrImage = cmdr && cmdr.picture && cmdr.picture.length > 0;
+  const hasFirstSgtImage = firstSgt && firstSgt.picture && firstSgt.picture.length > 0;
+  const hasExoImage = exo && exo.picture && exo.picture.length > 0;
+
   return (
     <div className="org-chart">
 
@@ -42,7 +56,11 @@ export default function OrgChart({ cmdr, firstSgt, exo, sStaff, specialStaff, pl
           <div className="command-tier">
             <div style={{ position: 'relative', zIndex: 2 }}>
               <div className="org-card" style={{ borderColor: 'var(--text-primary)', borderWidth: '2px' }}>
-                <div className="avatar-placeholder" style={{ backgroundColor: 'var(--text-primary)', color: 'white' }}>⭐</div>
+                {hasCmdrImage ? (
+                  <img src={cmdr.picture} alt={cmdr.designation} className="avatar-image" style={{ borderColor: 'var(--text-primary)' }} />
+                ) : (
+                  <div className="avatar-placeholder" style={{ backgroundColor: 'var(--text-primary)', color: 'white' }}>⭐</div>
+                )}
                 <div className="org-designation">{cmdr.designation}</div>
                 <div className="org-name">{cmdr.name}</div>
               </div>
@@ -53,7 +71,11 @@ export default function OrgChart({ cmdr, firstSgt, exo, sStaff, specialStaff, pl
                 <div className="command-attached-line"></div>
                 <div style={{ position: 'relative', zIndex: 2, marginTop: '20px' }}>
                   <div className="org-card" style={{ width: '220px' }}>
-                    <div className="avatar-placeholder" style={{ width: '50px', height: '50px', fontSize: '1.2rem' }}>💂</div>
+                    {hasFirstSgtImage ? (
+                      <img src={firstSgt.picture} alt={firstSgt.designation} className="avatar-image" style={{ width: '50px', height: '50px' }} />
+                    ) : (
+                      <div className="avatar-placeholder" style={{ width: '50px', height: '50px', fontSize: '1.2rem' }}>💂</div>
+                    )}
                     <div className="org-designation">{firstSgt.designation}</div>
                     <div className="org-name" style={{ fontSize: '0.8rem' }}>{firstSgt.name}</div>
                   </div>
@@ -69,7 +91,11 @@ export default function OrgChart({ cmdr, firstSgt, exo, sStaff, specialStaff, pl
       {exo && (
         <div className="org-tier">
           <div className="org-card" style={{ zIndex: 2 }}>
-            <div className="avatar-placeholder">👤</div>
+            {hasExoImage ? (
+              <img src={exo.picture} alt={exo.designation} className="avatar-image" />
+            ) : (
+              <div className="avatar-placeholder">👤</div>
+            )}
             <div className="org-designation">{exo.designation}</div>
             <div className="org-name">{exo.name}</div>
           </div>

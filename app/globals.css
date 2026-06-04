@@ -544,6 +544,15 @@ tr:last-child td {
   margin-bottom: 1rem;
 }
 
+.avatar-image {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  object-fit: cover;
+  margin-bottom: 1rem;
+}
+
 .org-designation {
   font-size: 0.75rem;
   font-weight: 700;

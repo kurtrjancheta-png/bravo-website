@@ -1,5 +1,6 @@
 import './globals.css';
 import Link from 'next/link';
+import AutoRefresh from './AutoRefresh';
 
 export const metadata = {
   title: 'Bravo Company Board',
@@ -97,6 +98,7 @@ export default function RootLayout({ children }) {
 
             {/* Page Content */}
             <main className="main-content">
+              <AutoRefresh intervalMs={30000} />
               {children}
             </main>
           </div>
