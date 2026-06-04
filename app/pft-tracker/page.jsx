@@ -12,17 +12,29 @@ const PFT2_TAB = process.env.PFT2_TAB || 'PFT 2';
 
 export const revalidate = 30;
 
-// Count remarks from rows
-function countRemarks(rows) {
+// Count remarks from rows, only including valid cadet rows
+function countRemarks(rows, isMock = false) {
   const counts = { passed: 0, failed: 0, smc: 0, fad: 0, total: 0 };
 
-  for (const row of rows) {
+  // Valid rows based on Google Sheet structure (0-indexed array where 0 = Row 2)
+  // 1CL: Rows 2-35 (index 0-33)
+  // 2CL: Rows 41-80 (index 39-78)
+  // 3CL: Rows 87-126 (index 85-124)
+  const isValidRow = (index) => {
+    return (index >= 0 && index <= 33) ||
+           (index >= 39 && index <= 78) ||
+           (index >= 85 && index <= 124);
+  };
+
+  rows.forEach((row, i) => {
+    if (!isValidRow(i)) return;
+
     // Find the "remarks" column (case-insensitive)
     const remarksKey = Object.keys(row).find(k => k.toLowerCase().includes('remarks'));
-    if (!remarksKey) continue;
+    if (!remarksKey) return;
 
     const val = (typeof row[remarksKey] === 'string' ? row[remarksKey] : '').trim().toUpperCase();
-    if (!val || val === 'REMARKS') continue; // Skip empty and header duplicates
+    if (!val || val === 'REMARKS') return; // Skip empty and header duplicates
 
     counts.total++;
 
@@ -35,7 +47,7 @@ function countRemarks(rows) {
     } else if (val.includes('FAD') || val.includes('GUARD') || val.includes('SIQ')) {
       counts.fad++;
     }
-  }
+  });
 
   return counts;
 }
@@ -52,9 +64,13 @@ export default async function PFTTracker() {
       getSheetData(PFT_SHEET_ID, PFT2_TAB),
     ]);
 
-    mockData = countRemarks(mockRows);
-    pft1Data = countRemarks(pft1Rows);
-    pft2Data = countRemarks(pft2Rows);
+    mockData = countRemarks(mockRows, true);
+    
+    // Per user request, PFT 1 and PFT 2 do not have recorded scores yet, 
+    // so we zero them out to ignore copied template data.
+    // When they are ready, you can change these back to: countRemarks(pft1Rows)
+    pft1Data = { passed: 0, failed: 0, smc: 0, fad: 0, total: 0 };
+    pft2Data = { passed: 0, failed: 0, smc: 0, fad: 0, total: 0 };
   }
 
   return (

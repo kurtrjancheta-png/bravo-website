@@ -1,4 +1,4 @@
-import { getSheetData } from '../../lib/googleSheets';
+import { getSheetData, driveUrlToImage } from '../../lib/googleSheets';
 import OrgChart from './OrgChart';
 
 const TASK_ORG_SHEET_ID = '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
@@ -60,9 +60,9 @@ export default async function TaskOrganization() {
     const values = Object.values(row);
     const designationStr = (typeof values[0] === 'string' ? values[0] : '').trim();
     const nameStr = (typeof values[1] === 'string' ? values[1] : '').trim();
-    // Look for a "PICTURE" column (case-insensitive key search)
     const pictureKey = Object.keys(row).find(k => k.toLowerCase().includes('picture'));
-    const pictureUrl = pictureKey ? (typeof row[pictureKey] === 'string' ? row[pictureKey].trim() : '') : '';
+    const rawPictureUrl = pictureKey ? (typeof row[pictureKey] === 'string' ? row[pictureKey].trim() : '') : '';
+    const pictureUrl = driveUrlToImage(rawPictureUrl);
     const desLower = designationStr.toLowerCase();
 
     if (!desLower || !nameStr) continue;
