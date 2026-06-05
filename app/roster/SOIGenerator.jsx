@@ -43,8 +43,13 @@ export default function SOIGenerator({ soiData }) {
       const last = getField(row, 'SURNAME').toLowerCase();
       const middle = getField(row, 'MIDDLE NAME').toLowerCase();
       const serial = getField(row, 'SERIAL NR').toLowerCase();
+      // 1. Check if the user typed a part of the cadet's data (Manual search)
+      const isSubset = first.includes(term) || last.includes(term) || middle.includes(term) || serial.includes(term) || `${first} ${last}`.includes(term) || `${last} ${first}`.includes(term);
       
-      return first.includes(term) || last.includes(term) || middle.includes(term) || serial.includes(term) || `${first} ${last}`.includes(term) || `${last} ${first}`.includes(term);
+      // 2. Check if the cadet's data is inside a long search term (Org Chart click)
+      const isSuperset = (serial !== 'n/a' && serial.length > 3 && term.includes(serial)) || (first.length > 2 && last.length > 2 && term.includes(first) && term.includes(last));
+
+      return isSubset || isSuperset;
     });
 
     if (found) {
