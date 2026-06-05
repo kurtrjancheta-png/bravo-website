@@ -16,7 +16,7 @@ export default async function TaskOrganization() {
   const tacticalOfficer = {
     designation: 'Bravo Company Tactical Officer',
     name: 'LCDR JETHRO C. OLAVIDEZ PN',
-    picture: '',
+    picture: '/olavidez.png',
     navTarget: null,
     isTacticalOfficer: true
   };
