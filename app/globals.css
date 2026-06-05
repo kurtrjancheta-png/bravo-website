@@ -522,35 +522,93 @@ tr:last-child td {
   text-align: center;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   z-index: 2;
+  position: relative; /* For tooltip */
+  cursor: pointer;
 }
 
 .org-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-  border-color: var(--text-secondary);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  border-color: var(--accent-gold);
+}
+
+/* Tooltip */
+.org-card::after {
+  content: "Click to view full SOI";
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-tertiary);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, bottom 0.2s ease;
+  z-index: 100;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.org-card:hover::after {
+  opacity: 1;
+  bottom: -28px;
+}
+
+.no-hover-routing {
+  cursor: default !important;
+}
+
+.no-hover-routing:hover {
+  transform: none !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
+  border-color: var(--accent-gold) !important;
+}
+
+.no-hover-routing::after {
+  display: none !important;
+}
+
+.no-hover-routing:hover .avatar-placeholder,
+.no-hover-routing:hover .avatar-image {
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: var(--accent-gold) !important;
 }
 
 .avatar-placeholder {
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   background-color: var(--surface-gray);
   border: 2px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 2rem;
   color: var(--text-secondary);
   margin-bottom: 1rem;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
 }
 
 .avatar-image {
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   border: 2px solid var(--border-color);
   object-fit: cover;
   margin-bottom: 1rem;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+}
+
+.org-card:hover .avatar-placeholder,
+.org-card:hover .avatar-image {
+  transform: scale(1.2);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  border-color: var(--accent-gold);
 }
 
 .org-designation {

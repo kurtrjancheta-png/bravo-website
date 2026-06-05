@@ -1,12 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { driveUrlToImage } from '../../lib/googleSheets';
 
 export default function SOIGenerator({ soiData }) {
+  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCadet, setSelectedCadet] = useState(null);
   const [showCard, setShowCard] = useState(false);
+
+  useEffect(() => {
+    const soiQuery = searchParams.get('soi');
+    if (soiQuery) {
+      setSearchTerm(soiQuery);
+      performSearch(soiQuery);
+    }
+  }, [searchParams]);
 
   // Helper to extract fields regardless of exact case
   const getField = (row, fieldName) => {
@@ -23,18 +33,18 @@ export default function SOIGenerator({ soiData }) {
     return normalized;
   };
 
-  const handleSearch = () => {
-    if (!searchTerm.trim()) return;
+  const performSearch = (termToSearch) => {
+    if (!termToSearch || !termToSearch.trim()) return;
     
     // Find cadet matching the search term in First Name, Surname, or Full Name
-    const term = searchTerm.toLowerCase();
+    const term = termToSearch.toLowerCase();
     const found = soiData.find(row => {
       const first = getField(row, 'FIRST NAME').toLowerCase();
       const last = getField(row, 'SURNAME').toLowerCase();
       const middle = getField(row, 'MIDDLE NAME').toLowerCase();
       const serial = getField(row, 'SERIAL NR').toLowerCase();
       
-      return first.includes(term) || last.includes(term) || middle.includes(term) || serial.includes(term);
+      return first.includes(term) || last.includes(term) || middle.includes(term) || serial.includes(term) || `${first} ${last}`.includes(term) || `${last} ${first}`.includes(term);
     });
 
     if (found) {
@@ -44,6 +54,10 @@ export default function SOIGenerator({ soiData }) {
       alert("Cadet not found. Please try another name or serial number.");
       setShowCard(false);
     }
+  };
+
+  const handleSearch = () => {
+    performSearch(searchTerm);
   };
 
   const handleKeyDown = (e) => {

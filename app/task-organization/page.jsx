@@ -13,6 +13,13 @@ export default async function TaskOrganization() {
   let cmdr = null;
   let firstSgt = null;
   let exo = null;
+  const tacticalOfficer = {
+    designation: 'Bravo Company Tactical Officer',
+    name: 'LCDR JETHRO C. OLAVIDEZ PN',
+    picture: '',
+    navTarget: null,
+    isTacticalOfficer: true
+  };
   const sStaff = [];
   const specialStaff = [];
   const platoonLeaders = [];
@@ -114,6 +121,7 @@ export default async function TaskOrganization() {
       </div>
 
       <OrgChart
+        tacticalOfficer={tacticalOfficer}
         cmdr={cmdr}
         firstSgt={firstSgt}
         exo={exo}

@@ -1,6 +1,7 @@
 import { getSheetData } from '../../lib/googleSheets';
 import SOIGenerator from './SOIGenerator';
 import DispositionDashboard from './DispositionDashboard';
+import { Suspense } from 'react';
 
 const SHEET_ID = '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
 
@@ -61,7 +62,9 @@ export default async function RosterPage() {
       </div>
 
       {/* SOI Generator at the top */}
-      <SOIGenerator soiData={soiRows} />
+      <Suspense fallback={<div style={{ textAlign: 'center', padding: '2rem' }}>Loading SOI Generator...</div>}>
+        <SOIGenerator soiData={soiRows} />
+      </Suspense>
 
       {/* Disposition Dashboard */}
       <DispositionDashboard dispositionData={dispositionRows} />

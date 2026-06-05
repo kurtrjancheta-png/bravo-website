@@ -1,87 +1,141 @@
 'use client';
 
-function PersonCard({ person }) {
-  if (!person) return null;
+import { useRouter } from 'next/navigation';
 
-  const handleMouseEnter = () => {
-    if (person.navTarget) {
-      const el = document.getElementById(person.navTarget);
-      if (el) el.classList.add('nav-glow-gold');
+export default function OrgChart({ tacticalOfficer, cmdr, firstSgt, exo, sStaff, specialStaff, platoonLeaders }) {
+  const router = useRouter();
+
+  const handleCardClick = (person) => {
+    if (!person || person.isTacticalOfficer) return;
+    
+    // We navigate to /roster with the person's name as the 'soi' search param.
+    // The SOIGenerator will pick this up and auto-search.
+    if (person.name) {
+       router.push(`/roster?soi=${encodeURIComponent(person.name)}`);
     }
   };
 
-  const handleMouseLeave = () => {
-    if (person.navTarget) {
-      const el = document.getElementById(person.navTarget);
-      if (el) el.classList.remove('nav-glow-gold');
-    }
-  };
+  const PersonCard = ({ person, customStyle = {} }) => {
+    if (!person) return null;
 
-  const hasImage = person.picture && person.picture.length > 0;
+    const handleMouseEnter = () => {
+      if (person.navTarget) {
+        const el = document.getElementById(person.navTarget);
+        if (el) el.classList.add('nav-glow-gold');
+      }
+    };
 
-  return (
-    <div className="org-node-wrapper">
-      <div
-        className="org-card"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        {hasImage ? (
-          <img
-            src={person.picture}
-            alt={person.designation}
-            className="avatar-image"
-          />
-        ) : (
-          <div className="avatar-placeholder">👤</div>
-        )}
-        <div className="org-designation">{person.designation}</div>
-        <div className="org-name">{person.name}</div>
+    const handleMouseLeave = () => {
+      if (person.navTarget) {
+        const el = document.getElementById(person.navTarget);
+        if (el) el.classList.remove('nav-glow-gold');
+      }
+    };
+
+    const hasImage = person.picture && person.picture.length > 0;
+    
+    // Some placeholders depending on role
+    let placeholder = '👤';
+    if (person.designation?.toLowerCase().includes('commander') || person.isTacticalOfficer) placeholder = '⭐';
+    if (person.designation?.toLowerCase().includes('first sergeant')) placeholder = '💂';
+
+    return (
+      <div className="org-node-wrapper" style={customStyle.wrapper}>
+        <div
+          className={`org-card ${person.isTacticalOfficer ? 'no-hover-routing' : ''}`}
+          style={customStyle.card}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          onClick={() => handleCardClick(person)}
+        >
+          {hasImage ? (
+            <img
+              src={person.picture}
+              alt={person.designation}
+              className="avatar-image"
+              style={customStyle.avatar}
+            />
+          ) : (
+            <div className="avatar-placeholder" style={customStyle.placeholder}>
+              {placeholder}
+            </div>
+          )}
+          <div className="org-designation">{person.designation}</div>
+          <div className="org-name" style={customStyle.name}>{person.name}</div>
+        </div>
       </div>
-    </div>
-  );
-}
-
-export default function OrgChart({ cmdr, firstSgt, exo, sStaff, specialStaff, platoonLeaders }) {
-  const hasCmdrImage = cmdr && cmdr.picture && cmdr.picture.length > 0;
-  const hasFirstSgtImage = firstSgt && firstSgt.picture && firstSgt.picture.length > 0;
-  const hasExoImage = exo && exo.picture && exo.picture.length > 0;
+    );
+  };
 
   return (
     <div className="org-chart">
 
+      {/* LEVEL 0: Tactical Officer */}
+      {tacticalOfficer && (
+        <div className="org-tier">
+          <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'center' }}>
+            <PersonCard 
+               person={tacticalOfficer} 
+               customStyle={{
+                 card: { borderColor: 'var(--accent-gold)', borderWidth: '2px', background: 'var(--bg-tertiary)', color: 'white' },
+                 placeholder: { backgroundColor: 'var(--accent-gold)', color: 'white', borderColor: 'var(--accent-gold)' }
+               }} 
+            />
+          </div>
+          <div className="org-connector-down"></div>
+        </div>
+      )}
+
       {/* LEVEL 1: Commander & First Sgt */}
       {cmdr && (
         <div className="org-tier">
-          <div className="command-tier">
+          {/* Use flex to center the CMDR. The First Sgt will be absolutely positioned off to the side so CMDR stays perfectly centered. */}
+          <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
+            
             <div style={{ position: 'relative', zIndex: 2 }}>
-              <div className="org-card" style={{ borderColor: 'var(--text-primary)', borderWidth: '2px' }}>
-                {hasCmdrImage ? (
-                  <img src={cmdr.picture} alt={cmdr.designation} className="avatar-image" style={{ borderColor: 'var(--text-primary)' }} />
-                ) : (
-                  <div className="avatar-placeholder" style={{ backgroundColor: 'var(--text-primary)', color: 'white' }}>⭐</div>
-                )}
-                <div className="org-designation">{cmdr.designation}</div>
-                <div className="org-name">{cmdr.name}</div>
-              </div>
+              <PersonCard 
+                person={cmdr}
+                customStyle={{
+                  card: { borderColor: 'var(--text-primary)', borderWidth: '2px' },
+                  placeholder: { backgroundColor: 'var(--text-primary)', color: 'white', borderColor: 'var(--text-primary)' },
+                  wrapper: { position: 'relative' } // Remove the top line pseudo-element if needed, but it's fine
+                }}
+              />
+
+              {/* First Sergeant attached to the side */}
+              {firstSgt && (
+                <>
+                  <div style={{
+                    position: 'absolute',
+                    top: '50px',
+                    left: '100%',
+                    width: '3rem',
+                    height: '2px',
+                    backgroundColor: 'var(--border-color)',
+                    zIndex: 0
+                  }}></div>
+
+                  <div style={{ 
+                    position: 'absolute', 
+                    left: 'calc(100% + 3rem)', 
+                    top: '20px',
+                    zIndex: 2 
+                  }}>
+                    <PersonCard 
+                      person={firstSgt}
+                      customStyle={{
+                        card: { width: '220px' },
+                        avatar: { width: '60px', height: '60px' },
+                        placeholder: { width: '60px', height: '60px', fontSize: '1.5rem' },
+                        name: { fontSize: '0.8rem' },
+                        wrapper: { position: 'relative' } 
+                      }}
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
-            {firstSgt && (
-              <>
-                <div className="command-attached-line"></div>
-                <div style={{ position: 'relative', zIndex: 2, marginTop: '20px' }}>
-                  <div className="org-card" style={{ width: '220px' }}>
-                    {hasFirstSgtImage ? (
-                      <img src={firstSgt.picture} alt={firstSgt.designation} className="avatar-image" style={{ width: '50px', height: '50px' }} />
-                    ) : (
-                      <div className="avatar-placeholder" style={{ width: '50px', height: '50px', fontSize: '1.2rem' }}>💂</div>
-                    )}
-                    <div className="org-designation">{firstSgt.designation}</div>
-                    <div className="org-name" style={{ fontSize: '0.8rem' }}>{firstSgt.name}</div>
-                  </div>
-                </div>
-              </>
-            )}
           </div>
           <div className="org-connector-down"></div>
         </div>
@@ -90,14 +144,8 @@ export default function OrgChart({ cmdr, firstSgt, exo, sStaff, specialStaff, pl
       {/* LEVEL 2: EX-O */}
       {exo && (
         <div className="org-tier">
-          <div className="org-card" style={{ zIndex: 2 }}>
-            {hasExoImage ? (
-              <img src={exo.picture} alt={exo.designation} className="avatar-image" />
-            ) : (
-              <div className="avatar-placeholder">👤</div>
-            )}
-            <div className="org-designation">{exo.designation}</div>
-            <div className="org-name">{exo.name}</div>
+          <div style={{ display: 'flex', justifyContent: 'center', zIndex: 2 }}>
+            <PersonCard person={exo} />
           </div>
           {sStaff.length > 0 && <div className="org-connector-down"></div>}
         </div>
