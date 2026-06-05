@@ -6,7 +6,7 @@ export default function OrgChart({ tacticalOfficer, cmdr, firstSgt, exo, sStaff,
   const router = useRouter();
 
   const handleCardClick = (person) => {
-    if (!person || person.isTacticalOfficer) return;
+    if (!person) return;
     
     // We navigate to /roster with the person's name as the 'soi' search param.
     // The SOIGenerator will pick this up and auto-search.
@@ -42,7 +42,7 @@ export default function OrgChart({ tacticalOfficer, cmdr, firstSgt, exo, sStaff,
     return (
       <div className="org-node-wrapper" style={customStyle.wrapper}>
         <div
-          className={`org-card ${person.isTacticalOfficer ? 'no-hover-routing' : ''}`}
+          className="org-card"
           style={customStyle.card}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}

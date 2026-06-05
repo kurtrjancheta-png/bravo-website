@@ -149,7 +149,9 @@ export default function SOIGenerator({ soiData }) {
             </div>
             <div>
               <div style={{ color: 'var(--accent-gold)', fontWeight: 800, letterSpacing: '0.1em', marginBottom: '0.25rem' }}>
-                {formatClass(getField(selectedCadet, 'CLASS'))} CLASS CADET
+                {formatClass(getField(selectedCadet, 'CLASS')) === 'OFFICER' 
+                  ? 'TACTICAL OFFICER'
+                  : `${formatClass(getField(selectedCadet, 'CLASS'))} CLASS CADET`}
               </div>
               <h2 style={{ fontSize: '2.5rem', margin: 0, textTransform: 'uppercase' }}>
                 {getField(selectedCadet, 'FIRST NAME')} {getField(selectedCadet, 'MIDDLE NAME')} {getField(selectedCadet, 'SURNAME')}
@@ -206,8 +208,18 @@ export default function SOIGenerator({ soiData }) {
               <SoiField label="Emergency No." value={getField(selectedCadet, 'CONTACT NR')} />
               <SoiField label="Address" value={getField(selectedCadet, 'ADDRESS')} />
             </div>
-
           </div>
+
+          {/* Optional Summary for Officers / Special SOIs */}
+          {getField(selectedCadet, 'SUMMARY') !== 'N/A' && (
+            <div style={{ padding: '0 2rem 2rem 2rem' }}>
+               <div className="soi-section" style={{ background: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '8px' }}>
+                 <h4 style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem', color: 'var(--accent-gold)' }}>MILITARY PROFILE & SUMMARY</h4>
+                 <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6', color: 'var(--text-primary)' }} dangerouslySetInnerHTML={{ __html: getField(selectedCadet, 'SUMMARY') }} />
+               </div>
+            </div>
+          )}
+
         </div>
       )}
     </div>
