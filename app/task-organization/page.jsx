@@ -1,5 +1,6 @@
-import { getSheetData, driveUrlToImage } from '../../lib/googleSheets';
+import { getSheetData } from '../../lib/googleSheets';
 import OrgChart from './OrgChart';
+import { getCadetImageUrl } from '../../lib/imageMatcher';
 
 const TASK_ORG_SHEET_ID = '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
 const SHEET_NAME = process.env.TASK_ORG_SHEET_NAME || 'TASK ORGANIZATION';
@@ -67,9 +68,6 @@ export default async function TaskOrganization() {
     const values = Object.values(row);
     const designationStr = (typeof values[0] === 'string' ? values[0] : '').trim();
     const nameStr = (typeof values[1] === 'string' ? values[1] : '').trim();
-    const pictureKey = Object.keys(row).find(k => k.toLowerCase().includes('picture'));
-    const rawPictureUrl = pictureKey ? (typeof row[pictureKey] === 'string' ? row[pictureKey].trim() : '') : '';
-    const pictureUrl = driveUrlToImage(rawPictureUrl);
     const desLower = designationStr.toLowerCase();
 
     if (!desLower || !nameStr) continue;
@@ -84,7 +82,7 @@ export default async function TaskOrganization() {
     ) {
       // Exception: First Sergeant is specifically requested
       if (desLower === 'first sergeant') {
-        firstSgt = { designation: designationStr, name: nameStr, navTarget: null, picture: pictureUrl };
+        firstSgt = { designation: designationStr, name: nameStr, navTarget: null, picture: getCadetImageUrl(null, null, nameStr) || '' };
       }
       continue;
     }
@@ -93,7 +91,7 @@ export default async function TaskOrganization() {
       designation: designationStr,
       name: nameStr,
       navTarget: getNavTarget(desLower),
-      picture: pictureUrl,
+      picture: getCadetImageUrl(null, null, nameStr) || '',
     };
 
     if (desLower.includes('company commander')) {
