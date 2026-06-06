@@ -127,7 +127,8 @@ export default async function RosterPage() {
       gender: values[6] || '',
       coy: values[7] || '',
       bos: values[8] || '', // Branch of Service
-      fullName: values[9] || name
+      fullName: values[9] || name,
+      picture: getCadetImageUrl(values[4] || '', values[2] || '', values[9] || name) || ''
     };
 
     if (i >= 0 && i <= 29) {
@@ -152,7 +153,7 @@ export default async function RosterPage() {
       </Suspense>
 
       {/* Disposition Dashboard */}
-      <DispositionDashboard dispositionData={dispositionRows} attachmentData={parsedAttachments} />
+      <DispositionDashboard dispositionData={dispositionRows} attachmentData={parsedAttachments} rosterData={[...class1, ...class2, ...class3]} />
 
       {/* Roster Sections */}
       <div className="roster-sections" style={{ marginTop: '3rem' }}>

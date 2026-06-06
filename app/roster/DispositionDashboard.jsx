@@ -12,7 +12,7 @@ const INEFFECTIVE_COLORS = [
   '#b71c1c', '#c62828', '#d32f2f', '#e53935', '#f44336', '#ef5350', '#e57373', '#ff8a80'
 ];
 
-export default function DispositionDashboard({ dispositionData, attachmentData }) {
+export default function DispositionDashboard({ dispositionData, attachmentData, rosterData = [] }) {
   const [selectedDetails, setSelectedDetails] = useState(null);
 
   if (!dispositionData || dispositionData.length === 0) return null;
@@ -136,7 +136,8 @@ export default function DispositionDashboard({ dispositionData, attachmentData }
       {selectedDetails && (
         <AttachmentDetailsView 
           details={selectedDetails} 
-          attachmentData={attachmentData} 
+          attachmentData={attachmentData}
+          rosterData={rosterData}
           onClose={() => setSelectedDetails(null)} 
         />
       )}
@@ -258,11 +259,37 @@ function ClassPieChart({ title, className, data, total, onSliceClick, selectedDe
   );
 }
 
-function AttachmentDetailsView({ details, attachmentData, onClose }) {
+function AttachmentDetailsView({ details, attachmentData, rosterData, onClose }) {
   if (!attachmentData) return null;
 
-  // Filter attachmentData by the clicked class and disposition
-  const filtered = attachmentData.filter(a => a.class === details.className && a.disposition === details.label);
+  let filtered = [];
+
+  // If viewing FULL DUTY, we find cadets in rosterData NOT present in attachmentData
+  if (details.label === 'FULL DUTY') {
+    const classRoster = rosterData.filter(c => c.class === details.className);
+    const attachedCadets = attachmentData
+      .filter(a => a.class === details.className)
+      .map(a => a.name.toUpperCase());
+    
+    // Find cadets NOT attached
+    const fullDutyCadets = classRoster.filter(c => {
+       const ln = (c.lastName || '').toUpperCase();
+       if (!ln) return false;
+       return !attachedCadets.some(ac => ac.includes(ln) || ln.includes(ac));
+    });
+
+    filtered = fullDutyCadets.map(c => ({
+       name: `${c.lastName}, ${c.firstName}`,
+       class: c.class,
+       disposition: 'FULL DUTY',
+       reason: 'Present and Accounted For',
+       picture: c.picture,
+       pltn: c.coy // Map company/pltn if needed
+    }));
+  } else {
+    // Filter attachmentData by the clicked class and disposition
+    filtered = attachmentData.filter(a => a.class === details.className && a.disposition === details.label);
+  }
 
   return (
     <div style={{ 
