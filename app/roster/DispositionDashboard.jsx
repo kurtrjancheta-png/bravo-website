@@ -290,12 +290,11 @@ function AttachmentDetailsView({ details, attachmentData, rosterData, onClose })
     });
 
     filtered = fullDutyCadets.map(c => ({
-       name: `${c.lastName}, ${c.firstName}`,
+       name: c.lastName ? c.lastName : 'UNKNOWN',
        class: c.class,
        disposition: 'FULL DUTY',
-       reason: 'Present and Accounted For',
-       picture: c.picture,
-       pltn: c.coy // Map company/pltn if needed
+       reason: 'Effective Status',
+       picture: c.picture
     }));
   } else {
     // Filter attachmentData by the clicked class and disposition
@@ -375,7 +374,7 @@ function AttachmentDetailsView({ details, attachmentData, rosterData, onClose })
                </div>
 
                <div style={{ flex: 1, minWidth: 0 }}>
-                 <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '0.02em' }}>{cadet.name}</div>
+                 <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '0.02em' }}>{cadet.name.split(',')[0].trim()}</div>
                  <div style={{ fontSize: '0.9rem', color: details.color, fontWeight: 700, marginTop: '0.25rem', lineHeight: 1.3 }}>{cadet.reason || 'No Reason Specified'}</div>
                  
                  {(cadet.dateStarted || cadet.dateEnd || cadet.pltn) && (
