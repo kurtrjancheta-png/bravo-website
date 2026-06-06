@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // Green gradients for Effective
 const EFFECTIVE_COLORS = [
@@ -260,6 +260,17 @@ function ClassPieChart({ title, className, data, total, onSliceClick, selectedDe
 }
 
 function AttachmentDetailsView({ details, attachmentData, rosterData, onClose }) {
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      // Small timeout ensures the DOM has fully rendered the expanded section before scrolling
+      setTimeout(() => {
+        containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+    }
+  }, [details]);
+
   if (!attachmentData) return null;
 
   let filtered = [];
@@ -292,7 +303,9 @@ function AttachmentDetailsView({ details, attachmentData, rosterData, onClose })
   }
 
   return (
-    <div style={{ 
+    <div 
+      ref={containerRef}
+      style={{ 
       marginTop: '3rem', 
       padding: '2rem', 
       background: 'rgba(17, 25, 40, 0.75)', 
