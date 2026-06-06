@@ -127,7 +127,7 @@ export default function ExoPunishmentClient({ cadets }) {
                        <div 
                          style={{ 
                            height: '100%', 
-                           width: \`\${demeritPercentage}%\`, 
+                           width: `${demeritPercentage}%`, 
                            background: healthColor,
                            borderRadius: '6px',
                            transition: 'width 0.5s ease',
@@ -154,7 +154,7 @@ export default function ExoPunishmentClient({ cadets }) {
                      <div 
                        style={{ 
                          height: '100%', 
-                         width: \`\${tourPercentage}%\`, 
+                         width: `${tourPercentage}%`, 
                          background: 'linear-gradient(90deg, #10b981, #34d399)',
                          borderRadius: '6px',
                          transition: 'width 0.5s ease'
@@ -185,7 +185,7 @@ export default function ExoPunishmentClient({ cadets }) {
                          <div 
                            style={{ 
                              height: '100%', 
-                             width: \`\${confinement.percentage}%\`, 
+                             width: `${confinement.percentage}%`, 
                              background: 'linear-gradient(90deg, #10b981, #34d399)',
                              borderRadius: '6px',
                              transition: 'width 0.5s ease'
@@ -201,13 +201,13 @@ export default function ExoPunishmentClient({ cadets }) {
         })}
       </div>
       
-      <style dangerouslySetInnerHTML={{__html: \`
+      <style dangerouslySetInnerHTML={{__html: `
         @keyframes pulse-red {
           0% { opacity: 1; box-shadow: 0 0 15px #ef4444; }
           50% { opacity: 0.6; box-shadow: 0 0 5px #ef4444; }
           100% { opacity: 1; box-shadow: 0 0 15px #ef4444; }
         }
-      \`}} />
+      `}} />
     </div>
   );
 }
