@@ -307,25 +307,24 @@ function AttachmentDetailsView({ details, attachmentData, rosterData, onClose })
       style={{ 
       marginTop: '3rem', 
       padding: '2rem', 
-      background: 'rgba(17, 25, 40, 0.75)', 
-      backdropFilter: 'blur(16px)',
+      background: 'var(--bg-primary, white)', 
       borderRadius: '16px', 
-      border: `2px solid ${details.color}`, 
+      border: `1px solid var(--border-color, #e2e8f0)`, 
       animation: 'fadeIn 0.3s ease-out', 
       position: 'relative',
-      boxShadow: `0 8px 32px 0 rgba(0, 0, 0, 0.3)`
+      boxShadow: `0 8px 32px 0 rgba(0, 0, 0, 0.08)`
     }}>
       <button 
         onClick={onClose} 
-        style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', transition: 'background 0.2s' }}
-        onMouseEnter={(e) => e.currentTarget.style.background='rgba(255,255,255,0.1)'}
-        onMouseLeave={(e) => e.currentTarget.style.background='transparent'}
+        style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'var(--bg-secondary, #f4f5f7)', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', transition: 'background 0.2s' }}
+        onMouseEnter={(e) => e.currentTarget.style.background='var(--border-color, #e2e8f0)'}
+        onMouseLeave={(e) => e.currentTarget.style.background='var(--bg-secondary, #f4f5f7)'}
       >
         &times;
       </button>
       
       <div style={{ marginBottom: '2.5rem', textAlign: 'center' }}>
-        <h3 style={{ color: details.color, margin: 0, fontSize: '1.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <h3 style={{ color: 'var(--accent-gold, #d4af37)', margin: 0, fontSize: '1.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           {details.className} - {details.label}
         </h3>
         <p style={{ color: 'var(--text-secondary)', margin: '0.5rem 0 0 0', fontSize: '1.1rem' }}>
@@ -343,8 +342,8 @@ function AttachmentDetailsView({ details, attachmentData, rosterData, onClose })
             <div 
               key={i} 
               style={{ 
-                background: 'rgba(255, 255, 255, 0.04)', 
-                border: '1px solid rgba(255, 255, 255, 0.1)', 
+                background: 'var(--bg-secondary, #f4f5f7)', 
+                border: '1px solid var(--border-color, #e2e8f0)', 
                 borderRadius: '12px', 
                 padding: '1.5rem', 
                 display: 'flex', 
@@ -355,13 +354,13 @@ function AttachmentDetailsView({ details, attachmentData, rosterData, onClose })
               }} 
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                e.currentTarget.style.background = 'var(--bg-primary, white)';
                 e.currentTarget.style.borderColor = details.color;
               }} 
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                e.currentTarget.style.background = 'var(--bg-secondary, #f4f5f7)';
+                e.currentTarget.style.borderColor = 'var(--border-color, #e2e8f0)';
               }}
             >
                
@@ -375,10 +374,10 @@ function AttachmentDetailsView({ details, attachmentData, rosterData, onClose })
 
                <div style={{ flex: 1, minWidth: 0 }}>
                  <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '0.02em' }}>{cadet.name.split(',')[0].trim()}</div>
-                 <div style={{ fontSize: '0.9rem', color: details.color, fontWeight: 700, marginTop: '0.25rem', lineHeight: 1.3 }}>{cadet.reason || 'No Reason Specified'}</div>
+                 <div style={{ fontSize: '0.9rem', color: cadet.reason === 'Effective Status' ? '#4ade80' : details.color, fontWeight: 700, marginTop: '0.25rem', lineHeight: 1.3 }}>{cadet.reason || 'No Reason Specified'}</div>
                  
                  {(cadet.dateStarted || cadet.dateEnd || cadet.pltn) && (
-                   <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.2rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '0.5rem' }}>
+                   <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.2rem', borderTop: '1px solid var(--border-color, #e2e8f0)', paddingTop: '0.5rem' }}>
                      {cadet.pltn && <span><strong>PLTN:</strong> {cadet.pltn}</span>}
                      {cadet.dateStarted && <span><strong>Start:</strong> {cadet.dateStarted}</span>}
                      {cadet.dateEnd && <span><strong>End:</strong> {cadet.dateEnd}</span>}
