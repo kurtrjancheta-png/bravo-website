@@ -9,10 +9,11 @@ const SHEET_ID = '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
 export const revalidate = 30;
 
 export default async function RosterPage() {
-  const [rosterRows, rawSoiRows, dispositionRows] = await Promise.all([
+  const [rosterRows, rawSoiRows, dispositionRows, rawAttachmentRows] = await Promise.all([
     getSheetData(SHEET_ID, 'ROSTER'),
     getSheetData(SHEET_ID, 'SOI'),
-    getSheetData(SHEET_ID, 'DISPOSITION')
+    getSheetData(SHEET_ID, 'DISPOSITION'),
+    getSheetData(SHEET_ID, 'ATTACHMENT')
   ]);
 
   const olavidezSOI = {
@@ -62,6 +63,41 @@ export default async function RosterPage() {
   });
 
   const soiRows = [olavidezSOI, ...mappedSoiRows];
+
+  // Parse unstructured ATTACHMENT data into mapped profiles
+  let currentDisposition = null;
+  const parsedAttachments = [];
+
+  rawAttachmentRows.forEach(row => {
+    const vals = Object.values(row).map(v => typeof v === 'string' ? v.trim() : String(v || ''));
+    
+    // Check if the row looks like a category header (e.g. "FAD (3)", "RESTRICTED")
+    if (vals[0] && vals[0] !== 'ATTACHMENT' && !vals[0].includes('AS OF') && vals[0] !== 'NO.' && parseInt(vals[0]).toString() !== vals[0]) {
+      if (vals[1] === '' || vals[1] === 'null' || !vals[1] || vals[1] === 'undefined') {
+        currentDisposition = vals[0].replace(/\s*\(\d+\)$/, '').trim();
+      }
+    }
+
+    const cadetClass = vals[1];
+    const name = vals[2];
+    const pltn = vals[3];
+    const reason = vals[5];
+    const dateStarted = vals[8];
+    const dateEnd = vals[11];
+
+    if (name && cadetClass && cadetClass.includes('CL') && name !== 'NAME') {
+      parsedAttachments.push({
+        disposition: currentDisposition,
+        class: cadetClass,
+        name: name,
+        pltn: pltn,
+        reason: reason,
+        dateStarted: dateStarted,
+        dateEnd: dateEnd,
+        picture: getCadetImageUrl(name, '', name) || ''
+      });
+    }
+  });
 
   // Group by class based on requested row indices.
   // The first data row (row 2 in sheet) is index 0 in the returned array.
@@ -116,7 +152,7 @@ export default async function RosterPage() {
       </Suspense>
 
       {/* Disposition Dashboard */}
-      <DispositionDashboard dispositionData={dispositionRows} />
+      <DispositionDashboard dispositionData={dispositionRows} attachmentData={parsedAttachments} />
 
       {/* Roster Sections */}
       <div className="roster-sections" style={{ marginTop: '3rem' }}>

@@ -12,7 +12,9 @@ const INEFFECTIVE_COLORS = [
   '#b71c1c', '#c62828', '#d32f2f', '#e53935', '#f44336', '#ef5350', '#e57373', '#ff8a80'
 ];
 
-export default function DispositionDashboard({ dispositionData }) {
+export default function DispositionDashboard({ dispositionData, attachmentData }) {
+  const [selectedDetails, setSelectedDetails] = useState(null);
+
   if (!dispositionData || dispositionData.length === 0) return null;
 
   const classes = {
@@ -96,6 +98,14 @@ export default function DispositionDashboard({ dispositionData }) {
     }
   });
 
+  const handleSliceClick = (slice, className) => {
+    if (selectedDetails && selectedDetails.className === className && selectedDetails.label === slice.label) {
+      setSelectedDetails(null);
+    } else {
+      setSelectedDetails({ className, ...slice });
+    }
+  };
+
   return (
     <div className="disposition-dashboard" style={{ marginBottom: '3rem' }}>
       <h2 style={{ 
@@ -111,16 +121,33 @@ export default function DispositionDashboard({ dispositionData }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
         {Object.entries(classes).map(([className, classInfo]) => (
-          <ClassPieChart key={className} title={`${className} CADETS`} data={classInfo.data} total={classInfo.total} />
+          <ClassPieChart 
+            key={className} 
+            title={`${className} CADETS`} 
+            className={className}
+            data={classInfo.data} 
+            total={classInfo.total} 
+            onSliceClick={handleSliceClick}
+            selectedDetails={selectedDetails}
+          />
         ))}
       </div>
+
+      {selectedDetails && (
+        <AttachmentDetailsView 
+          details={selectedDetails} 
+          attachmentData={attachmentData} 
+          onClose={() => setSelectedDetails(null)} 
+        />
+      )}
     </div>
   );
 }
 
-function ClassPieChart({ title, data, total }) {
+function ClassPieChart({ title, className, data, total, onSliceClick, selectedDetails }) {
   const [hoveredSlice, setHoveredSlice] = useState(null);
-  const [selectedSlice, setSelectedSlice] = useState(null);
+
+  const selectedSlice = selectedDetails && selectedDetails.className === className ? selectedDetails : null;
 
   if (total === 0) {
     return (
@@ -143,11 +170,7 @@ function ClassPieChart({ title, data, total }) {
     if (isHover) {
        setHoveredSlice(slice);
     } else {
-       if (selectedSlice && selectedSlice.label === slice.label) {
-          setSelectedSlice(null);
-       } else {
-          setSelectedSlice(slice);
-       }
+       onSliceClick(slice, className);
     }
   };
 
@@ -231,6 +254,103 @@ function ClassPieChart({ title, data, total }) {
         )}
       </div>
 
+    </div>
+  );
+}
+
+function AttachmentDetailsView({ details, attachmentData, onClose }) {
+  if (!attachmentData) return null;
+
+  // Filter attachmentData by the clicked class and disposition
+  const filtered = attachmentData.filter(a => a.class === details.className && a.disposition === details.label);
+
+  return (
+    <div style={{ 
+      marginTop: '3rem', 
+      padding: '2rem', 
+      background: 'rgba(17, 25, 40, 0.75)', 
+      backdropFilter: 'blur(16px)',
+      borderRadius: '16px', 
+      border: `2px solid ${details.color}`, 
+      animation: 'fadeIn 0.3s ease-out', 
+      position: 'relative',
+      boxShadow: `0 8px 32px 0 rgba(0, 0, 0, 0.3)`
+    }}>
+      <button 
+        onClick={onClose} 
+        style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', transition: 'background 0.2s' }}
+        onMouseEnter={(e) => e.currentTarget.style.background='rgba(255,255,255,0.1)'}
+        onMouseLeave={(e) => e.currentTarget.style.background='transparent'}
+      >
+        &times;
+      </button>
+      
+      <div style={{ marginBottom: '2.5rem', textAlign: 'center' }}>
+        <h3 style={{ color: details.color, margin: 0, fontSize: '1.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          {details.className} - {details.label}
+        </h3>
+        <p style={{ color: 'var(--text-secondary)', margin: '0.5rem 0 0 0', fontSize: '1.1rem' }}>
+          {filtered.length} Cadet{filtered.length !== 1 ? 's' : ''} Found
+        </p>
+      </div>
+
+      {filtered.length === 0 ? (
+         <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '2rem', background: 'rgba(0,0,0,0.2)', borderRadius: '12px' }}>
+           No individual personnel records found for this disposition.
+         </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+          {filtered.map((cadet, i) => (
+            <div 
+              key={i} 
+              style={{ 
+                background: 'rgba(255, 255, 255, 0.04)', 
+                border: '1px solid rgba(255, 255, 255, 0.1)', 
+                borderRadius: '12px', 
+                padding: '1.5rem', 
+                display: 'flex', 
+                gap: '1.25rem', 
+                alignItems: 'center', 
+                transition: 'transform 0.2s, background 0.2s, border-color 0.2s', 
+                cursor: 'default' 
+              }} 
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                e.currentTarget.style.borderColor = details.color;
+              }} 
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+              }}
+            >
+               
+               <div style={{ width: '72px', height: '72px', borderRadius: '50%', overflow: 'hidden', background: '#2d3748', flexShrink: 0, border: `2px solid ${details.color}`, boxShadow: '0 4px 10px rgba(0,0,0,0.2)' }}>
+                 {cadet.picture ? (
+                    <img src={cadet.picture} alt={cadet.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                 ) : (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem', color: '#a0aec0', fontWeight: 'bold' }}>{cadet.name.charAt(0)}</div>
+                 )}
+               </div>
+
+               <div style={{ flex: 1, minWidth: 0 }}>
+                 <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '0.02em' }}>{cadet.name}</div>
+                 <div style={{ fontSize: '0.9rem', color: details.color, fontWeight: 700, marginTop: '0.25rem', lineHeight: 1.3 }}>{cadet.reason || 'No Reason Specified'}</div>
+                 
+                 {(cadet.dateStarted || cadet.dateEnd || cadet.pltn) && (
+                   <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.2rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '0.5rem' }}>
+                     {cadet.pltn && <span><strong>PLTN:</strong> {cadet.pltn}</span>}
+                     {cadet.dateStarted && <span><strong>Start:</strong> {cadet.dateStarted}</span>}
+                     {cadet.dateEnd && <span><strong>End:</strong> {cadet.dateEnd}</span>}
+                   </div>
+                 )}
+               </div>
+
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
