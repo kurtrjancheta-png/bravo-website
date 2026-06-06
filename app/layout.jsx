@@ -38,7 +38,9 @@ export default function RootLayout({ children }) {
               <Link href="/roster">
                 <div className="nav-item"><span style={{ marginRight: '10px' }}>📇</span> Company Roster</div>
               </Link>
-              <div className="nav-item"><span style={{ marginRight: '10px' }}>📋</span> EXO Punishment List</div>
+              <Link href="/exo-punishment">
+                <div className="nav-item"><span style={{ marginRight: '10px' }}>📋</span> EXO Punishment List</div>
+              </Link>
             </div>
 
             <div className="nav-section">
