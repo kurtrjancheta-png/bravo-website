@@ -1,7 +1,5 @@
 'use client';
 
-import React from 'react';
-
 const getMaxDemerits = (cadetClass) => {
   const upperClass = String(cadetClass).toUpperCase();
   if (upperClass === '1CL' || ['MAJ', 'CAPT', 'CPT', '1LT', '2LT', 'ENS'].includes(upperClass)) return 88.2;
