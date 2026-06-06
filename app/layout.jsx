@@ -27,19 +27,17 @@ export default function RootLayout({ children }) {
 
             <div className="nav-section">
               <div className="nav-label">Main Navigation</div>
-              <Link href="/">
-                <div className="nav-item">
-                  <span style={{ marginRight: '10px' }}>🏠</span> Home Overview
-                </div>
+              <Link href="/" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+                <span style={{ marginRight: '10px' }}>🏠</span> Home Overview
               </Link>
               <div className="nav-item"><span style={{ marginRight: '10px' }}>⭐</span> Company Staff</div>
               <div className="nav-item"><span style={{ marginRight: '10px' }}>📅</span> Event Calendar</div>
               <div className="nav-item"><span style={{ marginRight: '10px' }}>📱</span> Smartphone Rack</div>
-              <Link href="/roster">
-                <div className="nav-item"><span style={{ marginRight: '10px' }}>📇</span> Company Roster</div>
+              <Link href="/roster" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+                <span style={{ marginRight: '10px' }}>📇</span> Company Roster
               </Link>
-              <Link href="/exo-punishment">
-                <div className="nav-item"><span style={{ marginRight: '10px' }}>📋</span> EXO Punishment List</div>
+              <Link href="/exo-punishment" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+                <span style={{ marginRight: '10px' }}>📋</span> EXO Punishment List
               </Link>
             </div>
 
@@ -52,8 +50,8 @@ export default function RootLayout({ children }) {
                   <span className="dropdown-arrow">▼</span>
                 </summary>
                 <div style={{ marginLeft: '1.5rem', borderLeft: '1px solid var(--border-color)', paddingLeft: '0.5rem', marginTop: '0.25rem', marginBottom: '0.5rem' }}>
-                  <Link href="/task-organization">
-                    <div className="nav-item" style={{ fontSize: '0.85rem', padding: '0.4rem 1rem' }}>Task Organization</div>
+                  <Link href="/task-organization" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                    Task Organization
                   </Link>
                 </div>
               </details>
@@ -72,8 +70,8 @@ export default function RootLayout({ children }) {
                   <span className="dropdown-arrow">▼</span>
                 </summary>
                 <div style={{ marginLeft: '1.5rem', borderLeft: '1px solid var(--border-color)', paddingLeft: '0.5rem', marginTop: '0.25rem', marginBottom: '0.5rem' }}>
-                  <Link href="/pft-tracker">
-                    <div className="nav-item" style={{ fontSize: '0.85rem', padding: '0.4rem 1rem' }}>PFT Tracker</div>
+                  <Link href="/pft-tracker" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                    PFT Tracker
                   </Link>
                 </div>
               </details>
