@@ -3,9 +3,10 @@
 import React from 'react';
 
 const getMaxDemerits = (cadetClass) => {
-  if (cadetClass === '1CL') return 88.2;
-  if (cadetClass === '2CL') return 102.9;
-  if (cadetClass === '3CL') return 117.6;
+  const upperClass = String(cadetClass).toUpperCase();
+  if (upperClass === '1CL' || ['MAJ', 'CAPT', 'CPT', '1LT', '2LT', 'ENS'].includes(upperClass)) return 88.2;
+  if (upperClass === '2CL') return 102.9;
+  if (upperClass === '3CL') return 117.6;
   return null; // 4CL has no max yet
 };
 

@@ -11,9 +11,10 @@ export default async function ExoPunishmentPage() {
     // Looking for valid rows where the name is present
     if (!vals[2] || typeof vals[2] !== 'string' || vals[2].trim() === '') return null;
     
-    // We expect the Class to be something like "1CL", "2CL", "3CL", "4CL"
-    const cadetClass = String(vals[1]).trim();
-    if (!cadetClass.endsWith('CL')) return null;
+    // We expect the Class/Rank to be something like "1CL", "2CL", "3CL", "4CL" or an officer rank like "2LT"
+    let cadetClass = String(vals[1]).trim().toUpperCase();
+    const validOfficerRanks = ['MAJ', 'CAPT', 'CPT', '1LT', '2LT', 'ENS'];
+    if (!cadetClass.endsWith('CL') && !validOfficerRanks.includes(cadetClass)) return null;
 
     const name = String(vals[2]).trim();
     const offense = String(vals[3] || '').trim();
