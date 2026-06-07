@@ -141,6 +141,36 @@ export default function ExoPunishmentClient({ initialCadets }) {
             const currentMode = viewModes[cadet.name] || (activeOffenses.length > 0 ? 'active' : 'inactive');
             const displayedOffenses = currentMode === 'active' ? activeOffenses : inactiveOffenses;
 
+            let stackedConfTotal = 0;
+            let stackedConfServed = 0;
+            let earliestConfStart = null;
+            let latestConfEnd = null;
+
+            displayedOffenses.forEach(off => {
+              if (off.isConfined && off.confStart && off.confEnd) {
+                const stats = getConfinementStats(off.confStart, off.confEnd);
+                if (stats.total > 0) {
+                  stackedConfTotal += stats.total;
+                  stackedConfServed += (stats.total - stats.remaining);
+                  
+                  const startObj = parseGoogleDate(off.confStart);
+                  const endObj = parseGoogleDate(off.confEnd);
+                  
+                  if (startObj && (!earliestConfStart || startObj < earliestConfStart)) earliestConfStart = startObj;
+                  if (endObj && (!latestConfEnd || endObj > latestConfEnd)) latestConfEnd = endObj;
+                }
+              }
+            });
+
+            const displayConfStats = {
+              total: stackedConfTotal,
+              remaining: stackedConfTotal - stackedConfServed,
+              served: stackedConfServed,
+              percentage: stackedConfTotal > 0 ? (stackedConfServed / stackedConfTotal) * 100 : 0,
+              startText: earliestConfStart ? earliestConfStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '-',
+              endText: latestConfEnd ? latestConfEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '-'
+            };
+
             return (
               <tr key={index} style={{ borderBottom: '1px solid rgba(128,128,128,0.2)', verticalAlign: 'top' }}>
                 
@@ -294,9 +324,9 @@ export default function ExoPunishmentClient({ initialCadets }) {
                 </td>
 
                 <td style={{ padding: '1.5rem 1rem' }}>
-                  {cadet.isConfined ? (
+                  {displayConfStats.total > 0 ? (
                     <div>
-                      {globalConfStats.total > 0 && globalConfStats.remaining === 0 ? (
+                      {displayConfStats.remaining === 0 ? (
                         <div style={{ display: 'inline-block', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.05em', border: '1px solid rgba(16,185,129,0.3)', marginBottom: '0.75rem' }}>
                           🔓 COMPLETED
                         </div>
@@ -306,27 +336,23 @@ export default function ExoPunishmentClient({ initialCadets }) {
                         </div>
                       )}
                       
-                      {globalConfStats.total > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', opacity: (globalConfStats.remaining === 0) ? 0.6 : 1 }}>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Days Served</div>
-                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
-                            <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '1.1rem' }}>{globalConfStats.total - globalConfStats.remaining}</span>
-                            <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>/ {globalConfStats.total}</span>
-                          </div>
-                          <div style={{ width: '100%', height: '6px', background: 'rgba(128,128,128,0.2)', borderRadius: '3px', overflow: 'hidden', margin: '0.25rem 0' }}>
-                            <div style={{ height: '100%', width: `${globalConfStats.percentage}%`, background: '#10b981', borderRadius: '3px' }} />
-                          </div>
-                          <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
-                            <span>{globalConfStats.startText}</span>
-                            <span>{globalConfStats.endText}</span>
-                          </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', opacity: (displayConfStats.remaining === 0) ? 0.6 : 1 }}>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Days Served</div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
+                          <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '1.1rem' }}>{displayConfStats.served}</span>
+                          <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>/ {displayConfStats.total}</span>
                         </div>
-                      )}
+                        <div style={{ width: '100%', height: '6px', background: 'rgba(128,128,128,0.2)', borderRadius: '3px', overflow: 'hidden', margin: '0.25rem 0' }}>
+                          <div style={{ height: '100%', width: `${displayConfStats.percentage}%`, background: '#10b981', borderRadius: '3px' }} />
+                        </div>
+                        <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
+                          <span>{displayConfStats.startText}</span>
+                          <span>{displayConfStats.endText}</span>
+                        </div>
+                      </div>
                     </div>
                   ) : (
-                    <div style={{ display: 'inline-block', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.05em' }}>
-                      🟢 NONE
-                    </div>
+                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', opacity: 0.6 }}>No Confinement</div>
                   )}
                 </td>
 
