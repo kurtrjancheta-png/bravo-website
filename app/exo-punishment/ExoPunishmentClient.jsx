@@ -133,19 +133,22 @@ export default function ExoPunishmentClient({ initialCadets }) {
 
                 {/* 3. DEMERITS HEALTH */}
                 <td style={{ padding: '1.5rem 1rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>Total</span>
-                    <span style={{ fontWeight: 800, color: healthColor }}>{cadet.totalDemerits.toFixed(1)} / {maxDemerits}</span>
-                  </div>
-                  <div style={{ width: '100%', height: '12px', background: 'rgba(128,128,128,0.2)', borderRadius: '6px', overflow: 'hidden', position: 'relative' }}>
-                    <div 
-                      style={{ 
-                        height: '100%', width: `${demeritPercentage}%`, background: healthColor, borderRadius: '6px',
-                        transition: 'width 0.5s ease',
-                        animation: isFlashing ? 'pulse-red 1.5s infinite' : 'none',
-                        boxShadow: isFlashing ? '0 0 10px #ef4444' : 'none'
-                      }} 
-                    />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Total Demerits</div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
+                      <span style={{ fontWeight: 800, color: healthColor, fontSize: '1.1rem' }}>{cadet.totalDemerits.toFixed(1)}</span>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>/ {maxDemerits}</span>
+                    </div>
+                    <div style={{ width: '100%', height: '8px', background: 'rgba(128,128,128,0.2)', borderRadius: '4px', overflow: 'hidden', position: 'relative', marginTop: '0.25rem' }}>
+                      <div 
+                        style={{ 
+                          height: '100%', width: `${demeritPercentage}%`, background: healthColor, borderRadius: '4px',
+                          transition: 'width 0.5s ease',
+                          animation: isFlashing ? 'pulse-red 1.5s infinite' : 'none',
+                          boxShadow: isFlashing ? '0 0 10px #ef4444' : 'none'
+                        }} 
+                      />
+                    </div>
                   </div>
                 </td>
 
@@ -153,23 +156,24 @@ export default function ExoPunishmentClient({ initialCadets }) {
                 <td style={{ padding: '1.5rem 1rem' }}>
                   {cadet.isConfined ? (
                     <div>
-                      <div style={{ display: 'inline-block', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.05em', border: '1px solid rgba(239,68,68,0.3)', marginBottom: '0.5rem' }}>
+                      <div style={{ display: 'inline-block', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.05em', border: '1px solid rgba(239,68,68,0.3)', marginBottom: '0.75rem' }}>
                         🔴 CONFINED
                       </div>
                       {confStats.total > 0 && (
-                        <>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem', fontSize: '0.75rem' }}>
-                            <span style={{ color: 'var(--text-secondary)' }}>Days Left</span>
-                            <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{confStats.remaining} / {confStats.total}</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Days Left</div>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
+                            <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '1.1rem' }}>{confStats.remaining}</span>
+                            <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>/ {confStats.total}</span>
                           </div>
-                          <div style={{ width: '100%', height: '6px', background: 'rgba(128,128,128,0.2)', borderRadius: '3px', overflow: 'hidden', marginBottom: '0.25rem' }}>
+                          <div style={{ width: '100%', height: '6px', background: 'rgba(128,128,128,0.2)', borderRadius: '3px', overflow: 'hidden', margin: '0.25rem 0' }}>
                             <div style={{ height: '100%', width: `${confStats.percentage}%`, background: '#10b981', borderRadius: '3px' }} />
                           </div>
-                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
+                          <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
                             <span>{confStats.startText}</span>
                             <span>{confStats.endText}</span>
                           </div>
-                        </>
+                        </div>
                       )}
                     </div>
                   ) : (
@@ -182,15 +186,22 @@ export default function ExoPunishmentClient({ initialCadets }) {
                 {/* 5. TOURING */}
                 <td style={{ padding: '1.5rem 1rem' }}>
                   {cadet.totalTour > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Remaining</span>
-                        <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '0.85rem' }}>{cadet.totalTourRemaining} / {cadet.totalTour}</span>
+                    cadet.totalTourRemaining <= 0 ? (
+                      <div style={{ display: 'inline-block', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.05em', border: '1px solid rgba(16,185,129,0.3)' }}>
+                        🟢 SERVED
                       </div>
-                      <div style={{ width: '100%', height: '8px', background: 'rgba(128,128,128,0.2)', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${tourPercentage}%`, background: '#10b981', borderRadius: '4px' }} />
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Remaining</div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
+                          <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '1.1rem' }}>{cadet.totalTourRemaining}</span>
+                          <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>/ {cadet.totalTour}</span>
+                        </div>
+                        <div style={{ width: '100%', height: '6px', background: 'rgba(128,128,128,0.2)', borderRadius: '3px', overflow: 'hidden', marginTop: '0.25rem' }}>
+                          <div style={{ height: '100%', width: `${tourPercentage}%`, background: '#10b981', borderRadius: '3px' }} />
+                        </div>
                       </div>
-                    </div>
+                    )
                   ) : (
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>No Tours</span>
                   )}
