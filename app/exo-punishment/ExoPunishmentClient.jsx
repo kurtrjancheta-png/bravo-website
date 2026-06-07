@@ -101,11 +101,14 @@ export default function ExoPunishmentClient({ initialCadets }) {
             const maxDemerits = getMaxDemerits(cadet.rank);
             const demeritPercentage = Math.min(100, Math.max(0, (cadet.totalDemerits / maxDemerits) * 100));
             
-            let healthColor = '#10b981';
-            if (demeritPercentage >= 40 && demeritPercentage < 60) healthColor = '#fbbf24';
-            if (demeritPercentage >= 60) healthColor = '#ef4444';
+            let healthColor = '#fbbf24'; // Yellow
+            if (demeritPercentage >= 40 && demeritPercentage < 75) healthColor = '#ef4444'; // Red
+            if (demeritPercentage >= 75 && demeritPercentage < 100) healthColor = '#ff0000'; // Glowing Red
+            if (demeritPercentage >= 100) healthColor = '#111827'; // Black
             
-            const isFlashing = demeritPercentage >= 60;
+            const isDramaticGlowing = demeritPercentage >= 75 && demeritPercentage < 100;
+            const isBlackOut = demeritPercentage >= 100;
+
             const globalConfStats = getConfinementStats(cadet.confinementStart, cadet.confinementEnd);
             
             const tourProgress = cadet.totalTour > 0 ? (cadet.totalTour - cadet.totalTourRemaining) : 0;
@@ -270,13 +273,14 @@ export default function ExoPunishmentClient({ initialCadets }) {
                       <span style={{ fontWeight: 800, color: healthColor, fontSize: '1.1rem' }}>{cadet.totalDemerits.toFixed(1)}</span>
                       <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>/ {maxDemerits}</span>
                     </div>
-                    <div style={{ width: '100%', height: '8px', background: 'rgba(128,128,128,0.2)', borderRadius: '4px', overflow: 'hidden', position: 'relative', marginTop: '0.25rem' }}>
+                    <div style={{ width: '100%', height: '8px', background: 'rgba(128,128,128,0.2)', borderRadius: '4px', position: 'relative', marginTop: '0.5rem' }}>
                       <div 
                         style={{ 
                           height: '100%', width: `${demeritPercentage}%`, background: healthColor, borderRadius: '4px',
                           transition: 'width 0.5s ease',
-                          animation: isFlashing ? 'pulse-red 1.5s infinite' : 'none',
-                          boxShadow: isFlashing ? '0 0 10px #ef4444' : 'none'
+                          animation: isDramaticGlowing ? 'dramatic-pulse-red 0.6s ease-in-out infinite alternate' : isBlackOut ? 'pulse-black 1.5s infinite' : 'none',
+                          boxShadow: isDramaticGlowing ? '0 0 10px #ff0000, 0 0 20px #ff0000' : isBlackOut ? '0 0 10px #111827' : 'none',
+                          zIndex: isDramaticGlowing ? 10 : 1
                         }} 
                       />
                     </div>
@@ -350,10 +354,14 @@ export default function ExoPunishmentClient({ initialCadets }) {
       </table>
 
       <style dangerouslySetInnerHTML={{__html: `
-        @keyframes pulse-red {
-          0% { opacity: 1; box-shadow: 0 0 15px #ef4444; }
-          50% { opacity: 0.6; box-shadow: 0 0 5px #ef4444; }
-          100% { opacity: 1; box-shadow: 0 0 15px #ef4444; }
+        @keyframes dramatic-pulse-red {
+          0% { opacity: 1; box-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000; transform: scaleY(1); }
+          100% { opacity: 0.8; box-shadow: 0 0 5px #ff0000, 0 0 10px #ef4444; transform: scaleY(1.2); }
+        }
+        @keyframes pulse-black {
+          0% { box-shadow: 0 0 15px #111827; }
+          50% { box-shadow: 0 0 5px #111827; opacity: 0.8; }
+          100% { box-shadow: 0 0 15px #111827; }
         }
         .custom-scrollbar::-webkit-scrollbar {
           width: 4px;
