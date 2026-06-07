@@ -11,7 +11,7 @@ export default async function ExoPunishmentPage() {
     return (
       <div className="page-container">
         <header className="page-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <h1>EXO Punishment List</h1>
+          <h1>F/SGT's Punishment Monitoring</h1>
           <p>Monitoring Dashboard for Cadet Punishments</p>
         </header>
         <ExoPunishmentClient initialCadets={[]} />
@@ -119,7 +119,7 @@ export default async function ExoPunishmentPage() {
   return (
     <div className="page-container">
       <header className="page-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <h1>EXO Punishment List</h1>
+        <h1>F/SGT's Punishment Monitoring</h1>
         <p>Monitoring Dashboard for Cadet Punishments</p>
         {updatedAsOf !== 'Unknown' && (
           <div style={{ marginTop: '0.5rem', background: 'rgba(255,255,255,0.1)', padding: '0.5rem 1rem', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)' }}>

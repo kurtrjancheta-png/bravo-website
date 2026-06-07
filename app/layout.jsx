@@ -37,7 +37,7 @@ export default function RootLayout({ children }) {
                 <span style={{ marginRight: '10px' }}>📇</span> Company Roster
               </Link>
               <Link href="/exo-punishment" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-                <span style={{ marginRight: '10px' }}>📋</span> EXO Punishment List
+                <span style={{ marginRight: '10px' }}>📋</span> F/SGT's Punishment Monitoring
               </Link>
             </div>
 
