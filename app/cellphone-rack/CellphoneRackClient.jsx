@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 export default function CellphoneRackClient({ initialData }) {
   const [filterClass, setFilterClass] = useState('All');
   const [activeContact, setActiveContact] = useState({});
+  const [activeSocial, setActiveSocial] = useState({});
 
   const classes = ['1', '2', '3', '4'];
   
@@ -57,9 +58,9 @@ export default function CellphoneRackClient({ initialData }) {
             
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
+              gridTemplateColumns: 'repeat(3, 180px)', 
               gap: '2.5rem',
-              justifyItems: 'center'
+              justifyContent: 'center'
             }}>
               {classCadets.map((cadet, i) => {
                 const isLoggedOut = cadet.status.toLowerCase() === 'logged out';
@@ -143,6 +144,35 @@ export default function CellphoneRackClient({ initialData }) {
                         </div>
                       )}
 
+                      {/* Social Notification Popup */}
+                      {activeSocial[cadet.name] && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '32px',
+                          left: '8px',
+                          right: '8px',
+                          background: 'rgba(255,255,255,0.95)',
+                          borderRadius: '12px',
+                          padding: '8px',
+                          zIndex: 20,
+                          boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          animation: 'slide-down 0.3s ease-out'
+                        }}>
+                          <div style={{ fontSize: '1rem' }}>📸</div>
+                          <div style={{ flex: 1, textAlign: 'left' }}>
+                            <div style={{ fontSize: '0.5rem', fontWeight: 800, color: '#666', textTransform: 'uppercase' }}>Social Account</div>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#000' }}>{cadet.ig}</div>
+                          </div>
+                          <div 
+                            style={{ fontSize: '0.7rem', cursor: 'pointer', padding: '4px', color: '#666', background: 'rgba(0,0,0,0.05)', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            onClick={() => setActiveSocial(prev => ({ ...prev, [cadet.name]: false }))}
+                          >✕</div>
+                        </div>
+                      )}
+
                       {/* Top Status Bar (Time/Battery) */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px 0', fontSize: '0.65rem', fontWeight: 800, color: 'rgba(255,255,255,0.8)' }}>
                         <span>9:41</span>
@@ -179,7 +209,11 @@ export default function CellphoneRackClient({ initialData }) {
                           )}
                           {cadet.ig && cadet.ig !== 'null' && (
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-                              <div style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.15)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', backdropFilter: 'blur(5px)', cursor: 'help' }} title={cadet.ig}>📸</div>
+                              <div 
+                                style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.15)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', backdropFilter: 'blur(5px)', cursor: 'pointer' }} 
+                                title="Click to view social"
+                                onClick={() => setActiveSocial(prev => ({ ...prev, [cadet.name]: true }))}
+                              >📸</div>
                               <span style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.8)', fontWeight: 800 }}>Social</span>
                             </div>
                           )}
