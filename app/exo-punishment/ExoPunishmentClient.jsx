@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 function parseGoogleDate(dateStr) {
   if (!dateStr) return null;
   if (typeof dateStr === 'string' && dateStr.startsWith('Date(')) {
@@ -47,6 +49,8 @@ const getMaxDemerits = (rank) => {
 };
 
 export default function ExoPunishmentClient({ initialCadets }) {
+  const [viewModes, setViewModes] = useState({});
+
   if (!initialCadets || initialCadets.length === 0) {
     return (
       <div className="card" style={{ padding: '3rem', textAlign: 'center', marginTop: '2rem' }}>
@@ -56,6 +60,10 @@ export default function ExoPunishmentClient({ initialCadets }) {
       </div>
     );
   }
+
+  const toggleViewMode = (cadetName, mode) => {
+    setViewModes(prev => ({ ...prev, [cadetName]: mode }));
+  };
 
   return (
     <div className="table-container" style={{ marginTop: '2rem', width: '100%', overflowX: 'auto' }}>
@@ -79,25 +87,40 @@ export default function ExoPunishmentClient({ initialCadets }) {
             if (demeritPercentage >= 60) healthColor = '#ef4444';
             
             const isFlashing = demeritPercentage >= 60;
-            const confStats = getConfinementStats(cadet.confinementStart, cadet.confinementEnd);
+            const globalConfStats = getConfinementStats(cadet.confinementStart, cadet.confinementEnd);
             
-            // Calculate touring accurately taking converted hours into account
             const tourProgress = cadet.totalTour > 0 ? (cadet.totalTour - cadet.totalTourRemaining) : 0;
             const tourPercentage = cadet.totalTour > 0 
               ? Math.min(100, Math.max(0, (tourProgress / cadet.totalTour) * 100))
               : 0;
 
-            // Determine if punishments are fully served so offense can be marked inactive
-            const isConfinementCompleted = !cadet.isConfined || (confStats.total > 0 && confStats.remaining === 0);
+            const isConfinementCompleted = !cadet.isConfined || (globalConfStats.total > 0 && globalConfStats.remaining === 0);
             const isTouringCompleted = cadet.totalTour === 0 || tourProgress >= cadet.totalTour;
-            const isInactive = isConfinementCompleted && isTouringCompleted;
+            const isGloballyInactive = isConfinementCompleted && isTouringCompleted;
+
+            const activeOffenses = [];
+            const inactiveOffenses = [];
+
+            cadet.offenses.forEach(off => {
+              const offConfStats = getConfinementStats(off.confStart, off.confEnd);
+              const offConfCompleted = !off.isConfined || (offConfStats.total > 0 && offConfStats.remaining === 0);
+              const offTourCompleted = off.tourTotal === 0 || off.tourRemaining <= 0;
+              
+              if (offConfCompleted && offTourCompleted) {
+                inactiveOffenses.push(off);
+              } else {
+                activeOffenses.push(off);
+              }
+            });
+
+            const currentMode = viewModes[cadet.name] || (activeOffenses.length > 0 ? 'active' : 'inactive');
+            const displayedOffenses = currentMode === 'active' ? activeOffenses : inactiveOffenses;
 
             return (
               <tr key={index} style={{ borderBottom: '1px solid rgba(128,128,128,0.2)', verticalAlign: 'top' }}>
                 
-                {/* 1. CADET PROFILE */}
                 <td style={{ padding: '1.5rem 1rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', opacity: isInactive ? 0.7 : 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', opacity: isGloballyInactive ? 0.7 : 1 }}>
                     {cadet.picture ? (
                       <img 
                         src={cadet.picture} 
@@ -116,40 +139,82 @@ export default function ExoPunishmentClient({ initialCadets }) {
                       <div style={{ fontSize: '1.1rem', fontWeight: 800, letterSpacing: '0.05em', color: 'var(--text-primary)' }}>
                         {cadet.rank} {cadet.name}
                       </div>
-                      <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.25rem', fontWeight: 600 }}>
-                        {cadet.offenses.length} Offense{cadet.offenses.length !== 1 ? 's' : ''} {isInactive && <span style={{ color: '#10b981' }}>(Inactive)</span>}
+                      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                        <button 
+                          onClick={() => toggleViewMode(cadet.name, 'active')}
+                          style={{ 
+                            background: currentMode === 'active' ? '#ef4444' : 'transparent',
+                            color: currentMode === 'active' ? '#fff' : 'var(--text-secondary)',
+                            border: '1px solid #ef4444',
+                            padding: '0.15rem 0.4rem',
+                            borderRadius: '4px',
+                            fontSize: '0.7rem',
+                            cursor: 'pointer',
+                            fontWeight: currentMode === 'active' ? 800 : 600,
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          Active ({activeOffenses.length})
+                        </button>
+                        <button 
+                          onClick={() => toggleViewMode(cadet.name, 'inactive')}
+                          style={{ 
+                            background: currentMode === 'inactive' ? '#10b981' : 'transparent',
+                            color: currentMode === 'inactive' ? '#fff' : 'var(--text-secondary)',
+                            border: '1px solid #10b981',
+                            padding: '0.15rem 0.4rem',
+                            borderRadius: '4px',
+                            fontSize: '0.7rem',
+                            cursor: 'pointer',
+                            fontWeight: currentMode === 'inactive' ? 800 : 600,
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          Inactive ({inactiveOffenses.length})
+                        </button>
                       </div>
                     </div>
                   </div>
                 </td>
 
-                {/* 2. OFFENSES */}
                 <td style={{ padding: '1.5rem 1rem' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '180px', overflowY: 'auto', paddingRight: '0.5rem' }} className="custom-scrollbar">
-                    {cadet.offenses.map((offense, i) => (
-                      <div key={i} style={{ 
-                        background: isInactive ? 'rgba(128,128,128,0.05)' : 'rgba(128,128,128,0.1)', 
-                        padding: '0.75rem', 
-                        borderRadius: '8px', 
-                        borderLeft: isInactive ? '3px solid #6b7280' : '3px solid #fbbf24',
-                        opacity: isInactive ? 0.6 : 1
-                      }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
-                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                            {offense.natureOfOffense || 'UNKNOWN'}
-                            {isInactive && <span style={{ marginLeft: '0.5rem', color: '#10b981', fontWeight: 800 }}>✓ INACTIVE</span>}
+                  {displayedOffenses.length === 0 ? (
+                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontStyle: 'italic', padding: '1rem 0' }}>
+                      (No {currentMode} punishments)
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '180px', overflowY: 'auto', paddingRight: '0.5rem' }} className="custom-scrollbar">
+                      {displayedOffenses.map((offense, i) => {
+                        const offConfStats = getConfinementStats(offense.confStart, offense.confEnd);
+                        const offConfCompleted = !offense.isConfined || (offConfStats.total > 0 && offConfStats.remaining === 0);
+                        const offTourCompleted = offense.tourTotal === 0 || offense.tourRemaining <= 0;
+                        const isOffInactive = offConfCompleted && offTourCompleted;
+
+                        return (
+                          <div key={i} style={{ 
+                            background: isOffInactive ? 'rgba(128,128,128,0.05)' : 'rgba(128,128,128,0.1)', 
+                            padding: '0.75rem', 
+                            borderRadius: '8px', 
+                            borderLeft: isOffInactive ? '3px solid #6b7280' : '3px solid #fbbf24',
+                            opacity: isOffInactive ? 0.6 : 1
+                          }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
+                              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+                                {offense.natureOfOffense || 'UNKNOWN'}
+                                {isOffInactive && <span style={{ marginLeft: '0.5rem', color: '#10b981', fontWeight: 800 }}>✓ INACTIVE</span>}
+                              </div>
+                              <div style={{ fontSize: '0.7rem', color: isOffInactive ? '#6b7280' : '#eab308', fontWeight: 800 }}>Class {offense.classOfOffense}</div>
+                            </div>
+                            <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', lineHeight: 1.4 }}>{offense.description}</div>
                           </div>
-                          <div style={{ fontSize: '0.7rem', color: isInactive ? '#6b7280' : '#eab308', fontWeight: 800 }}>Class {offense.classOfOffense}</div>
-                        </div>
-                        <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', lineHeight: 1.4 }}>{offense.description}</div>
-                      </div>
-                    ))}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </td>
 
-                {/* 3. DEMERITS HEALTH */}
                 <td style={{ padding: '1.5rem 1rem' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', opacity: isInactive ? 0.6 : 1 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', opacity: isGloballyInactive ? 0.6 : 1 }}>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Total Demerits</div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
                       <span style={{ fontWeight: 800, color: healthColor, fontSize: '1.1rem' }}>{cadet.totalDemerits.toFixed(1)}</span>
@@ -168,11 +233,10 @@ export default function ExoPunishmentClient({ initialCadets }) {
                   </div>
                 </td>
 
-                {/* 4. CONFINEMENT */}
                 <td style={{ padding: '1.5rem 1rem' }}>
                   {cadet.isConfined ? (
                     <div>
-                      {confStats.total > 0 && confStats.remaining === 0 ? (
+                      {globalConfStats.total > 0 && globalConfStats.remaining === 0 ? (
                         <div style={{ display: 'inline-block', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.05em', border: '1px solid rgba(16,185,129,0.3)', marginBottom: '0.75rem' }}>
                           🔓 COMPLETED
                         </div>
@@ -182,19 +246,19 @@ export default function ExoPunishmentClient({ initialCadets }) {
                         </div>
                       )}
                       
-                      {confStats.total > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', opacity: (confStats.remaining === 0) ? 0.6 : 1 }}>
+                      {globalConfStats.total > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', opacity: (globalConfStats.remaining === 0) ? 0.6 : 1 }}>
                           <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Days Served</div>
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
-                            <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '1.1rem' }}>{confStats.total - confStats.remaining}</span>
-                            <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>/ {confStats.total}</span>
+                            <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '1.1rem' }}>{globalConfStats.total - globalConfStats.remaining}</span>
+                            <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>/ {globalConfStats.total}</span>
                           </div>
                           <div style={{ width: '100%', height: '6px', background: 'rgba(128,128,128,0.2)', borderRadius: '3px', overflow: 'hidden', margin: '0.25rem 0' }}>
-                            <div style={{ height: '100%', width: `${confStats.percentage}%`, background: '#10b981', borderRadius: '3px' }} />
+                            <div style={{ height: '100%', width: `${globalConfStats.percentage}%`, background: '#10b981', borderRadius: '3px' }} />
                           </div>
                           <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
-                            <span>{confStats.startText}</span>
-                            <span>{confStats.endText}</span>
+                            <span>{globalConfStats.startText}</span>
+                            <span>{globalConfStats.endText}</span>
                           </div>
                         </div>
                       )}
@@ -206,7 +270,6 @@ export default function ExoPunishmentClient({ initialCadets }) {
                   )}
                 </td>
 
-                {/* 5. TOURING */}
                 <td style={{ padding: '1.5rem 1rem' }}>
                   {cadet.totalTour > 0 ? (
                     cadet.totalTourRemaining <= 0 ? (

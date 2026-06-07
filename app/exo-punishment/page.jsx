@@ -103,6 +103,11 @@ export default async function ExoPunishmentPage() {
       description: String(row[k4] || ''),
       classOfOffense: String(row[k5] || ''),
       natureOfOffense: String(row[k6] || ''),
+      tourTotal: Number(row[k11]) || 0,
+      tourRemaining: Number(row[k14]) || 0,
+      isConfined: String(row[k8] || '').toLowerCase() === 'yes',
+      confStart: row[k9] || null,
+      confEnd: row[k10] || null,
       remarks: String(row[k16] || '')
     });
   });
