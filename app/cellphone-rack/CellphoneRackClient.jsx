@@ -58,7 +58,7 @@ export default function CellphoneRackClient({ initialData }) {
             
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(3, 180px)', 
+              gridTemplateColumns: 'repeat(5, 180px)', 
               gap: '2.5rem',
               justifyContent: 'center'
             }}>
