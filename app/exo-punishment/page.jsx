@@ -6,26 +6,63 @@ export const revalidate = 30; // seconds
 export default async function ExoPunishmentPage() {
   const data = await getSheetData('1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk', 'CHARACTER');
 
+  if (!data || data.length === 0) {
+    return (
+      <div className="page-container">
+        <header className="page-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <h1>EXO Punishment List</h1>
+          <p>Monitoring Dashboard for Cadet Punishments</p>
+        </header>
+        <ExoPunishmentClient initialCadets={[]} />
+      </div>
+    );
+  }
+
+  // Google Sheets API returns the first row as the keys of the objects.
+  // Because the first row has "UPDATED AS OF" in column 1, 'Column 1' key doesn't exist.
+  // So we grab the keys by their index.
+  const keys = Object.keys(data[0]);
+  const k1 = keys[0];   // NO or "UPDATED AS OF :"
+  const k2 = keys[1];   // RANK
+  const k3 = keys[2];   // LAST NAME
+  const k4 = keys[3];   // OFFENSE
+  const k5 = keys[4];   // CLASS
+  const k6 = keys[5];   // NATURE OF OFFENSE
+  const k7 = keys[6];   // DEMERITS
+  const k8 = keys[7];   // CONFINED?
+  const k9 = keys[8];   // CONFINEMENT START
+  const k10 = keys[9];  // CONFINEMENT END
+  const k11 = keys[10]; // TOURING HOURS TOTAL
+  const k12 = keys[11]; // TOURING SERVED
+  const k13 = keys[12]; // TOURING REMAINING
+  const k16 = keys[15]; // REMARKS
+
   // Extract "UPDATED AS OF" date
   let updatedAsOf = 'Unknown';
-  const updatedRow = data.find(row => String(row['Column 1']).toUpperCase().includes('UPDATED AS OF'));
-  if (updatedRow) {
-    updatedAsOf = String(updatedRow['Column 5'] || '').trim();
+  // It could be in the keys (if it was the very first row)
+  if (String(k1).toUpperCase().includes('UPDATED AS OF')) {
+    updatedAsOf = String(k5 || '').trim();
+  }
+  
+  // Or it could be in one of the rows
+  const updatedRow = data.find(row => String(row[k1]).toUpperCase().includes('UPDATED AS OF'));
+  if (updatedRow && updatedAsOf === 'Unknown') {
+    updatedAsOf = String(updatedRow[k5] || '').trim();
   }
 
   // Filter valid rows: Column 1 (NO) must be a number > 0, Column 3 must exist
   const validRows = data.filter(row => {
-    const no = parseInt(row['Column 1']);
-    return !isNaN(no) && no > 0 && row['Column 3'] && String(row['Column 3']).trim() !== '';
+    const no = parseInt(row[k1]);
+    return !isNaN(no) && no > 0 && row[k3] && String(row[k3]).trim() !== '';
   });
 
   // Group by cadet (LAST NAME)
   const cadetMap = new Map();
 
   validRows.forEach(row => {
-    const name = String(row['Column 3']).trim();
-    const rank = String(row['Column 2']).trim();
-    const isConfined = String(row['Column 8'] || '').toLowerCase() === 'yes';
+    const name = String(row[k3]).trim();
+    const rank = String(row[k2]).trim();
+    const isConfined = String(row[k8] || '').toLowerCase() === 'yes';
     
     if (!cadetMap.has(name)) {
       cadetMap.set(name, {
@@ -45,16 +82,16 @@ export default async function ExoPunishmentPage() {
     const cadet = cadetMap.get(name);
     
     // Add demerits and tours
-    cadet.totalDemerits += Number(row['Column 7']) || 0;
-    cadet.totalTour += Number(row['Column 11']) || 0;
-    cadet.totalTourServed += Number(row['Column 12']) || 0;
-    cadet.totalTourRemaining += Number(row['Column 13']) || 0;
+    cadet.totalDemerits += Number(row[k7]) || 0;
+    cadet.totalTour += Number(row[k11]) || 0;
+    cadet.totalTourServed += Number(row[k12]) || 0;
+    cadet.totalTourRemaining += Number(row[k13]) || 0;
 
     // Update confinement (take the latest/longest if multiple, for now just assign if exists)
     if (isConfined) {
       cadet.isConfined = true;
-      const start = String(row['Column 9'] || '');
-      const end = String(row['Column 10'] || '');
+      const start = String(row[k9] || '');
+      const end = String(row[k10] || '');
       if (start && end) {
         cadet.confinementStart = start;
         cadet.confinementEnd = end;
@@ -63,10 +100,10 @@ export default async function ExoPunishmentPage() {
 
     // Add offense details
     cadet.offenses.push({
-      description: String(row['Column 4'] || ''),
-      classOfOffense: String(row['Column 5'] || ''),
-      natureOfOffense: String(row['Column 6'] || ''),
-      remarks: String(row['Column 16'] || '')
+      description: String(row[k4] || ''),
+      classOfOffense: String(row[k5] || ''),
+      natureOfOffense: String(row[k6] || ''),
+      remarks: String(row[k16] || '')
     });
   });
 
