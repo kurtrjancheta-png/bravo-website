@@ -5,7 +5,7 @@ import { getCadetImageUrl } from '../../lib/imageMatcher';
 export const revalidate = 30; // seconds
 
 export default async function ExoPunishmentPage() {
-  const data = await getSheetData('1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk', 'CHARACTER');
+  const data = await getSheetData('1kdpf8pdHx2ETbfLqyJfyxcOnWGiz08JxI__FvJIRH3M', 'Sheet 1');
 
   if (!data || data.length === 0) {
     return (
