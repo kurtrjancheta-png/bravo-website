@@ -8,17 +8,28 @@ export const revalidate = 0;
 const CELLPHONE_SHEET_ID = '13xZEcuuedRTppVj479aYhUqpgbvqOq3VMMvBJn_IH5Q';
 
 export default async function CellphoneRackPage() {
-  let data = [];
+  let sheet1Data = [];
+  let cl2Data = [];
+  let cl3Data = [];
+
   try {
-    data = await getSheetData(CELLPHONE_SHEET_ID, 'Sheet1');
+    const [d1, d2, d3] = await Promise.all([
+      getSheetData(CELLPHONE_SHEET_ID, 'Sheet1').catch(() => []),
+      getSheetData(CELLPHONE_SHEET_ID, '2CL').catch(() => []),
+      getSheetData(CELLPHONE_SHEET_ID, '3CL').catch(() => [])
+    ]);
+    sheet1Data = d1 || [];
+    cl2Data = d2 || [];
+    cl3Data = d3 || [];
   } catch (err) {
-    console.error('Failed to fetch cellphone sheet:', err);
+    console.error('Failed to fetch cellphone sheets:', err);
   }
 
-  // Parse Data
   const parsedData = [];
-  if (data && data.length > 0) {
-    const keys = Object.keys(data[0]);
+
+  const parseSheet = (dataArray) => {
+    if (!dataArray || dataArray.length === 0) return;
+    const keys = Object.keys(dataArray[0]);
     const kName = keys[0];
     const kStatus = keys[1];
     const kRemarks = keys[2];
@@ -26,7 +37,7 @@ export default async function CellphoneRackPage() {
     const kPhone = keys[4];
     const kIG = keys[5];
 
-    data.forEach(row => {
+    dataArray.forEach(row => {
       const name = String(row[kName] || '').trim();
       if (!name || name === '') return;
       
@@ -39,7 +50,11 @@ export default async function CellphoneRackPage() {
         ig: String(row[kIG] || '').trim()
       });
     });
-  }
+  };
+
+  parseSheet(sheet1Data);
+  parseSheet(cl2Data);
+  parseSheet(cl3Data);
 
   return (
     <div>
