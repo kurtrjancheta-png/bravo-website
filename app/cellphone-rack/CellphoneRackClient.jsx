@@ -183,9 +183,13 @@ export default function CellphoneRackClient({ initialData }) {
                           gap: '8px',
                           animation: 'slide-down 0.3s ease-out'
                         }}>
-                          <div style={{ fontSize: '1rem' }}>📸</div>
+                          <div style={{ fontSize: '1rem', display: 'flex', alignItems: 'center' }}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M12 2C6.477 2 2 6.03 2 11c0 2.82 1.45 5.34 3.75 6.94L4.5 22l4.2-2.1c1.05.32 2.16.5 3.3.5 5.523 0 10-4.03 10-9s-4.477-9-10-9z" fill="#3a76f0"/>
+                            </svg>
+                          </div>
                           <div style={{ flex: 1, textAlign: 'left' }}>
-                            <div style={{ fontSize: '0.5rem', fontWeight: 800, color: '#666', textTransform: 'uppercase' }}>Social Account</div>
+                            <div style={{ fontSize: '0.5rem', fontWeight: 800, color: '#666', textTransform: 'uppercase' }}>Signal Account</div>
                             <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#000' }}>{cadet.ig}</div>
                           </div>
                           <div 
@@ -232,11 +236,15 @@ export default function CellphoneRackClient({ initialData }) {
                           {cadet.ig && cadet.ig !== 'null' && (
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
                               <div 
-                                style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.15)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', backdropFilter: 'blur(5px)', cursor: 'pointer' }} 
-                                title="Click to view social"
+                                style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.15)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(5px)', cursor: 'pointer' }} 
+                                title="Click to view Signal"
                                 onClick={() => setActiveSocial(prev => ({ ...prev, [cadet.name]: true }))}
-                              >📸</div>
-                              <span style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.8)', fontWeight: 800 }}>Social</span>
+                              >
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M12 2C6.477 2 2 6.03 2 11c0 2.82 1.45 5.34 3.75 6.94L4.5 22l4.2-2.1c1.05.32 2.16.5 3.3.5 5.523 0 10-4.03 10-9s-4.477-9-10-9z" fill="#3a76f0"/>
+                                </svg>
+                              </div>
+                              <span style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.8)', fontWeight: 800 }}>Signal</span>
                             </div>
                           )}
                         </div>
