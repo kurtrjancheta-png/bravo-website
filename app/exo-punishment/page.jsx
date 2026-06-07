@@ -104,6 +104,8 @@ export default async function ExoPunishmentPage() {
       classOfOffense: String(row[k5] || ''),
       natureOfOffense: String(row[k6] || ''),
       tourTotal: Number(row[k11]) || 0,
+      tourConverted: Number(row[k12]) || 0,
+      tourServed: Number(row[k13]) || 0,
       tourRemaining: Number(row[k14]) || 0,
       isConfined: String(row[k8] || '').toLowerCase() === 'yes',
       confStart: row[k9] || null,

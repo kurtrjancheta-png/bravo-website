@@ -70,7 +70,8 @@ export default function ExoPunishmentClient({ initialCadets }) {
     cadet.offenses.forEach(off => {
       const offConfStats = getConfinementStats(off.confStart, off.confEnd);
       const offConfCompleted = !off.isConfined || (offConfStats.total > 0 && offConfStats.remaining === 0);
-      const offTourCompleted = off.tourTotal === 0 || off.tourRemaining <= 0;
+      const offTourProgress = (off.tourServed || 0) + (off.tourConverted || 0);
+      const offTourCompleted = off.tourTotal === 0 || offTourProgress >= off.tourTotal;
       if (!(offConfCompleted && offTourCompleted)) {
         activeOffenseCount++;
       }
@@ -111,7 +112,7 @@ export default function ExoPunishmentClient({ initialCadets }) {
 
             const globalConfStats = getConfinementStats(cadet.confinementStart, cadet.confinementEnd);
             
-            const tourProgress = cadet.totalTour > 0 ? (cadet.totalTour - cadet.totalTourRemaining) : 0;
+            const tourProgress = cadet.totalTour > 0 ? (cadet.totalTourServed + cadet.totalTourConverted) : 0;
             const tourPercentage = cadet.totalTour > 0 
               ? Math.min(100, Math.max(0, (tourProgress / cadet.totalTour) * 100))
               : 0;
@@ -126,7 +127,9 @@ export default function ExoPunishmentClient({ initialCadets }) {
             cadet.offenses.forEach(off => {
               const offConfStats = getConfinementStats(off.confStart, off.confEnd);
               const offConfCompleted = !off.isConfined || (offConfStats.total > 0 && offConfStats.remaining === 0);
-              const offTourCompleted = off.tourTotal === 0 || off.tourRemaining <= 0;
+              
+              const offTourProgress = (off.tourServed || 0) + (off.tourConverted || 0);
+              const offTourCompleted = off.tourTotal === 0 || offTourProgress >= off.tourTotal;
               
               if (offConfCompleted && offTourCompleted) {
                 inactiveOffenses.push(off);
@@ -240,7 +243,10 @@ export default function ExoPunishmentClient({ initialCadets }) {
                       {displayedOffenses.map((offense, i) => {
                         const offConfStats = getConfinementStats(offense.confStart, offense.confEnd);
                         const offConfCompleted = !offense.isConfined || (offConfStats.total > 0 && offConfStats.remaining === 0);
-                        const offTourCompleted = offense.tourTotal === 0 || offense.tourRemaining <= 0;
+                        
+                        const offTourProgress = (offense.tourServed || 0) + (offense.tourConverted || 0);
+                        const offTourCompleted = offense.tourTotal === 0 || offTourProgress >= offense.tourTotal;
+                        
                         const isOffInactive = offConfCompleted && offTourCompleted;
 
                         return (
@@ -326,7 +332,7 @@ export default function ExoPunishmentClient({ initialCadets }) {
 
                 <td style={{ padding: '1.5rem 1rem' }}>
                   {cadet.totalTour > 0 ? (
-                    cadet.totalTourRemaining <= 0 ? (
+                    tourProgress >= cadet.totalTour ? (
                       <div style={{ display: 'inline-block', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.05em', border: '1px solid rgba(16,185,129,0.3)' }}>
                         🟢 SERVED
                       </div>
