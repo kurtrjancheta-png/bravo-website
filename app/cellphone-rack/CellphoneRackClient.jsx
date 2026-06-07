@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 
 export default function CellphoneRackClient({ initialData }) {
   const [filterClass, setFilterClass] = useState('All');
+  const [activeContact, setActiveContact] = useState({});
 
   const classes = ['1', '2', '3', '4'];
   
@@ -56,7 +57,7 @@ export default function CellphoneRackClient({ initialData }) {
             
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
               gap: '2.5rem',
               justifyItems: 'center'
             }}>
@@ -72,8 +73,8 @@ export default function CellphoneRackClient({ initialData }) {
 
                 return (
                   <div key={i} style={{
-                    width: '220px',
-                    height: '440px',
+                    width: '180px',
+                    height: '360px',
                     borderRadius: '36px',
                     background: bezelColor,
                     padding: '8px',
@@ -106,12 +107,41 @@ export default function CellphoneRackClient({ initialData }) {
                         top: '8px',
                         left: '50%',
                         transform: 'translateX(-50%)',
-                        width: '70px',
-                        height: '20px',
+                        width: '60px',
+                        height: '18px',
                         background: '#000',
                         borderRadius: '10px',
                         zIndex: 10
                       }} />
+
+                      {/* Contact Notification Popup */}
+                      {activeContact[cadet.name] && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '32px',
+                          left: '8px',
+                          right: '8px',
+                          background: 'rgba(255,255,255,0.95)',
+                          borderRadius: '12px',
+                          padding: '8px',
+                          zIndex: 20,
+                          boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          animation: 'slide-down 0.3s ease-out'
+                        }}>
+                          <div style={{ fontSize: '1rem' }}>📞</div>
+                          <div style={{ flex: 1, textAlign: 'left' }}>
+                            <div style={{ fontSize: '0.5rem', fontWeight: 800, color: '#666', textTransform: 'uppercase' }}>Contact Number</div>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#000' }}>{cadet.phone}</div>
+                          </div>
+                          <div 
+                            style={{ fontSize: '0.7rem', cursor: 'pointer', padding: '4px', color: '#666', background: 'rgba(0,0,0,0.05)', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            onClick={() => setActiveContact(prev => ({ ...prev, [cadet.name]: false }))}
+                          >✕</div>
+                        </div>
+                      )}
 
                       {/* Top Status Bar (Time/Battery) */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px 0', fontSize: '0.65rem', fontWeight: 800, color: 'rgba(255,255,255,0.8)' }}>
@@ -139,13 +169,17 @@ export default function CellphoneRackClient({ initialData }) {
                         <div style={{ display: 'flex', gap: '1rem', marginBottom: 'auto', width: '100%', justifyContent: 'center' }}>
                           {cadet.phone && cadet.phone !== 'null' && (
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-                              <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.15)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', backdropFilter: 'blur(5px)', cursor: 'help' }} title={cadet.phone}>📞</div>
+                              <div 
+                                style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.15)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', backdropFilter: 'blur(5px)', cursor: 'pointer' }} 
+                                title="Click to view contact"
+                                onClick={() => setActiveContact(prev => ({ ...prev, [cadet.name]: true }))}
+                              >📞</div>
                               <span style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.8)', fontWeight: 800 }}>Phone</span>
                             </div>
                           )}
                           {cadet.ig && cadet.ig !== 'null' && (
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-                              <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.15)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', backdropFilter: 'blur(5px)', cursor: 'help' }} title={cadet.ig}>📸</div>
+                              <div style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.15)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', backdropFilter: 'blur(5px)', cursor: 'help' }} title={cadet.ig}>📸</div>
                               <span style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.8)', fontWeight: 800 }}>Social</span>
                             </div>
                           )}
@@ -179,6 +213,14 @@ export default function CellphoneRackClient({ initialData }) {
           </div>
         );
       })}
+
+      {/* Global Styles for Animations */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes slide-down {
+          from { transform: translateY(-10px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+      `}} />
     </div>
   );
 }
