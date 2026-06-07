@@ -1,206 +1,169 @@
 'use client';
 
-const getMaxDemerits = (cadetClass) => {
-  const upperClass = String(cadetClass).toUpperCase();
-  if (upperClass === '1CL' || ['MAJ', 'CAPT', 'CPT', '1LT', '2LT', 'ENS'].includes(upperClass)) return 88.2;
-  if (upperClass === '2CL') return 102.9;
-  if (upperClass === '3CL') return 117.6;
-  return null; // 4CL has no max yet
-};
-
-function getConfinementProgress(startStr, endStr) {
-  if (!startStr || !endStr) return null;
-  // Try parsing. Assume current year if missing
-  const currentYear = new Date().getFullYear();
-  
-  let start = new Date(`${startStr} ${currentYear}`);
-  let end = new Date(`${endStr} ${currentYear}`);
-  
-  if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
-
-  // If end is before start, it probably crosses the new year
-  if (end < start) {
-    end.setFullYear(currentYear + 1);
+function parseGoogleDate(dateStr) {
+  if (!dateStr) return null;
+  if (typeof dateStr === 'string' && dateStr.startsWith('Date(')) {
+    const match = dateStr.match(/Date\((\d+),(\d+),(\d+)\)/);
+    if (match) {
+      return new Date(parseInt(match[1]), parseInt(match[2]), parseInt(match[3]));
+    }
   }
-  
-  // If the start is way in the future (e.g. next Nov but we are in Jan), 
-  // maybe it was last year
-  const today = new Date();
-  if (start > today && (start - today) > 180 * 24 * 60 * 60 * 1000) {
-      start.setFullYear(currentYear - 1);
-      if (end < start) end.setFullYear(currentYear);
-  }
-  
-  const totalDuration = end - start;
-  const elapsed = today - start;
-  
-  if (totalDuration <= 0) return null;
-  
-  let percentage = (elapsed / totalDuration) * 100;
-  percentage = Math.max(0, Math.min(percentage, 100));
-  
-  const remainingDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
-  const remaining = Math.max(0, remainingDays);
-  
-  return { percentage, remaining };
+  return new Date(dateStr);
 }
 
-export default function ExoPunishmentClient({ cadets }) {
-  if (!cadets || cadets.length === 0) {
+function getConfinementStats(startStr, endStr) {
+  const start = parseGoogleDate(startStr);
+  const end = parseGoogleDate(endStr);
+  
+  if (!start || !end) return { total: 0, remaining: 0, percentage: 0, startText: '-', endText: '-' };
+  
+  const today = new Date();
+  const totalMs = end.getTime() - start.getTime();
+  const totalDays = Math.max(1, Math.ceil(totalMs / (1000 * 60 * 60 * 24)));
+  
+  let remainingMs = end.getTime() - today.getTime();
+  let remainingDays = Math.ceil(remainingMs / (1000 * 60 * 60 * 24));
+  
+  if (remainingDays < 0) remainingDays = 0;
+  if (remainingDays > totalDays) remainingDays = totalDays;
+  
+  let percentage = ((totalDays - remainingDays) / totalDays) * 100;
+  
+  return {
+    total: totalDays,
+    remaining: remainingDays,
+    percentage: percentage,
+    startText: start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    endText: end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  };
+}
+
+const getMaxDemerits = (rank) => {
+  const r = (rank || '').toUpperCase();
+  // 1st classmen hold officer ranks or "1CL"
+  if (r.includes('1CL') || r.includes('CPT') || r.includes('LT') || r.includes('MAJ') || r.includes('COL')) return 88.2;
+  if (r.includes('2CL')) return 102.9;
+  if (r.includes('3CL')) return 117.6;
+  return 100; // Fallback
+};
+
+export default function ExoPunishmentClient({ initialCadets }) {
+  if (!initialCadets || initialCadets.length === 0) {
     return (
-      <div className="dashboard-panel" style={{ padding: '2rem' }}>
-        <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 800, color: 'var(--text-primary)' }}>EXO PUNISHMENT MONITORING</h1>
-        <p style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>No punishment records found for Bravo Company.</p>
+      <div className="card" style={{ padding: '3rem', textAlign: 'center', marginTop: '2rem' }}>
+        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎉</div>
+        <h2>No Active Punishments</h2>
+        <p style={{ color: 'var(--text-secondary)' }}>The EXO Punishment list is currently clear.</p>
       </div>
     );
   }
 
   return (
-    <div className="dashboard-panel" style={{ padding: '2rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 800, color: 'var(--text-primary)' }}>EXO PUNISHMENT MONITORING</h1>
-        <div className="badge-outline" style={{ color: 'var(--accent-red)', borderColor: 'var(--accent-red)' }}>
-          <div className="live-indicator" style={{ background: 'var(--accent-red)' }}></div> LIVE UPDATES
-        </div>
-      </div>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '1.5rem', marginTop: '2rem' }}>
+      {initialCadets.map((cadet, index) => {
+        const maxDemerits = getMaxDemerits(cadet.rank);
+        const demeritPercentage = Math.min(100, Math.max(0, (cadet.demerits / maxDemerits) * 100));
+        
+        let healthColor = '#10b981'; // Green
+        if (demeritPercentage >= 40 && demeritPercentage < 60) healthColor = '#fbbf24'; // Yellow
+        if (demeritPercentage >= 60) healthColor = '#ef4444'; // Red
+        
+        const isFlashing = demeritPercentage >= 60;
+        
+        // Confinement Calculations
+        const confStats = getConfinementStats(cadet.confinementStart, cadet.confinementEnd);
+        
+        // Touring Calculations
+        const tourPercentage = cadet.tourTotal > 0 
+          ? Math.min(100, Math.max(0, (cadet.tourServed / cadet.tourTotal) * 100))
+          : 0;
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        {cadets.map((cadet, i) => {
-           const maxDemerits = getMaxDemerits(cadet.class);
-           const demeritPercentage = maxDemerits ? Math.min((cadet.demerits / maxDemerits) * 100, 100) : 0;
-           
-           // Tour calculations
-           const toursCompleted = cadet.servedTours + cadet.convertedTours;
-           const tourPercentage = cadet.totalTours > 0 ? Math.min((toursCompleted / cadet.totalTours) * 100, 100) : 100;
+        return (
+          <div key={index} className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', position: 'relative', overflow: 'hidden' }}>
+            
+            {/* Header: Name, Rank, and Status */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1rem' }}>
+              <div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '0.05em' }}>
+                  {cadet.rank} {cadet.name}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: '#fbbf24', marginTop: '0.25rem', fontWeight: 600 }}>
+                  Class {cadet.classOfOffense} Offense
+                </div>
+              </div>
+              {cadet.isConfined && (
+                <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '0.25rem 0.75rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>
+                  CONFINED
+                </div>
+              )}
+            </div>
 
-           // Determine demerit health bar color
-           let healthColor = '#4ade80'; // Green
-           let isFlashing = false;
-           if (maxDemerits) {
-             if (demeritPercentage >= 60) {
-               healthColor = '#ef4444'; // Red
-               isFlashing = true; // User requested flashing red at 60% threshold
-             } else if (demeritPercentage >= 40) {
-               healthColor = '#fbbf24'; // Yellow
-             }
-           }
+            {/* Offense Details */}
+            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px', borderLeft: '3px solid #fbbf24' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Nature of Offense</div>
+              <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.5rem' }}>{cadet.natureOfOffense || 'UNKNOWN'}</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{cadet.offense}</div>
+            </div>
 
-           const confinement = cadet.isConfined ? getConfinementProgress(cadet.dateStarted, cadet.dateEnded) : null;
+            {/* Punishment Tracking */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.5rem' }}>
+              
+              {/* Confinement Progress */}
+              {cadet.isConfined && confStats.total > 0 && (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Confinement Days Remaining</span>
+                    <span style={{ fontWeight: 700 }}>{confStats.remaining} / {confStats.total}</span>
+                  </div>
+                  <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${confStats.percentage}%`, background: '#10b981', borderRadius: '4px' }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.25rem', fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                    <span>{confStats.startText}</span>
+                    <span>{confStats.endText}</span>
+                  </div>
+                </div>
+              )}
 
-           return (
-             <div key={i} className="card-panel" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-               
-               {/* Header Row */}
-               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                 <div>
-                   <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                     {cadet.class} {cadet.name}
-                   </div>
-                   <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                     Status: <strong style={{ color: cadet.status === 'SERVED' ? '#4ade80' : '#fbbf24' }}>{cadet.status || 'ONGOING'}</strong> | Class {cadet.classOfOffense}
-                   </div>
-                 </div>
-                 
-                 <div style={{ textAlign: 'right', maxWidth: '400px' }}>
-                   <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Nature of Offense</div>
-                   <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>{cadet.nature}</div>
-                 </div>
-               </div>
+              {/* Touring Progress */}
+              {cadet.tourTotal > 0 && (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Touring Hours Remaining</span>
+                    <span style={{ fontWeight: 700 }}>{cadet.tourRemaining} / {cadet.tourTotal}</span>
+                  </div>
+                  <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${tourPercentage}%`, background: '#10b981', borderRadius: '4px' }} />
+                  </div>
+                </div>
+              )}
 
-               {/* Offense Description */}
-               <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', borderLeft: '3px solid var(--accent-red)' }}>
-                 <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Offense Description</div>
-                 <div style={{ fontSize: '0.95rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>{cadet.offense}</div>
-               </div>
+              {/* Demerit Health Bar */}
+              <div style={{ marginTop: '0.5rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Demerit Health</span>
+                  <span style={{ fontWeight: 700, color: healthColor }}>{cadet.demerits.toFixed(1)} / {maxDemerits}</span>
+                </div>
+                <div style={{ width: '100%', height: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '6px', overflow: 'hidden', position: 'relative' }}>
+                  <div 
+                    style={{ 
+                      height: '100%', 
+                      width: `${demeritPercentage}%`, 
+                      background: healthColor,
+                      borderRadius: '6px',
+                      transition: 'width 0.5s ease',
+                      animation: isFlashing ? 'pulse-red 1.5s infinite' : 'none',
+                      boxShadow: isFlashing ? '0 0 10px #ef4444' : 'none'
+                    }} 
+                  />
+                </div>
+              </div>
 
-               {/* Progress Bars Container */}
-               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginTop: '0.5rem' }}>
-                 
-                 {/* Left: Demerits */}
-                 {maxDemerits ? (
-                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                       <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Demerit Health</div>
-                       <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>{cadet.demerits} / {maxDemerits}</div>
-                     </div>
-                     <div style={{ width: '100%', height: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '6px', overflow: 'hidden', position: 'relative' }}>
-                       <div 
-                         style={{ 
-                           height: '100%', 
-                           width: `${demeritPercentage}%`, 
-                           background: healthColor,
-                           borderRadius: '6px',
-                           transition: 'width 0.5s ease',
-                           animation: isFlashing ? 'pulse-red 1.5s infinite' : 'none',
-                           boxShadow: isFlashing ? '0 0 10px #ef4444' : 'none'
-                         }} 
-                       />
-                     </div>
-                   </div>
-                 ) : (
-                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                     <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Demerit Health</div>
-                     <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>No limit defined for 4CL. Total Demerits: {cadet.demerits}</div>
-                   </div>
-                 )}
+            </div>
+          </div>
+        );
+      })}
 
-                 {/* Right: Tours */}
-                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                     <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Touring Hours</div>
-                     <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>{cadet.remainingTours} Remaining</div>
-                   </div>
-                   <div style={{ width: '100%', height: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '6px', overflow: 'hidden' }}>
-                     <div 
-                       style={{ 
-                         height: '100%', 
-                         width: `${tourPercentage}%`, 
-                         background: 'linear-gradient(90deg, #10b981, #34d399)',
-                         borderRadius: '6px',
-                         transition: 'width 0.5s ease'
-                       }} 
-                     />
-                   </div>
-                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>
-                     <span>Total: {cadet.totalTours}</span>
-                     <span>Served: {cadet.servedTours}</span>
-                     <span>Converted: {cadet.convertedTours}</span>
-                   </div>
-                 </div>
-
-                 {/* Confinement (if applicable, takes up full width or half) */}
-                 {cadet.isConfined && (
-                   <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem', background: 'rgba(239, 68, 68, 0.05)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.2)' }}>
-                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                         <span style={{ fontSize: '0.85rem', color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>CONFINEMENT PERIOD</span>
-                         <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>({cadet.dateStarted} to {cadet.dateEnded})</span>
-                       </div>
-                       {confinement && (
-                         <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>{confinement.remaining} Days Remaining</div>
-                       )}
-                     </div>
-                     {confinement && (
-                       <div style={{ width: '100%', height: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '6px', overflow: 'hidden' }}>
-                         <div 
-                           style={{ 
-                             height: '100%', 
-                             width: `${confinement.percentage}%`, 
-                             background: 'linear-gradient(90deg, #10b981, #34d399)',
-                             borderRadius: '6px',
-                             transition: 'width 0.5s ease'
-                           }} 
-                         />
-                       </div>
-                     )}
-                   </div>
-                 )}
-               </div>
-             </div>
-           );
-        })}
-      </div>
-      
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes pulse-red {
           0% { opacity: 1; box-shadow: 0 0 15px #ef4444; }

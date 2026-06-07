@@ -4,58 +4,38 @@ import ExoPunishmentClient from './ExoPunishmentClient';
 export const revalidate = 30; // seconds
 
 export default async function ExoPunishmentPage() {
-  const data = await getSheetData('1NuHPJjABd_kkDGCZYyxEucN_JE15_FQyXm18E1bfaBY', 'BRAVO');
+  // Use the correct sheet ID and sheet name
+  const data = await getSheetData('1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk', 'CHARACTER');
 
-  const cadets = data.map(row => {
-    const vals = Object.values(row);
-    // Looking for valid rows where the name is present
-    if (!vals[2] || typeof vals[2] !== 'string' || vals[2].trim() === '') return null;
-    
-    // We expect the Class/Rank to be something like "1CL", "2CL", "3CL", "4CL" or an officer rank like "2LT"
-    let cadetClass = String(vals[1]).trim().toUpperCase();
-    const validOfficerRanks = ['MAJ', 'CAPT', 'CPT', '1LT', '2LT', 'ENS'];
-    if (!cadetClass.endsWith('CL') && !validOfficerRanks.includes(cadetClass)) return null;
+  // Find all rows that represent a cadet (they have a RANK in Column 2 and LAST NAME in Column 3)
+  const cadets = data
+    .filter(row => row['Column 2'] && row['Column 3'] && row['Column 4'] && String(row['Column 2']).trim() !== 'RANK')
+    .map(row => {
+      return {
+        rank: String(row['Column 2'] || ''),
+        name: String(row['Column 3'] || ''),
+        offense: String(row['Column 4'] || ''),
+        classOfOffense: String(row['Column 5'] || ''),
+        natureOfOffense: String(row['Column 6'] || ''),
+        demerits: Number(row['Column 7']) || 0,
+        isConfined: String(row['Column 8'] || '').toLowerCase() === 'yes',
+        confinementStart: String(row['Column 9'] || ''),
+        confinementEnd: String(row['Column 10'] || ''),
+        tourTotal: Number(row['Column 11']) || 0,
+        tourServed: Number(row['Column 12']) || 0,
+        tourRemaining: Number(row['Column 13']) || 0,
+        remarks: String(row['Column 16'] || ''),
+      };
+    });
 
-    const name = String(vals[2]).trim();
-    const offense = String(vals[3] || '').trim();
-    const classOfOffense = String(vals[4] || '').trim();
-    const nature = String(vals[5] || '').trim();
-    
-    // Demerits is just a number in the BRAVO sheet
-    const demeritsRaw = String(vals[6] || '').trim();
-    const demerits = parseFloat(demeritsRaw) || 0;
+  return (
+    <div className="page-container">
+      <header className="page-header">
+        <h1>EXO Punishment List</h1>
+        <p>Monitoring Dashboard for Cadet Punishments</p>
+      </header>
 
-    const isConfined = String(vals[7] || '').toLowerCase() === 'yes';
-    const dateStarted = String(vals[8] || '').trim();
-    const dateEnded = String(vals[9] || '').trim();
-    
-    // Touring tracking
-    const totalTours = parseFloat(vals[10]) || 0;
-    const convertedTours = parseFloat(vals[11]) || 0;
-    const servedTours = parseFloat(vals[12]) || 0;
-    const remainingTours = parseFloat(vals[13]) || 0;
-    
-    const reference = String(vals[14] || '').trim();
-    const status = String(vals[15] || '').trim();
-
-    return {
-      class: cadetClass,
-      name,
-      offense,
-      classOfOffense,
-      nature,
-      demerits,
-      isConfined,
-      dateStarted,
-      dateEnded,
-      totalTours,
-      convertedTours,
-      servedTours,
-      remainingTours,
-      reference,
-      status
-    };
-  }).filter(Boolean);
-
-  return <ExoPunishmentClient cadets={cadets} />;
+      <ExoPunishmentClient initialCadets={cadets} />
+    </div>
+  );
 }
