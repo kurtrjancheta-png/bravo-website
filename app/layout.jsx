@@ -32,7 +32,9 @@ export default function RootLayout({ children }) {
               </Link>
               <div className="nav-item"><span style={{ marginRight: '10px' }}>⭐</span> Company Staff</div>
               <div className="nav-item"><span style={{ marginRight: '10px' }}>📅</span> Event Calendar</div>
-              <div className="nav-item"><span style={{ marginRight: '10px' }}>📱</span> Smartphone Rack</div>
+              <Link href="/cellphone-rack" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+                <span style={{ marginRight: '10px' }}>📱</span> Smartphone Rack
+              </Link>
               <Link href="/roster" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '10px' }}>📇</span> Company Roster
               </Link>
