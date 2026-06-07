@@ -161,9 +161,9 @@ export default function ExoPunishmentClient({ initialCadets }) {
                       </div>
                       {confStats.total > 0 && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Days Left</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Days Served</div>
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
-                            <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '1.1rem' }}>{confStats.remaining}</span>
+                            <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '1.1rem' }}>{confStats.total - confStats.remaining}</span>
                             <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>/ {confStats.total}</span>
                           </div>
                           <div style={{ width: '100%', height: '6px', background: 'rgba(128,128,128,0.2)', borderRadius: '3px', overflow: 'hidden', margin: '0.25rem 0' }}>
@@ -192,9 +192,9 @@ export default function ExoPunishmentClient({ initialCadets }) {
                       </div>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Remaining</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Hours Served</div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
-                          <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '1.1rem' }}>{cadet.totalTourRemaining}</span>
+                          <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '1.1rem' }}>{cadet.totalTourServed}</span>
                           <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>/ {cadet.totalTour}</span>
                         </div>
                         <div style={{ width: '100%', height: '6px', background: 'rgba(128,128,128,0.2)', borderRadius: '3px', overflow: 'hidden', marginTop: '0.25rem' }}>
