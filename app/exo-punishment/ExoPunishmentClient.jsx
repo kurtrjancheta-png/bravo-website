@@ -92,7 +92,7 @@ export default function ExoPunishmentClient({ initialCadets }) {
           <tr>
             <th style={{ padding: '1rem', textAlign: 'left', width: '25%' }}>Cadet Profile</th>
             <th style={{ padding: '1rem', textAlign: 'left', width: '35%' }}>Offenses</th>
-            <th style={{ padding: '1rem', textAlign: 'left', width: '15%' }}>Demerits Health</th>
+            <th style={{ padding: '1rem', textAlign: 'left', width: '15%' }}>Accumulated Demerits</th>
             <th style={{ padding: '1rem', textAlign: 'left', width: '15%' }}>Confinement</th>
             <th style={{ padding: '1rem', textAlign: 'left', width: '10%' }}>Touring</th>
           </tr>
@@ -100,15 +100,20 @@ export default function ExoPunishmentClient({ initialCadets }) {
         <tbody>
           {sortedCadets.map((cadet, index) => {
             const maxDemerits = getMaxDemerits(cadet.rank);
-            const demeritPercentage = Math.min(100, Math.max(0, (cadet.totalDemerits / maxDemerits) * 100));
+            const accumulatedDemerits = Math.max(0, cadet.totalDemerits - (cadet.totalMerits || 0));
+            const demeritPercentageRaw = (accumulatedDemerits / maxDemerits) * 100;
+            const demeritPercentage = Math.min(100, demeritPercentageRaw);
             
             let healthColor = '#fbbf24'; // Yellow
-            if (demeritPercentage >= 40 && demeritPercentage < 75) healthColor = '#ef4444'; // Red
-            if (demeritPercentage >= 75 && demeritPercentage < 100) healthColor = '#ff0000'; // Glowing Red
+            if (demeritPercentage >= 30 && demeritPercentage < 60) healthColor = '#f97316'; // Orange
+            if (demeritPercentage >= 60 && demeritPercentage < 80) healthColor = '#ef4444'; // Red
+            if (demeritPercentage >= 80 && demeritPercentage < 95) healthColor = '#b91c1c'; // Dark Red
+            if (demeritPercentage >= 95 && demeritPercentage < 100) healthColor = '#7f1d1d'; // Flashing Dark Red
             if (demeritPercentage >= 100) healthColor = '#111827'; // Black
             
-            const isDramaticGlowing = demeritPercentage >= 75 && demeritPercentage < 100;
+            const isFlashingDarkRed = demeritPercentage >= 95 && demeritPercentage < 100;
             const isBlackOut = demeritPercentage >= 100;
+            const isExcessive = demeritPercentageRaw > 100;
 
             const globalConfStats = getConfinementStats(cadet.confinementStart, cadet.confinementEnd);
             
@@ -304,19 +309,24 @@ export default function ExoPunishmentClient({ initialCadets }) {
 
                 <td style={{ padding: '1.5rem 1rem' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', opacity: isGloballyInactive ? 0.6 : 1 }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Total Demerits</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Accumulated Demerits</div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
-                      <span style={{ fontWeight: 800, color: healthColor, fontSize: '1.1rem' }}>{cadet.totalDemerits.toFixed(1)}</span>
+                      <span style={{ fontWeight: 800, color: healthColor, fontSize: '1.1rem' }}>{accumulatedDemerits.toFixed(1)}</span>
                       <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>/ {maxDemerits}</span>
                     </div>
+                    {isExcessive && (
+                      <div style={{ fontSize: '0.7rem', color: '#ef4444', fontWeight: 800, textTransform: 'uppercase', marginTop: '-0.2rem' }}>
+                        Excessive demerits
+                      </div>
+                    )}
                     <div style={{ width: '100%', height: '8px', background: 'rgba(128,128,128,0.2)', borderRadius: '4px', position: 'relative', marginTop: '0.5rem' }}>
                       <div 
                         style={{ 
                           height: '100%', width: `${demeritPercentage}%`, background: healthColor, borderRadius: '4px',
                           transition: 'width 0.5s ease',
-                          animation: isDramaticGlowing ? 'dramatic-pulse-red 0.6s ease-in-out infinite alternate' : isBlackOut ? 'pulse-black 1.5s infinite' : 'none',
-                          boxShadow: isDramaticGlowing ? '0 0 10px #ff0000, 0 0 20px #ff0000' : isBlackOut ? '0 0 10px #111827' : 'none',
-                          zIndex: isDramaticGlowing ? 10 : 1
+                          animation: isFlashingDarkRed ? 'dramatic-pulse-red 0.6s ease-in-out infinite alternate' : isBlackOut ? 'pulse-black 1.5s infinite' : 'none',
+                          boxShadow: isFlashingDarkRed ? '0 0 10px #7f1d1d, 0 0 20px #7f1d1d' : isBlackOut ? '0 0 10px #111827' : 'none',
+                          zIndex: isFlashingDarkRed ? 10 : 1
                         }} 
                       />
                     </div>

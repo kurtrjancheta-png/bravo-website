@@ -53,6 +53,11 @@ export default async function ExoPunishmentPage() {
     return !isNaN(no) && no > 0 && row[k3] && String(row[k3]).trim() !== '';
   });
 
+  const k15 = keys[14]; // DEMERIT ALLOWANCE
+  const k16_idx = keys[15]; // MERIT
+  const k17 = keys[16]; // REFERENCE
+  const k18 = keys[17]; // REMARKS
+
   // Group by cadet (LAST NAME)
   const cadetMap = new Map();
 
@@ -67,6 +72,7 @@ export default async function ExoPunishmentPage() {
         rank,
         picture: getCadetImageUrl(name, '', name) || '',
         totalDemerits: 0,
+        totalMerits: 0,
         totalTour: 0,
         totalTourConverted: 0,
         totalTourServed: 0,
@@ -82,6 +88,7 @@ export default async function ExoPunishmentPage() {
     
     // Add demerits and tours
     cadet.totalDemerits += Number(row[k7]) || 0;
+    cadet.totalMerits += Number(row[k16_idx]) || 0;
     cadet.totalTour += Number(row[k11]) || 0;
     cadet.totalTourConverted += Number(row[k12]) || 0;
     cadet.totalTourServed += Number(row[k13]) || 0;
