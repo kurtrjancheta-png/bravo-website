@@ -1,5 +1,6 @@
 import { getSheetData } from '../../lib/googleSheets';
 import ExoPunishmentClient from './ExoPunishmentClient';
+import { getCadetImageUrl } from '../../lib/imageMatcher';
 
 export const revalidate = 30; // seconds
 
@@ -19,8 +20,6 @@ export default async function ExoPunishmentPage() {
   }
 
   // Google Sheets API returns the first row as the keys of the objects.
-  // Because the first row has "UPDATED AS OF" in column 1, 'Column 1' key doesn't exist.
-  // So we grab the keys by their index.
   const keys = Object.keys(data[0]);
   const k1 = keys[0];   // NO or "UPDATED AS OF :"
   const k2 = keys[1];   // RANK
@@ -39,12 +38,9 @@ export default async function ExoPunishmentPage() {
 
   // Extract "UPDATED AS OF" date
   let updatedAsOf = 'Unknown';
-  // It could be in the keys (if it was the very first row)
   if (String(k1).toUpperCase().includes('UPDATED AS OF')) {
     updatedAsOf = String(k5 || '').trim();
   }
-  
-  // Or it could be in one of the rows
   const updatedRow = data.find(row => String(row[k1]).toUpperCase().includes('UPDATED AS OF'));
   if (updatedRow && updatedAsOf === 'Unknown') {
     updatedAsOf = String(updatedRow[k5] || '').trim();
@@ -68,6 +64,7 @@ export default async function ExoPunishmentPage() {
       cadetMap.set(name, {
         name,
         rank,
+        picture: getCadetImageUrl(name, '', name) || '',
         totalDemerits: 0,
         totalTour: 0,
         totalTourServed: 0,
@@ -87,7 +84,7 @@ export default async function ExoPunishmentPage() {
     cadet.totalTourServed += Number(row[k12]) || 0;
     cadet.totalTourRemaining += Number(row[k13]) || 0;
 
-    // Update confinement (take the latest/longest if multiple, for now just assign if exists)
+    // Update confinement
     if (isConfined) {
       cadet.isConfined = true;
       const start = String(row[k9] || '');

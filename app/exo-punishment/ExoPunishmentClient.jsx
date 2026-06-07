@@ -40,11 +40,10 @@ function getConfinementStats(startStr, endStr) {
 
 const getMaxDemerits = (rank) => {
   const r = (rank || '').toUpperCase();
-  // 1st classmen hold officer ranks or "1CL"
   if (r.includes('1CL') || r.includes('CPT') || r.includes('LT') || r.includes('MAJ') || r.includes('COL')) return 88.2;
   if (r.includes('2CL')) return 102.9;
   if (r.includes('3CL')) return 117.6;
-  return 100; // Fallback
+  return 100;
 };
 
 export default function ExoPunishmentClient({ initialCadets }) {
@@ -59,133 +58,149 @@ export default function ExoPunishmentClient({ initialCadets }) {
   }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '1.5rem', marginTop: '2rem' }}>
-      {initialCadets.map((cadet, index) => {
-        const maxDemerits = getMaxDemerits(cadet.rank);
-        const demeritPercentage = Math.min(100, Math.max(0, (cadet.totalDemerits / maxDemerits) * 100));
-        
-        let healthColor = '#10b981'; // Green
-        if (demeritPercentage >= 40 && demeritPercentage < 60) healthColor = '#fbbf24'; // Yellow
-        if (demeritPercentage >= 60) healthColor = '#ef4444'; // Red
-        
-        const isFlashing = demeritPercentage >= 60;
-        
-        // Confinement Calculations
-        const confStats = getConfinementStats(cadet.confinementStart, cadet.confinementEnd);
-        
-        // Touring Calculations
-        const tourPercentage = cadet.totalTour > 0 
-          ? Math.min(100, Math.max(0, (cadet.totalTourServed / cadet.totalTour) * 100))
-          : 0;
-
-        return (
-          <div key={index} className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', position: 'relative', overflow: 'hidden' }}>
+    <div className="table-container" style={{ marginTop: '2rem', width: '100%', overflowX: 'auto' }}>
+      <table style={{ width: '100%', minWidth: '1000px', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr style={{ background: 'rgba(255,255,255,0.05)' }}>
+            <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,0.1)', width: '25%' }}>Cadet Profile</th>
+            <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,0.1)', width: '35%' }}>Active Offenses</th>
+            <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,0.1)', width: '15%' }}>Demerits Health</th>
+            <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,0.1)', width: '15%' }}>Confinement</th>
+            <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,0.1)', width: '10%' }}>Touring</th>
+          </tr>
+        </thead>
+        <tbody>
+          {initialCadets.map((cadet, index) => {
+            const maxDemerits = getMaxDemerits(cadet.rank);
+            const demeritPercentage = Math.min(100, Math.max(0, (cadet.totalDemerits / maxDemerits) * 100));
             
-            {/* Header: Avatar, Name, Rank, and Status */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{
-                  width: '50px', height: '50px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #1e3a8a)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 800, color: 'white',
-                  flexShrink: 0
-                }}>
-                  {cadet.name.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <div style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '0.05em' }}>
-                    {cadet.rank} {cadet.name}
-                  </div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.25rem', fontWeight: 600 }}>
-                    {cadet.offenses.length} Active Offense{cadet.offenses.length !== 1 ? 's' : ''}
-                  </div>
-                </div>
-              </div>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
-                {cadet.isConfined ? (
-                  <div style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', padding: '0.4rem 0.75rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.05em', border: '1px solid rgba(239,68,68,0.3)' }}>
-                    🔴 CONFINED
-                  </div>
-                ) : (
-                  <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '0.4rem 0.75rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.05em' }}>
-                    🟢 NOT CONFINED
-                  </div>
-                )}
-              </div>
-            </div>
+            let healthColor = '#10b981';
+            if (demeritPercentage >= 40 && demeritPercentage < 60) healthColor = '#fbbf24';
+            if (demeritPercentage >= 60) healthColor = '#ef4444';
+            
+            const isFlashing = demeritPercentage >= 60;
+            const confStats = getConfinementStats(cadet.confinementStart, cadet.confinementEnd);
+            
+            const tourPercentage = cadet.totalTour > 0 
+              ? Math.min(100, Math.max(0, (cadet.totalTourServed / cadet.totalTour) * 100))
+              : 0;
 
-            {/* Offenses List */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '180px', overflowY: 'auto', paddingRight: '0.5rem' }} className="custom-scrollbar">
-              {cadet.offenses.map((offense, i) => (
-                <div key={i} style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px', borderLeft: '3px solid #fbbf24' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Nature of Offense</div>
-                    <div style={{ fontSize: '0.75rem', color: '#fbbf24', fontWeight: 600 }}>Class {offense.classOfOffense}</div>
+            return (
+              <tr key={index} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', verticalAlign: 'top' }}>
+                
+                {/* 1. CADET PROFILE */}
+                <td style={{ padding: '1.5rem 1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    {cadet.picture ? (
+                      <img 
+                        src={cadet.picture} 
+                        alt={cadet.name}
+                        style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.1)' }}
+                      />
+                    ) : (
+                      <div style={{
+                        width: '60px', height: '60px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #1e3a8a)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 800, color: 'white', flexShrink: 0
+                      }}>
+                        {cadet.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 800, letterSpacing: '0.05em', color: 'white' }}>
+                        {cadet.rank} {cadet.name}
+                      </div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.25rem', fontWeight: 600 }}>
+                        {cadet.offenses.length} Active Offense{cadet.offenses.length !== 1 ? 's' : ''}
+                      </div>
+                    </div>
                   </div>
-                  <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.5rem' }}>{offense.natureOfOffense || 'UNKNOWN'}</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{offense.description}</div>
-                </div>
-              ))}
-            </div>
+                </td>
 
-            {/* Punishment Tracking */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.5rem' }}>
-              
-              {/* Confinement Progress */}
-              {cadet.isConfined && confStats.total > 0 && (
-                <div>
+                {/* 2. ACTIVE OFFENSES */}
+                <td style={{ padding: '1.5rem 1rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '180px', overflowY: 'auto', paddingRight: '0.5rem' }} className="custom-scrollbar">
+                    {cadet.offenses.map((offense, i) => (
+                      <div key={i} style={{ background: 'rgba(0,0,0,0.2)', padding: '0.75rem', borderRadius: '8px', borderLeft: '3px solid #fbbf24' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{offense.natureOfOffense || 'UNKNOWN'}</div>
+                          <div style={{ fontSize: '0.7rem', color: '#fbbf24', fontWeight: 600 }}>Class {offense.classOfOffense}</div>
+                        </div>
+                        <div style={{ fontSize: '0.85rem', color: 'white', lineHeight: 1.4 }}>{offense.description}</div>
+                      </div>
+                    ))}
+                  </div>
+                </td>
+
+                {/* 3. DEMERITS HEALTH */}
+                <td style={{ padding: '1.5rem 1rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>Confinement Status</span>
-                    <span style={{ fontWeight: 700 }}>{confStats.remaining} / {confStats.total} Days Left</span>
+                    <span style={{ color: 'var(--text-secondary)' }}>Total</span>
+                    <span style={{ fontWeight: 700, color: healthColor }}>{cadet.totalDemerits.toFixed(1)} / {maxDemerits}</span>
                   </div>
-                  <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${confStats.percentage}%`, background: '#10b981', borderRadius: '4px' }} />
+                  <div style={{ width: '100%', height: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '6px', overflow: 'hidden', position: 'relative' }}>
+                    <div 
+                      style={{ 
+                        height: '100%', width: `${demeritPercentage}%`, background: healthColor, borderRadius: '6px',
+                        transition: 'width 0.5s ease',
+                        animation: isFlashing ? 'pulse-red 1.5s infinite' : 'none',
+                        boxShadow: isFlashing ? '0 0 10px #ef4444' : 'none'
+                      }} 
+                    />
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.35rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                    <span>Start: <strong style={{color: 'white'}}>{confStats.startText}</strong></span>
-                    <span>End: <strong style={{color: 'white'}}>{confStats.endText}</strong></span>
-                  </div>
-                </div>
-              )}
+                </td>
 
-              {/* Touring Progress */}
-              {cadet.totalTour > 0 && (
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>Touring Hours Remaining</span>
-                    <span style={{ fontWeight: 700 }}>{cadet.totalTourRemaining} / {cadet.totalTour}</span>
-                  </div>
-                  <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${tourPercentage}%`, background: '#10b981', borderRadius: '4px' }} />
-                  </div>
-                </div>
-              )}
+                {/* 4. CONFINEMENT */}
+                <td style={{ padding: '1.5rem 1rem' }}>
+                  {cadet.isConfined ? (
+                    <div>
+                      <div style={{ display: 'inline-block', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.05em', border: '1px solid rgba(239,68,68,0.3)', marginBottom: '0.5rem' }}>
+                        🔴 CONFINED
+                      </div>
+                      {confStats.total > 0 && (
+                        <>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem', fontSize: '0.75rem' }}>
+                            <span style={{ color: 'var(--text-secondary)' }}>Days Left</span>
+                            <span style={{ fontWeight: 700, color: 'white' }}>{confStats.remaining} / {confStats.total}</span>
+                          </div>
+                          <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden', marginBottom: '0.25rem' }}>
+                            <div style={{ height: '100%', width: `${confStats.percentage}%`, background: '#10b981', borderRadius: '3px' }} />
+                          </div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
+                            <span>{confStats.startText}</span>
+                            <span>{confStats.endText}</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{ display: 'inline-block', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.05em' }}>
+                      🟢 NONE
+                    </div>
+                  )}
+                </td>
 
-              {/* Demerit Health Bar */}
-              <div style={{ marginTop: '0.5rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>Compounding Demerits Health</span>
-                  <span style={{ fontWeight: 700, color: healthColor }}>{cadet.totalDemerits.toFixed(1)} / {maxDemerits}</span>
-                </div>
-                <div style={{ width: '100%', height: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '6px', overflow: 'hidden', position: 'relative' }}>
-                  <div 
-                    style={{ 
-                      height: '100%', 
-                      width: `${demeritPercentage}%`, 
-                      background: healthColor,
-                      borderRadius: '6px',
-                      transition: 'width 0.5s ease',
-                      animation: isFlashing ? 'pulse-red 1.5s infinite' : 'none',
-                      boxShadow: isFlashing ? '0 0 10px #ef4444' : 'none'
-                    }} 
-                  />
-                </div>
-              </div>
+                {/* 5. TOURING */}
+                <td style={{ padding: '1.5rem 1rem' }}>
+                  {cadet.totalTour > 0 ? (
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem', fontSize: '0.75rem' }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>Rem</span>
+                        <span style={{ fontWeight: 700, color: 'white' }}>{cadet.totalTourRemaining} / {cadet.totalTour}</span>
+                      </div>
+                      <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${tourPercentage}%`, background: '#10b981', borderRadius: '3px' }} />
+                      </div>
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>No Tours</span>
+                  )}
+                </td>
 
-            </div>
-          </div>
-        );
-      })}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
 
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes pulse-red {
