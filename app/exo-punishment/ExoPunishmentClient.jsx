@@ -81,8 +81,12 @@ export default function ExoPunishmentClient({ initialCadets }) {
             const isFlashing = demeritPercentage >= 60;
             const confStats = getConfinementStats(cadet.confinementStart, cadet.confinementEnd);
             
+            // Calculate touring accurately taking converted hours into account
+            // Touring progress should be based on how many hours have been knocked out (served + converted)
+            // Or more reliably: total - remaining
+            const tourProgress = cadet.totalTour > 0 ? (cadet.totalTour - cadet.totalTourRemaining) : 0;
             const tourPercentage = cadet.totalTour > 0 
-              ? Math.min(100, Math.max(0, (cadet.totalTourServed / cadet.totalTour) * 100))
+              ? Math.min(100, Math.max(0, (tourProgress / cadet.totalTour) * 100))
               : 0;
 
             return (
@@ -194,7 +198,7 @@ export default function ExoPunishmentClient({ initialCadets }) {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Hours Served</div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
-                          <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '1.1rem' }}>{cadet.totalTourServed}</span>
+                          <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '1.1rem' }}>{tourProgress}</span>
                           <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>/ {cadet.totalTour}</span>
                         </div>
                         <div style={{ width: '100%', height: '6px', background: 'rgba(128,128,128,0.2)', borderRadius: '3px', overflow: 'hidden', marginTop: '0.25rem' }}>

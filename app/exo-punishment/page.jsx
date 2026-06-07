@@ -19,7 +19,7 @@ export default async function ExoPunishmentPage() {
     );
   }
 
-  // Google Sheets API returns the first row as the keys of the objects.
+  // Google Sheets API returns the first row as the keys of the objects.  // So we grab the keys by their index.
   const keys = Object.keys(data[0]);
   const k1 = keys[0];   // NO or "UPDATED AS OF :"
   const k2 = keys[1];   // RANK
@@ -32,8 +32,9 @@ export default async function ExoPunishmentPage() {
   const k9 = keys[8];   // CONFINEMENT START
   const k10 = keys[9];  // CONFINEMENT END
   const k11 = keys[10]; // TOURING HOURS TOTAL
-  const k12 = keys[11]; // TOURING SERVED
-  const k13 = keys[12]; // TOURING REMAINING
+  const k12 = keys[11]; // TOURING CONVERTED
+  const k13 = keys[12]; // TOURING SERVED
+  const k14 = keys[13]; // TOURING REMAINING
   const k16 = keys[15]; // REMARKS
 
   // Extract "UPDATED AS OF" date
@@ -67,6 +68,7 @@ export default async function ExoPunishmentPage() {
         picture: getCadetImageUrl(name, '', name) || '',
         totalDemerits: 0,
         totalTour: 0,
+        totalTourConverted: 0,
         totalTourServed: 0,
         totalTourRemaining: 0,
         isConfined: false,
@@ -81,8 +83,9 @@ export default async function ExoPunishmentPage() {
     // Add demerits and tours
     cadet.totalDemerits += Number(row[k7]) || 0;
     cadet.totalTour += Number(row[k11]) || 0;
-    cadet.totalTourServed += Number(row[k12]) || 0;
-    cadet.totalTourRemaining += Number(row[k13]) || 0;
+    cadet.totalTourConverted += Number(row[k12]) || 0;
+    cadet.totalTourServed += Number(row[k13]) || 0;
+    cadet.totalTourRemaining += Number(row[k14]) || 0;
 
     // Update confinement
     if (isConfined) {
