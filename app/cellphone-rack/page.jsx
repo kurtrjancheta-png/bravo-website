@@ -23,7 +23,10 @@ export default async function CellphoneRackPage() {
     sheet1Data = d1 || [];
     cl2Data = d2 || [];
     cl3Data = d3 || [];
-    cl4Data = d4 || [];
+    
+    // Google Sheets API returns Sheet1 if 4CL doesn't exist. Check for duplicates.
+    const isD4Duplicate = d4 && d4.length > 0 && d1 && d1.length > 0 && JSON.stringify(d4[0]) === JSON.stringify(d1[0]);
+    cl4Data = isD4Duplicate ? [] : (d4 || []);
   } catch (err) {
     console.error('Failed to fetch cellphone sheets:', err);
   }
@@ -36,7 +39,7 @@ export default async function CellphoneRackPage() {
     const kName = keys[0];
     const kStatus = keys[1];
     const kRemarks = keys[2];
-    // keys[3] is usually 'Number of Phones'
+    const kNumPhones = keys[3]; // 'Number of Phones'
     const kPhone = keys[4];
     const kIG = keys[5];
 
@@ -49,6 +52,7 @@ export default async function CellphoneRackPage() {
         status: String(row[kStatus] || '').trim(),
         remarks: String(row[kRemarks] || '').trim(),
         cadetClass: assignedClass,
+        numPhones: parseInt(row[kNumPhones] || '0', 10),
         phone: String(row[kPhone] || '').trim(),
         ig: String(row[kIG] || '').trim()
       });

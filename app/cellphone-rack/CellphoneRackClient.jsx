@@ -63,6 +63,28 @@ export default function CellphoneRackClient({ initialData }) {
               justifyContent: 'center'
             }}>
               {classCadets.map((cadet, i) => {
+                const hasNoPhone = !cadet.numPhones || cadet.numPhones === 0;
+
+                if (hasNoPhone) {
+                  return (
+                    <div key={i} style={{
+                      width: '180px',
+                      height: '360px',
+                      borderRadius: '36px',
+                      border: '2px dashed var(--border-color)',
+                      padding: '8px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      textAlign: 'center'
+                    }}>
+                      <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem', color: 'var(--text-secondary)', letterSpacing: '1px' }}>{cadet.name}</h4>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 800 }}>NO SMARTPHONE</div>
+                    </div>
+                  );
+                }
+
                 const isLoggedOut = cadet.status.toLowerCase() === 'logged out';
                 
                 // Colors and themes
