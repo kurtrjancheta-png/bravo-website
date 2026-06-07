@@ -65,6 +65,25 @@ export default function ExoPunishmentClient({ initialCadets }) {
     setViewModes(prev => ({ ...prev, [cadetName]: mode }));
   };
 
+  const sortedCadets = [...initialCadets].map(cadet => {
+    let activeOffenseCount = 0;
+    cadet.offenses.forEach(off => {
+      const offConfStats = getConfinementStats(off.confStart, off.confEnd);
+      const offConfCompleted = !off.isConfined || (offConfStats.total > 0 && offConfStats.remaining === 0);
+      const offTourCompleted = off.tourTotal === 0 || off.tourRemaining <= 0;
+      if (!(offConfCompleted && offTourCompleted)) {
+        activeOffenseCount++;
+      }
+    });
+    return { ...cadet, activeOffenseCount };
+  }).sort((a, b) => {
+    const aActive = a.activeOffenseCount > 0;
+    const bActive = b.activeOffenseCount > 0;
+    if (aActive && !bActive) return -1;
+    if (!aActive && bActive) return 1;
+    return 0; // maintain original order for ties
+  });
+
   return (
     <div className="table-container" style={{ marginTop: '2rem', width: '100%', overflowX: 'auto' }}>
       <table style={{ width: '100%', minWidth: '1000px', borderCollapse: 'collapse' }}>
@@ -78,7 +97,7 @@ export default function ExoPunishmentClient({ initialCadets }) {
           </tr>
         </thead>
         <tbody>
-          {initialCadets.map((cadet, index) => {
+          {sortedCadets.map((cadet, index) => {
             const maxDemerits = getMaxDemerits(cadet.rank);
             const demeritPercentage = Math.min(100, Math.max(0, (cadet.totalDemerits / maxDemerits) * 100));
             
