@@ -139,38 +139,69 @@ export default function ExoPunishmentClient({ initialCadets }) {
                       <div style={{ fontSize: '1.1rem', fontWeight: 800, letterSpacing: '0.05em', color: 'var(--text-primary)' }}>
                         {cadet.rank} {cadet.name}
                       </div>
-                      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                      <div style={{ 
+                        display: 'inline-flex', 
+                        background: 'rgba(128,128,128,0.15)', 
+                        borderRadius: '20px', 
+                        padding: '0.2rem', 
+                        marginTop: '0.5rem',
+                        gap: '0.2rem'
+                      }}>
                         <button 
                           onClick={() => toggleViewMode(cadet.name, 'active')}
                           style={{ 
-                            background: currentMode === 'active' ? '#ef4444' : 'transparent',
-                            color: currentMode === 'active' ? '#fff' : 'var(--text-secondary)',
-                            border: '1px solid #ef4444',
-                            padding: '0.15rem 0.4rem',
-                            borderRadius: '4px',
+                            padding: '0.25rem 0.75rem',
+                            borderRadius: '16px',
                             fontSize: '0.7rem',
+                            fontWeight: 700,
                             cursor: 'pointer',
-                            fontWeight: currentMode === 'active' ? 800 : 600,
-                            transition: 'all 0.2s'
+                            border: 'none',
+                            background: currentMode === 'active' ? '#ef4444' : 'transparent',
+                            color: currentMode === 'active' ? '#ffffff' : 'var(--text-secondary)',
+                            boxShadow: currentMode === 'active' ? '0 2px 5px rgba(239,68,68,0.3)' : 'none',
+                            transition: 'all 0.2s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.3rem'
                           }}
                         >
-                          Active ({activeOffenses.length})
+                          Active 
+                          <span style={{ 
+                            background: currentMode === 'active' ? 'rgba(255,255,255,0.25)' : 'rgba(128,128,128,0.2)', 
+                            padding: '0.1rem 0.35rem', 
+                            borderRadius: '10px', 
+                            fontSize: '0.65rem' 
+                          }}>
+                            {activeOffenses.length}
+                          </span>
                         </button>
                         <button 
                           onClick={() => toggleViewMode(cadet.name, 'inactive')}
                           style={{ 
-                            background: currentMode === 'inactive' ? '#10b981' : 'transparent',
-                            color: currentMode === 'inactive' ? '#fff' : 'var(--text-secondary)',
-                            border: '1px solid #10b981',
-                            padding: '0.15rem 0.4rem',
-                            borderRadius: '4px',
+                            padding: '0.25rem 0.75rem',
+                            borderRadius: '16px',
                             fontSize: '0.7rem',
+                            fontWeight: 700,
                             cursor: 'pointer',
-                            fontWeight: currentMode === 'inactive' ? 800 : 600,
-                            transition: 'all 0.2s'
+                            border: 'none',
+                            background: currentMode === 'inactive' ? '#10b981' : 'transparent',
+                            color: currentMode === 'inactive' ? '#ffffff' : 'var(--text-secondary)',
+                            boxShadow: currentMode === 'inactive' ? '0 2px 5px rgba(16,185,129,0.3)' : 'none',
+                            transition: 'all 0.2s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.3rem'
                           }}
                         >
-                          Inactive ({inactiveOffenses.length})
+                          Inactive
+                          <span style={{ 
+                            background: currentMode === 'inactive' ? 'rgba(255,255,255,0.25)' : 'rgba(128,128,128,0.2)', 
+                            padding: '0.1rem 0.35rem', 
+                            borderRadius: '10px', 
+                            fontSize: '0.65rem' 
+                          }}>
+                            {inactiveOffenses.length}
+                          </span>
                         </button>
                       </div>
                     </div>
