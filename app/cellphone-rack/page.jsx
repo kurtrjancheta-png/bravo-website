@@ -11,29 +11,32 @@ export default async function CellphoneRackPage() {
   let sheet1Data = [];
   let cl2Data = [];
   let cl3Data = [];
+  let cl4Data = [];
 
   try {
-    const [d1, d2, d3] = await Promise.all([
+    const [d1, d2, d3, d4] = await Promise.all([
       getSheetData(CELLPHONE_SHEET_ID, 'Sheet1').catch(() => []),
       getSheetData(CELLPHONE_SHEET_ID, '2CL').catch(() => []),
-      getSheetData(CELLPHONE_SHEET_ID, '3CL').catch(() => [])
+      getSheetData(CELLPHONE_SHEET_ID, '3CL').catch(() => []),
+      getSheetData(CELLPHONE_SHEET_ID, '4CL').catch(() => [])
     ]);
     sheet1Data = d1 || [];
     cl2Data = d2 || [];
     cl3Data = d3 || [];
+    cl4Data = d4 || [];
   } catch (err) {
     console.error('Failed to fetch cellphone sheets:', err);
   }
 
   const parsedData = [];
 
-  const parseSheet = (dataArray) => {
+  const parseSheet = (dataArray, assignedClass) => {
     if (!dataArray || dataArray.length === 0) return;
     const keys = Object.keys(dataArray[0]);
     const kName = keys[0];
     const kStatus = keys[1];
     const kRemarks = keys[2];
-    const kClass = keys[3];
+    // keys[3] is usually 'Number of Phones'
     const kPhone = keys[4];
     const kIG = keys[5];
 
@@ -45,16 +48,17 @@ export default async function CellphoneRackPage() {
         name,
         status: String(row[kStatus] || '').trim(),
         remarks: String(row[kRemarks] || '').trim(),
-        cadetClass: String(row[kClass] || '').trim(),
+        cadetClass: assignedClass,
         phone: String(row[kPhone] || '').trim(),
         ig: String(row[kIG] || '').trim()
       });
     });
   };
 
-  parseSheet(sheet1Data);
-  parseSheet(cl2Data);
-  parseSheet(cl3Data);
+  parseSheet(sheet1Data, '1');
+  parseSheet(cl2Data, '2');
+  parseSheet(cl3Data, '3');
+  parseSheet(cl4Data, '4');
 
   return (
     <div>
