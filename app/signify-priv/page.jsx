@@ -1,7 +1,7 @@
 import { getSheetData } from '../../lib/googleSheets';
 import PrivilegesClient from './PrivilegesClient';
 
-export const revalidate = 15; // 15 second cache to ensure fast updates
+export const dynamic = 'force-dynamic';
 
 const PRIVILEGES_SHEET_ID = '16i_7nny1QbFkFvhqnTX9ebgCOT7WeUmq8Uz_r5Vaj5w';
 const SOI_SHEET_ID = '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
