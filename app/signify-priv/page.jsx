@@ -10,9 +10,12 @@ export default async function SignifyPrivilegePage() {
   
   try {
     const data = await getSheetData(PRIVILEGES_SHEET_ID, 'ACTIVE PRIV SIGNIFY SHEETS');
-    // Ensure we filter out empty rows
+    // Ensure we filter out empty rows by checking for any type key
     if (data && Array.isArray(data)) {
-       activePrivileges = data.filter(row => row['TYPE'] && row['DATE']);
+       activePrivileges = data.filter(row => {
+         const type = row['TYPE'] || row['TYPE OF PRIV'];
+         return !!type;
+       });
        
        // Reverse so newest are at the top
        activePrivileges.reverse();

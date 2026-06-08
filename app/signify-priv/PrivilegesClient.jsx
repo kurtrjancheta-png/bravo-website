@@ -103,16 +103,21 @@ export default function PrivilegesClient({ activePrivileges }) {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
           {activePrivileges.map((priv, idx) => {
-            const deadline = parseDeadline(priv.DEADLINE);
+            const rawType = priv.TYPE || priv['TYPE OF PRIV'] || 'Unknown';
+            const rawDate = priv.DATE || priv['DATE OF PRIV'] || 'No Date';
+            const rawDeadline = priv.DEADLINE || priv['DEADLINE '] || null;
+            const rawSheetName = priv['SHEET NAME'] || priv[''] || `${rawType} ${rawDate}`;
+            
+            const deadline = parseDeadline(rawDeadline);
             const isClosed = deadline && currentTime > deadline;
             
             return (
               <div 
                 key={idx} 
                 onClick={() => !isClosed && setSelectedPriv({
-                   type: priv.TYPE, 
-                   date: priv.DATE, 
-                   sheetName: priv['SHEET NAME'] || `${priv.TYPE} ${priv.DATE}`
+                   type: rawType, 
+                   date: rawDate, 
+                   sheetName: rawSheetName
                 })}
                 style={{
                   background: isClosed ? 'var(--bg-secondary)' : 'white',
@@ -132,7 +137,7 @@ export default function PrivilegesClient({ activePrivileges }) {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                    <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                     {priv.DATE}
+                     {rawDate}
                    </div>
                    <div style={{ 
                       background: isClosed ? '#ef4444' : '#4ade80', 
@@ -147,7 +152,7 @@ export default function PrivilegesClient({ activePrivileges }) {
                 </div>
                 
                 <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', textTransform: 'capitalize' }}>
-                  {priv.TYPE}
+                  {rawType}
                 </div>
                 
                 <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 'auto', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem' }}>
