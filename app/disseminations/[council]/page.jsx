@@ -111,8 +111,9 @@ async function DisseminationCards({ councilId }) {
               {card['CONTENT'] || 'No content provided.'}
             </div>
             
-            {card['ATTACHMENT'] && card['ATTACHMENT'].trim() !== '' && (
-              <ImageGallery urls={card['ATTACHMENT'].split(',')} />
+            {/* If the Google API parses the header as "Column 6", we should check both keys */}
+            {((card['ATTACHMENT'] && card['ATTACHMENT'].trim() !== '') || (card['Column 6'] && card['Column 6'].trim() !== '')) && (
+              <ImageGallery urls={(card['ATTACHMENT'] || card['Column 6']).split(',')} />
             )}
             
             <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>

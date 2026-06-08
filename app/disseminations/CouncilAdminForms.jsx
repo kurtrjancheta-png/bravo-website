@@ -103,6 +103,7 @@ export default function CouncilAdminForms({ councilName }) {
       // Since we use no-cors, the response is opaque and we can't read response.json()
       // We will assume it's successful if the fetch didn't throw an error.
       alert("Successfully added to the board! Refresh the page to see it.");
+      window.location.reload();
       setModalState("CLOSED");
     } catch (error) {
       console.error(error);
