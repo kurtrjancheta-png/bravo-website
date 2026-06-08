@@ -1,8 +1,25 @@
-import { getSheetData, COUNCILS, DISSEMINATION_SHEET_ID } from '@/lib/googleSheets';
+import { getSheetData } from '../../lib/googleSheets';
 import CalendarClient from './CalendarClient';
 import { Suspense } from 'react';
 
 const SOI_SHEET_ID = '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
+const DISSEMINATION_SHEET_ID = '1YeaoloRz4REe_iVomGfFI9WugalrDFsHiz04eOcD0a8';
+
+const COUNCILS = [
+  { id: 'S1', name: 'S1 Personnel' },
+  { id: 'S2', name: 'S2 Security' },
+  { id: 'S3', name: 'S3 Operations' },
+  { id: 'S4', name: 'S4 Logistics' },
+  { id: 'S5', name: 'S5 Plans & Programs' },
+  { id: 'S6', name: 'S6 Signal' },
+  { id: 'S7', name: 'S7 Civil-Military' },
+  { id: 'S8', name: 'S8 Education & Training' },
+  { id: 'S10', name: 'S10 Finance' },
+  { id: 'ATHLETIC', name: 'Athletic Council' },
+  { id: 'GAD', name: 'GAD' },
+  { id: 'HONOR COMM', name: 'Honor Committee' },
+  { id: 'CCPB', name: 'CCPB' }
+];
 
 export const revalidate = 30; // 30 sec caching
 
