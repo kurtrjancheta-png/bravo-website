@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 
 export default function CellphoneRackClient({ initialData }) {
   const [filterClass, setFilterClass] = useState('All');
@@ -17,32 +18,66 @@ export default function CellphoneRackClient({ initialData }) {
     groupedData[c] = filteredData.filter(cadet => cadet.cadetClass === c).sort((a, b) => a.name.localeCompare(b.name));
   });
 
+  const summary = [
+    { name: 'Logged In', value: filteredData.filter(c => c.numPhones > 0 && c.status.toLowerCase() === 'logged in').length, fill: '#10b981' },
+    { name: 'Logged Out', value: filteredData.filter(c => c.numPhones > 0 && c.status.toLowerCase() === 'logged out').length, fill: '#374151' },
+    { name: 'No Smartphone', value: filteredData.filter(c => !c.numPhones || c.numPhones === 0).length, fill: '#9ca3af' }
+  ].filter(item => item.value > 0);
+
   return (
     <div>
-      {/* Filter */}
-      <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <span style={{ fontWeight: 800, color: 'var(--text-secondary)' }}>FILTER BY CLASS:</span>
-        <select 
-          value={filterClass} 
-          onChange={(e) => setFilterClass(e.target.value)}
-          style={{ 
-            padding: '0.5rem 1rem', 
-            borderRadius: '4px', 
-            background: 'var(--card-bg)', 
-            border: '1px solid var(--border-color)',
-            color: 'var(--text-primary)',
-            outline: 'none',
-            fontFamily: 'inherit',
-            fontWeight: 800,
-            cursor: 'pointer'
-          }}
-        >
-          <option value="All">ALL CLASSES</option>
-          <option value="1">1ST CLASS</option>
-          <option value="2">2ND CLASS</option>
-          <option value="3">3RD CLASS</option>
-          <option value="4">4TH CLASS</option>
-        </select>
+      {/* Filter and Chart Header */}
+      <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <span style={{ fontWeight: 800, color: 'var(--text-secondary)' }}>FILTER BY CLASS:</span>
+          <select 
+            value={filterClass} 
+            onChange={(e) => setFilterClass(e.target.value)}
+            style={{ 
+              padding: '0.5rem 1rem', 
+              borderRadius: '4px', 
+              background: 'var(--card-bg)', 
+              border: '1px solid var(--border-color)',
+              color: 'var(--text-primary)',
+              outline: 'none',
+              fontFamily: 'inherit',
+              fontWeight: 800,
+              cursor: 'pointer'
+            }}
+          >
+            <option value="All">ALL CLASSES</option>
+            <option value="1">1ST CLASS</option>
+            <option value="2">2ND CLASS</option>
+            <option value="3">3RD CLASS</option>
+            <option value="4">4TH CLASS</option>
+          </select>
+        </div>
+
+        {summary.length > 0 && (
+          <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.5rem 1rem', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+            <PieChart width={300} height={120}>
+              <Pie
+                data={summary}
+                cx={80}
+                cy={55}
+                innerRadius={35}
+                outerRadius={55}
+                paddingAngle={5}
+                dataKey="value"
+                stroke="none"
+              >
+                {summary.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                ))}
+              </Pie>
+              <Tooltip 
+                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                itemStyle={{ fontWeight: 800 }}
+              />
+              <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ fontWeight: 800, fontSize: '0.8rem', color: 'var(--text-secondary)' }} />
+            </PieChart>
+          </div>
+        )}
       </div>
 
       {/* Render Groups */}
