@@ -65,9 +65,6 @@ export default function CalendarClient({ birthdays, activities }) {
     const dayActivities = activities.filter(a => {
       if (!a.dateRaw) return false;
       try {
-        // Try parsing 'MM/DD/YYYY' or similar
-        // Since we don't know the exact format, let's try a generic parse
-        // Usually JS Date can parse '12/25/2026'
         const actDate = new Date(a.dateRaw);
         if (isNaN(actDate)) return false;
         return actDate.getMonth() === day.getMonth() && 
@@ -83,12 +80,12 @@ export default function CalendarClient({ birthdays, activities }) {
 
   const renderHeader = () => {
     return (
-      <div className="flex justify-between items-center mb-6">
-        <button onClick={prevMonth} className="px-4 py-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg hover:bg-[var(--accent-gold)] hover:text-black transition-colors font-bold text-lg">&lt;</button>
-        <h2 className="text-2xl font-black text-[var(--gold-primary)] uppercase tracking-widest">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <button onClick={prevMonth} style={{ padding: '0.5rem 1rem', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.125rem', color: 'var(--text-primary)' }}>&lt;</button>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: '900', color: 'var(--gold-primary)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>
           {format(currentMonth, 'MMMM yyyy')}
         </h2>
-        <button onClick={nextMonth} className="px-4 py-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg hover:bg-[var(--accent-gold)] hover:text-black transition-colors font-bold text-lg">&gt;</button>
+        <button onClick={nextMonth} style={{ padding: '0.5rem 1rem', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.125rem', color: 'var(--text-primary)' }}>&gt;</button>
       </div>
     );
   };
@@ -99,12 +96,12 @@ export default function CalendarClient({ birthdays, activities }) {
 
     for (let i = 0; i < 7; i++) {
       days.push(
-        <div key={i} className="text-center font-bold text-[var(--text-secondary)] text-sm uppercase tracking-wider py-2">
+        <div key={i} style={{ textAlign: 'center', fontWeight: 'bold', color: 'var(--text-secondary)', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0.5rem 0' }}>
           {format(addDays(startDate, i), 'EEEEEE')}
         </div>
       );
     }
-    return <div className="grid grid-cols-7 mb-2">{days}</div>;
+    return <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: '0.5rem' }}>{days}</div>;
   };
 
   const renderCells = () => {
@@ -129,42 +126,68 @@ export default function CalendarClient({ birthdays, activities }) {
         const isCurrentMonth = isSameMonth(day, monthStart);
         const today = isToday(day);
 
+        // Determine cell styling based on state
+        let bgColor = 'var(--bg-secondary)';
+        let opacity = 1;
+        let borderColor = 'rgba(255,255,255,0.05)';
+        let boxShadow = 'none';
+        let zIndex = 1;
+
+        if (!isCurrentMonth) {
+          opacity = 0.3;
+          bgColor = 'rgba(0,0,0,0.2)';
+        }
+        if (today) {
+          bgColor = 'rgba(212,175,55,0.05)';
+          borderColor = 'var(--gold-primary)';
+        }
+        if (isSelected) {
+          boxShadow = '0 0 0 2px var(--gold-primary)';
+          zIndex = 10;
+        }
+
         days.push(
           <div
             key={day}
             onClick={() => onDateClick(cloneDay)}
-            className={`
-              relative min-h-[100px] border border-[rgba(255,255,255,0.05)] p-2 cursor-pointer transition-all
-              ${!isCurrentMonth ? 'opacity-30 bg-black/20' : 'bg-[var(--bg-secondary)] hover:bg-[rgba(212,175,55,0.1)]'}
-              ${isSelected ? 'ring-2 ring-[var(--gold-primary)] z-10' : ''}
-              ${today ? 'bg-[rgba(212,175,55,0.05)] border-[var(--gold-primary)]' : ''}
-            `}
+            style={{
+              position: 'relative',
+              minHeight: '100px',
+              border: `1px solid ${borderColor}`,
+              padding: '0.5rem',
+              cursor: 'pointer',
+              backgroundColor: bgColor,
+              opacity: opacity,
+              boxShadow: boxShadow,
+              zIndex: zIndex,
+              transition: 'all 0.2s'
+            }}
           >
-            <div className="flex justify-between items-start">
-              <span className={`font-bold ${today ? 'text-[var(--gold-primary)]' : 'text-white'}`}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <span style={{ fontWeight: 'bold', color: today ? 'var(--gold-primary)' : 'var(--text-primary)' }}>
                 {formattedDate}
               </span>
               {hasEvents && (
-                <div className="flex gap-1">
-                  {dayBDays.length > 0 && <span className="w-2 h-2 rounded-full bg-pink-500 shadow-[0_0_8px_rgba(236,72,153,0.8)]"></span>}
-                  {dayActs.length > 0 && <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]"></span>}
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  {dayBDays.length > 0 && <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ec4899', boxShadow: '0 0 8px rgba(236,72,153,0.8)' }}></span>}
+                  {dayActs.length > 0 && <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#3b82f6', boxShadow: '0 0 8px rgba(59,130,246,0.8)' }}></span>}
                 </div>
               )}
             </div>
             
-            <div className="mt-2 flex flex-col gap-1 overflow-hidden h-[60px]">
+            <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '4px', overflow: 'hidden', height: '60px' }}>
               {dayBDays.slice(0, 2).map((b, idx) => (
-                <div key={idx} className="text-[0.65rem] truncate bg-pink-500/20 text-pink-300 px-1 py-0.5 rounded border border-pink-500/30 font-semibold">
+                <div key={idx} style={{ fontSize: '0.65rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', backgroundColor: 'rgba(236,72,153,0.2)', color: '#f9a8d4', padding: '2px 4px', borderRadius: '4px', border: '1px solid rgba(236,72,153,0.3)', fontWeight: '600' }}>
                   🎂 {b.name.split(' ')[0]}
                 </div>
               ))}
               {dayActs.slice(0, 2).map((a, idx) => (
-                <div key={idx} className="text-[0.65rem] truncate bg-blue-500/20 text-blue-300 px-1 py-0.5 rounded border border-blue-500/30 font-semibold">
+                <div key={idx} style={{ fontSize: '0.65rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', backgroundColor: 'rgba(59,130,246,0.2)', color: '#93c5fd', padding: '2px 4px', borderRadius: '4px', border: '1px solid rgba(59,130,246,0.3)', fontWeight: '600' }}>
                   📌 {a.council}
                 </div>
               ))}
               {(dayBDays.length + dayActs.length) > 2 && (
-                <div className="text-[0.65rem] text-[var(--text-secondary)] font-bold text-center">
+                <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 'bold', textAlign: 'center' }}>
                   +{(dayBDays.length + dayActs.length) - 2} more
                 </div>
               )}
@@ -174,13 +197,13 @@ export default function CalendarClient({ birthdays, activities }) {
         day = addDays(day, 1);
       }
       rows.push(
-        <div className="grid grid-cols-7" key={day}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }} key={day}>
           {days}
         </div>
       );
       days = [];
     }
-    return <div className="bg-black/40 rounded-xl overflow-hidden border border-[var(--border-color)] shadow-2xl">{rows}</div>;
+    return <div style={{ backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>{rows}</div>;
   };
 
   const renderEventDetails = () => {
@@ -188,30 +211,30 @@ export default function CalendarClient({ birthdays, activities }) {
     const hasEvents = selectedBdays.length > 0 || selectedActs.length > 0;
 
     return (
-      <div className="mt-8 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-6 shadow-xl">
-        <h3 className="text-xl font-bold text-[var(--gold-primary)] mb-4 border-b border-[var(--border-color)] pb-2 uppercase tracking-wide">
+      <div style={{ marginTop: '2rem', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+        <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--gold-primary)', marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 1rem 0' }}>
           Events for {format(selectedDate, 'MMMM d, yyyy')}
         </h3>
         
         {!hasEvents ? (
-          <p className="text-[var(--text-secondary)] italic">No events scheduled for this day.</p>
+          <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic', margin: 0 }}>No events scheduled for this day.</p>
         ) : (
-          <div className="space-y-6">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {/* Birthdays */}
             {selectedBdays.length > 0 && (
               <div>
-                <h4 className="text-pink-400 font-bold uppercase tracking-wider text-sm mb-3 flex items-center gap-2">
-                  <span className="text-lg">🎂</span> Birthdays
+                <h4 style={{ color: '#f472b6', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.875rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0 0 0.75rem 0' }}>
+                  <span style={{ fontSize: '1.125rem' }}>🎂</span> Birthdays
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
                   {selectedBdays.map((b, i) => (
-                    <div key={i} className="flex items-center gap-3 bg-black/30 border border-pink-500/20 rounded-lg p-3 hover:border-pink-500/50 transition-colors">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-lg border-2 border-black">
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(236,72,153,0.2)', borderRadius: '8px', padding: '0.75rem' }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'linear-gradient(to bottom right, #ec4899, #9333ea)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '1.25rem', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', border: '2px solid black' }}>
                         {b.name.charAt(0)}
                       </div>
                       <div>
-                        <div className="font-bold text-white text-sm">{b.name}</div>
-                        <div className="text-xs text-pink-300 font-semibold">{b.className}</div>
+                        <div style={{ fontWeight: 'bold', color: 'white', fontSize: '0.875rem' }}>{b.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#f9a8d4', fontWeight: '600' }}>{b.className}</div>
                       </div>
                     </div>
                   ))}
@@ -222,20 +245,17 @@ export default function CalendarClient({ birthdays, activities }) {
             {/* Activities */}
             {selectedActs.length > 0 && (
               <div>
-                <h4 className="text-blue-400 font-bold uppercase tracking-wider text-sm mb-3 flex items-center gap-2">
-                  <span className="text-lg">📌</span> Council Activities
+                <h4 style={{ color: '#60a5fa', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.875rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0 0 0.75rem 0' }}>
+                  <span style={{ fontSize: '1.125rem' }}>📌</span> Council Activities
                 </h4>
-                <div className="grid grid-cols-1 gap-3">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem' }}>
                   {selectedActs.map((a, i) => (
-                    <div key={i} className="bg-black/30 border border-blue-500/20 rounded-lg p-4 border-l-4 border-l-blue-500 hover:bg-black/50 transition-colors">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-xs font-bold text-blue-300 uppercase bg-blue-900/40 px-2 py-1 rounded">{a.council}</span>
-                        <span className="text-xs font-bold px-2 py-1 rounded" style={{
-                          backgroundColor: a.urgency === 'EMERGENCY' ? 'rgba(248, 113, 113, 0.2)' : 'rgba(59, 130, 246, 0.2)',
-                          color: a.urgency === 'EMERGENCY' ? '#f87171' : '#60a5fa'
-                        }}>{a.urgency}</span>
+                    <div key={i} style={{ backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '8px', padding: '1rem', borderLeft: '4px solid #3b82f6' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#93c5fd', textTransform: 'uppercase', backgroundColor: 'rgba(30,58,138,0.4)', padding: '0.25rem 0.5rem', borderRadius: '4px' }}>{a.council}</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 'bold', padding: '0.25rem 0.5rem', borderRadius: '4px', backgroundColor: a.urgency === 'EMERGENCY' ? 'rgba(248, 113, 113, 0.2)' : 'rgba(59, 130, 246, 0.2)', color: a.urgency === 'EMERGENCY' ? '#f87171' : '#60a5fa' }}>{a.urgency}</span>
                       </div>
-                      <p className="text-gray-200 text-sm leading-relaxed">{a.content}</p>
+                      <p style={{ color: '#e5e7eb', fontSize: '0.875rem', lineHeight: 1.6, margin: 0 }}>{a.content}</p>
                     </div>
                   ))}
                 </div>
@@ -248,7 +268,7 @@ export default function CalendarClient({ birthdays, activities }) {
   };
 
   return (
-    <div className="calendar-wrapper">
+    <div style={{ width: '100%', maxWidth: '1000px', margin: '0 auto' }}>
       {renderHeader()}
       {renderDays()}
       {renderCells()}

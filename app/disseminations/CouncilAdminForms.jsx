@@ -84,49 +84,115 @@ export default function CouncilAdminForms({ councilName }) {
   };
 
   return (
-    <div className="mb-8 w-full max-w-7xl mx-auto flex gap-4">
+    <div style={{ marginBottom: '2rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
       <button 
         onClick={() => handleOpenForm("ANNOUNCEMENT")}
-        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-lg transition-transform hover:scale-105 active:scale-95"
+        style={{
+          padding: '0.75rem 1.5rem',
+          backgroundColor: '#2563eb',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}
       >
         ➕ Make an Announcement
       </button>
       <button 
         onClick={() => handleOpenForm("ACTIVITY")}
-        className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold shadow-lg transition-transform hover:scale-105 active:scale-95"
+        style={{
+          padding: '0.75rem 1.5rem',
+          backgroundColor: '#9333ea',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}
       >
         📅 Add an Activity
       </button>
 
       {/* PASSWORD MODAL */}
       {modalState === "PASSWORD" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-2xl p-8 w-full max-w-sm border border-gray-200 dark:border-gray-800">
-            <h2 className="text-2xl font-black mb-2 text-gray-900 dark:text-white">Admin Access</h2>
-            <p className="text-sm text-gray-500 mb-6">Enter the administrator password to post to the board.</p>
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          backdropFilter: 'blur(4px)',
+          zIndex: 50,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem'
+        }}>
+          <div style={{
+            backgroundColor: 'var(--bg-secondary)',
+            borderRadius: '16px',
+            padding: '2rem',
+            width: '100%',
+            maxWidth: '400px',
+            border: '1px solid var(--border-color)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+          }}>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: '900', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Admin Access</h2>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Enter the administrator password to post to the board.</p>
             
-            <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
+            <form onSubmit={handlePasswordSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <input 
                 type="password" 
                 autoFocus
                 placeholder="Password" 
                 value={passwordInput}
                 onChange={(e) => setPasswordInput(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-[#252525] focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: 'rgba(0,0,0,0.2)',
+                  color: 'var(--text-primary)',
+                  fontSize: '1rem'
+                }}
               />
-              {errorMsg && <p className="text-red-500 text-sm font-semibold">{errorMsg}</p>}
+              {errorMsg && <p style={{ color: '#ef4444', fontSize: '0.875rem', fontWeight: 'bold' }}>{errorMsg}</p>}
               
-              <div className="flex justify-end gap-3 mt-4">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
                 <button 
                   type="button" 
                   onClick={() => setModalState("CLOSED")}
-                  className="px-4 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 font-semibold"
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)',
+                    background: 'transparent',
+                    color: 'var(--text-secondary)',
+                    fontWeight: 'bold',
+                    cursor: 'pointer'
+                  }}
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md"
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: '#2563eb',
+                    color: 'white',
+                    fontWeight: 'bold',
+                    cursor: 'pointer'
+                  }}
                 >
                   Unlock
                 </button>
@@ -138,84 +204,156 @@ export default function CouncilAdminForms({ councilName }) {
 
       {/* SUBMISSION FORM MODAL */}
       {modalState === "FORM" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-2xl p-8 w-full max-w-lg border border-gray-200 dark:border-gray-800">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-black text-gray-900 dark:text-white">
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          backdropFilter: 'blur(4px)',
+          zIndex: 50,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem'
+        }}>
+          <div style={{
+            backgroundColor: 'var(--bg-secondary)',
+            borderRadius: '16px',
+            padding: '2rem',
+            width: '100%',
+            maxWidth: '500px',
+            border: '1px solid var(--border-color)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: '900', color: 'var(--text-primary)' }}>
                 {activeFormType === "ANNOUNCEMENT" ? "Make an Announcement" : "Add an Activity"}
               </h2>
-              <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-xs font-bold text-gray-500 uppercase tracking-wider">
+              <span style={{
+                padding: '0.25rem 0.75rem',
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                borderRadius: '9999px',
+                fontSize: '0.75rem',
+                fontWeight: 'bold',
+                color: 'var(--text-secondary)',
+                textTransform: 'uppercase'
+              }}>
                 {councilName}
               </span>
             </div>
 
-            <form onSubmit={handleFormSubmit} className="flex flex-col gap-5">
+            <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               
               {/* URGENCY SELECTOR */}
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Urgency Level</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.875rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Urgency Level</label>
                 <select 
                   value={formData.urgency}
                   onChange={(e) => setFormData({...formData, urgency: e.target.value})}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-[#252525] focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white font-semibold"
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)',
+                    backgroundColor: 'rgba(0,0,0,0.2)',
+                    color: 'var(--text-primary)',
+                    fontSize: '1rem',
+                    fontWeight: 'bold'
+                  }}
                 >
-                  <option value="LIGHT">Light (Green)</option>
-                  <option value="MODERATE">Moderate (Yellow)</option>
-                  <option value="EMERGENCY">Emergency (Flashing Red)</option>
-                  <option value="FOR IMMEDIATE COMPLIANCE">For Immediate Compliance (Flashing Orange)</option>
+                  <option value="LIGHT" style={{ color: 'black' }}>Light (Green)</option>
+                  <option value="MODERATE" style={{ color: 'black' }}>Moderate (Yellow)</option>
+                  <option value="EMERGENCY" style={{ color: 'black' }}>Emergency (Flashing Red)</option>
+                  <option value="FOR IMMEDIATE COMPLIANCE" style={{ color: 'black' }}>For Immediate Compliance (Flashing Orange)</option>
                 </select>
               </div>
 
               {/* EVENT DATE (Only for Activity) */}
               {activeFormType === "ACTIVITY" && (
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Event Date</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <label style={{ fontSize: '0.875rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Event Date</label>
                   <input 
                     type="date" 
                     required
                     value={formData.eventDate}
                     onChange={(e) => setFormData({...formData, eventDate: e.target.value})}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-[#252525] focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white"
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 1rem',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-color)',
+                      backgroundColor: 'rgba(0,0,0,0.2)',
+                      color: 'var(--text-primary)',
+                      fontSize: '1rem'
+                    }}
                   />
                 </div>
               )}
 
               {/* CONTENT */}
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Content / Message</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.875rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Content / Message</label>
                 <textarea 
                   required
                   rows="4"
                   placeholder="Enter the details here..."
                   value={formData.content}
                   onChange={(e) => setFormData({...formData, content: e.target.value})}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-[#252525] focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white resize-none"
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)',
+                    backgroundColor: 'rgba(0,0,0,0.2)',
+                    color: 'var(--text-primary)',
+                    fontSize: '1rem',
+                    resize: 'vertical'
+                  }}
                 />
               </div>
 
-              {errorMsg && <p className="text-red-500 text-sm font-semibold bg-red-50 dark:bg-red-900/20 p-3 rounded">{errorMsg}</p>}
+              {errorMsg && (
+                <p style={{ color: '#ef4444', fontSize: '0.875rem', fontWeight: 'bold', backgroundColor: 'rgba(239,68,68,0.1)', padding: '0.75rem', borderRadius: '4px' }}>
+                  {errorMsg}
+                </p>
+              )}
 
               {/* ACTIONS */}
-              <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
                 <button 
                   type="button" 
                   onClick={() => setModalState("CLOSED")}
                   disabled={isSubmitting}
-                  className="px-6 py-3 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 font-bold transition-colors disabled:opacity-50"
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)',
+                    background: 'transparent',
+                    color: 'var(--text-secondary)',
+                    fontWeight: 'bold',
+                    cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                    opacity: isSubmitting ? 0.5 : 1
+                  }}
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-lg transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-2"
+                  style={{
+                    padding: '0.75rem 2rem',
+                    backgroundColor: '#2563eb',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                    opacity: isSubmitting ? 0.5 : 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
                 >
-                  {isSubmitting ? (
-                    <>
-                      <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                      Publishing...
-                    </>
-                  ) : "Publish to Board"}
+                  {isSubmitting ? "Publishing..." : "Publish to Board"}
                 </button>
               </div>
             </form>
