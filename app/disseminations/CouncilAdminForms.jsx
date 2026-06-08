@@ -57,27 +57,23 @@ export default function CouncilAdminForms({ councilName }) {
     };
 
     try {
+      // Use no-cors and text/plain to avoid CORS preflight errors with Google Apps Script
       const response = await fetch(SCRIPT_URL, {
         method: "POST",
+        mode: "no-cors",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "text/plain;charset=utf-8",
         },
         body: JSON.stringify(payload),
       });
 
-      const result = await response.json();
-
-      if (result.success) {
-        alert("Successfully added to the board! Refresh the page to see it.");
-        setModalState("CLOSED");
-      } else {
-        setErrorMsg("Failed to add: " + result.error);
-      }
+      // Since we use no-cors, the response is opaque and we can't read response.json()
+      // We will assume it's successful if the fetch didn't throw an error.
+      alert("Successfully added to the board! Refresh the page to see it.");
+      setModalState("CLOSED");
     } catch (error) {
       console.error(error);
-      // Sometimes fetch throws on CORS even if successful, let's gracefully handle
-      alert("Submission sent! If it doesn't appear after refresh, check the Google Sheet.");
-      setModalState("CLOSED");
+      setErrorMsg("Failed to connect to the server.");
     } finally {
       setIsSubmitting(false);
     }

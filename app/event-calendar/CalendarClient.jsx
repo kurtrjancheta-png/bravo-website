@@ -186,21 +186,7 @@ export default function CalendarClient({ birthdays, activities }) {
             </div>
             
             <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '4px', overflow: 'hidden', height: '60px' }}>
-              {dayBDays.slice(0, 2).map((b, idx) => (
-                <div key={idx} style={{ fontSize: '0.65rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', backgroundColor: 'rgba(236,72,153,0.2)', color: '#f9a8d4', padding: '2px 4px', borderRadius: '4px', border: '1px solid rgba(236,72,153,0.3)', fontWeight: '600' }}>
-                  🎂 {b.lastName.toUpperCase()}
-                </div>
-              ))}
-              {dayActs.slice(0, 2).map((a, idx) => (
-                <div key={idx} style={{ fontSize: '0.65rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', backgroundColor: 'rgba(59,130,246,0.2)', color: '#93c5fd', padding: '2px 4px', borderRadius: '4px', border: '1px solid rgba(59,130,246,0.3)', fontWeight: '600' }}>
-                  📌 {a.council}
-                </div>
-              ))}
-              {(dayBDays.length + dayActs.length) > 2 && (
-                <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 'bold', textAlign: 'center' }}>
-                  +{(dayBDays.length + dayActs.length) - 2} more
-                </div>
-              )}
+              {/* Names and councils hidden on grid view to keep it clean */}
             </div>
           </div>
         );
