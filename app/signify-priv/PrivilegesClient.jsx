@@ -4,7 +4,7 @@ import S1AdminForms from './S1AdminForms';
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzklVtvSKHZmH6abCRFPSTGmh_H4-ytVjN4FYAiM1aDg4ttyUShxqRAZYGLpMKWJgylqw/exec';
 
-export default function PrivilegesClient({ activePrivileges }) {
+export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
   const [selectedPriv, setSelectedPriv] = useState(null); // Which card is clicked
   const [cadetClass, setCadetClass] = useState('1CL');
   const [fullName, setFullName] = useState('');
@@ -14,11 +14,56 @@ export default function PrivilegesClient({ activePrivileges }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
 
+  // Autocomplete state
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
   // Update current time every minute to check deadlines dynamically
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
+
+  // Handle Full Name Input and generate suggestions
+  const handleNameChange = (e) => {
+    const value = e.target.value;
+    setFullName(value);
+    
+    if (value.length > 1 && soiData.length > 0) {
+      const searchStr = value.toLowerCase();
+      const matches = soiData.filter(cadet => {
+        const first = String(cadet['FIRST NAME '] || cadet['FIRST NAME'] || '').toLowerCase();
+        const last = String(cadet['SURNAME '] || cadet['SURNAME'] || '').toLowerCase();
+        return first.includes(searchStr) || last.includes(searchStr);
+      }).slice(0, 5); // Limit to top 5 suggestions
+      
+      setSuggestions(matches);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const selectSuggestion = (cadet) => {
+    const first = String(cadet['FIRST NAME '] || cadet['FIRST NAME'] || '').trim();
+    const last = String(cadet['SURNAME '] || cadet['SURNAME'] || '').trim();
+    const cClass = String(cadet['CLASS '] || cadet['CLASS'] || '').trim();
+    const afpsn = String(cadet['AFPSN '] || cadet['AFPSN'] || cadet['SERIAL NO.'] || cadet['SERIAL NUMBER'] || cadet['SN'] || '').trim();
+    
+    setFullName(`${first} ${last}`);
+    if (afpsn) setSerialNumber(afpsn);
+    if (cClass) {
+       // Convert '2026' or '2027' etc to '1CL' etc if necessary, but SOI usually has '1CL' etc.
+       if (cClass.includes('1CL') || cClass.includes('2026')) setCadetClass('1CL');
+       else if (cClass.includes('2CL') || cClass.includes('2027')) setCadetClass('2CL');
+       else if (cClass.includes('3CL') || cClass.includes('2028')) setCadetClass('3CL');
+       else if (cClass.includes('4CL') || cClass.includes('2029')) setCadetClass('4CL');
+       else setCadetClass(cClass); // Fallback
+    }
+    
+    setShowSuggestions(false);
+  };
 
   const handleSignify = async (e) => {
     e.preventDefault();
@@ -198,15 +243,53 @@ export default function PrivilegesClient({ activePrivileges }) {
                     </select>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', position: 'relative' }}>
                     <label style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Full Name</label>
                     <input 
                       type="text" 
                       placeholder="e.g. KURT RANDLE JOSH ANCHETA"
                       value={fullName}
-                      onChange={e => setFullName(e.target.value)}
+                      onChange={handleNameChange}
+                      onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
                       style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', textTransform: 'uppercase' }}
                     />
+                    
+                    {showSuggestions && suggestions.length > 0 && (
+                      <div style={{ 
+                        position: 'absolute', 
+                        top: '100%', 
+                        left: 0, 
+                        right: 0, 
+                        background: 'white', 
+                        border: '1px solid var(--border-color)', 
+                        borderRadius: '6px', 
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)', 
+                        zIndex: 10,
+                        maxHeight: '200px',
+                        overflowY: 'auto',
+                        marginTop: '4px'
+                      }}>
+                        {suggestions.map((cadet, i) => (
+                          <div 
+                            key={i}
+                            onClick={() => selectSuggestion(cadet)}
+                            style={{ 
+                              padding: '0.75rem 1rem', 
+                              cursor: 'pointer', 
+                              borderBottom: i < suggestions.length - 1 ? '1px solid var(--border-color)' : 'none',
+                              fontSize: '0.85rem',
+                              color: 'var(--text-primary)',
+                              background: 'white'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                          >
+                            <div style={{ fontWeight: 'bold' }}>{cadet['FIRST NAME '] || cadet['FIRST NAME']} {cadet['SURNAME '] || cadet['SURNAME']}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{cadet['CLASS '] || cadet['CLASS']} | SN: {cadet['AFPSN '] || cadet['AFPSN'] || cadet['SERIAL NO.'] || cadet['SERIAL NUMBER'] || cadet['SN']}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

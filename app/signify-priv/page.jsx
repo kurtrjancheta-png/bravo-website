@@ -4,11 +4,14 @@ import PrivilegesClient from './PrivilegesClient';
 export const revalidate = 15; // 15 second cache to ensure fast updates
 
 const PRIVILEGES_SHEET_ID = '16i_7nny1QbFkFvhqnTX9ebgCOT7WeUmq8Uz_r5Vaj5w';
+const SOI_SHEET_ID = '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
 
 export default async function SignifyPrivilegePage() {
   let activePrivileges = [];
+  let soiData = [];
   
   try {
+    // Fetch Privileges
     const data = await getSheetData(PRIVILEGES_SHEET_ID, 'ACTIVE PRIV SIGNIFY SHEETS');
     // Ensure we filter out empty rows by checking for any type key
     if (data && Array.isArray(data)) {
@@ -63,13 +66,17 @@ export default async function SignifyPrivilegePage() {
        // Reverse so newest are at the top
        activePrivileges.reverse();
     }
+
+    // Fetch SOI data for autocomplete
+    soiData = await getSheetData(SOI_SHEET_ID, 'SOI');
+
   } catch (error) {
-    console.error('Failed to fetch active privileges:', error);
+    console.error('Failed to fetch active privileges or SOI data:', error);
   }
 
   return (
     <div className="dashboard-container">
-      <PrivilegesClient activePrivileges={activePrivileges} />
+      <PrivilegesClient activePrivileges={activePrivileges} soiData={soiData} />
     </div>
   );
 }
