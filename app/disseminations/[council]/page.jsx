@@ -1,6 +1,7 @@
 import { getSheetData } from '../../../lib/googleSheets';
 import { Suspense } from 'react';
 import CouncilAdminForms from '../CouncilAdminForms';
+import ImageGallery from '../ImageGallery';
 
 const SHEET_ID = '1YeaoloRz4REe_iVomGfFI9WugalrDFsHiz04eOcD0a8';
 
@@ -111,37 +112,7 @@ async function DisseminationCards({ councilId }) {
             </div>
             
             {card['ATTACHMENT'] && card['ATTACHMENT'].trim() !== '' && (
-              <div style={{ marginTop: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                {card['ATTACHMENT'].split(',').map((url, idx) => {
-                  if (!url.trim()) return null;
-                  return (
-                    <a 
-                      key={idx}
-                      href={url.trim()} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        padding: '0.5rem 1rem',
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '8px',
-                        color: 'var(--text-primary)',
-                        textDecoration: 'none',
-                        fontSize: '0.875rem',
-                        fontWeight: 'bold',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
-                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
-                    >
-                      📎 View Attachment {card['ATTACHMENT'].split(',').length > 1 ? idx + 1 : ''}
-                    </a>
-                  );
-                })}
-              </div>
+              <ImageGallery urls={card['ATTACHMENT'].split(',')} />
             )}
             
             <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
