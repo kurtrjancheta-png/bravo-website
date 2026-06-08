@@ -6,6 +6,7 @@ const SOI_SHEET_ID = '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
 const DISSEMINATION_SHEET_ID = '1YeaoloRz4REe_iVomGfFI9WugalrDFsHiz04eOcD0a8';
 
 const COUNCILS = [
+  { id: 'TACO', name: "Tac O's Corner" },
   { id: 'S1', name: 'S1 Personnel' },
   { id: 'S2', name: 'S2 Security' },
   { id: 'S3', name: 'S3 Operations' },
