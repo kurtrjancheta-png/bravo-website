@@ -21,10 +21,10 @@ const councilData = {
 };
 
 const urgencyStyles = {
-  'LIGHT': { bg: 'rgba(74, 222, 128, 0.15)', border: '#4ade80', color: '#4ade80', animation: 'none' },
-  'MODERATE': { bg: 'rgba(250, 204, 21, 0.15)', border: '#facc15', color: '#facc15', animation: 'none' },
-  'EMERGENCY': { bg: 'rgba(248, 113, 113, 0.15)', border: '#f87171', color: '#f87171', animation: 'pulse-red 1.5s infinite' },
-  'FOR IMMEDIATE COMPLIANCE': { bg: 'rgba(251, 146, 60, 0.15)', border: '#fb923c', color: '#fb923c', animation: 'pulse-orange 1.5s infinite' }
+  'LIGHT': { bg: 'rgba(74, 222, 128, 0.15)', border: '#4ade80', color: '#4ade80', animation: 'none', label: 'FOR INFO' },
+  'MODERATE': { bg: 'rgba(250, 204, 21, 0.15)', border: '#facc15', color: '#facc15', animation: 'none', label: 'ATTENTION!' },
+  'EMERGENCY': { bg: 'rgba(248, 113, 113, 0.15)', border: '#f87171', color: '#f87171', animation: 'pulse-red 1.5s infinite', label: 'EMERGENCY' },
+  'FOR IMMEDIATE COMPLIANCE': { bg: 'rgba(251, 146, 60, 0.15)', border: '#fb923c', color: '#fb923c', animation: 'pulse-orange 1.5s infinite', label: 'FOR IMMEDIATE COMPLIANCE' }
 };
 
 export const revalidate = 30; // revalidate every 30 seconds
@@ -67,6 +67,15 @@ async function DisseminationCards({ councilId }) {
         const urgency = String(card['URGENCY'] || '').trim().toUpperCase();
         const style = urgencyStyles[urgency] || urgencyStyles['LIGHT'];
         
+        let dateAnnounced = String(card['DATE ANNOUNCED'] || '');
+        if (dateAnnounced.includes('Date(')) {
+          const match = dateAnnounced.match(/Date\((\d+),(\d+),(\d+)\)/);
+          if (match) {
+            const dateObj = new Date(parseInt(match[1], 10), parseInt(match[2], 10), parseInt(match[3], 10));
+            dateAnnounced = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          }
+        }
+        
         return (
           <div key={i} style={{
             background: 'var(--bg-secondary)',
@@ -92,7 +101,7 @@ async function DisseminationCards({ councilId }) {
                 fontWeight: 800,
                 textTransform: 'uppercase'
               }}>
-                {urgency || 'LIGHT'}
+                {style.label}
               </div>
             </div>
             
@@ -101,7 +110,7 @@ async function DisseminationCards({ councilId }) {
             </div>
             
             <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
-              <strong>Date Announced:</strong> {card['DATE ANNOUNCED'] || 'N/A'}
+              <strong>Date Announced:</strong> {dateAnnounced || 'N/A'}
             </div>
           </div>
         );

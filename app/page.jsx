@@ -51,6 +51,19 @@ export default async function Home() {
       return false;
     }
     return true;
+  }).map(d => {
+    let dateAnnounced = String(d['DATE ANNOUNCED'] || '');
+    if (dateAnnounced.includes('Date(')) {
+      const match = dateAnnounced.match(/Date\((\d+),(\d+),(\d+)\)/);
+      if (match) {
+        const year = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10);
+        const day = parseInt(match[3], 10);
+        const dateObj = new Date(year, month, day);
+        dateAnnounced = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+    }
+    return { ...d, 'DATE ANNOUNCED': dateAnnounced };
   });
   
   // Sort by urgency roughly (4: FOR IMMEDIATE COMPLIANCE, 3: EMERGENCY, 2: MODERATE, 1: LIGHT)
