@@ -110,31 +110,37 @@ async function DisseminationCards({ councilId }) {
               {card['CONTENT'] || 'No content provided.'}
             </div>
             
-            {card['ATTACHMENT'] && (
-              <div style={{ marginTop: '0.5rem' }}>
-                <a 
-                  href={card['ATTACHMENT']} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    padding: '0.5rem 1rem',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '8px',
-                    color: 'var(--text-primary)',
-                    textDecoration: 'none',
-                    fontSize: '0.875rem',
-                    fontWeight: 'bold',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
-                >
-                  📎 View Attachment
-                </a>
+            {card['ATTACHMENT'] && card['ATTACHMENT'].trim() !== '' && (
+              <div style={{ marginTop: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {card['ATTACHMENT'].split(',').map((url, idx) => {
+                  if (!url.trim()) return null;
+                  return (
+                    <a 
+                      key={idx}
+                      href={url.trim()} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        padding: '0.5rem 1rem',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '8px',
+                        color: 'var(--text-primary)',
+                        textDecoration: 'none',
+                        fontSize: '0.875rem',
+                        fontWeight: 'bold',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
+                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+                    >
+                      📎 View Attachment {card['ATTACHMENT'].split(',').length > 1 ? idx + 1 : ''}
+                    </a>
+                  );
+                })}
               </div>
             )}
             

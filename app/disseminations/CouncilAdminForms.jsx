@@ -19,7 +19,7 @@ export default function CouncilAdminForms({ councilName }) {
   });
   
   // File State
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
   const handleOpenForm = (type) => {
     setActiveFormType(type);
@@ -27,7 +27,7 @@ export default function CouncilAdminForms({ councilName }) {
     setPasswordInput("");
     setErrorMsg("");
     setFormData({ urgency: "LIGHT", content: "", eventDate: "" });
-    setSelectedFile(null);
+    setSelectedFiles([]);
   };
 
   const handlePasswordSubmit = (e) => {
@@ -40,27 +40,34 @@ export default function CouncilAdminForms({ councilName }) {
     }
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Check file size (e.g., limit to 5MB to avoid overwhelming base64 conversion / apps script limits)
-      if (file.size > 5 * 1024 * 1024) {
-        alert("File size exceeds 5MB limit.");
+  const handleFileChange = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      // Check total file size (limit to 10MB to avoid overwhelming base64 conversion / apps script limits)
+      const totalSize = files.reduce((acc, file) => acc + file.size, 0);
+      if (totalSize > 10 * 1024 * 1024) {
+        alert("Total file size exceeds 10MB limit.");
         e.target.value = "";
         return;
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result.split(',')[1];
-        setSelectedFile({
+      
+      const processedFiles = [];
+      for (const file of files) {
+        const base64String = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result.split(',')[1]);
+          reader.readAsDataURL(file);
+        });
+        
+        processedFiles.push({
           fileName: file.name,
           mimeType: file.type,
           fileData: base64String
         });
-      };
-      reader.readAsDataURL(file);
+      }
+      setSelectedFiles(processedFiles);
     } else {
-      setSelectedFile(null);
+      setSelectedFiles([]);
     }
   };
 
@@ -79,7 +86,7 @@ export default function CouncilAdminForms({ councilName }) {
       content: formData.content,
       dateAnnounced: dateAnnounced,
       eventDate: activeFormType === "ACTIVITY" ? formData.eventDate : "",
-      ...(selectedFile || {})
+      files: selectedFiles
     };
 
     try {
@@ -338,6 +345,7 @@ export default function CouncilAdminForms({ councilName }) {
                 <label style={{ fontSize: '0.875rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Attach Media / Document (Optional)</label>
                 <input 
                   type="file" 
+                  multiple
                   accept="image/*,.pdf,.doc,.docx"
                   onChange={handleFileChange}
                   style={{
