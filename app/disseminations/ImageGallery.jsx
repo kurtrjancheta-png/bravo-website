@@ -22,26 +22,39 @@ export default function ImageGallery({ urls }) {
           const driveId = getDriveId(cleanUrl);
 
           if (driveId) {
-            const imageUrl = `https://drive.google.com/uc?export=view&id=${driveId}`;
+            const imageUrl = `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000`;
             return (
               <div 
                 key={idx}
-                onClick={() => setActiveImage(imageUrl)}
-                style={{
-                  width: '100px',
-                  height: '100px',
-                  borderRadius: '8px',
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  border: '1px solid var(--border-color)',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                }}
+                style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}
               >
-                <img 
-                  src={imageUrl} 
-                  alt={`Attachment ${idx + 1}`} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
+                <div
+                  onClick={() => setActiveImage({ url: imageUrl, originalLink: cleanUrl })}
+                  style={{
+                    width: '120px',
+                    height: '120px',
+                    borderRadius: '8px',
+                    overflow: 'hidden',
+                    cursor: 'zoom-in',
+                    border: '1px solid var(--border-color)',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    backgroundColor: 'rgba(255,255,255,0.05)'
+                  }}
+                >
+                  <img 
+                    src={imageUrl} 
+                    alt={`Attachment ${idx + 1}`} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                </div>
+                <a 
+                  href={cleanUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', textDecoration: 'none', textAlign: 'center' }}
+                >
+                  Open File
+                </a>
               </div>
             );
           }
@@ -88,6 +101,7 @@ export default function ImageGallery({ urls }) {
             backdropFilter: 'blur(8px)',
             zIndex: 9999,
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             padding: '2rem',
@@ -95,16 +109,34 @@ export default function ImageGallery({ urls }) {
           }}
         >
           <img 
-            src={activeImage} 
+            src={activeImage.url} 
             alt="Enlarged Attachment" 
             style={{ 
               maxWidth: '100%', 
-              maxHeight: '100%', 
+              maxHeight: '90%', 
               objectFit: 'contain',
               borderRadius: '8px',
               boxShadow: '0 10px 25px rgba(0,0,0,0.5)'
             }} 
           />
+          <a 
+            href={activeImage.originalLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              marginTop: '1rem',
+              padding: '0.75rem 1.5rem',
+              backgroundColor: 'var(--accent-blue)',
+              color: 'white',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontWeight: 'bold',
+              fontSize: '1rem'
+            }}
+          >
+            Open Original File in Google Drive
+          </a>
           <button 
             onClick={() => setActiveImage(null)}
             style={{
