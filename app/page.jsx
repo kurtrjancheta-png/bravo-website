@@ -24,7 +24,6 @@ export const revalidate = 30;
 
 export default async function Home() {
   // Fetch old data
-  const announcements = await getSheetData(SHEET_ID, 'Announcements');
   const trackers = await getSheetData(SHEET_ID, 'Trackers');
 
   // Fetch all dissemination sheets concurrently
@@ -87,9 +86,6 @@ export default async function Home() {
   const options = { month: 'short', day: 'numeric' };
   const dateStr = today.toLocaleDateString('en-US', options);
 
-  const priorityBulletins = announcements.slice(0, 2);
-  const generalAnnouncements = announcements.slice(2);
-
   return (
     <div>
       {/* Hero Banner */}
@@ -136,62 +132,6 @@ export default async function Home() {
         <SlideshowClient disseminations={allDisseminations} />
       </div>
 
-      {/* Priority Bulletins Section */}
-      <div className="section-header">
-        <h2 className="section-title">PRIORITY BULLETINS</h2>
-        <div className="section-subtitle">High-Priority Announcements</div>
-      </div>
-
-      {priorityBulletins.length > 0 ? (
-        <div className="card-grid">
-          {priorityBulletins.map((item, i) => (
-            <div className="info-card" key={i}>
-              <div className="card-top">
-                <div className="card-tags">
-                  <span className="tag tag-priority">PRIORITY</span>
-                  <span className="tag">INFO</span>
-                </div>
-                <span className="card-date">{item.Date || dateStr}</span>
-              </div>
-              <h3 className="card-title">{item.Title || 'Untitled'}</h3>
-              <p className="card-desc">{item.Content || 'No details provided.'}</p>
-              <div className="card-footer">
-                COMMAND COUNCIL
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p style={{ marginBottom: '3rem', color: 'var(--text-secondary)' }}>No priority bulletins.</p>
-      )}
-
-      {/* All Announcements Section */}
-      <div className="section-header">
-        <h2 className="section-title">ALL ANNOUNCEMENTS</h2>
-        <div className="section-subtitle">Company-Wide Bulletins</div>
-      </div>
-
-      {generalAnnouncements.length > 0 ? (
-        <div className="card-grid">
-          {generalAnnouncements.map((item, i) => (
-            <div className="info-card" key={i}>
-              <div className="card-top">
-                <div className="card-tags">
-                  <span className="tag">STANDARD</span>
-                </div>
-                <span className="card-date">{item.Date || dateStr}</span>
-              </div>
-              <h3 className="card-title">{item.Title || 'Untitled'}</h3>
-              <p className="card-desc">{item.Content || 'No details provided.'}</p>
-              <div className="card-footer">
-                GENERAL
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p style={{ color: 'var(--text-secondary)' }}>No other announcements.</p>
-      )}
     </div>
   );
 }
