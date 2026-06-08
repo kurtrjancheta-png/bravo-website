@@ -118,8 +118,7 @@ export default function DispositionDashboard({ dispositionData, attachmentData, 
       }}>
         DISPOSITION OF TROOPS
       </h2>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem' }}>
         {Object.entries(classes).map(([className, classInfo]) => (
           <ClassPieChart 
             key={className} 
@@ -337,7 +336,7 @@ function AttachmentDetailsView({ details, attachmentData, rosterData, onClose })
            No individual personnel records found for this disposition.
          </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem' }}>
           {filtered.map((cadet, i) => (
             <div 
               key={i} 
