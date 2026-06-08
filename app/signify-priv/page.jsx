@@ -36,22 +36,24 @@ export default async function SignifyPrivilegePage() {
            const match = String(rawDeadline).match(/Date\((\d+),(\d+),(\d+),(\d+),(\d+),(\d+)\)/);
            if (match) {
              const year = parseInt(match[1], 10);
-             const month = parseInt(match[2], 10);
+             const month = parseInt(match[2], 10) + 1; // 0-indexed month
              const day = parseInt(match[3], 10);
              const hours = parseInt(match[4], 10);
              const mins = parseInt(match[5], 10);
              const secs = parseInt(match[6], 10);
-             const dateObj = new Date(year, month, day, hours, mins, secs);
-             rawDeadline = dateObj.toISOString();
+             
+             // Format explicitly with +08:00 offset to lock in Philippine time
+             const pad = (n) => n.toString().padStart(2, '0');
+             rawDeadline = `${year}-${pad(month)}-${pad(day)}T${pad(hours)}:${pad(mins)}:${pad(secs)}+08:00`;
            } else {
              // Try simpler date match
              const match2 = String(rawDeadline).match(/Date\((\d+),(\d+),(\d+)\)/);
              if (match2) {
                const year = parseInt(match2[1], 10);
-               const month = parseInt(match2[2], 10);
+               const month = parseInt(match2[2], 10) + 1;
                const day = parseInt(match2[3], 10);
-               const dateObj = new Date(year, month, day);
-               rawDeadline = dateObj.toISOString();
+               const pad = (n) => n.toString().padStart(2, '0');
+               rawDeadline = `${year}-${pad(month)}-${pad(day)}T00:00:00+08:00`;
              }
            }
          }
