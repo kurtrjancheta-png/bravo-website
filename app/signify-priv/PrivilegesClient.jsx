@@ -48,13 +48,32 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
   const selectSuggestion = (cadet) => {
     const first = String(cadet['FIRST NAME '] || cadet['FIRST NAME'] || '').trim();
     const last = String(cadet['SURNAME '] || cadet['SURNAME'] || '').trim();
-    const cClass = String(cadet['CLASS '] || cadet['CLASS'] || '').trim();
-    const afpsn = String(cadet['AFPSN '] || cadet['AFPSN'] || cadet['SERIAL NO.'] || cadet['SERIAL NUMBER'] || cadet['SN'] || '').trim();
     
-    setFullName(`${first} ${last}`);
+    // Middle Initial handling (remove dots)
+    let miRaw = String(cadet['MI '] || cadet['MI'] || cadet['M.I. '] || cadet['M.I.'] || cadet['MIDDLE INITIAL'] || cadet['MIDDLE NAME'] || '').trim();
+    let mi = miRaw.replace(/\./g, '').trim();
+    if (mi && mi.length > 1 && !cadet['MIDDLE NAME']) {
+       // if it's longer than 1 character and wasn't explicitly middle name column, just take first letter
+       mi = mi.charAt(0);
+    }
+    
+    const cClass = String(cadet['CLASS '] || cadet['CLASS'] || '').trim();
+    
+    // Exhaustive Serial Number checks
+    const afpsn = String(
+      cadet['AFPSN '] || cadet['AFPSN'] || 
+      cadet['SERIAL NO.'] || cadet['SERIAL NO '] || cadet['SERIAL NO'] || 
+      cadet['SERIAL NUMBER '] || cadet['SERIAL NUMBER'] || 
+      cadet['SERIAL NR '] || cadet['SERIAL NR'] || cadet['SERIAL NR.'] || 
+      cadet['SN '] || cadet['SN'] || ''
+    ).trim();
+    
+    // Construct full name with Middle Initial
+    const fullNameConstruct = mi ? `${first} ${mi} ${last}` : `${first} ${last}`;
+    
+    setFullName(fullNameConstruct);
     if (afpsn) setSerialNumber(afpsn);
     if (cClass) {
-       // Convert '2026' or '2027' etc to '1CL' etc if necessary, but SOI usually has '1CL' etc.
        if (cClass.includes('1CL') || cClass.includes('2026')) setCadetClass('1CL');
        else if (cClass.includes('2CL') || cClass.includes('2027')) setCadetClass('2CL');
        else if (cClass.includes('3CL') || cClass.includes('2028')) setCadetClass('3CL');
@@ -269,25 +288,44 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
                         overflowY: 'auto',
                         marginTop: '4px'
                       }}>
-                        {suggestions.map((cadet, i) => (
-                          <div 
-                            key={i}
-                            onClick={() => selectSuggestion(cadet)}
-                            style={{ 
-                              padding: '0.75rem 1rem', 
-                              cursor: 'pointer', 
-                              borderBottom: i < suggestions.length - 1 ? '1px solid var(--border-color)' : 'none',
-                              fontSize: '0.85rem',
-                              color: 'var(--text-primary)',
-                              background: 'white'
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
-                            onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
-                          >
-                            <div style={{ fontWeight: 'bold' }}>{cadet['FIRST NAME '] || cadet['FIRST NAME']} {cadet['SURNAME '] || cadet['SURNAME']}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{cadet['CLASS '] || cadet['CLASS']} | SN: {cadet['AFPSN '] || cadet['AFPSN'] || cadet['SERIAL NO.'] || cadet['SERIAL NUMBER'] || cadet['SN']}</div>
-                          </div>
-                        ))}
+                        {suggestions.map((cadet, i) => {
+                          // Middle Initial handling (remove dots)
+                          let miRaw = String(cadet['MI '] || cadet['MI'] || cadet['M.I. '] || cadet['M.I.'] || cadet['MIDDLE INITIAL'] || cadet['MIDDLE NAME'] || '').trim();
+                          let mi = miRaw.replace(/\./g, '').trim();
+                          if (mi && mi.length > 1 && !cadet['MIDDLE NAME']) mi = mi.charAt(0);
+                          
+                          const first = String(cadet['FIRST NAME '] || cadet['FIRST NAME'] || '').trim();
+                          const last = String(cadet['SURNAME '] || cadet['SURNAME'] || '').trim();
+                          const fullName = mi ? `${first} ${mi} ${last}` : `${first} ${last}`;
+                          
+                          const afpsn = String(
+                            cadet['AFPSN '] || cadet['AFPSN'] || 
+                            cadet['SERIAL NO.'] || cadet['SERIAL NO '] || cadet['SERIAL NO'] || 
+                            cadet['SERIAL NUMBER '] || cadet['SERIAL NUMBER'] || 
+                            cadet['SERIAL NR '] || cadet['SERIAL NR'] || cadet['SERIAL NR.'] || 
+                            cadet['SN '] || cadet['SN'] || ''
+                          ).trim();
+
+                          return (
+                            <div 
+                              key={i}
+                              onClick={() => selectSuggestion(cadet)}
+                              style={{ 
+                                padding: '0.75rem 1rem', 
+                                cursor: 'pointer', 
+                                borderBottom: i < suggestions.length - 1 ? '1px solid var(--border-color)' : 'none',
+                                fontSize: '0.85rem',
+                                color: 'var(--text-primary)',
+                                background: 'white'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                            >
+                              <div style={{ fontWeight: 'bold' }}>{fullName}</div>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{cadet['CLASS '] || cadet['CLASS']} | SN: {afpsn}</div>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
