@@ -1,6 +1,6 @@
 import { getSheetData } from '../../lib/googleSheets';
 import CellphoneRackClient from './CellphoneRackClient';
-import Link from 'next/link';
+import { getCadetImageUrl } from '../../lib/imageMatcher';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -47,6 +47,8 @@ export default async function CellphoneRackPage() {
       const name = String(row[kName] || '').trim();
       if (!name || name === '') return;
       
+      const picture = getCadetImageUrl(name, '', name);
+
       parsedData.push({
         name,
         status: String(row[kStatus] || '').trim(),
@@ -54,7 +56,8 @@ export default async function CellphoneRackPage() {
         cadetClass: assignedClass,
         numPhones: parseInt(row[kNumPhones] || '0', 10),
         phone: String(row[kPhone] || '').trim(),
-        ig: String(row[kIG] || '').trim()
+        ig: String(row[kIG] || '').trim(),
+        picture
       });
     });
   };

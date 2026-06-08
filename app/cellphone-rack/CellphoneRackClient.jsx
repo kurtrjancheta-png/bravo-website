@@ -259,9 +259,14 @@ export default function CellphoneRackClient({ initialData }) {
                           borderRadius: '50%', background: 'rgba(255,255,255,0.2)', 
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontSize: '1.5rem', marginBottom: '1rem',
-                          backdropFilter: 'blur(5px)', border: '1px solid rgba(255,255,255,0.3)'
+                          backdropFilter: 'blur(5px)', border: '1px solid rgba(255,255,255,0.3)',
+                          overflow: 'hidden'
                         }}>
-                          📱
+                          {cadet.picture ? (
+                            <img src={cadet.picture} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            '📱'
+                          )}
                         </div>
                         
                         <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.25rem', color: '#fff', letterSpacing: '1px' }}>{cadet.name}</h4>
