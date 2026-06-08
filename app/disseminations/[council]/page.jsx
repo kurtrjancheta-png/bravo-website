@@ -39,8 +39,18 @@ async function DisseminationCards({ councilId }) {
     console.error('Failed to fetch disseminations:', error);
   }
 
-  // Filter out empty rows
-  const validCards = disseminations.filter(d => d['TYPE'] || d['URGENCY'] || d['CONTENT']);
+  // Filter out empty rows or rows that just have the dropdown default text "TYPE" or "URGENCY"
+  const validCards = disseminations.filter(d => {
+    const type = String(d['TYPE'] || '').trim().toUpperCase();
+    const urgency = String(d['URGENCY'] || '').trim().toUpperCase();
+    const content = String(d['CONTENT'] || '').trim();
+    
+    // If it's just the default dropdown label, or there's no actual content, skip it
+    if (type === 'TYPE' || urgency.startsWith('URGE') || !content) {
+      return false;
+    }
+    return true;
+  });
 
   if (validCards.length === 0) {
     return (

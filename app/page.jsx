@@ -40,8 +40,18 @@ export default async function Home() {
 
   const results = await Promise.all(disseminationPromises);
   
-  // Aggregate and filter
-  let allDisseminations = results.flat().filter(d => d['TYPE'] || d['URGENCY'] || d['CONTENT']);
+  // Aggregate and filter out empty rows or neutral default states
+  let allDisseminations = results.flat().filter(d => {
+    const type = String(d['TYPE'] || '').trim().toUpperCase();
+    const urgency = String(d['URGENCY'] || '').trim().toUpperCase();
+    const content = String(d['CONTENT'] || '').trim();
+    
+    // Skip if it's the dropdown default placeholder or lacks actual content
+    if (type === 'TYPE' || urgency.startsWith('URGE') || !content) {
+      return false;
+    }
+    return true;
+  });
   
   // Sort by urgency roughly (4: FOR IMMEDIATE COMPLIANCE, 3: EMERGENCY, 2: MODERATE, 1: LIGHT)
   const urgencyWeight = {
