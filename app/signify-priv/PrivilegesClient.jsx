@@ -350,7 +350,7 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
                      <button 
                         type="submit" 
                         disabled={status === 'loading'}
-                        style={{ flex: 1, padding: '0.75rem', background: 'var(--accent-gold)', color: 'var(--text-primary)', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: status === 'loading' ? 'not-allowed' : 'pointer', opacity: status === 'loading' ? 0.7 : 1 }}
+                        style={{ flex: 1, padding: '0.75rem', background: '#FFEA00', color: '#000000', border: 'none', borderRadius: '6px', fontWeight: '900', cursor: status === 'loading' ? 'not-allowed' : 'pointer', opacity: status === 'loading' ? 0.7 : 1, boxShadow: '0 4px 10px rgba(255, 234, 0, 0.4)' }}
                      >
                         {status === 'loading' ? 'Submitting...' : 'Signify'}
                      </button>
