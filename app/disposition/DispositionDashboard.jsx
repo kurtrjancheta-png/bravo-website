@@ -336,17 +336,17 @@ function AttachmentDetailsView({ details, attachmentData, rosterData, onClose })
            No individual personnel records found for this disposition.
          </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
           {filtered.map((cadet, i) => (
             <div 
               key={i} 
               style={{ 
                 background: 'var(--bg-secondary, #f4f5f7)', 
                 border: '1px solid var(--border-color, #e2e8f0)', 
-                borderRadius: '12px', 
-                padding: '1.5rem', 
+                borderRadius: '8px', 
+                padding: '0.75rem', 
                 display: 'flex', 
-                gap: '1.25rem', 
+                gap: '0.75rem', 
                 alignItems: 'center', 
                 transition: 'transform 0.2s, background 0.2s, border-color 0.2s', 
                 cursor: 'default' 
@@ -363,17 +363,17 @@ function AttachmentDetailsView({ details, attachmentData, rosterData, onClose })
               }}
             >
                
-               <div style={{ width: '72px', height: '72px', borderRadius: '50%', overflow: 'hidden', background: '#2d3748', flexShrink: 0, border: `2px solid ${details.color}`, boxShadow: '0 4px 10px rgba(0,0,0,0.2)' }}>
+               <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', background: '#2d3748', flexShrink: 0, border: `2px solid ${details.color}`, boxShadow: '0 2px 6px rgba(0,0,0,0.15)' }}>
                  {cadet.picture ? (
                     <img src={cadet.picture} alt={cadet.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                  ) : (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem', color: '#a0aec0', fontWeight: 'bold' }}>{cadet.name.charAt(0)}</div>
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', color: '#a0aec0', fontWeight: 'bold' }}>{cadet.name.charAt(0)}</div>
                  )}
                </div>
 
                <div style={{ flex: 1, minWidth: 0 }}>
-                 <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '0.02em' }}>{cadet.name.split(',')[0].trim()}</div>
-                 <div style={{ fontSize: '0.9rem', color: cadet.reason === 'Effective Status' ? '#4ade80' : details.color, fontWeight: 700, marginTop: '0.25rem', lineHeight: 1.3 }}>{cadet.reason || 'No Reason Specified'}</div>
+                 <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '0.02em' }}>{cadet.name.split(',')[0].trim()}</div>
+                 <div style={{ fontSize: '0.75rem', color: cadet.reason === 'Effective Status' ? '#4ade80' : details.color, fontWeight: 700, marginTop: '0.15rem', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cadet.reason || 'No Reason Specified'}</div>
                  
                  {(cadet.dateStarted || cadet.dateEnd || cadet.pltn) && (
                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.2rem', borderTop: '1px solid var(--border-color, #e2e8f0)', paddingTop: '0.5rem' }}>
