@@ -256,10 +256,10 @@ export default function CouncilAdminForms({ councilName }) {
                     fontWeight: 'bold'
                   }}
                 >
-                  <option value="LIGHT" style={{ color: 'black' }}>Light (Green)</option>
-                  <option value="MODERATE" style={{ color: 'black' }}>Moderate (Yellow)</option>
-                  <option value="EMERGENCY" style={{ color: 'black' }}>Emergency (Flashing Red)</option>
-                  <option value="FOR IMMEDIATE COMPLIANCE" style={{ color: 'black' }}>For Immediate Compliance (Flashing Orange)</option>
+                  <option value="LIGHT" style={{ color: 'black' }}>For Info</option>
+                  <option value="MODERATE" style={{ color: 'black' }}>Attention</option>
+                  <option value="EMERGENCY" style={{ color: 'black' }}>Urgent</option>
+                  <option value="FOR IMMEDIATE COMPLIANCE" style={{ color: 'black' }}>For Immediate Compliance</option>
                 </select>
               </div>
 
