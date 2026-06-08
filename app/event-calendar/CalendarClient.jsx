@@ -130,6 +130,34 @@ export default function CalendarClient({ birthdays, activities }) {
         const isCurrentMonth = isSameMonth(day, monthStart);
         const today = isToday(day);
 
+        // Urgency color definitions
+        const urgencyStyles = {
+          'LIGHT': { bg: 'rgba(74, 222, 128, 0.15)', border: 'rgba(74, 222, 128, 0.4)' },
+          'MODERATE': { bg: 'rgba(250, 204, 21, 0.15)', border: 'rgba(250, 204, 21, 0.4)' },
+          'EMERGENCY': { bg: 'rgba(248, 113, 113, 0.2)', border: 'rgba(248, 113, 113, 0.6)' },
+          'FOR IMMEDIATE COMPLIANCE': { bg: 'rgba(251, 146, 60, 0.2)', border: 'rgba(251, 146, 60, 0.6)' }
+        };
+
+        const urgencyWeights = {
+          'LIGHT': 1,
+          'MODERATE': 2,
+          'FOR IMMEDIATE COMPLIANCE': 3,
+          'EMERGENCY': 4
+        };
+
+        let highestUrgency = null;
+        let maxWeight = 0;
+
+        if (dayActs.length > 0) {
+          dayActs.forEach(a => {
+            const weight = urgencyWeights[a.urgency] || 0;
+            if (weight > maxWeight) {
+              maxWeight = weight;
+              highestUrgency = a.urgency;
+            }
+          });
+        }
+
         // Determine cell styling based on state
         let bgColor = 'var(--bg-secondary)';
         let opacity = 1;
@@ -140,8 +168,10 @@ export default function CalendarClient({ birthdays, activities }) {
         if (!isCurrentMonth) {
           opacity = 0.3;
           bgColor = 'rgba(0,0,0,0.2)';
-        }
-        if (today) {
+        } else if (highestUrgency && urgencyStyles[highestUrgency]) {
+          bgColor = urgencyStyles[highestUrgency].bg;
+          borderColor = urgencyStyles[highestUrgency].border;
+        } else if (today) {
           bgColor = 'rgba(212,175,55,0.05)';
           borderColor = 'var(--gold-primary)';
         }
@@ -167,10 +197,10 @@ export default function CalendarClient({ birthdays, activities }) {
               transition: 'all 0.2s'
             }}
             onMouseEnter={(e) => {
-               if (isCurrentMonth) e.currentTarget.style.backgroundColor = 'rgba(212,175,55,0.1)';
+               if (isCurrentMonth) e.currentTarget.style.backgroundColor = 'rgba(212,175,55,0.2)';
             }}
             onMouseLeave={(e) => {
-               if (isCurrentMonth) e.currentTarget.style.backgroundColor = today ? 'rgba(212,175,55,0.05)' : 'var(--bg-secondary)';
+               if (isCurrentMonth) e.currentTarget.style.backgroundColor = bgColor;
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

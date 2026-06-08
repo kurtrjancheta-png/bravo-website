@@ -81,12 +81,24 @@ export default async function EventCalendarPage() {
   const results = await Promise.all(disseminationPromises);
   const allDisseminations = results.flat();
 
-  // Filter only "ACTIVITY" types
   const activities = allDisseminations.filter(d => {
     const type = String(d['TYPE'] || '').trim().toUpperCase();
     return type === 'ACTIVITY';
   }).map(d => {
-    const eventDateRaw = d['EVENT DATE'] || d['DATE ANNOUNCED'] || '';
+    let eventDateRaw = String(d['EVENT DATE'] || d['DATE ANNOUNCED'] || '');
+    
+    if (eventDateRaw.includes('Date(')) {
+      const match = eventDateRaw.match(/Date\((\d+),(\d+),(\d+)\)/);
+      if (match) {
+        const year = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10); // 0-indexed
+        const day = parseInt(match[3], 10);
+        // Convert to a valid string that new Date() can parse safely
+        const dateObj = new Date(year, month, day);
+        eventDateRaw = dateObj.toISOString();
+      }
+    }
+
     return {
       type: 'ACTIVITY',
       council: d.council,
