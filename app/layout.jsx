@@ -30,7 +30,9 @@ export default function RootLayout({ children }) {
               <Link href="/" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '10px' }}>🏠</span> Home Overview
               </Link>
-              <div className="nav-item"><span style={{ marginRight: '10px' }}>📅</span> Event Calendar</div>
+              <Link href="/event-calendar" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+                <span style={{ marginRight: '10px' }}>📅</span> Event Calendar
+              </Link>
               <Link href="/exo-punishment" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '10px' }}>📋</span> F/SGT's Punishment Monitoring
               </Link>

@@ -1,5 +1,6 @@
 import { getSheetData } from '../../../lib/googleSheets';
 import { Suspense } from 'react';
+import CouncilAdminForms from '../CouncilAdminForms';
 
 const SHEET_ID = '1YeaoloRz4REe_iVomGfFI9WugalrDFsHiz04eOcD0a8';
 
@@ -154,6 +155,8 @@ export default function CouncilDisseminationPage({ params }) {
           {data.sheetTab}
         </div>
       </div>
+
+      <CouncilAdminForms councilName={data.sheetTab} />
 
       <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem' }}>Loading disseminations...</div>}>
         <DisseminationCards councilId={councilId} />
