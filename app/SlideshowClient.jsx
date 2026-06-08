@@ -38,20 +38,28 @@ export default function SlideshowClient({ disseminations }) {
   const style = urgencyStyles[urgency] || urgencyStyles['LIGHT'];
 
   return (
-    <div style={{ position: 'relative', width: '100%', maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+    <div style={{ position: 'relative', width: '100%', maxWidth: '900px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
       
       <button 
         onClick={prevSlide}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.backgroundColor = 'var(--hover-bg)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'; }}
         style={{
           background: 'var(--bg-secondary)',
           border: '1px solid var(--border-color)',
-          borderRadius: '8px',
+          borderRadius: '50%',
+          width: '50px',
+          height: '50px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           color: 'var(--text-primary)',
           fontSize: '1.5rem',
           fontWeight: 'bold',
-          padding: '0.5rem 1rem',
           cursor: 'pointer',
-          zIndex: 10
+          zIndex: 10,
+          transition: 'all 0.2s ease',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
         }}
       >
         &lt;
@@ -84,7 +92,7 @@ export default function SlideshowClient({ disseminations }) {
           flexDirection: 'column',
           gap: '1.5rem',
           boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
-          minHeight: '250px',
+          height: '350px', // Fixed height prevents buttons from moving
           transition: 'all 0.3s ease-in-out'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -111,11 +119,19 @@ export default function SlideshowClient({ disseminations }) {
             </div>
           </div>
           
-          <div style={{ fontSize: '1.5rem', color: 'var(--text-primary)', lineHeight: 1.5, flex: 1, fontWeight: 500 }}>
+          <div style={{ 
+            fontSize: '1.5rem', 
+            color: 'var(--text-primary)', 
+            lineHeight: 1.5, 
+            flex: 1, 
+            fontWeight: 500,
+            overflowY: 'auto',
+            paddingRight: '0.5rem'
+          }}>
             {currentSlide['CONTENT'] || 'No content provided.'}
           </div>
           
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', borderTop: '1px solid var(--border-color)', paddingTop: '1rem', display: 'flex', justifyContent: 'space-between' }}>
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', borderTop: '1px solid var(--border-color)', paddingTop: '1rem', display: 'flex', justifyContent: 'space-between', marginTop: 'auto' }}>
             <span><strong>Date Announced:</strong> {currentSlide['DATE ANNOUNCED'] || 'N/A'}</span>
             <span>Slide {currentIndex + 1} of {disseminations.length}</span>
           </div>
@@ -124,16 +140,24 @@ export default function SlideshowClient({ disseminations }) {
 
       <button 
         onClick={nextSlide}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.backgroundColor = 'var(--hover-bg)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'; }}
         style={{
           background: 'var(--bg-secondary)',
           border: '1px solid var(--border-color)',
-          borderRadius: '8px',
+          borderRadius: '50%',
+          width: '50px',
+          height: '50px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           color: 'var(--text-primary)',
           fontSize: '1.5rem',
           fontWeight: 'bold',
-          padding: '0.5rem 1rem',
           cursor: 'pointer',
-          zIndex: 10
+          zIndex: 10,
+          transition: 'all 0.2s ease',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
         }}
       >
         &gt;
