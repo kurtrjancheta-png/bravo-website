@@ -49,13 +49,9 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
     const first = String(cadet['FIRST NAME '] || cadet['FIRST NAME'] || '').trim();
     const last = String(cadet['SURNAME '] || cadet['SURNAME'] || '').trim();
     
-    // Middle Initial handling (remove dots)
+    // Middle Initial handling (always extract just the first letter)
     let miRaw = String(cadet['MI '] || cadet['MI'] || cadet['M.I. '] || cadet['M.I.'] || cadet['MIDDLE INITIAL'] || cadet['MIDDLE NAME'] || '').trim();
-    let mi = miRaw.replace(/\./g, '').trim();
-    if (mi && mi.length > 1 && !cadet['MIDDLE NAME']) {
-       // if it's longer than 1 character and wasn't explicitly middle name column, just take first letter
-       mi = mi.charAt(0);
-    }
+    let mi = miRaw.replace(/[^A-Za-z]/g, '').charAt(0).toUpperCase();
     
     const cClass = String(cadet['CLASS '] || cadet['CLASS'] || '').trim();
     
@@ -289,10 +285,9 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
                         marginTop: '4px'
                       }}>
                         {suggestions.map((cadet, i) => {
-                          // Middle Initial handling (remove dots)
+                          // Middle Initial handling (always extract just the first letter)
                           let miRaw = String(cadet['MI '] || cadet['MI'] || cadet['M.I. '] || cadet['M.I.'] || cadet['MIDDLE INITIAL'] || cadet['MIDDLE NAME'] || '').trim();
-                          let mi = miRaw.replace(/\./g, '').trim();
-                          if (mi && mi.length > 1 && !cadet['MIDDLE NAME']) mi = mi.charAt(0);
+                          let mi = miRaw.replace(/[^A-Za-z]/g, '').charAt(0).toUpperCase();
                           
                           const first = String(cadet['FIRST NAME '] || cadet['FIRST NAME'] || '').trim();
                           const last = String(cadet['SURNAME '] || cadet['SURNAME'] || '').trim();
