@@ -106,9 +106,37 @@ async function DisseminationCards({ councilId }) {
               </div>
             </div>
             
-            <div style={{ fontSize: '1.1rem', color: 'var(--text-primary)', lineHeight: 1.5, flex: 1 }}>
+            <div style={{ fontSize: '1.1rem', color: 'var(--text-primary)', lineHeight: 1.5, flex: 1, whiteSpace: 'pre-wrap' }}>
               {card['CONTENT'] || 'No content provided.'}
             </div>
+            
+            {card['ATTACHMENT'] && (
+              <div style={{ marginTop: '0.5rem' }}>
+                <a 
+                  href={card['ATTACHMENT']} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.5rem 1rem',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '8px',
+                    color: 'var(--text-primary)',
+                    textDecoration: 'none',
+                    fontSize: '0.875rem',
+                    fontWeight: 'bold',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
+                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+                >
+                  📎 View Attachment
+                </a>
+              </div>
+            )}
             
             <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
               <strong>Date Announced:</strong> {dateAnnounced || 'N/A'}

@@ -17,6 +17,9 @@ export default function CouncilAdminForms({ councilName }) {
     content: "",
     eventDate: ""
   });
+  
+  // File State
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const handleOpenForm = (type) => {
     setActiveFormType(type);
@@ -24,6 +27,7 @@ export default function CouncilAdminForms({ councilName }) {
     setPasswordInput("");
     setErrorMsg("");
     setFormData({ urgency: "LIGHT", content: "", eventDate: "" });
+    setSelectedFile(null);
   };
 
   const handlePasswordSubmit = (e) => {
@@ -36,6 +40,30 @@ export default function CouncilAdminForms({ councilName }) {
     }
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check file size (e.g., limit to 5MB to avoid overwhelming base64 conversion / apps script limits)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("File size exceeds 5MB limit.");
+        e.target.value = "";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result.split(',')[1];
+        setSelectedFile({
+          fileName: file.name,
+          mimeType: file.type,
+          fileData: base64String
+        });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setSelectedFile(null);
+    }
+  };
+
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -44,16 +72,14 @@ export default function CouncilAdminForms({ councilName }) {
     const dateAnnounced = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
     
     // We send data to the Google Apps Script via POST
-    // We use no-cors to prevent browser blocking, but this means we can't read the exact JSON response easily.
-    // However, since we set up CORS headers in the Apps Script, standard fetch should work!
-    
     const payload = {
       sheetName: councilName,
       type: activeFormType,
       urgency: formData.urgency,
       content: formData.content,
       dateAnnounced: dateAnnounced,
-      eventDate: activeFormType === "ACTIVITY" ? formData.eventDate : ""
+      eventDate: activeFormType === "ACTIVITY" ? formData.eventDate : "",
+      ...(selectedFile || {})
     };
 
     try {
@@ -303,6 +329,26 @@ export default function CouncilAdminForms({ councilName }) {
                     color: 'var(--text-primary)',
                     fontSize: '1rem',
                     resize: 'vertical'
+                  }}
+                />
+              </div>
+
+              {/* ATTACHMENT */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.875rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Attach Media / Document (Optional)</label>
+                <input 
+                  type="file" 
+                  accept="image/*,.pdf,.doc,.docx"
+                  onChange={handleFileChange}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px dashed var(--border-color)',
+                    backgroundColor: 'rgba(0,0,0,0.1)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer'
                   }}
                 />
               </div>
