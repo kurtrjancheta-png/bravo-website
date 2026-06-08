@@ -526,6 +526,28 @@ tr:last-child td {
   cursor: pointer;
 }
 
+.pie-slice {
+  transition: opacity 0.2s, transform 0.2s, filter 0.2s;
+  cursor: pointer;
+}
+
+.pie-slice:hover {
+  opacity: 0.8;
+  filter: brightness(1.2);
+}
+
+@keyframes pulse-red {
+  0% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(248, 113, 113, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
+}
+
+@keyframes pulse-orange {
+  0% { box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(251, 146, 60, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(251, 146, 60, 0); }
+}
+
 .org-card:hover {
   transform: translateY(-4px) scale(1.02);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);

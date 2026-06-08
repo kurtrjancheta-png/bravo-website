@@ -54,13 +54,16 @@ export default function RootLayout({ children }) {
                   <Link href="/disposition" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
                     Troop Disposition
                   </Link>
+                  <Link href="/disseminations/s1" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                    Disseminations
+                  </Link>
                 </div>
               </details>
 
-              <div id="nav-s2" className="nav-item"><span style={{ marginRight: '10px' }}>🛡️</span> S2 Security</div>
-              <div id="nav-s3" className="nav-item"><span style={{ marginRight: '10px' }}>⌖</span> S3 Operations</div>
-              <div id="nav-s4" className="nav-item"><span style={{ marginRight: '10px' }}>📦</span> S4 Logistics</div>
-              <div id="nav-s5" className="nav-item"><span style={{ marginRight: '10px' }}>📊</span> S5 Plans &amp; Programs</div>
+              <Link href="/disseminations/s2" id="nav-s2" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>🛡️</span> S2 Security</Link>
+              <Link href="/disseminations/s3" id="nav-s3" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>⌖</span> S3 Operations</Link>
+              <Link href="/disseminations/s4" id="nav-s4" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>📦</span> S4 Logistics</Link>
+              <Link href="/disseminations/s5" id="nav-s5" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>📊</span> S5 Plans &amp; Programs</Link>
               
               <details className="nav-item-group" style={{ cursor: 'pointer' }}>
                 <summary id="nav-s6" className="nav-item" style={{ display: 'flex', alignItems: 'center' }}>
@@ -71,12 +74,15 @@ export default function RootLayout({ children }) {
                   <Link href="/cellphone-rack" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
                     Smartphone Rack
                   </Link>
+                  <Link href="/disseminations/s6" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                    Disseminations
+                  </Link>
                 </div>
               </details>
 
-              <div id="nav-s7" className="nav-item"><span style={{ marginRight: '10px' }}>🤝</span> S7 Civil-Military</div>
-              <div id="nav-s8" className="nav-item"><span style={{ marginRight: '10px' }}>📚</span> S8 Education &amp; Training / Academic Council</div>
-              <div id="nav-s10" className="nav-item"><span style={{ marginRight: '10px' }}>💰</span> S10 Finance</div>
+              <Link href="/disseminations/s7" id="nav-s7" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>🤝</span> S7 Civil-Military</Link>
+              <Link href="/disseminations/s8" id="nav-s8" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>📚</span> S8 Education &amp; Training / Academic Council</Link>
+              <Link href="/disseminations/s10" id="nav-s10" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>💰</span> S10 Finance</Link>
               
               <details className="nav-item-group" style={{ cursor: 'pointer' }}>
                 <summary id="nav-athletic" className="nav-item" style={{ display: 'flex', alignItems: 'center' }}>
@@ -87,11 +93,14 @@ export default function RootLayout({ children }) {
                   <Link href="/pft-tracker" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
                     PFT Tracker
                   </Link>
+                  <Link href="/disseminations/athletic" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                    Disseminations
+                  </Link>
                 </div>
               </details>
               
-              <div id="nav-honor" className="nav-item"><span style={{ marginRight: '10px' }}>⚖️</span> Honor Committee</div>
-              <div id="nav-ccpb" className="nav-item"><span style={{ marginRight: '10px' }}>👮</span> CCPB</div>
+              <Link href="/disseminations/honor-comm" id="nav-honor" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>⚖️</span> Honor Committee</Link>
+              <Link href="/disseminations/ccpb" id="nav-ccpb" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>👮</span> CCPB</Link>
             </div>
             
             <div style={{ marginTop: 'auto', padding: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
