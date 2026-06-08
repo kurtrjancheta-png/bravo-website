@@ -54,27 +54,38 @@ export default function CellphoneRackClient({ initialData }) {
         </div>
 
         {summary.length > 0 && (
-          <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.5rem 1rem', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
-            <PieChart width={300} height={120}>
+          <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '1rem', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', transition: 'all 0.3s ease' }}>
+            <PieChart width={340} height={140}>
+              <text x={90} y={65} textAnchor="middle" dominantBaseline="middle" style={{ fontSize: '1.5rem', fontWeight: 800, fill: 'var(--text-primary)' }}>
+                {filteredData.length}
+              </text>
+              <text x={90} y={85} textAnchor="middle" dominantBaseline="middle" style={{ fontSize: '0.65rem', fontWeight: 800, fill: 'var(--text-secondary)', letterSpacing: '1px' }}>
+                TOTAL
+              </text>
               <Pie
                 data={summary}
-                cx={80}
-                cy={55}
-                innerRadius={35}
-                outerRadius={55}
-                paddingAngle={5}
+                cx={90}
+                cy={70}
+                innerRadius={45}
+                outerRadius={65}
+                paddingAngle={6}
+                cornerRadius={8}
                 dataKey="value"
                 stroke="none"
+                isAnimationActive={true}
+                animationDuration={1000}
+                animationEasing="ease-out"
               >
                 {summary.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                  <Cell key={`cell-${index}`} fill={entry.fill} style={{ filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.1))', outline: 'none' }} />
                 ))}
               </Pie>
               <Tooltip 
-                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                itemStyle={{ fontWeight: 800 }}
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.15)', padding: '10px 15px' }}
+                itemStyle={{ fontWeight: 800, fontSize: '0.9rem' }}
+                cursor={{ fill: 'transparent' }}
               />
-              <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ fontWeight: 800, fontSize: '0.8rem', color: 'var(--text-secondary)' }} />
+              <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--text-secondary)' }} iconType="circle" />
             </PieChart>
           </div>
         )}
