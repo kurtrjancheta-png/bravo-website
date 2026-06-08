@@ -101,7 +101,7 @@ export default function CalendarClient({ birthdays, activities }) {
     for (let i = 0; i < 7; i++) {
       days.push(
         <div key={i} style={{ textAlign: 'center', fontWeight: 'bold', color: 'var(--text-secondary)', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0.5rem 0' }}>
-          {format(addDays(startDate, i), 'EEEEEE')}
+          {format(addDays(startDate, i), 'EEE')}
         </div>
       );
     }
@@ -130,48 +130,20 @@ export default function CalendarClient({ birthdays, activities }) {
         const isCurrentMonth = isSameMonth(day, monthStart);
         const today = isToday(day);
 
-        // Urgency color definitions
-        const urgencyStyles = {
-          'LIGHT': { bg: 'rgba(74, 222, 128, 0.15)', border: 'rgba(74, 222, 128, 0.4)' },
-          'MODERATE': { bg: 'rgba(250, 204, 21, 0.15)', border: 'rgba(250, 204, 21, 0.4)' },
-          'EMERGENCY': { bg: 'rgba(248, 113, 113, 0.2)', border: 'rgba(248, 113, 113, 0.6)' },
-          'FOR IMMEDIATE COMPLIANCE': { bg: 'rgba(251, 146, 60, 0.2)', border: 'rgba(251, 146, 60, 0.6)' }
-        };
-
-        const urgencyWeights = {
-          'LIGHT': 1,
-          'MODERATE': 2,
-          'FOR IMMEDIATE COMPLIANCE': 3,
-          'EMERGENCY': 4
-        };
-
-        let highestUrgency = null;
-        let maxWeight = 0;
-
-        if (dayActs.length > 0) {
-          dayActs.forEach(a => {
-            const weight = urgencyWeights[a.urgency] || 0;
-            if (weight > maxWeight) {
-              maxWeight = weight;
-              highestUrgency = a.urgency;
-            }
-          });
+        // Render blank cells for days outside the current month
+        if (!isCurrentMonth) {
+          days.push(<div key={day} style={{ minHeight: '100px', backgroundColor: 'transparent' }}></div>);
+          day = addDays(day, 1);
+          continue;
         }
 
         // Determine cell styling based on state
         let bgColor = 'var(--bg-secondary)';
-        let opacity = 1;
         let borderColor = 'rgba(255,255,255,0.05)';
         let boxShadow = 'none';
         let zIndex = 1;
 
-        if (!isCurrentMonth) {
-          opacity = 0.3;
-          bgColor = 'rgba(0,0,0,0.2)';
-        } else if (highestUrgency && urgencyStyles[highestUrgency]) {
-          bgColor = urgencyStyles[highestUrgency].bg;
-          borderColor = urgencyStyles[highestUrgency].border;
-        } else if (today) {
+        if (today) {
           bgColor = 'rgba(212,175,55,0.05)';
           borderColor = 'var(--gold-primary)';
         }
@@ -191,7 +163,6 @@ export default function CalendarClient({ birthdays, activities }) {
               padding: '0.5rem',
               cursor: 'pointer',
               backgroundColor: bgColor,
-              opacity: opacity,
               boxShadow: boxShadow,
               zIndex: zIndex,
               transition: 'all 0.2s'
@@ -208,9 +179,22 @@ export default function CalendarClient({ birthdays, activities }) {
                 {formattedDate}
               </span>
               {hasEvents && (
-                <div style={{ display: 'flex', gap: '4px' }}>
-                  {dayBDays.length > 0 && <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ec4899', boxShadow: '0 0 8px rgba(236,72,153,0.8)' }}></span>}
-                  {dayActs.length > 0 && <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#3b82f6', boxShadow: '0 0 8px rgba(59,130,246,0.8)' }}></span>}
+                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', justifyContent: 'flex-end', maxWidth: '60%' }}>
+                  {dayBDays.map((_, idx) => (
+                    <span key={`bday-${idx}`} style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ec4899', boxShadow: '0 0 8px rgba(236,72,153,0.8)' }}></span>
+                  ))}
+                  {dayActs.map((act, idx) => {
+                    const colors = {
+                      'LIGHT': '#4ade80',
+                      'MODERATE': '#facc15',
+                      'EMERGENCY': '#f87171',
+                      'FOR IMMEDIATE COMPLIANCE': '#fb923c'
+                    };
+                    const color = colors[act.urgency] || '#3b82f6';
+                    return (
+                      <span key={`act-${idx}`} style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: color, boxShadow: `0 0 8px ${color}` }}></span>
+                    );
+                  })}
                 </div>
               )}
             </div>
