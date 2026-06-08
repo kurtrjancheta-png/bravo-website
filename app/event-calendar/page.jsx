@@ -61,6 +61,7 @@ export default async function EventCalendarPage() {
     return {
       type: 'BIRTHDAY',
       name: `${firstName} ${lastName}`,
+      lastName: lastName || firstName, // fallback to firstName if no lastName
       className: className,
       birthMonth,
       birthDay
