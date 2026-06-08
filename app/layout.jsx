@@ -30,14 +30,7 @@ export default function RootLayout({ children }) {
               <Link href="/" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '10px' }}>🏠</span> Home Overview
               </Link>
-              <div className="nav-item"><span style={{ marginRight: '10px' }}>⭐</span> Company Staff</div>
               <div className="nav-item"><span style={{ marginRight: '10px' }}>📅</span> Event Calendar</div>
-              <Link href="/cellphone-rack" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-                <span style={{ marginRight: '10px' }}>📱</span> Smartphone Rack
-              </Link>
-              <Link href="/roster" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-                <span style={{ marginRight: '10px' }}>📇</span> Company Roster
-              </Link>
               <Link href="/exo-punishment" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '10px' }}>📋</span> F/SGT's Punishment Monitoring
               </Link>
@@ -55,6 +48,12 @@ export default function RootLayout({ children }) {
                   <Link href="/task-organization" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
                     Task Organization
                   </Link>
+                  <Link href="/roster" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                    Company Roster
+                  </Link>
+                  <Link href="/disposition" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                    Troop Disposition
+                  </Link>
                 </div>
               </details>
 
@@ -62,10 +61,23 @@ export default function RootLayout({ children }) {
               <div id="nav-s3" className="nav-item"><span style={{ marginRight: '10px' }}>⌖</span> S3 Operations</div>
               <div id="nav-s4" className="nav-item"><span style={{ marginRight: '10px' }}>📦</span> S4 Logistics</div>
               <div id="nav-s5" className="nav-item"><span style={{ marginRight: '10px' }}>📊</span> S5 Plans &amp; Programs</div>
-              <div id="nav-s6" className="nav-item"><span style={{ marginRight: '10px' }}>📡</span> S6 Signal</div>
+              
+              <details className="nav-item-group" style={{ cursor: 'pointer' }}>
+                <summary id="nav-s6" className="nav-item" style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ marginRight: '10px' }}>📡</span> S6 Signal
+                  <span className="dropdown-arrow">▼</span>
+                </summary>
+                <div style={{ marginLeft: '1.5rem', borderLeft: '1px solid var(--border-color)', paddingLeft: '0.5rem', marginTop: '0.25rem', marginBottom: '0.5rem' }}>
+                  <Link href="/cellphone-rack" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                    Smartphone Rack
+                  </Link>
+                </div>
+              </details>
+
               <div id="nav-s7" className="nav-item"><span style={{ marginRight: '10px' }}>🤝</span> S7 Civil-Military</div>
-              <div id="nav-s8" className="nav-item"><span style={{ marginRight: '10px' }}>📚</span> S8 Education &amp; Training</div>
+              <div id="nav-s8" className="nav-item"><span style={{ marginRight: '10px' }}>📚</span> S8 Education &amp; Training / Academic Council</div>
               <div id="nav-s10" className="nav-item"><span style={{ marginRight: '10px' }}>💰</span> S10 Finance</div>
+              
               <details className="nav-item-group" style={{ cursor: 'pointer' }}>
                 <summary id="nav-athletic" className="nav-item" style={{ display: 'flex', alignItems: 'center' }}>
                   <span style={{ marginRight: '10px' }}>🏃</span> Athletic Council
@@ -77,7 +89,9 @@ export default function RootLayout({ children }) {
                   </Link>
                 </div>
               </details>
-              <div id="nav-academic" className="nav-item"><span style={{ marginRight: '10px' }}>🎓</span> Academic Council</div>
+              
+              <div id="nav-honor" className="nav-item"><span style={{ marginRight: '10px' }}>⚖️</span> Honor Committee</div>
+              <div id="nav-ccpb" className="nav-item"><span style={{ marginRight: '10px' }}>👮</span> CCPB</div>
             </div>
             
             <div style={{ marginTop: 'auto', padding: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
