@@ -38,13 +38,17 @@ export default function SlideshowClient({ disseminations }) {
   const style = urgencyStyles[urgency] || urgencyStyles['LIGHT'];
 
   return (
-    <div style={{ position: 'relative', width: '100%', maxWidth: '900px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+    <div style={{ position: 'relative', width: '100%', maxWidth: '900px', margin: '0 auto', padding: '0 70px' }}>
       
       <button 
         onClick={prevSlide}
-        onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.backgroundColor = 'var(--hover-bg)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'; }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)'; e.currentTarget.style.backgroundColor = 'var(--border-color)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(-50%) scale(1)'; e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'; }}
         style={{
+          position: 'absolute',
+          left: '0',
+          top: '50%',
+          transform: 'translateY(-50%) scale(1)',
           background: 'var(--bg-secondary)',
           border: '1px solid var(--border-color)',
           borderRadius: '50%',
@@ -65,7 +69,7 @@ export default function SlideshowClient({ disseminations }) {
         &lt;
       </button>
 
-      <div style={{ flex: 1, position: 'relative' }}>
+      <div style={{ width: '100%', position: 'relative' }}>
         {/* Progress Indicators */}
         <div style={{ display: 'flex', gap: '4px', marginBottom: '1rem', justifyContent: 'center' }}>
           {disseminations.map((_, idx) => (
@@ -92,8 +96,9 @@ export default function SlideshowClient({ disseminations }) {
           flexDirection: 'column',
           gap: '1.5rem',
           boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
-          height: '350px', // Fixed height prevents buttons from moving
-          transition: 'all 0.3s ease-in-out'
+          height: '350px', // Fixed height prevents vertical moving
+          transition: 'all 0.3s ease-in-out',
+          width: '100%' // Fixed width prevents horizontal moving
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
@@ -140,9 +145,13 @@ export default function SlideshowClient({ disseminations }) {
 
       <button 
         onClick={nextSlide}
-        onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.backgroundColor = 'var(--hover-bg)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'; }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)'; e.currentTarget.style.backgroundColor = 'var(--border-color)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(-50%) scale(1)'; e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'; }}
         style={{
+          position: 'absolute',
+          right: '0',
+          top: '50%',
+          transform: 'translateY(-50%) scale(1)',
           background: 'var(--bg-secondary)',
           border: '1px solid var(--border-color)',
           borderRadius: '50%',
