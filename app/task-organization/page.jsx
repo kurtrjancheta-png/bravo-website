@@ -18,7 +18,7 @@ export default async function TaskOrganization() {
     designation: 'Bravo Company Tactical Officer',
     name: 'LCDR JETHRO C. OLAVIDEZ PN',
     picture: '/olavidez.png',
-    navTarget: null,
+    navTarget: 'nav-taco',
     isTacticalOfficer: true
   };
   const sStaff = [];
@@ -29,6 +29,9 @@ export default async function TaskOrganization() {
   // IMPORTANT: Check the most specific matches FIRST to avoid false positives
   // e.g. "Civil Military Operations Officer" must NOT match "Operations Officer" (S3)
   function getNavTarget(desLower) {
+    if (desLower.includes('tactical officer')) return 'nav-taco';
+    if (desLower.includes('company commander')) return 'nav-co';
+    if (desLower.includes('first sergeant')) return 'nav-fsgt';
     if (desLower.includes('(s1)') || desLower.includes('personnel officer')) return 'nav-s1';
     if (desLower.includes('(s2)') || desLower.includes('intelligence officer')) return 'nav-s2';
     if (desLower.includes('(s7)') || desLower.includes('civil military')) return 'nav-s7';
@@ -82,7 +85,7 @@ export default async function TaskOrganization() {
     ) {
       // Exception: First Sergeant is specifically requested
       if (desLower === 'first sergeant') {
-        firstSgt = { designation: designationStr, name: nameStr, navTarget: null, picture: getCadetImageUrl(null, null, nameStr) || '' };
+        firstSgt = { designation: designationStr, name: nameStr, navTarget: 'nav-fsgt', picture: getCadetImageUrl(null, null, nameStr) || '' };
       }
       continue;
     }
