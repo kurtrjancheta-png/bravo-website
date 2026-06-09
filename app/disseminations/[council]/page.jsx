@@ -7,6 +7,8 @@ const SHEET_ID = '1YeaoloRz4REe_iVomGfFI9WugalrDFsHiz04eOcD0a8';
 
 const councilData = {
   taco: { title: "Tac O's Corner", sheetTab: 'TACO', overview: "Official announcements and activities direct from the Tactical Officer." },
+  co: { title: "CO's Corner", sheetTab: 'CO', overview: "Official announcements and instructions from the Commanding Officer." },
+  fsgt: { title: "FSGT's Corner", sheetTab: 'FSGT', overview: "Administrative instructions, monitoring, and announcements from the First Sergeant." },
   s1: { title: 'S1 Personnel', sheetTab: 'S1', overview: 'Responsible for personnel administration, maintaining unit strength, processing leaves, and managing the company roster and task organizations.' },
   s2: { title: 'S2 Security', sheetTab: 'S2', overview: 'Responsible for intelligence and security, managing security clearances, enforcing physical security, and ensuring information protection.' },
   s3: { title: 'S3 Operations', sheetTab: 'S3', overview: 'Responsible for training, operations, and plans. Coordinates all unit activities, exercises, and training schedules.' },
