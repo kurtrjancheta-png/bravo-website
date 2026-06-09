@@ -16,14 +16,16 @@ const getCouncilTitle = (councilCode) => {
     'S8': 'Academic and Training Officer',
     'S10': 'Finance Officer',
     'HCOMM': 'Honor Committee Representative',
-    'HONOR COMM': 'Honor Committee Representative',
+    'HONORCOMM': 'Honor Committee Representative',
     'CCPB': 'Cadet Conduct Policy Board Representative',
     'FSGT': 'First Sergeant',
-    'ATH O': 'Athletic Officer',
+    'ATHO': 'Athletic Officer',
     'ATHLETIC': 'Athletic Officer',
-    'TACO': 'Tactical Officer'
+    'TACO': 'Tactical Officer',
+    'CO': 'Commanding Officer'
   };
-  const code = String(councilCode).toUpperCase().trim();
+  // Remove all non-alphanumeric characters to avoid invisible space issues
+  const code = String(councilCode).toUpperCase().replace(/[^A-Z0-9]/g, '');
   return map[code] || `${councilCode} Officer`;
 };
 
