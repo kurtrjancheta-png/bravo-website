@@ -128,7 +128,7 @@ async function DisseminationCards({ councilId }) {
               <div style={{ fontWeight: 800, fontSize: '1rem', letterSpacing: '0.05em', color: style.border, textTransform: 'uppercase' }}>
                 {card['TYPE'] || 'ANNOUNCEMENT'}
               </div>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem' }}>
                 <div style={{ 
                   background: style.bg, 
                   color: style.color, 

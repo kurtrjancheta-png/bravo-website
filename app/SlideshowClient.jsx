@@ -154,7 +154,7 @@ export default function SlideshowClient({ disseminations }) {
               </div>
             </div>
             
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1rem' }}>
               <div style={{ 
                 background: style.bg, 
                 color: style.color, 
