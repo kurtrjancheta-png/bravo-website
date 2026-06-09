@@ -75,8 +75,21 @@ export default function SlideshowClient({ disseminations }) {
     <div style={{ position: 'relative', width: '100%', maxWidth: '900px', margin: '0 auto', padding: '0 70px' }}>
       <style>{`
         @keyframes dealCard {
-          0% { opacity: 0; transform: translateY(-40px) scale(0.95) rotate(-2deg); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-          100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+          0% { 
+            opacity: 0; 
+            transform: translateX(120px) translateY(-40px) rotate(12deg) scale(0.8); 
+            box-shadow: -15px 25px 40px rgba(0,0,0,0.3); 
+          }
+          60% {
+            opacity: 1;
+            transform: translateX(-10px) translateY(5px) rotate(-2deg) scale(1.02);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.2); 
+          }
+          100% { 
+            opacity: 1; 
+            transform: translateX(0) translateY(0) rotate(0) scale(1); 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15); 
+          }
         }
       `}</style>
       
@@ -134,7 +147,7 @@ export default function SlideshowClient({ disseminations }) {
             borderTop: `16px solid ${style.border}`, // Thick top border like a tab
             borderRadius: '16px',
             padding: '2.5rem',
-            animation: `dealCard 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both${style.animation !== 'none' ? `, ${style.animation}` : ''}`,
+            animation: `dealCard 0.65s ease-out both${style.animation !== 'none' ? `, ${style.animation}` : ''}`,
             display: 'flex',
             flexDirection: 'column',
             gap: '1.5rem',
