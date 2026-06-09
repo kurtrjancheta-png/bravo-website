@@ -19,7 +19,7 @@ export default async function EXOGuardsPage() {
       const rawData = await res1.json();
       data1CL = rawData.map(item => ({
         ...item,
-        localImageUrl: getCadetImageUrl('', '', (item.name || '').replace(' AS', '').trim())
+        localImageUrl: getCadetImageUrl((item.name || '').replace(' AS', '').trim(), '', (item.name || '').replace(' AS', '').trim())
       }));
     }
   } catch (err) {
@@ -32,7 +32,7 @@ export default async function EXOGuardsPage() {
       const rawData = await res2.json();
       data3CL = rawData.map(item => ({
         ...item,
-        localImageUrl: getCadetImageUrl('', '', (item.name || '').replace(' AS', '').trim())
+        localImageUrl: getCadetImageUrl((item.name || '').replace(' AS', '').trim(), '', (item.name || '').replace(' AS', '').trim())
       }));
     }
   } catch (err) {
