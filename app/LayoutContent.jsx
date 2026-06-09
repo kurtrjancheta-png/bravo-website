@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import AutoRefresh from './AutoRefresh';
 import LoginModal from './LoginModal';
@@ -8,7 +8,27 @@ import { useAuth } from './AuthContext';
 
 export default function LayoutContent({ children }) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const { adminUser, logout, isLoaded } = useAuth();
+
+  useEffect(() => {
+    const savedMode = localStorage.getItem('bravo_dark_mode') === 'true';
+    setIsDarkMode(savedMode);
+    if (savedMode) {
+      document.body.classList.add('dark-mode');
+    }
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    localStorage.setItem('bravo_dark_mode', newMode);
+    if (newMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  };
 
   return (
     <div className="app-container">
@@ -109,8 +129,12 @@ export default function LayoutContent({ children }) {
               <div className="live-indicator"></div> SYSTEM LIVE
            </div>
            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <div className="badge-outline" style={{ cursor: 'pointer', flex: 1, justifyContent: 'center' }}>
-                 ⚙️ DARK MODE
+              <div 
+                className="badge-outline" 
+                onClick={toggleDarkMode}
+                style={{ cursor: 'pointer', flex: 1, justifyContent: 'center' }}
+              >
+                 {isDarkMode ? '☀️ LIGHT MODE' : '⚙️ DARK MODE'}
               </div>
               {isLoaded && (
                 adminUser ? (

@@ -16,6 +16,22 @@
   --sidebar-width: 280px;
 }
 
+body.dark-mode {
+  --bg-primary: #1a202c;
+  --bg-secondary: #2d3748;
+  --bg-tertiary: #1a202c;
+  
+  --accent-gold: #d4af37;
+  --accent-gold-light: #856f1a;
+  --accent-gold-dark: #fef9c3;
+  
+  --text-primary: #f7fafc;
+  --text-secondary: #cbd5e0;
+  --text-light: #ffffff;
+  
+  --border-color: #4a5568;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
