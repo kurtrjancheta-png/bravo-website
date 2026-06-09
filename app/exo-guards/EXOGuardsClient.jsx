@@ -177,9 +177,9 @@ export default function EXOGuardsClient({ data1CL = [], data3CL = [], soiData = 
     const order3CL = {
       'CCQ': 1,
       'ACCQ': 2,
-      'MHC': 3,
-      'AFI': 4,
-      'INTERIOR': 5,
+      'AFI': 3,
+      'INTERIOR': 4,
+      'MHC': 5,
       'SENTINEL': 6
     };
 
