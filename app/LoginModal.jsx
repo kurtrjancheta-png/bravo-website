@@ -4,6 +4,29 @@ import React, { useState } from 'react';
 import { validateLogin } from '../lib/adminLogin';
 import { useAuth } from './AuthContext';
 
+const getCouncilTitle = (councilCode) => {
+  const map = {
+    'S1': 'Personnel Officer',
+    'S2': 'Intelligence Officer',
+    'S3': 'Operations Officer',
+    'S4': 'Logistics Officer',
+    'S5': 'Plans and Programs Officer',
+    'S6': 'CEIS Officer',
+    'S7': 'Civil Military Operations Officer',
+    'S8': 'Academic and Training Officer',
+    'S10': 'Finance Officer',
+    'HCOMM': 'Honor Committee Representative',
+    'HONOR COMM': 'Honor Committee Representative',
+    'CCPB': 'Cadet Conduct Policy Board Representative',
+    'FSGT': 'First Sergeant',
+    'ATH O': 'Athletic Officer',
+    'ATHLETIC': 'Athletic Officer',
+    'TACO': 'Tactical Officer'
+  };
+  const code = String(councilCode).toUpperCase().trim();
+  return map[code] || `${councilCode} Officer`;
+};
+
 export default function LoginModal({ isOpen, onClose }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -87,10 +110,10 @@ export default function LoginModal({ isOpen, onClose }) {
             ) : (
               <>
                 <h2 style={{ color: '#16a34a', fontSize: '1.5rem', fontWeight: 800, marginBottom: '1rem', textTransform: 'uppercase' }}>
-                  Welcome, {successData.council} OFFICER
+                  Welcome, {getCouncilTitle(successData.council)}
                 </h2>
                 <p style={{ color: '#475569', fontSize: '1rem', lineHeight: 1.5, marginBottom: '2rem' }}>
-                  You have been successfully logged in as the {successData.council} officer. You may now publish announcements and activities, along with accessing other administrative privileges pertaining to your council.
+                  You have been successfully logged in as the {getCouncilTitle(successData.council)}. You may now publish announcements and activities, along with accessing other administrative privileges pertaining to your council.
                 </p>
               </>
             )}
