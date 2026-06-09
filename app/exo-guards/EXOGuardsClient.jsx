@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { driveUrlToImage } from '../../lib/googleSheets';
 import { getCadetImageUrl } from '../../lib/imageMatcher';
 
-const BLACKLIST = ['INTERIOR', 'SENTINEL', 'NON POSTING', 'FI'];
+const BLACKLIST = ['INTERIOR', 'SENTINEL', 'NON POSTING', 'NON-POSTING', 'FI', 'CCQ', 'ACCQ', 'MHC', 'AFI'];
 
 function parseDateHeader(header) {
   if (!header) return null;
@@ -23,14 +23,29 @@ const getField = (row, fieldName) => {
   return key && row[key] ? String(row[key]) : 'N/A';
 };
 
+const normalize = (str) => {
+  if (!str || str === 'N/A') return '';
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z]/g, '');
+};
+
 const getSoiPicture = (name, soiData) => {
   if (!soiData || soiData.length === 0) return null;
-  const target = name.toLowerCase().replace(' as', '').trim();
+  const target = normalize(name.replace(' AS', '').trim());
+  if (!target) return null;
   
   const found = soiData.find(row => {
-    const first = getField(row, 'FIRST NAME').toLowerCase();
-    const last = getField(row, 'SURNAME').toLowerCase();
-    return target.includes(last) || last.includes(target) || target.includes(first);
+    const first = normalize(getField(row, 'FIRST NAME'));
+    const last = normalize(getField(row, 'SURNAME'));
+    
+    if (last.length > 2 && target.includes(last)) return true;
+    if (last.length > 2 && last.includes(target)) return true;
+    if (first.length > 3 && target.includes(first)) return true;
+    
+    // Custom manual fixes
+    if (target === 'auncionmh' && last === 'asuncion') return true;
+    if (target === 'penaredondo' && last === 'penaredondo') return true;
+    
+    return false;
   });
   
   if (found) {
@@ -65,13 +80,14 @@ function getStatusFromColor3CL(hex) {
     case '#ff0000': 
     case '#ea4335': return { label: 'CCQ', color: '#ef4444' };
     case '#cc0000': 
-    case '#990000': return { label: 'ACCQ', color: '#991b1b' };
+    case '#990000': 
+    case '#ffff00': 
+    case '#fbbc04': return { label: 'ACCQ', color: '#ca8a04' }; // ACCQ gets Gold/Yellow/Dark Red
     case '#00ff00': 
     case '#34a853': return { label: 'MHC', color: '#22c55e' };
     case '#ff9900': 
     case '#ffa500': 
-    case '#ffc000': 
-    case '#fbbc04': return { label: 'INTERIOR', color: '#f59e0b' };
+    case '#ffc000': return { label: 'INTERIOR', color: '#f59e0b' };
     case '#00ffff': 
     case '#4a86e8': 
     case '#00b0f0': return { label: 'AFI', color: '#0ea5e9' };

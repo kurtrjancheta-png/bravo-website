@@ -13,16 +13,24 @@ export default async function EXOGuardsPage() {
   let soiData = [];
 
   try {
-    const [res1, res2, rawSoiRows] = await Promise.all([
-      fetch(SCRIPT_URL_1CL, { cache: 'no-store' }),
-      fetch(SCRIPT_URL_3CL, { cache: 'no-store' }),
-      getSheetData(SHEET_ID, 'SOI')
-    ]);
+    const res1 = await fetch(SCRIPT_URL_1CL, { cache: 'no-store' }).catch(() => ({ ok: false }));
     if (res1.ok) data1CL = await res1.json();
+  } catch (err) {
+    console.error("Failed to fetch 1CL API", err);
+  }
+
+  try {
+    const res2 = await fetch(SCRIPT_URL_3CL, { cache: 'no-store' }).catch(() => ({ ok: false }));
     if (res2.ok) data3CL = await res2.json();
+  } catch (err) {
+    console.error("Failed to fetch 3CL API", err);
+  }
+
+  try {
+    const rawSoiRows = await getSheetData(SHEET_ID, 'SOI');
     soiData = rawSoiRows || [];
   } catch (err) {
-    console.error("Failed to fetch EXO Guards API or SOI Data", err);
+    console.error("Failed to fetch SOI Data", err);
   }
   
   return (
