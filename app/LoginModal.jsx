@@ -75,12 +75,25 @@ export default function LoginModal({ isOpen, onClose }) {
 
         {showSuccess ? (
           <div style={{ textAlign: 'center' }}>
-            <h2 style={{ color: '#16a34a', fontSize: '1.5rem', fontWeight: 800, marginBottom: '1rem', textTransform: 'uppercase' }}>
-              Welcome, {successData.council} OFFICER
-            </h2>
-            <p style={{ color: '#475569', fontSize: '1rem', lineHeight: 1.5, marginBottom: '2rem' }}>
-              You have been successfully logged in as the {successData.council} officer. You may now publish announcements and activities, along with accessing other administrative privileges pertaining to your council.
-            </p>
+            {successData.council === 'TACO' ? (
+              <>
+                <h2 style={{ color: '#16a34a', fontSize: '1.5rem', fontWeight: 800, marginBottom: '1rem', textTransform: 'uppercase' }}>
+                  Welcome, LCDR OLAVIDEZ, sir!
+                </h2>
+                <p style={{ color: '#475569', fontSize: '1rem', lineHeight: 1.5, marginBottom: '2rem' }}>
+                  You Have Succesfully Logged in as the Tactical Officer. You may now Publish Announcements as the Tactical Officer. You Have been given additional Security access to Exclusive dashboards, and other functions of this website. Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'} sir!
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 style={{ color: '#16a34a', fontSize: '1.5rem', fontWeight: 800, marginBottom: '1rem', textTransform: 'uppercase' }}>
+                  Welcome, {successData.council} OFFICER
+                </h2>
+                <p style={{ color: '#475569', fontSize: '1rem', lineHeight: 1.5, marginBottom: '2rem' }}>
+                  You have been successfully logged in as the {successData.council} officer. You may now publish announcements and activities, along with accessing other administrative privileges pertaining to your council.
+                </p>
+              </>
+            )}
             <button 
               onClick={() => {
                 setShowSuccess(false);
