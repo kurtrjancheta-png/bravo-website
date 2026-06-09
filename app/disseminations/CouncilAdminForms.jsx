@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "./AuthContext";
 
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbynZfRwktqV30Wf4Np3oRWAdeWu02JQkfN6zZNQnV2Vk9tEy_h-Dps9js5ZKXJbjvGcPg/exec";
 
 export default function CouncilAdminForms({ councilName }) {
-  const [modalState, setModalState] = useState("CLOSED"); // CLOSED, PASSWORD, FORM
+  const [modalState, setModalState] = useState("CLOSED"); // CLOSED, FORM
   const [activeFormType, setActiveFormType] = useState(""); // ANNOUNCEMENT or ACTIVITY
-  const [passwordInput, setPasswordInput] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { adminUser, isLoaded } = useAuth();
 
   // Form State
   const [formData, setFormData] = useState({
@@ -21,23 +22,17 @@ export default function CouncilAdminForms({ councilName }) {
   // File State
   const [selectedFiles, setSelectedFiles] = useState([]);
 
+  // Only render if the user is authenticated as the correct council administrator
+  if (!isLoaded || !adminUser || adminUser.council !== councilName) {
+    return null;
+  }
+
   const handleOpenForm = (type) => {
     setActiveFormType(type);
-    setModalState("PASSWORD");
-    setPasswordInput("");
+    setModalState("FORM");
     setErrorMsg("");
     setFormData({ urgency: "LIGHT", content: "", eventDate: "" });
     setSelectedFiles([]);
-  };
-
-  const handlePasswordSubmit = (e) => {
-    e.preventDefault();
-    if (passwordInput === "Admin") {
-      setModalState("FORM");
-      setErrorMsg("");
-    } else {
-      setErrorMsg("Incorrect Administrator Password.");
-    }
   };
 
   const handleFileChange = async (e) => {
@@ -152,85 +147,6 @@ export default function CouncilAdminForms({ councilName }) {
         📅 Add an Activity
       </button>
 
-      {/* PASSWORD MODAL */}
-      {modalState === "PASSWORD" && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.7)',
-          backdropFilter: 'blur(4px)',
-          zIndex: 50,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '1rem'
-        }}>
-          <div style={{
-            backgroundColor: 'var(--bg-secondary)',
-            borderRadius: '16px',
-            padding: '2rem',
-            width: '100%',
-            maxWidth: '400px',
-            border: '1px solid var(--border-color)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-          }}>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: '900', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Admin Access</h2>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Enter the administrator password to post to the board.</p>
-            
-            <form onSubmit={handlePasswordSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <input 
-                type="password" 
-                autoFocus
-                placeholder="Password" 
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem 1rem',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border-color)',
-                  backgroundColor: 'rgba(0,0,0,0.2)',
-                  color: 'var(--text-primary)',
-                  fontSize: '1rem'
-                }}
-              />
-              {errorMsg && <p style={{ color: '#ef4444', fontSize: '0.875rem', fontWeight: 'bold' }}>{errorMsg}</p>}
-              
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-                <button 
-                  type="button" 
-                  onClick={() => setModalState("CLOSED")}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color)',
-                    background: 'transparent',
-                    color: 'var(--text-secondary)',
-                    fontWeight: 'bold',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  style={{
-                    padding: '0.5rem 1rem',
-                    borderRadius: '8px',
-                    border: 'none',
-                    backgroundColor: '#2563eb',
-                    color: 'white',
-                    fontWeight: 'bold',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Unlock
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* SUBMISSION FORM MODAL */}
       {modalState === "FORM" && (
