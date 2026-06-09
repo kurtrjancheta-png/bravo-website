@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import ImageGallery from './disseminations/ImageGallery';
 
 const urgencyStyles = {
   'LIGHT': { bg: 'rgba(74, 222, 128, 0.15)', border: '#4ade80', color: '#4ade80', animation: 'none', label: 'FOR INFO' },
@@ -131,10 +132,18 @@ export default function SlideshowClient({ disseminations }) {
             flex: 1, 
             fontWeight: 500,
             overflowY: 'auto',
-            paddingRight: '0.5rem'
+            paddingRight: '0.5rem',
+            whiteSpace: 'pre-wrap'
           }}>
             {currentSlide['CONTENT'] || 'No content provided.'}
           </div>
+
+          {/* Render Attachments if they exist */}
+          {((currentSlide['ATTACHMENT'] && currentSlide['ATTACHMENT'].trim() !== '') || (currentSlide['Column 6'] && currentSlide['Column 6'].trim() !== '')) && (
+            <div style={{ marginTop: '1rem' }}>
+              <ImageGallery urls={(currentSlide['ATTACHMENT'] || currentSlide['Column 6']).split(',')} />
+            </div>
+          )}
           
           <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', borderTop: '1px solid var(--border-color)', paddingTop: '1rem', display: 'flex', justifyContent: 'space-between', marginTop: 'auto' }}>
             <span><strong>Date Announced:</strong> {currentSlide['DATE ANNOUNCED'] || 'N/A'}</span>
