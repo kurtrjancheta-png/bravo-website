@@ -6,6 +6,8 @@ const DISSEMINATION_SHEET_ID = '1YeaoloRz4REe_iVomGfFI9WugalrDFsHiz04eOcD0a8';
 
 const COUNCILS = [
   { id: 'TACO', name: "Tac O's Corner" },
+  { id: 'CO', name: "CO's Corner" },
+  { id: 'FSGT', name: "FSGT's Corner" },
   { id: 'S1', name: 'S1 Personnel' },
   { id: 'S2', name: 'S2 Security' },
   { id: 'S3', name: 'S3 Operations' },

@@ -198,7 +198,7 @@ export default function SlideshowClient({ disseminations }) {
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
               <div style={{ marginBottom: '1.5rem' }}>
                 <div style={{ fontWeight: 800, fontSize: '0.85rem', letterSpacing: '0.1em', color: '#64748b', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-                  {currentSlide.council} COUNCIL
+                  {currentSlide.council}
                 </div>
                 <div style={{ fontWeight: 800, fontSize: '1.25rem', letterSpacing: '0.05em', color: style.border, textTransform: 'uppercase' }}>
                   {currentSlide['TYPE'] || 'ANNOUNCEMENT'}
