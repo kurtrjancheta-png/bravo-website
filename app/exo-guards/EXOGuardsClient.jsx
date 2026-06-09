@@ -184,6 +184,11 @@ export default function EXOGuardsClient({ data1CL = [], data3CL = [] }) {
 
   const renderGuardGroup = (title, guards) => {
     if (!guards || guards.length === 0) return null;
+    
+    // Separate Sentinels from the rest of the guards
+    const sentinels = guards.filter(g => g.status === 'SENTINEL');
+    const regularGuards = guards.filter(g => g.status !== 'SENTINEL');
+
     return (
       <div style={{ marginBottom: '2rem' }}>
         <div style={{ 
@@ -198,8 +203,63 @@ export default function EXOGuardsClient({ data1CL = [], data3CL = [] }) {
         }}>
           {title} Guards
         </div>
+        
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {guards.map((guard, idx) => renderGuardCard(guard, idx))}
+          {regularGuards.map((guard, idx) => renderGuardCard(guard, idx))}
+          
+          {sentinels.length > 0 && (
+            <div style={{
+              backgroundColor: 'var(--card-bg)',
+              border: `2px solid #1f293760`,
+              borderTop: `10px solid #1f2937`,
+              borderRadius: '12px',
+              padding: '1.25rem',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+              marginTop: '0.5rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: 'var(--card-text)', letterSpacing: '0.05em' }}>
+                  SENTINELS
+                </h3>
+                <span style={{
+                  backgroundColor: `#1f293715`,
+                  color: '#1f2937',
+                  padding: '0.2rem 0.6rem',
+                  borderRadius: '9999px',
+                  fontSize: '0.65rem',
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  border: `1px solid #1f2937`
+                }}>
+                  {sentinels.length} POSTED
+                </span>
+              </div>
+              
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {sentinels.map((s, i) => (
+                  <div key={i} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    backgroundColor: 'var(--bg-secondary)',
+                    padding: '0.3rem 0.75rem 0.3rem 0.3rem',
+                    borderRadius: '999px',
+                    border: '1px solid var(--border-color)'
+                  }}>
+                    <img 
+                      src={s.imageUrl} 
+                      alt={s.name} 
+                      style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }}
+                      onError={(e) => { e.target.src = '/placeholder-avatar.png' }}
+                    />
+                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                      {s.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
