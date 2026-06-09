@@ -269,124 +269,138 @@ export default function EXOGuardsClient({ data1CL = [], data3CL = [], soiData = 
     </div>
   );
 
-  const renderGuardGroup = (title, guards) => {
-    if (!guards || guards.length === 0) return null;
-    
-    // Separate Sentinels from the rest of the guards
-    const sentinels = guards.filter(g => g.status === 'SENTINEL');
-    const regularGuards = guards.filter(g => g.status !== 'SENTINEL');
+  const renderGuardCardRow = (title, leftGuards, rightGuards, isSentinel = false) => {
+    if ((!leftGuards || leftGuards.length === 0) && (!rightGuards || rightGuards.length === 0)) return null;
+
+    const renderBlock = (guards) => {
+      if (!guards || guards.length === 0) return <div style={{ flex: 1 }}></div>;
+      
+      if (isSentinel) {
+        return (
+          <div style={{
+            flex: 1,
+            backgroundColor: 'var(--card-bg)',
+            border: `2px solid #1f293760`,
+            borderTop: `10px solid #1f2937`,
+            borderRadius: '12px',
+            padding: '1.25rem',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+            marginTop: '0.5rem',
+            alignSelf: 'stretch'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: 'var(--card-text)', letterSpacing: '0.05em' }}>
+                SENTINELS
+              </h3>
+              <span style={{
+                backgroundColor: `#1f293715`,
+                color: '#1f2937',
+                padding: '0.2rem 0.6rem',
+                borderRadius: '9999px',
+                fontSize: '0.65rem',
+                fontWeight: 800,
+                textTransform: 'uppercase',
+                border: `1px solid #1f2937`
+              }}>
+                {guards.length} POSTED
+              </span>
+            </div>
+            
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+              {guards.map((s, i) => (
+                <div key={i} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  backgroundColor: 'var(--bg-secondary)',
+                  padding: '0.3rem 0.75rem 0.3rem 0.3rem',
+                  borderRadius: '999px',
+                  border: '1px solid var(--border-color)'
+                }}>
+                  <div style={{ position: 'relative', width: '24px', height: '24px' }}>
+                    <div style={{
+                      position: 'absolute',
+                      top: 0, left: 0, right: 0, bottom: 0,
+                      borderRadius: '50%',
+                      backgroundColor: '#f1f5f9',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.75rem',
+                      zIndex: 1
+                    }}>
+                      👤
+                    </div>
+                    {s.imageUrl && (
+                      <img 
+                        src={s.imageUrl} 
+                        alt={s.name} 
+                        style={{
+                          position: 'absolute',
+                          top: 0, left: 0, right: 0, bottom: 0,
+                          width: '100%',
+                          height: '100%',
+                          borderRadius: '50%',
+                          objectFit: 'cover',
+                          backgroundColor: '#fff',
+                          zIndex: 2
+                        }}
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                    )}
+                  </div>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    {s.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      } else {
+        return (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {guards.map((guard, idx) => renderGuardCard(guard, idx))}
+          </div>
+        );
+      }
+    };
 
     return (
       <div style={{ marginBottom: '2rem' }}>
-        <div style={{ 
-          fontSize: '0.9rem', 
-          fontWeight: 800, 
-          color: 'var(--text-secondary)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.1em',
-          marginBottom: '1rem',
-          borderBottom: '2px solid var(--border-color)',
-          paddingBottom: '0.5rem'
-        }}>
-          {title} Guards
-        </div>
-        
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {regularGuards.map((guard, idx) => renderGuardCard(guard, idx))}
-          
-          {sentinels.length > 0 && (
-            <div style={{
-              backgroundColor: 'var(--card-bg)',
-              border: `2px solid #1f293760`,
-              borderTop: `10px solid #1f2937`,
-              borderRadius: '12px',
-              padding: '1.25rem',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-              marginTop: '0.5rem'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: 'var(--card-text)', letterSpacing: '0.05em' }}>
-                  SENTINELS
-                </h3>
-                <span style={{
-                  backgroundColor: `#1f293715`,
-                  color: '#1f2937',
-                  padding: '0.2rem 0.6rem',
-                  borderRadius: '9999px',
-                  fontSize: '0.65rem',
-                  fontWeight: 800,
-                  textTransform: 'uppercase',
-                  border: `1px solid #1f2937`
-                }}>
-                  {sentinels.length} POSTED
-                </span>
-              </div>
-              
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                {sentinels.map((s, i) => (
-                  <div key={i} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    backgroundColor: 'var(--bg-secondary)',
-                    padding: '0.3rem 0.75rem 0.3rem 0.3rem',
-                    borderRadius: '999px',
-                    border: '1px solid var(--border-color)'
-                  }}>
-                    <div style={{ position: 'relative', width: '24px', height: '24px' }}>
-                      <div style={{
-                        position: 'absolute',
-                        top: 0, left: 0, right: 0, bottom: 0,
-                        borderRadius: '50%',
-                        backgroundColor: '#f1f5f9',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '0.75rem',
-                        zIndex: 1
-                      }}>
-                        👤
-                      </div>
-                      {s.imageUrl && (
-                        <img 
-                          src={s.imageUrl} 
-                          alt={s.name} 
-                          style={{
-                            position: 'absolute',
-                            top: 0, left: 0, right: 0, bottom: 0,
-                            width: '100%',
-                            height: '100%',
-                            borderRadius: '50%',
-                            objectFit: 'cover',
-                            backgroundColor: '#fff',
-                            zIndex: 2
-                          }}
-                          onError={(e) => { e.target.style.display = 'none'; }}
-                        />
-                      )}
-                    </div>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                      {s.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+        {!isSentinel && (
+          <div style={{ 
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '3rem',
+            fontSize: '0.9rem', 
+            fontWeight: 800, 
+            color: 'var(--text-secondary)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            marginBottom: '1rem',
+            borderBottom: '2px solid var(--border-color)',
+            paddingBottom: '0.5rem'
+          }}>
+            <div>{title} GUARDS (POSTED)</div>
+            <div>{title} GUARDS (INCOMING)</div>
+          </div>
+        )}
+        <div style={{ display: 'flex', gap: '3rem', alignItems: 'stretch' }}>
+          {renderBlock(leftGuards)}
+          {renderBlock(rightGuards)}
         </div>
       </div>
     );
   };
 
+  const getRegularGuards = (guards) => guards.filter(g => g.status !== 'SENTINEL');
+  const getSentinels = (guards) => guards.filter(g => g.status === 'SENTINEL');
+
   return (
-    <div style={{ 
-      display: 'grid', 
-      gridTemplateColumns: '1fr 1fr', 
-      gap: '3rem',
-      alignItems: 'start'
-    }}>
-      <section>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <h2 style={{ color: 'var(--text-primary)', fontSize: '1.4rem', fontWeight: 900, margin: 0 }}>
             POSTED GUARDS
           </h2>
@@ -394,40 +408,31 @@ export default function EXOGuardsClient({ data1CL = [], data3CL = [], soiData = 
             ON DUTY ({postedDateStr})
           </span>
         </div>
-        
-        {today1CL.length === 0 && today3CL.length === 0 ? (
-          <div style={{ padding: '3rem', textAlign: 'center', backgroundColor: 'var(--card-bg)', borderRadius: '16px', border: '2px dashed var(--border-color)', color: 'var(--text-secondary)' }}>
-            No guards found for {postedDateStr}.
-          </div>
-        ) : (
-          <div>
-            {renderGuardGroup('First Class', today1CL)}
-            {renderGuardGroup('Third Class', today3CL)}
-          </div>
-        )}
-      </section>
-
-      <section>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <h2 style={{ color: 'var(--text-primary)', fontSize: '1.4rem', fontWeight: 900, margin: 0 }}>
             INCOMING GUARDS
           </h2>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, backgroundColor: 'var(--card-bg)', padding: '0.25rem 0.75rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-            AT 1830H ({incomingDateStr})
+            POSTING AT 18:30 ({incomingDateStr})
           </span>
         </div>
+      </div>
+      
+      {today1CL.length === 0 && today3CL.length === 0 && tomorrow1CL.length === 0 && tomorrow3CL.length === 0 ? (
+        <div style={{ padding: '3rem', textAlign: 'center', backgroundColor: 'var(--card-bg)', borderRadius: '16px', border: '2px dashed var(--border-color)', color: 'var(--text-secondary)' }}>
+          No guards found for {postedDateStr} or {incomingDateStr}.
+        </div>
+      ) : (
+        <>
+          {/* 1CL Block */}
+          {renderGuardCardRow('First Class', getRegularGuards(today1CL), getRegularGuards(tomorrow1CL), false)}
+          {renderGuardCardRow('First Class Sentinels', getSentinels(today1CL), getSentinels(tomorrow1CL), true)}
 
-        {tomorrow1CL.length === 0 && tomorrow3CL.length === 0 ? (
-          <div style={{ padding: '3rem', textAlign: 'center', backgroundColor: 'var(--card-bg)', borderRadius: '16px', border: '2px dashed var(--border-color)', color: 'var(--text-secondary)' }}>
-            No incoming guards assigned for {incomingDateStr} yet.
-          </div>
-        ) : (
-          <div>
-            {renderGuardGroup('First Class', tomorrow1CL)}
-            {renderGuardGroup('Third Class', tomorrow3CL)}
-          </div>
-        )}
-      </section>
+          {/* 3CL Block */}
+          {renderGuardCardRow('Third Class', getRegularGuards(today3CL), getRegularGuards(tomorrow3CL), false)}
+          {renderGuardCardRow('Third Class Sentinels', getSentinels(today3CL), getSentinels(tomorrow3CL), true)}
+        </>
+      )}
     </div>
   );
 }
