@@ -161,13 +161,13 @@ async function DisseminationCards({ councilId }) {
                   <div style={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center', 
                     border: `3px solid ${style.border}`, borderRadius: '10px', overflow: 'hidden',
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)', backgroundColor: 'white',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)', backgroundColor: 'var(--bg-primary)',
                     minWidth: '70px'
                   }}>
                     <div style={{ background: style.border, color: 'white', width: '100%', textAlign: 'center', fontSize: '0.9rem', fontWeight: '900', padding: '0.2rem 0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       {eventMonth}
                     </div>
-                    <div style={{ fontSize: '2.2rem', fontWeight: '900', color: '#1e293b', padding: '0.2rem 0.4rem', lineHeight: '1' }}>
+                    <div style={{ fontSize: '2.2rem', fontWeight: '900', color: 'var(--text-primary)', padding: '0.2rem 0.4rem', lineHeight: '1' }}>
                       {eventDay}
                     </div>
                   </div>

@@ -4,6 +4,9 @@
   --bg-secondary: #f4f5f7; /* Light Gray for Sidebar and subtle areas */
   --bg-tertiary: #2d3748; /* Dark Gray for the Hero Banner */
   
+  --card-bg: #ffffff; /* White card background */
+  --card-text: #1e293b; /* Dark text for cards */
+  
   --accent-gold: #d4af37; /* Gold Tertiary Accent */
   --accent-gold-light: #fef9c3;
   --accent-gold-dark: #b5952f;
@@ -17,19 +20,22 @@
 }
 
 body.dark-mode {
-  --bg-primary: #1a202c;
-  --bg-secondary: #2d3748;
-  --bg-tertiary: #1a202c;
+  --bg-primary: #0f172a; /* Deep Slate 900 */
+  --bg-secondary: #1e293b; /* Slate 800 */
+  --bg-tertiary: #020617; /* Slate 950 */
+  
+  --card-bg: #1e293b; /* Slate 800 for cards */
+  --card-text: #f8fafc; /* Slate 50 for text on cards */
   
   --accent-gold: #d4af37;
-  --accent-gold-light: #856f1a;
+  --accent-gold-light: #b5952f;
   --accent-gold-dark: #fef9c3;
   
-  --text-primary: #f7fafc;
-  --text-secondary: #cbd5e0;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
   --text-light: #ffffff;
   
-  --border-color: #4a5568;
+  --border-color: #334155;
 }
 
 * {

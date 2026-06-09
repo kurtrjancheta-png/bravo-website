@@ -131,7 +131,7 @@ export default function SOIGenerator({ soiData }) {
       {showCard && selectedCadet && (
         <div className="soi-card" style={{
           marginTop: '2rem',
-          background: 'white',
+          background: 'var(--card-bg)',
           border: '1px solid var(--accent-gold)',
           borderRadius: '12px',
           boxShadow: '0 10px 30px rgba(0,0,0,0.08)',

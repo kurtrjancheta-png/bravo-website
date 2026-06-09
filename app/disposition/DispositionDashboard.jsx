@@ -151,7 +151,7 @@ function ClassPieChart({ title, className, data, total, onSliceClick, selectedDe
 
   if (total === 0) {
     return (
-      <div style={{ background: 'white', borderRadius: '12px', padding: '2rem', textAlign: 'center', border: '1px solid var(--border-color)' }}>
+      <div style={{ background: 'var(--card-bg)', borderRadius: '12px', padding: '2rem', textAlign: 'center', border: '1px solid var(--border-color)' }}>
         <h3 style={{ margin: '0 0 1rem 0' }}>{title}</h3>
         <p style={{ color: 'var(--text-secondary)' }}>No data available.</p>
       </div>
@@ -175,7 +175,7 @@ function ClassPieChart({ title, className, data, total, onSliceClick, selectedDe
   };
 
   return (
-    <div style={{ background: 'white', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <h3 style={{ margin: '0 0 1.5rem 0', color: 'var(--text-primary)', textAlign: 'center' }}>{title}</h3>
       
       <div style={{ position: 'relative', width: '200px', height: '200px' }}>
@@ -306,7 +306,7 @@ function AttachmentDetailsView({ details, attachmentData, rosterData, onClose })
       style={{ 
       marginTop: '3rem', 
       padding: '2rem', 
-      background: 'var(--bg-primary, white)', 
+      background: 'var(--card-bg)', 
       borderRadius: '16px', 
       border: `1px solid var(--border-color, #e2e8f0)`, 
       animation: 'fadeIn 0.3s ease-out', 
@@ -353,7 +353,7 @@ function AttachmentDetailsView({ details, attachmentData, rosterData, onClose })
               }} 
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.background = 'var(--bg-primary, white)';
+                e.currentTarget.style.background = 'var(--card-bg)';
                 e.currentTarget.style.borderColor = details.color;
               }} 
               onMouseLeave={(e) => {

@@ -119,7 +119,7 @@ export default function S1AdminForms() {
           <select 
             value={type} 
             onChange={e => setType(e.target.value)}
-            style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'white' }}
+            style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}
           >
             <option value="Entertaining priv">Entertaining priv</option>
             <option value="malling priv">malling priv</option>

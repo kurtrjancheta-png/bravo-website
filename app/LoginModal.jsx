@@ -74,7 +74,7 @@ export default function LoginModal({ isOpen, onClose }) {
       backdropFilter: 'blur(4px)'
     }}>
       <div style={{
-        backgroundColor: '#f8fafc',
+        backgroundColor: 'var(--card-bg)',
         padding: '2.5rem',
         borderRadius: '16px',
         width: '100%',
@@ -105,7 +105,7 @@ export default function LoginModal({ isOpen, onClose }) {
                 <h2 style={{ color: '#16a34a', fontSize: '1.5rem', fontWeight: 800, marginBottom: '1rem', textTransform: 'uppercase' }}>
                   Welcome, LCDR OLAVIDEZ, sir!
                 </h2>
-                <p style={{ color: '#475569', fontSize: '1rem', lineHeight: 1.5, marginBottom: '2rem' }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', lineHeight: 1.5, marginBottom: '2rem' }}>
                   You Have Succesfully Logged in as the Tactical Officer. You may now Publish Announcements as the Tactical Officer. You Have been given additional Security access to Exclusive dashboards, and other functions of this website. Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'} sir!
                 </p>
               </>
@@ -114,7 +114,7 @@ export default function LoginModal({ isOpen, onClose }) {
                 <h2 style={{ color: '#16a34a', fontSize: '1.5rem', fontWeight: 800, marginBottom: '1rem', textTransform: 'uppercase' }}>
                   Welcome, {getCouncilTitle(successData.council)}
                 </h2>
-                <p style={{ color: '#475569', fontSize: '1rem', lineHeight: 1.5, marginBottom: '2rem' }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', lineHeight: 1.5, marginBottom: '2rem' }}>
                   You have been successfully logged in as the {getCouncilTitle(successData.council)}. You may now publish announcements and activities, along with accessing other administrative privileges pertaining to your council.
                 </p>
               </>
@@ -147,7 +147,7 @@ export default function LoginModal({ isOpen, onClose }) {
           <>
             <h2 style={{ 
               marginTop: 0, 
-              color: '#1e293b', 
+              color: 'var(--text-primary)', 
               fontSize: '1.5rem', 
               fontWeight: 800, 
               textAlign: 'center',
@@ -173,7 +173,7 @@ export default function LoginModal({ isOpen, onClose }) {
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#475569', fontSize: '0.9rem' }}>Username</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Username</label>
                 <input 
                   type="text" 
                   value={username}
@@ -183,7 +183,9 @@ export default function LoginModal({ isOpen, onClose }) {
                     width: '100%',
                     padding: '0.75rem 1rem',
                     borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
+                    border: '1px solid var(--border-color)',
+                    backgroundColor: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
                     fontSize: '1rem',
                     outline: 'none',
                     boxSizing: 'border-box'
@@ -192,7 +194,7 @@ export default function LoginModal({ isOpen, onClose }) {
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#475569', fontSize: '0.9rem' }}>Password</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Password</label>
                 <input 
                   type="password" 
                   value={password}
@@ -202,7 +204,9 @@ export default function LoginModal({ isOpen, onClose }) {
                     width: '100%',
                     padding: '0.75rem 1rem',
                     borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
+                    border: '1px solid var(--border-color)',
+                    backgroundColor: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
                     fontSize: '1rem',
                     outline: 'none',
                     boxSizing: 'border-box'

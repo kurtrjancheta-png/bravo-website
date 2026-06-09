@@ -180,7 +180,7 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
                    sheetName: rawSheetName
                 })}
                 style={{
-                  background: isClosed ? 'var(--bg-secondary)' : 'white',
+                  background: isClosed ? 'var(--bg-secondary)' : 'var(--card-bg)',
                   border: `2px solid ${isClosed ? 'var(--border-color)' : 'var(--accent-gold)'}`,
                   borderRadius: '12px',
                   padding: '1.5rem',
@@ -236,7 +236,7 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
             zIndex: 1000,
             padding: '1rem'
          }}>
-            <div style={{ background: 'white', padding: '2rem', borderRadius: '16px', width: '100%', maxWidth: '400px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+            <div style={{ background: 'var(--card-bg)', padding: '2rem', borderRadius: '16px', width: '100%', maxWidth: '400px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
                <h2 style={{ marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Signify</h2>
                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
                  For: {selectedPriv.type} ({selectedPriv.date})
@@ -275,7 +275,7 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
                         top: '100%', 
                         left: 0, 
                         right: 0, 
-                        background: 'white', 
+                        background: 'var(--bg-primary)', 
                         border: '1px solid var(--border-color)', 
                         borderRadius: '6px', 
                         boxShadow: '0 4px 12px rgba(0,0,0,0.1)', 
@@ -311,10 +311,10 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
                                 borderBottom: i < suggestions.length - 1 ? '1px solid var(--border-color)' : 'none',
                                 fontSize: '0.85rem',
                                 color: 'var(--text-primary)',
-                                background: 'white'
+                                background: 'var(--bg-primary)'
                               }}
                               onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
-                              onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = 'var(--bg-primary)'}
                             >
                               <div style={{ fontWeight: 'bold' }}>{fullName}</div>
                               <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{cadet['CLASS '] || cadet['CLASS']} | SN: {afpsn}</div>

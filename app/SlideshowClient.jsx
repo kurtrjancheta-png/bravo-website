@@ -178,7 +178,7 @@ export default function SlideshowClient({ disseminations }) {
         <div 
           key={currentIndex}
           style={{
-            backgroundColor: '#fdfbf7', // Pastel paper color
+            backgroundColor: 'var(--card-bg)',
             border: `2px solid ${style.border}`,
             borderTop: `16px solid ${style.border}`, // Thick top border like a tab
             borderRadius: '16px',
@@ -188,9 +188,9 @@ export default function SlideshowClient({ disseminations }) {
             flexDirection: 'column',
             gap: '1.5rem',
             minHeight: '350px', // Allow growth
-            transition: 'border 0.3s ease-in-out',
+            transition: 'background-color 0.3s, border 0.3s ease-in-out',
             width: '100%',
-            color: '#1e293b' // Dark text for paper background
+            color: 'var(--card-text)'
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'row', gap: '2rem', flex: 1 }}>
@@ -207,7 +207,7 @@ export default function SlideshowClient({ disseminations }) {
               
               <div style={{ 
                 fontSize: '1.5rem', 
-                color: '#334155',
+                color: 'var(--card-text)',
                 lineHeight: 1.6, 
                 flex: 1, 
                 fontWeight: 500,
@@ -244,7 +244,7 @@ export default function SlideshowClient({ disseminations }) {
                 <div style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'center', 
                   border: `3px solid ${style.border}`, borderRadius: '12px', overflow: 'hidden',
-                  boxShadow: '0 6px 12px rgba(0,0,0,0.1)', backgroundColor: 'white',
+                  boxShadow: '0 6px 12px rgba(0,0,0,0.1)', backgroundColor: 'var(--bg-primary)',
                   minWidth: '90px'
                 }}>
                   <div style={{ background: style.border, color: 'white', width: '100%', textAlign: 'center', fontSize: '1.1rem', fontWeight: '900', padding: '0.3rem 0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
