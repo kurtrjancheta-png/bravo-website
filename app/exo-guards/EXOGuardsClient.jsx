@@ -87,12 +87,13 @@ export default function EXOGuardsClient({ initialData }) {
     <div key={idx} style={{
       display: 'flex',
       alignItems: 'center',
-      gap: '1.5rem',
+      gap: '1.25rem',
       backgroundColor: 'var(--card-bg)',
-      border: `2px solid ${guard.statusColor}40`,
-      borderRadius: '12px',
-      padding: '1.5rem',
-      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+      border: `2px solid ${guard.statusColor}60`,
+      borderTop: `12px solid ${guard.statusColor}`,
+      borderRadius: '16px',
+      padding: '1.25rem',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
       transition: 'transform 0.2s',
       cursor: 'default'
     }}
@@ -103,29 +104,29 @@ export default function EXOGuardsClient({ initialData }) {
         src={guard.imageUrl} 
         alt={guard.name} 
         style={{
-          width: '80px',
-          height: '80px',
+          width: '70px',
+          height: '70px',
           borderRadius: '50%',
           objectFit: 'cover',
           border: `3px solid ${guard.statusColor}`
         }}
         onError={(e) => { e.target.src = '/placeholder-avatar.png' }}
       />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: 'var(--card-text)', letterSpacing: '0.05em' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+        <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900, color: 'var(--card-text)', letterSpacing: '0.05em' }}>
           {guard.name}
         </h3>
         <span style={{
-          backgroundColor: `${guard.statusColor}20`,
+          backgroundColor: `${guard.statusColor}15`,
           color: guard.statusColor,
-          padding: '0.25rem 0.75rem',
-          borderRadius: '999px',
-          fontSize: '0.8rem',
+          padding: '0.3rem 0.75rem',
+          borderRadius: '9999px',
+          fontSize: '0.75rem',
           fontWeight: 800,
           textTransform: 'uppercase',
           display: 'inline-block',
           width: 'fit-content',
-          border: `1px solid ${guard.statusColor}50`
+          border: `1px solid ${guard.statusColor}`
         }}>
           {guard.status}
         </span>
@@ -134,44 +135,49 @@ export default function EXOGuardsClient({ initialData }) {
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '4rem' }}>
+    <div style={{ 
+      display: 'grid', 
+      gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', 
+      gap: '3rem',
+      alignItems: 'start'
+    }}>
       <section>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-          <h2 style={{ color: 'var(--text-primary)', fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+          <h2 style={{ color: 'var(--text-primary)', fontSize: '1.4rem', fontWeight: 900, margin: 0 }}>
             POSTED GUARDS
           </h2>
-          <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, backgroundColor: 'var(--card-bg)', padding: '0.25rem 0.75rem', borderRadius: '12px' }}>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, backgroundColor: 'var(--card-bg)', padding: '0.25rem 0.75rem', borderRadius: '12px' }}>
             TODAY
           </span>
         </div>
         
         {todayGuards.length > 0 ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {todayGuards.map((guard, idx) => renderGuardCard(guard, idx))}
           </div>
         ) : (
-          <div style={{ padding: '3rem', textAlign: 'center', backgroundColor: 'var(--card-bg)', borderRadius: '12px', border: '2px dashed var(--border-color)', color: 'var(--text-secondary)' }}>
+          <div style={{ padding: '3rem', textAlign: 'center', backgroundColor: 'var(--card-bg)', borderRadius: '16px', border: '2px dashed var(--border-color)', color: 'var(--text-secondary)' }}>
             No guards found for today. Ensure the spreadsheet is updated and colored.
           </div>
         )}
       </section>
 
       <section>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-          <h2 style={{ color: 'var(--text-primary)', fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+          <h2 style={{ color: 'var(--text-primary)', fontSize: '1.4rem', fontWeight: 900, margin: 0 }}>
             INCOMING GUARDS
           </h2>
-          <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, backgroundColor: 'var(--card-bg)', padding: '0.25rem 0.75rem', borderRadius: '12px' }}>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, backgroundColor: 'var(--card-bg)', padding: '0.25rem 0.75rem', borderRadius: '12px' }}>
             TOMORROW
           </span>
         </div>
 
         {tomorrowGuards.length > 0 ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {tomorrowGuards.map((guard, idx) => renderGuardCard(guard, idx))}
           </div>
         ) : (
-          <div style={{ padding: '3rem', textAlign: 'center', backgroundColor: 'var(--card-bg)', borderRadius: '12px', border: '2px dashed var(--border-color)', color: 'var(--text-secondary)' }}>
+          <div style={{ padding: '3rem', textAlign: 'center', backgroundColor: 'var(--card-bg)', borderRadius: '16px', border: '2px dashed var(--border-color)', color: 'var(--text-secondary)' }}>
             No incoming guards assigned for tomorrow yet.
           </div>
         )}
