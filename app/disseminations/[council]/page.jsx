@@ -128,18 +128,18 @@ async function DisseminationCards({ councilId }) {
               <div style={{ fontWeight: 800, fontSize: '1rem', letterSpacing: '0.05em', color: style.border, textTransform: 'uppercase' }}>
                 {card['TYPE'] || 'ANNOUNCEMENT'}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 {eventDay && (
                   <div style={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center', 
-                    border: `2px solid ${style.border}`, borderRadius: '6px', overflow: 'hidden',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)', backgroundColor: 'white',
-                    minWidth: '50px'
+                    border: `4px solid ${style.border}`, borderRadius: '12px', overflow: 'hidden',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)', backgroundColor: 'white',
+                    minWidth: '100px'
                   }}>
-                    <div style={{ background: style.border, color: 'white', width: '100%', textAlign: 'center', fontSize: '0.6rem', fontWeight: 'bold', padding: '0.1rem 0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <div style={{ background: style.border, color: 'white', width: '100%', textAlign: 'center', fontSize: '1.2rem', fontWeight: '900', padding: '0.3rem 0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       {eventMonth}
                     </div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#1e293b', padding: '0.1rem 0.25rem', lineHeight: '1' }}>
+                    <div style={{ fontSize: '3.5rem', fontWeight: '900', color: '#1e293b', padding: '0.4rem 0.5rem', lineHeight: '1' }}>
                       {eventDay}
                     </div>
                   </div>
@@ -147,9 +147,9 @@ async function DisseminationCards({ councilId }) {
                 <div style={{ 
                   background: style.bg, 
                   color: style.color, 
-                  padding: '0.25rem 0.75rem', 
+                  padding: '0.5rem 1rem', 
                   borderRadius: '9999px', 
-                  fontSize: '0.75rem', 
+                  fontSize: '0.85rem', 
                   fontWeight: 800,
                   textTransform: 'uppercase'
                 }}>
