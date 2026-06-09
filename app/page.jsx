@@ -63,7 +63,25 @@ export default async function Home() {
         dateAnnounced = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
       }
     }
-    return { ...d, 'DATE ANNOUNCED': dateAnnounced };
+    
+    let eventDate = String(d['EVENT DATE'] || '');
+    if (eventDate.includes('Date(')) {
+      const match = eventDate.match(/Date\((\d+),(\d+),(\d+)\)/);
+      if (match) {
+        const year = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10);
+        const day = parseInt(match[3], 10);
+        const dateObj = new Date(year, month, day);
+        eventDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+    } else if (eventDate && eventDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      // Handle YYYY-MM-DD
+      const parts = eventDate.split('-');
+      const dateObj = new Date(parts[0], parseInt(parts[1])-1, parts[2]);
+      eventDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    
+    return { ...d, 'DATE ANNOUNCED': dateAnnounced, 'EVENT DATE': eventDate };
   });
   
   // Sort by urgency roughly (4: FOR IMMEDIATE COMPLIANCE, 3: EMERGENCY, 2: MODERATE, 1: LIGHT)

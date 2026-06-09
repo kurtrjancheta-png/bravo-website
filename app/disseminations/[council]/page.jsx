@@ -81,19 +81,34 @@ async function DisseminationCards({ councilId }) {
         let eventMonth = '';
         let eventDay = '';
         if (String(card['TYPE'] || '').trim().toUpperCase() === 'ACTIVITY' && card['EVENT DATE']) {
-          try {
-            const d = new Date(card['EVENT DATE']);
-            if (!isNaN(d.getTime())) {
+          let eDate = String(card['EVENT DATE']);
+          if (eDate.includes('Date(')) {
+            const match = eDate.match(/Date\((\d+),(\d+),(\d+)\)/);
+            if (match) {
+              const d = new Date(parseInt(match[1], 10), parseInt(match[2], 10), parseInt(match[3], 10));
               eventMonth = d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
               eventDay = d.getDate();
-            } else {
-              const parts = card['EVENT DATE'].split(' ');
-              if (parts.length >= 2) {
-                eventMonth = parts[0].substring(0, 3).toUpperCase();
-                eventDay = parts[1].replace(/[^0-9]/g, '');
-              }
             }
-          } catch (e) {}
+          } else if (eDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            const parts = eDate.split('-');
+            const d = new Date(parts[0], parseInt(parts[1])-1, parts[2]);
+            eventMonth = d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+            eventDay = d.getDate();
+          } else {
+            try {
+              const d = new Date(eDate);
+              if (!isNaN(d.getTime())) {
+                eventMonth = d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+                eventDay = d.getDate();
+              } else {
+                const parts = eDate.split(' ');
+                if (parts.length >= 2) {
+                  eventMonth = parts[0].substring(0, 3).toUpperCase();
+                  eventDay = parts[1].replace(/[^0-9]/g, '');
+                }
+              }
+            } catch (e) {}
+          }
         }
 
         return (
