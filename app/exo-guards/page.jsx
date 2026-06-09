@@ -1,5 +1,6 @@
 import EXOGuardsClient from './EXOGuardsClient';
 import { getSheetData } from '../../lib/googleSheets';
+import { getCadetImageUrl } from '../../lib/imageMatcher';
 
 export const revalidate = 60; // 1 minute
 
@@ -14,14 +15,26 @@ export default async function EXOGuardsPage() {
 
   try {
     const res1 = await fetch(SCRIPT_URL_1CL, { cache: 'no-store' }).catch(() => ({ ok: false }));
-    if (res1.ok) data1CL = await res1.json();
+    if (res1.ok) {
+      const rawData = await res1.json();
+      data1CL = rawData.map(item => ({
+        ...item,
+        localImageUrl: getCadetImageUrl('', '', (item.name || '').replace(' AS', '').trim())
+      }));
+    }
   } catch (err) {
     console.error("Failed to fetch 1CL API", err);
   }
 
   try {
     const res2 = await fetch(SCRIPT_URL_3CL, { cache: 'no-store' }).catch(() => ({ ok: false }));
-    if (res2.ok) data3CL = await res2.json();
+    if (res2.ok) {
+      const rawData = await res2.json();
+      data3CL = rawData.map(item => ({
+        ...item,
+        localImageUrl: getCadetImageUrl('', '', (item.name || '').replace(' AS', '').trim())
+      }));
+    }
   } catch (err) {
     console.error("Failed to fetch 3CL API", err);
   }

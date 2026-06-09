@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { driveUrlToImage } from '../../lib/googleSheets';
-import { getCadetImageUrl } from '../../lib/imageMatcher';
 
 const BLACKLIST = ['INTERIOR', 'SENTINEL', 'NON POSTING', 'NON-POSTING', 'FI', 'CCQ', 'ACCQ', 'MHC', 'AFI'];
 
@@ -124,7 +123,7 @@ export default function EXOGuardsClient({ data1CL = [], data3CL = [], soiData = 
       // Try SOI picture first, then fallback to local image matcher, then UI Avatars
       const soiPic = getSoiPicture(cleanName, soiData);
       const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=ffffff&color=000000`;
-      const imageUrl = soiPic || getCadetImageUrl('', '', cleanName) || fallbackUrl;
+      const imageUrl = soiPic || item.localImageUrl || fallbackUrl;
 
       const guardEntry = {
         name: cleanName,
