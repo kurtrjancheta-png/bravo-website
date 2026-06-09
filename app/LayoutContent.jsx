@@ -60,6 +60,8 @@ export default function LayoutContent({ children }) {
         <div className="nav-section">
           <div className="nav-label">Councils</div>
           
+          <Link href="/disseminations/taco" id="nav-taco" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>🌟</span> Tac O's Corner</Link>
+          
           <details className="nav-item-group" style={{ cursor: 'pointer' }}>
             <summary id="nav-s1" className="nav-item" style={{ display: 'flex', alignItems: 'center' }}>
               <span style={{ marginRight: '10px' }}>👥</span> S1 Personnel
