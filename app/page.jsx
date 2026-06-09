@@ -7,6 +7,7 @@ const DISSEMINATION_SHEET_ID = '1YeaoloRz4REe_iVomGfFI9WugalrDFsHiz04eOcD0a8';
 const COUNCILS = [
   { id: 'TACO', name: "Tac O's Corner" },
   { id: 'CO', name: "CO's Corner" },
+  { id: 'EXO', name: "EX-O's Corner" },
   { id: 'FSGT', name: "FSGT's Corner" },
   { id: 'S1', name: 'S1 Personnel' },
   { id: 'S2', name: 'S2 Security' },
@@ -17,7 +18,7 @@ const COUNCILS = [
   { id: 'S7', name: 'S7 Civil-Military' },
   { id: 'S8', name: 'S8 Education & Training' },
   { id: 'S10', name: 'S10 Finance' },
-  { id: 'ATHLETIC', name: 'Athletic Council' },
+  { id: 'ATHLETIC', name: 'Athletic' },
   { id: 'GAD', name: 'GAD' },
   { id: 'HONOR COMM', name: 'Honor Committee' },
   { id: 'CCPB', name: 'CCPB' }
