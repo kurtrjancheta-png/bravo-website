@@ -137,7 +137,7 @@ export default function EXOGuardsClient({ initialData }) {
   return (
     <div style={{ 
       display: 'grid', 
-      gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', 
+      gridTemplateColumns: '1fr 1fr', 
       gap: '3rem',
       alignItems: 'start'
     }}>
