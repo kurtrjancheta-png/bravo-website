@@ -532,7 +532,7 @@ tr:last-child td {
 
 /* Individual Card Styling */
 .org-card {
-  background-color: white;
+  background-color: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 1.25rem;
@@ -703,7 +703,7 @@ tr:last-child td {
   border-radius: 6px;
   font-size: 0.9rem;
   font-weight: 600;
-  background: white;
+  background: var(--bg-primary);
   color: var(--text-primary);
   cursor: pointer;
   outline: none;
@@ -722,7 +722,7 @@ tr:last-child td {
 }
 
 .pft-chart-card {
-  background: white;
+  background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1.5rem;

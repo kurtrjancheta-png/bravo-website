@@ -101,7 +101,7 @@ function PieChart({ data, title, onSegmentClick }) {
             </path>
           ))}
           {/* Center white circle for donut look */}
-          <circle cx={cx} cy={cy} r={40} fill="white" style={{ pointerEvents: 'none' }} />
+          <circle cx={cx} cy={cy} r={40} fill="var(--card-bg)" style={{ pointerEvents: 'none' }} />
           <text x={cx} y={cy - 6} textAnchor="middle" fontSize="20" fontWeight="700" fill="var(--text-primary)" style={{ pointerEvents: 'none' }}>{total}</text>
           <text x={cx} y={cy + 12} textAnchor="middle" fontSize="9" fill="var(--text-secondary)" fontWeight="600" style={{ pointerEvents: 'none' }}>TOTAL</text>
         </svg>
