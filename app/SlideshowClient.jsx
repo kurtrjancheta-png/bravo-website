@@ -12,18 +12,41 @@ const urgencyStyles = {
 
 export default function SlideshowClient({ disseminations }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentDuration, setCurrentDuration] = useState(12000);
 
   const totalSlides = disseminations && disseminations.length > 0 ? disseminations.length + 1 : 0;
+  const isCaughtUp = currentIndex === disseminations.length;
 
   useEffect(() => {
     if (totalSlides === 0) return;
     
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % totalSlides);
-    }, 12000); // 12 seconds per slide
+    let duration = 10000; // Base 10 seconds
+    const slide = isCaughtUp ? null : disseminations[currentIndex];
     
-    return () => clearInterval(interval);
-  }, [totalSlides]);
+    if (slide) {
+      const content = String(slide['CONTENT'] || '');
+      const hasAttachment = (slide['ATTACHMENT'] && String(slide['ATTACHMENT']).trim() !== '') || 
+                            (slide['Column 6'] && String(slide['Column 6']).trim() !== '');
+      
+      if (content.length > 250 || hasAttachment) {
+        duration = 15000; // At least 15 seconds
+      }
+      if (content.length > 500) {
+        duration = Math.max(duration, 20000); // 20 seconds for very long text
+      }
+    } else {
+      // Caught up slide
+      duration = 8000; 
+    }
+    
+    setCurrentDuration(duration);
+    
+    const timeout = setTimeout(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % totalSlides);
+    }, duration);
+    
+    return () => clearTimeout(timeout);
+  }, [currentIndex, totalSlides, isCaughtUp, disseminations]);
 
   const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % totalSlides);
   const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + totalSlides) % totalSlides);
@@ -36,7 +59,6 @@ export default function SlideshowClient({ disseminations }) {
     );
   }
 
-  const isCaughtUp = currentIndex === disseminations.length;
   let currentSlide, urgency, style, eventMonth, eventDay;
 
   if (isCaughtUp) {
@@ -91,6 +113,10 @@ export default function SlideshowClient({ disseminations }) {
             box-shadow: 0 8px 24px rgba(0,0,0,0.15); 
           }
         }
+        @keyframes progressBarAnim {
+          0% { width: 0%; }
+          100% { width: 100%; }
+        }
       `}</style>
       
       <button 
@@ -124,18 +150,28 @@ export default function SlideshowClient({ disseminations }) {
 
       <div style={{ width: '100%', position: 'relative' }}>
         {/* Progress Indicators */}
-        <div style={{ display: 'flex', gap: '4px', marginBottom: '1rem', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '1.5rem', justifyContent: 'center' }}>
           {Array.from({ length: totalSlides }).map((_, idx) => (
             <div 
               key={idx} 
               style={{ 
-                height: '4px', 
+                height: '6px', 
                 flex: 1, 
-                background: idx === currentIndex ? style.border : 'rgba(255,255,255,0.2)',
-                borderRadius: '2px',
-                transition: 'background 0.3s'
+                background: 'rgba(0,0,0,0.05)',
+                borderRadius: '3px',
+                overflow: 'hidden'
               }} 
-            />
+            >
+              <div 
+                style={{
+                  height: '100%',
+                  width: idx < currentIndex ? '100%' : (idx > currentIndex ? '0%' : '100%'),
+                  background: idx <= currentIndex ? style.border : 'transparent',
+                  animation: idx === currentIndex ? `progressBarAnim ${currentDuration}ms linear forwards` : 'none',
+                  borderRadius: '3px',
+                }}
+              />
+            </div>
           ))}
         </div>
 
