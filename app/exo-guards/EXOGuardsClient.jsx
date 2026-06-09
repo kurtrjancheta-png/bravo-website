@@ -118,10 +118,9 @@ export default function EXOGuardsClient({ data1CL = [], data3CL = [], soiData = 
 
       const status = getStatusFn(item.color);
       
-      // Try SOI picture first, then fallback to local image matcher, then UI Avatars
+      // Try SOI picture first, then fallback to local image matcher
       const soiPic = getSoiPicture(cleanName, soiData);
-      const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=ffffff&color=000000`;
-      const imageUrl = soiPic || item.localImageUrl || fallbackUrl;
+      const imageUrl = soiPic || item.localImageUrl || null;
 
       const guardEntry = {
         name: cleanName,
@@ -188,18 +187,40 @@ export default function EXOGuardsClient({ data1CL = [], data3CL = [], soiData = 
     onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)' }}
     onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
     >
-      <img 
-        src={guard.imageUrl} 
-        alt={guard.name} 
-        style={{
-          width: '55px',
-          height: '55px',
+      <div style={{ position: 'relative', width: '55px', height: '55px' }}>
+        <div style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
           borderRadius: '50%',
-          objectFit: 'cover',
-          border: `3px solid ${guard.statusColor}`
-        }}
-        onError={(e) => { e.target.src = '/placeholder-avatar.png' }}
-      />
+          border: `3px solid ${guard.statusColor}`,
+          backgroundColor: '#f1f5f9',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '1.5rem',
+          zIndex: 1
+        }}>
+          👤
+        </div>
+        {guard.imageUrl && (
+          <img 
+            src={guard.imageUrl} 
+            alt={guard.name} 
+            style={{
+              position: 'absolute',
+              top: 0, left: 0, right: 0, bottom: 0,
+              width: '100%',
+              height: '100%',
+              borderRadius: '50%',
+              objectFit: 'cover',
+              border: `3px solid ${guard.statusColor}`,
+              backgroundColor: '#fff',
+              zIndex: 2
+            }}
+            onError={(e) => { e.target.style.display = 'none'; }}
+          />
+        )}
+      </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
         <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 900, color: 'var(--card-text)', letterSpacing: '0.05em' }}>
           {guard.name}
@@ -286,12 +307,38 @@ export default function EXOGuardsClient({ data1CL = [], data3CL = [], soiData = 
                     borderRadius: '999px',
                     border: '1px solid var(--border-color)'
                   }}>
-                    <img 
-                      src={s.imageUrl} 
-                      alt={s.name} 
-                      style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }}
-                      onError={(e) => { e.target.src = '/placeholder-avatar.png' }}
-                    />
+                    <div style={{ position: 'relative', width: '24px', height: '24px' }}>
+                      <div style={{
+                        position: 'absolute',
+                        top: 0, left: 0, right: 0, bottom: 0,
+                        borderRadius: '50%',
+                        backgroundColor: '#f1f5f9',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.75rem',
+                        zIndex: 1
+                      }}>
+                        👤
+                      </div>
+                      {s.imageUrl && (
+                        <img 
+                          src={s.imageUrl} 
+                          alt={s.name} 
+                          style={{
+                            position: 'absolute',
+                            top: 0, left: 0, right: 0, bottom: 0,
+                            width: '100%',
+                            height: '100%',
+                            borderRadius: '50%',
+                            objectFit: 'cover',
+                            backgroundColor: '#fff',
+                            zIndex: 2
+                          }}
+                          onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                      )}
+                    </div>
                     <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                       {s.name}
                     </span>
