@@ -37,7 +37,7 @@ export default function SlideshowClient({ disseminations }) {
   }
 
   const isCaughtUp = currentIndex === disseminations.length;
-  let currentSlide, urgency, style;
+  let currentSlide, urgency, style, eventMonth, eventDay;
 
   if (isCaughtUp) {
     currentSlide = {
@@ -52,6 +52,23 @@ export default function SlideshowClient({ disseminations }) {
     currentSlide = disseminations[currentIndex];
     urgency = String(currentSlide['URGENCY'] || '').trim().toUpperCase();
     style = urgencyStyles[urgency] || urgencyStyles['LIGHT'];
+
+    if (String(currentSlide['TYPE'] || '').trim().toUpperCase() === 'ACTIVITY' && currentSlide['EVENT DATE']) {
+      try {
+        const d = new Date(currentSlide['EVENT DATE']);
+        if (!isNaN(d.getTime())) {
+          eventMonth = d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+          eventDay = d.getDate();
+        } else {
+          // Fallback if the date is not parsable but exists
+          const parts = currentSlide['EVENT DATE'].split(' ');
+          if (parts.length >= 2) {
+            eventMonth = parts[0].substring(0, 3).toUpperCase();
+            eventDay = parts[1].replace(/[^0-9]/g, '');
+          }
+        }
+      } catch (e) {}
+    }
   }
 
   return (
@@ -137,18 +154,36 @@ export default function SlideshowClient({ disseminations }) {
               </div>
             </div>
             
-            <div style={{ 
-              background: style.bg, 
-              color: style.color, 
-              padding: '0.5rem 1rem', 
-              borderRadius: '9999px', 
-              fontSize: '0.85rem', 
-              fontWeight: 800,
-              textTransform: 'uppercase',
-              border: `1px solid ${style.border}`,
-              boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-            }}>
-              {style.label}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              {eventDay && (
+                <div style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', 
+                  border: `2px solid ${style.border}`, borderRadius: '8px', overflow: 'hidden',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.05)', backgroundColor: 'white',
+                  minWidth: '60px'
+                }}>
+                  <div style={{ background: style.border, color: 'white', width: '100%', textAlign: 'center', fontSize: '0.7rem', fontWeight: 'bold', padding: '0.15rem 0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    {eventMonth}
+                  </div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#1e293b', padding: '0.2rem 0.5rem', lineHeight: '1' }}>
+                    {eventDay}
+                  </div>
+                </div>
+              )}
+              
+              <div style={{ 
+                background: style.bg, 
+                color: style.color, 
+                padding: '0.5rem 1rem', 
+                borderRadius: '9999px', 
+                fontSize: '0.85rem', 
+                fontWeight: 800,
+                textTransform: 'uppercase',
+                border: `1px solid ${style.border}`,
+                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+              }}>
+                {style.label}
+              </div>
             </div>
           </div>
           

@@ -78,10 +78,29 @@ async function DisseminationCards({ councilId }) {
           }
         }
         
+        let eventMonth = '';
+        let eventDay = '';
+        if (String(card['TYPE'] || '').trim().toUpperCase() === 'ACTIVITY' && card['EVENT DATE']) {
+          try {
+            const d = new Date(card['EVENT DATE']);
+            if (!isNaN(d.getTime())) {
+              eventMonth = d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+              eventDay = d.getDate();
+            } else {
+              const parts = card['EVENT DATE'].split(' ');
+              if (parts.length >= 2) {
+                eventMonth = parts[0].substring(0, 3).toUpperCase();
+                eventDay = parts[1].replace(/[^0-9]/g, '');
+              }
+            }
+          } catch (e) {}
+        }
+
         return (
           <div key={i} style={{
             background: 'var(--bg-secondary)',
             border: `2px solid ${style.border}`,
+            borderTop: `12px solid ${style.border}`,
             borderRadius: '12px',
             padding: '1.5rem',
             animation: style.animation,
@@ -91,19 +110,36 @@ async function DisseminationCards({ councilId }) {
             boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div style={{ fontWeight: 800, fontSize: '0.85rem', letterSpacing: '0.05em', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+              <div style={{ fontWeight: 800, fontSize: '1rem', letterSpacing: '0.05em', color: style.border, textTransform: 'uppercase' }}>
                 {card['TYPE'] || 'ANNOUNCEMENT'}
               </div>
-              <div style={{ 
-                background: style.bg, 
-                color: style.color, 
-                padding: '0.25rem 0.75rem', 
-                borderRadius: '9999px', 
-                fontSize: '0.75rem', 
-                fontWeight: 800,
-                textTransform: 'uppercase'
-              }}>
-                {style.label}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                {eventDay && (
+                  <div style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', 
+                    border: `2px solid ${style.border}`, borderRadius: '6px', overflow: 'hidden',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)', backgroundColor: 'white',
+                    minWidth: '50px'
+                  }}>
+                    <div style={{ background: style.border, color: 'white', width: '100%', textAlign: 'center', fontSize: '0.6rem', fontWeight: 'bold', padding: '0.1rem 0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      {eventMonth}
+                    </div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#1e293b', padding: '0.1rem 0.25rem', lineHeight: '1' }}>
+                      {eventDay}
+                    </div>
+                  </div>
+                )}
+                <div style={{ 
+                  background: style.bg, 
+                  color: style.color, 
+                  padding: '0.25rem 0.75rem', 
+                  borderRadius: '9999px', 
+                  fontSize: '0.75rem', 
+                  fontWeight: 800,
+                  textTransform: 'uppercase'
+                }}>
+                  {style.label}
+                </div>
               </div>
             </div>
             
