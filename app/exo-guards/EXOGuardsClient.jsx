@@ -100,7 +100,7 @@ export default function EXOGuardsClient({ data1CL = [], data3CL = [], soiData = 
     setNow(new Date());
   }, []);
 
-  const processGuards = (data, getStatusFn, postedDate, incomingDate) => {
+  const processGuards = (data, getStatusFn, postedDate, incomingDate, sortOrder) => {
     const todayList = [];
     const tomorrowList = [];
 
@@ -135,6 +135,16 @@ export default function EXOGuardsClient({ data1CL = [], data3CL = [], soiData = 
         tomorrowList.push(guardEntry);
       }
     });
+
+    const sortByPriority = (a, b) => {
+      const priorityA = sortOrder[a.status] || 99;
+      const priorityB = sortOrder[b.status] || 99;
+      return priorityA - priorityB;
+    };
+
+    todayList.sort(sortByPriority);
+    tomorrowList.sort(sortByPriority);
+
     return { todayList, tomorrowList };
   };
 
@@ -157,8 +167,24 @@ export default function EXOGuardsClient({ data1CL = [], data3CL = [], soiData = 
 
     const formatDate = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
 
-    const result1CL = processGuards(data1CL, getStatusFromColor1CL, postedDate, incomingDate);
-    const result3CL = processGuards(data3CL, getStatusFromColor3CL, postedDate, incomingDate);
+    const order1CL = {
+      'FLOOR INSPECTOR': 1,
+      'INTERIOR': 2,
+      'NON-POSTING': 3,
+      'SENTINEL': 4
+    };
+
+    const order3CL = {
+      'CCQ': 1,
+      'ACCQ': 2,
+      'MHC': 3,
+      'AFI': 4,
+      'INTERIOR': 5,
+      'SENTINEL': 6
+    };
+
+    const result1CL = processGuards(data1CL, getStatusFromColor1CL, postedDate, incomingDate, order1CL);
+    const result3CL = processGuards(data3CL, getStatusFromColor3CL, postedDate, incomingDate, order3CL);
 
     return { 
       today1CL: result1CL.todayList, 
