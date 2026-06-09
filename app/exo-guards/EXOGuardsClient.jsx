@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
+import { driveUrlToImage } from '../../lib/googleSheets';
 import { getCadetImageUrl } from '../../lib/imageMatcher';
 
 const BLACKLIST = ['INTERIOR', 'SENTINEL', 'NON POSTING', 'FI'];
@@ -16,6 +17,28 @@ function parseDateHeader(header) {
     return null;
   }
 }
+
+const getField = (row, fieldName) => {
+  const key = Object.keys(row).find(k => k.toLowerCase().includes(fieldName.toLowerCase()));
+  return key && row[key] ? String(row[key]) : 'N/A';
+};
+
+const getSoiPicture = (name, soiData) => {
+  if (!soiData || soiData.length === 0) return null;
+  const target = name.toLowerCase().replace(' as', '').trim();
+  
+  const found = soiData.find(row => {
+    const first = getField(row, 'FIRST NAME').toLowerCase();
+    const last = getField(row, 'SURNAME').toLowerCase();
+    return target.includes(last) || last.includes(target) || target.includes(first);
+  });
+  
+  if (found) {
+    const pic = getField(found, 'PICTURE');
+    if (pic && pic !== 'N/A') return driveUrlToImage(pic);
+  }
+  return null;
+};
 
 function getStatusFromColor1CL(hex) {
   if (!hex) return { label: 'UNKNOWN', color: '#64748b' };
@@ -56,7 +79,7 @@ function getStatusFromColor3CL(hex) {
   }
 }
 
-export default function EXOGuardsClient({ data1CL = [], data3CL = [] }) {
+export default function EXOGuardsClient({ data1CL = [], data3CL = [], soiData = [] }) {
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -81,7 +104,11 @@ export default function EXOGuardsClient({ data1CL = [], data3CL = [] }) {
       itemObj.setHours(0,0,0,0);
 
       const status = getStatusFn(item.color);
-      const imageUrl = getCadetImageUrl('', '', cleanName) || '/placeholder-avatar.png';
+      
+      // Try SOI picture first, then fallback to local image matcher, then UI Avatars
+      const soiPic = getSoiPicture(cleanName, soiData);
+      const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=ffffff&color=000000`;
+      const imageUrl = soiPic || getCadetImageUrl('', '', cleanName) || fallbackUrl;
 
       const guardEntry = {
         name: cleanName,

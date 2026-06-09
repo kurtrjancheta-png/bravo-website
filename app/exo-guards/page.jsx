@@ -1,22 +1,28 @@
 import EXOGuardsClient from './EXOGuardsClient';
+import { getSheetData } from '../../lib/googleSheets';
 
 export const revalidate = 60; // 1 minute
 
 export default async function EXOGuardsPage() {
   const SCRIPT_URL_1CL = 'https://script.google.com/macros/s/AKfycbwNVo5buoeHliZfJ17yLduSCMEPfoHkuvXNnAT8ed-wIs0lVE6ucpkvItNZN2zv0SbtTw/exec';
   const SCRIPT_URL_3CL = 'https://script.google.com/macros/s/AKfycbxs0fmHK3QikUCYBTSnD_xuh7sVoXF5urCISgtQvGz5QJHiRF94e0ajx0XwSoZ09X-3tg/exec';
+  const SHEET_ID = '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
   
   let data1CL = [];
   let data3CL = [];
+  let soiData = [];
+
   try {
-    const [res1, res2] = await Promise.all([
+    const [res1, res2, rawSoiRows] = await Promise.all([
       fetch(SCRIPT_URL_1CL, { cache: 'no-store' }),
-      fetch(SCRIPT_URL_3CL, { cache: 'no-store' })
+      fetch(SCRIPT_URL_3CL, { cache: 'no-store' }),
+      getSheetData(SHEET_ID, 'SOI')
     ]);
     if (res1.ok) data1CL = await res1.json();
     if (res2.ok) data3CL = await res2.json();
+    soiData = rawSoiRows || [];
   } catch (err) {
-    console.error("Failed to fetch EXO Guards API", err);
+    console.error("Failed to fetch EXO Guards API or SOI Data", err);
   }
   
   return (
@@ -29,7 +35,7 @@ export default async function EXOGuardsPage() {
           Real-time integration with the EX-O 1CL and 3CL Posting Trackers
         </p>
       </div>
-      <EXOGuardsClient data1CL={data1CL} data3CL={data3CL} />
+      <EXOGuardsClient data1CL={data1CL} data3CL={data3CL} soiData={soiData} />
     </div>
   );
 }
