@@ -144,17 +144,39 @@ export default function SlideshowClient({ disseminations }) {
             color: '#1e293b' // Dark text for paper background
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: '0.85rem', letterSpacing: '0.1em', color: '#64748b', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-                {currentSlide.council} COUNCIL
+          <div style={{ display: 'flex', flexDirection: 'row', gap: '2rem', flex: 1 }}>
+            {/* Left Column: Header + Content */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <div style={{ fontWeight: 800, fontSize: '0.85rem', letterSpacing: '0.1em', color: '#64748b', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                  {currentSlide.council} COUNCIL
+                </div>
+                <div style={{ fontWeight: 800, fontSize: '1.25rem', letterSpacing: '0.05em', color: style.border, textTransform: 'uppercase' }}>
+                  {currentSlide['TYPE'] || 'ANNOUNCEMENT'}
+                </div>
               </div>
-              <div style={{ fontWeight: 800, fontSize: '1.25rem', letterSpacing: '0.05em', color: style.border, textTransform: 'uppercase' }}>
-                {currentSlide['TYPE'] || 'ANNOUNCEMENT'}
+              
+              <div style={{ 
+                fontSize: '1.5rem', 
+                color: '#334155',
+                lineHeight: 1.6, 
+                flex: 1, 
+                fontWeight: 500,
+                whiteSpace: 'pre-wrap'
+              }}>
+                {currentSlide['CONTENT'] || 'No content provided.'}
               </div>
+
+              {/* Render Attachments if they exist */}
+              {!isCaughtUp && ((currentSlide['ATTACHMENT'] && currentSlide['ATTACHMENT'].trim() !== '') || (currentSlide['Column 6'] && currentSlide['Column 6'].trim() !== '')) && (
+                <div style={{ marginTop: '1.5rem' }}>
+                  <ImageGallery urls={(currentSlide['ATTACHMENT'] || currentSlide['Column 6']).split(',')} />
+                </div>
+              )}
             </div>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1rem' }}>
+
+            {/* Right Column: Badge + Calendar */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1rem', flexShrink: 0 }}>
               <div style={{ 
                 background: style.bg, 
                 color: style.color, 
@@ -186,25 +208,6 @@ export default function SlideshowClient({ disseminations }) {
               )}
             </div>
           </div>
-          
-          <div style={{ 
-            fontSize: '1.5rem', 
-            color: '#334155', // slightly softer dark text
-            lineHeight: 1.6, 
-            flex: 1, 
-            fontWeight: 500,
-            whiteSpace: 'pre-wrap'
-            // overflowY removed to allow natural expanding
-          }}>
-            {currentSlide['CONTENT'] || 'No content provided.'}
-          </div>
-
-          {/* Render Attachments if they exist */}
-          {!isCaughtUp && ((currentSlide['ATTACHMENT'] && currentSlide['ATTACHMENT'].trim() !== '') || (currentSlide['Column 6'] && currentSlide['Column 6'].trim() !== '')) && (
-            <div style={{ marginTop: '1rem' }}>
-              <ImageGallery urls={(currentSlide['ATTACHMENT'] || currentSlide['Column 6']).split(',')} />
-            </div>
-          )}
           
           <div style={{ fontSize: '0.85rem', color: '#94a3b8', borderTop: '1px solid #cbd5e1', paddingTop: '1rem', display: 'flex', justifyContent: 'space-between', marginTop: 'auto' }}>
             <span><strong>Date Announced:</strong> {currentSlide['DATE ANNOUNCED'] || 'N/A'}</span>

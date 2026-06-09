@@ -124,11 +124,25 @@ async function DisseminationCards({ councilId }) {
             gap: '1rem',
             boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div style={{ fontWeight: 800, fontSize: '1rem', letterSpacing: '0.05em', color: style.border, textTransform: 'uppercase' }}>
-                {card['TYPE'] || 'ANNOUNCEMENT'}
+            <div style={{ display: 'flex', flexDirection: 'row', gap: '1.5rem', alignItems: 'flex-start' }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ fontWeight: 800, fontSize: '1rem', letterSpacing: '0.05em', color: style.border, textTransform: 'uppercase', marginBottom: '1rem' }}>
+                  {card['TYPE'] || 'ANNOUNCEMENT'}
+                </div>
+                
+                <div style={{ fontSize: '1.1rem', color: 'var(--text-primary)', lineHeight: 1.5, flex: 1, whiteSpace: 'pre-wrap' }}>
+                  {card['CONTENT'] || 'No content provided.'}
+                </div>
+                
+                {/* If the Google API parses the header as "Column 6", we should check both keys */}
+                {((card['ATTACHMENT'] && card['ATTACHMENT'].trim() !== '') || (card['Column 6'] && card['Column 6'].trim() !== '')) && (
+                  <div style={{ marginTop: '1rem' }}>
+                    <ImageGallery urls={(card['ATTACHMENT'] || card['Column 6']).split(',')} />
+                  </div>
+                )}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem' }}>
+
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem', flexShrink: 0 }}>
                 <div style={{ 
                   background: style.bg, 
                   color: style.color, 
@@ -158,15 +172,6 @@ async function DisseminationCards({ councilId }) {
                 )}
               </div>
             </div>
-            
-            <div style={{ fontSize: '1.1rem', color: 'var(--text-primary)', lineHeight: 1.5, flex: 1, whiteSpace: 'pre-wrap' }}>
-              {card['CONTENT'] || 'No content provided.'}
-            </div>
-            
-            {/* If the Google API parses the header as "Column 6", we should check both keys */}
-            {((card['ATTACHMENT'] && card['ATTACHMENT'].trim() !== '') || (card['Column 6'] && card['Column 6'].trim() !== '')) && (
-              <ImageGallery urls={(card['ATTACHMENT'] || card['Column 6']).split(',')} />
-            )}
             
             <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
               <strong>Date Announced:</strong> {dateAnnounced || 'N/A'}
