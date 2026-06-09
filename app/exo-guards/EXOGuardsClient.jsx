@@ -42,12 +42,28 @@ export default function EXOGuardsClient({ initialData }) {
     setNow(new Date());
   }, []);
 
-  const { todayGuards, tomorrowGuards } = useMemo(() => {
-    const todayStr = now.toLocaleDateString('en-US', { timeZone: 'Asia/Manila' });
-    const todayObj = new Date(todayStr);
+  const { todayGuards, tomorrowGuards, postedDateStr, incomingDateStr } = useMemo(() => {
+    // Current time in Manila
+    const nowStr = now.toLocaleString('en-US', { timeZone: 'Asia/Manila' });
+    const manilaNow = new Date(nowStr);
     
-    const tomorrowObj = new Date(todayObj);
-    tomorrowObj.setDate(tomorrowObj.getDate() + 1);
+    // Check if it's before 18:30 (6:30 PM)
+    const isBeforeGuardMount = (manilaNow.getHours() < 18) || (manilaNow.getHours() === 18 && manilaNow.getMinutes() < 30);
+    
+    // The "Posted Date" is the date of the shift currently on duty.
+    // If it's before 6:30 PM, the guards currently on duty are the ones from Yesterday.
+    // If it's after 6:30 PM, the guards currently on duty are the ones from Today.
+    const postedDate = new Date(manilaNow);
+    postedDate.setHours(0, 0, 0, 0);
+    if (isBeforeGuardMount) {
+      postedDate.setDate(postedDate.getDate() - 1);
+    }
+    
+    // The "Incoming Date" is the date of the next shift.
+    const incomingDate = new Date(postedDate);
+    incomingDate.setDate(incomingDate.getDate() + 1);
+
+    const formatDate = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
 
     const todayList = [];
     const tomorrowList = [];
@@ -62,6 +78,7 @@ export default function EXOGuardsClient({ initialData }) {
 
       const itemDateStr = d.toLocaleDateString('en-US', { timeZone: 'Asia/Manila' });
       const itemObj = new Date(itemDateStr);
+      itemObj.setHours(0,0,0,0);
 
       const status = getStatusFromColor(item.color);
       const imageUrl = getCadetImageUrl('', '', cleanName) || '/placeholder-avatar.png';
@@ -73,14 +90,19 @@ export default function EXOGuardsClient({ initialData }) {
         imageUrl
       };
 
-      if (itemObj.getTime() === todayObj.getTime()) {
+      if (itemObj.getTime() === postedDate.getTime()) {
         todayList.push(guardEntry);
-      } else if (itemObj.getTime() === tomorrowObj.getTime()) {
+      } else if (itemObj.getTime() === incomingDate.getTime()) {
         tomorrowList.push(guardEntry);
       }
     });
 
-    return { todayGuards: todayList, tomorrowGuards: tomorrowList };
+    return { 
+      todayGuards: todayList, 
+      tomorrowGuards: tomorrowList,
+      postedDateStr: formatDate(postedDate),
+      incomingDateStr: formatDate(incomingDate)
+    };
   }, [data, now]);
 
   const renderGuardCard = (guard, idx) => (
@@ -146,8 +168,8 @@ export default function EXOGuardsClient({ initialData }) {
           <h2 style={{ color: 'var(--text-primary)', fontSize: '1.4rem', fontWeight: 900, margin: 0 }}>
             POSTED GUARDS
           </h2>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, backgroundColor: 'var(--card-bg)', padding: '0.25rem 0.75rem', borderRadius: '12px' }}>
-            TODAY
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, backgroundColor: 'var(--card-bg)', padding: '0.25rem 0.75rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+            ON DUTY ({postedDateStr})
           </span>
         </div>
         
@@ -157,7 +179,7 @@ export default function EXOGuardsClient({ initialData }) {
           </div>
         ) : (
           <div style={{ padding: '3rem', textAlign: 'center', backgroundColor: 'var(--card-bg)', borderRadius: '16px', border: '2px dashed var(--border-color)', color: 'var(--text-secondary)' }}>
-            No guards found for today. Ensure the spreadsheet is updated and colored.
+            No guards found for {postedDateStr}. Ensure the spreadsheet is updated and colored.
           </div>
         )}
       </section>
@@ -167,8 +189,8 @@ export default function EXOGuardsClient({ initialData }) {
           <h2 style={{ color: 'var(--text-primary)', fontSize: '1.4rem', fontWeight: 900, margin: 0 }}>
             INCOMING GUARDS
           </h2>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, backgroundColor: 'var(--card-bg)', padding: '0.25rem 0.75rem', borderRadius: '12px' }}>
-            TOMORROW
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, backgroundColor: 'var(--card-bg)', padding: '0.25rem 0.75rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+            AT 1830H ({incomingDateStr})
           </span>
         </div>
 
@@ -178,7 +200,7 @@ export default function EXOGuardsClient({ initialData }) {
           </div>
         ) : (
           <div style={{ padding: '3rem', textAlign: 'center', backgroundColor: 'var(--card-bg)', borderRadius: '16px', border: '2px dashed var(--border-color)', color: 'var(--text-secondary)' }}>
-            No incoming guards assigned for tomorrow yet.
+            No incoming guards assigned for {incomingDateStr} yet.
           </div>
         )}
       </section>
