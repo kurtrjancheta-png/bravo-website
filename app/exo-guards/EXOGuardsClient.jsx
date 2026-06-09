@@ -75,21 +75,19 @@ function getStatusFromColor3CL(hex) {
   
   switch (hex) {
     case '#000000': 
-    case '#111111': return { label: 'SENTINEL', color: '#1f2937' };
+    case '#111111': return { label: 'SENTINEL', color: '#1f2937' }; // Black
     case '#ff0000': 
-    case '#ea4335': return { label: 'CCQ', color: '#ef4444' };
-    case '#cc0000': 
-    case '#990000': 
-    case '#ffff00': 
-    case '#fbbc04': return { label: 'ACCQ', color: '#ca8a04' }; // ACCQ gets Gold/Yellow/Dark Red
+    case '#ea4335': return { label: 'CCQ', color: '#ef4444' }; // Red
+    case '#4a86e8': 
+    case '#4285f4': 
+    case '#2b78e4': return { label: 'ACCQ', color: '#3b82f6' }; // Blue
     case '#00ff00': 
-    case '#34a853': return { label: 'MHC', color: '#22c55e' };
+    case '#34a853': return { label: 'MHC', color: '#22c55e' }; // Green
     case '#ff9900': 
     case '#ffa500': 
-    case '#ffc000': return { label: 'INTERIOR', color: '#f59e0b' };
+    case '#ffc000': return { label: 'INTERIOR', color: '#f59e0b' }; // Orange
     case '#00ffff': 
-    case '#4a86e8': 
-    case '#00b0f0': return { label: 'AFI', color: '#0ea5e9' };
+    case '#00b0f0': return { label: 'AFI', color: '#06b6d4' }; // Cyan
     default: return { label: 'POSTED', color: '#cbd5e1' };
   }
 }
