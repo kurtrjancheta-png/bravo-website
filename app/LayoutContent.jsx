@@ -59,7 +59,7 @@ export default function LayoutContent({ children }) {
           
           <Link href="/disseminations/taco" id="nav-taco" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>🌟</span> Tac O's Corner</Link>
           <Link href="/disseminations/co" id="nav-co" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>⭐</span> CO's Corner</Link>
-          
+          <Link href="/disseminations/exo" id="nav-exo" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>⚡</span> EX-O's Corner</Link>
           <details className="nav-item-group" style={{ cursor: 'pointer' }}>
             <summary id="nav-fsgt" className="nav-item" style={{ display: 'flex', alignItems: 'center' }}>
               <span style={{ marginRight: '10px' }}>📋</span> FSGT's Corner

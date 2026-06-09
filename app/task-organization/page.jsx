@@ -31,6 +31,7 @@ export default async function TaskOrganization() {
   function getNavTarget(desLower) {
     if (desLower.includes('tactical officer')) return 'nav-taco';
     if (desLower.includes('company commander')) return 'nav-co';
+    if (desLower.includes('executive officer')) return 'nav-exo';
     if (desLower.includes('first sergeant')) return 'nav-fsgt';
     if (desLower.includes('(s1)') || desLower.includes('personnel officer')) return 'nav-s1';
     if (desLower.includes('(s2)') || desLower.includes('intelligence officer')) return 'nav-s2';
