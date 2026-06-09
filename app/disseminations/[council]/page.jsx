@@ -147,9 +147,9 @@ async function DisseminationCards({ councilId }) {
                 <div style={{ 
                   background: style.bg, 
                   color: style.color, 
-                  padding: '0.5rem 1rem', 
+                  padding: '0.25rem 0.75rem', 
                   borderRadius: '9999px', 
-                  fontSize: '0.85rem', 
+                  fontSize: '0.75rem', 
                   fontWeight: 800,
                   textTransform: 'uppercase'
                 }}>

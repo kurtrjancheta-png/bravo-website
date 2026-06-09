@@ -174,13 +174,13 @@ export default function SlideshowClient({ disseminations }) {
               <div style={{ 
                 background: style.bg, 
                 color: style.color, 
-                padding: '0.75rem 1.5rem', 
+                padding: '0.5rem 1rem', 
                 borderRadius: '9999px', 
-                fontSize: '1rem', 
+                fontSize: '0.85rem', 
                 fontWeight: 800,
                 textTransform: 'uppercase',
-                border: `2px solid ${style.border}`,
-                boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
+                border: `1px solid ${style.border}`,
+                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
               }}>
                 {style.label}
               </div>
