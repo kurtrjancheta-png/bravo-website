@@ -154,23 +154,7 @@ export default function SlideshowClient({ disseminations }) {
               </div>
             </div>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-              {eventDay && (
-                <div style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', 
-                  border: `4px solid ${style.border}`, borderRadius: '16px', overflow: 'hidden',
-                  boxShadow: '0 8px 16px rgba(0,0,0,0.1)', backgroundColor: 'white',
-                  minWidth: '120px'
-                }}>
-                  <div style={{ background: style.border, color: 'white', width: '100%', textAlign: 'center', fontSize: '1.4rem', fontWeight: '900', padding: '0.4rem 1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    {eventMonth}
-                  </div>
-                  <div style={{ fontSize: '4rem', fontWeight: '900', color: '#1e293b', padding: '0.5rem 1rem', lineHeight: '1' }}>
-                    {eventDay}
-                  </div>
-                </div>
-              )}
-              
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
               <div style={{ 
                 background: style.bg, 
                 color: style.color, 
@@ -184,6 +168,22 @@ export default function SlideshowClient({ disseminations }) {
               }}>
                 {style.label}
               </div>
+
+              {eventDay && (
+                <div style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', 
+                  border: `3px solid ${style.border}`, borderRadius: '12px', overflow: 'hidden',
+                  boxShadow: '0 6px 12px rgba(0,0,0,0.1)', backgroundColor: 'white',
+                  minWidth: '90px'
+                }}>
+                  <div style={{ background: style.border, color: 'white', width: '100%', textAlign: 'center', fontSize: '1.1rem', fontWeight: '900', padding: '0.3rem 0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    {eventMonth}
+                  </div>
+                  <div style={{ fontSize: '2.8rem', fontWeight: '900', color: '#1e293b', padding: '0.2rem 0.5rem', lineHeight: '1' }}>
+                    {eventDay}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           

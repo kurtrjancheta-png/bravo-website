@@ -128,22 +128,7 @@ async function DisseminationCards({ councilId }) {
               <div style={{ fontWeight: 800, fontSize: '1rem', letterSpacing: '0.05em', color: style.border, textTransform: 'uppercase' }}>
                 {card['TYPE'] || 'ANNOUNCEMENT'}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                {eventDay && (
-                  <div style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', 
-                    border: `4px solid ${style.border}`, borderRadius: '12px', overflow: 'hidden',
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)', backgroundColor: 'white',
-                    minWidth: '100px'
-                  }}>
-                    <div style={{ background: style.border, color: 'white', width: '100%', textAlign: 'center', fontSize: '1.2rem', fontWeight: '900', padding: '0.3rem 0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      {eventMonth}
-                    </div>
-                    <div style={{ fontSize: '3.5rem', fontWeight: '900', color: '#1e293b', padding: '0.4rem 0.5rem', lineHeight: '1' }}>
-                      {eventDay}
-                    </div>
-                  </div>
-                )}
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
                 <div style={{ 
                   background: style.bg, 
                   color: style.color, 
@@ -155,6 +140,22 @@ async function DisseminationCards({ councilId }) {
                 }}>
                   {style.label}
                 </div>
+
+                {eventDay && (
+                  <div style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', 
+                    border: `3px solid ${style.border}`, borderRadius: '10px', overflow: 'hidden',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)', backgroundColor: 'white',
+                    minWidth: '70px'
+                  }}>
+                    <div style={{ background: style.border, color: 'white', width: '100%', textAlign: 'center', fontSize: '0.9rem', fontWeight: '900', padding: '0.2rem 0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      {eventMonth}
+                    </div>
+                    <div style={{ fontSize: '2.2rem', fontWeight: '900', color: '#1e293b', padding: '0.2rem 0.4rem', lineHeight: '1' }}>
+                      {eventDay}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             
