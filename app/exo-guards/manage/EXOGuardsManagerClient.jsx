@@ -296,6 +296,25 @@ export default function EXOGuardsManagerClient({ data1CL = [], data3CL = [], soi
 
   const renderSentinelsCard = (guards, role, classLevel, dropdownSetter) => {
     const is3CL = classLevel === '3CL';
+    
+    if (!is3CL && guards.length === 0 && extraSentinels1CL === 0) {
+      return (
+        <div 
+          onClick={() => setExtraSentinels1CL(1)}
+          style={{
+            backgroundColor: 'transparent', border: '2px dashed #94a3b8',
+            borderRadius: '12px', padding: '1.5rem', textAlign: 'center',
+            cursor: 'pointer', color: '#64748b', transition: 'background-color 0.2s'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+        >
+          <span style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem', color: '#3b82f6' }}>+</span>
+          <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, textTransform: 'uppercase' }}>Add Sentinel Posting</h3>
+        </div>
+      );
+    }
+
     const totalSlots = is3CL ? num3CLSentinels : Math.min(6, guards.length + extraSentinels1CL);
     
     // Create array of exactly totalSlots
@@ -338,8 +357,8 @@ export default function EXOGuardsManagerClient({ data1CL = [], data3CL = [], soi
               onClick={() => setExtraSentinels1CL(prev => Math.min(6 - guards.length, prev + 1))}
               disabled={guards.length + extraSentinels1CL >= 6}
               style={{
-                padding: '0.25rem 0.75rem', fontSize: '0.8rem', borderRadius: '4px',
-                border: 'none', background: 'var(--btn-bg)', color: '#fff', cursor: 'pointer'
+                padding: '0.25rem 0.75rem', fontSize: '0.8rem', borderRadius: '4px', fontWeight: 'bold',
+                border: 'none', background: '#3b82f6', color: '#fff', cursor: guards.length + extraSentinels1CL >= 6 ? 'not-allowed' : 'pointer', opacity: guards.length + extraSentinels1CL >= 6 ? 0.5 : 1
               }}
             >
               + Add Sentinel
@@ -444,7 +463,7 @@ export default function EXOGuardsManagerClient({ data1CL = [], data3CL = [], soi
               <button 
                 onClick={() => setExtraInteriors1CL(prev => Math.min(5 - guards1Int.length, prev + 1))}
                 disabled={guards1Int.length + extraInteriors1CL >= 5}
-                style={{ background: 'var(--btn-bg)', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}
+                style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.3rem 0.6rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: guards1Int.length + extraInteriors1CL >= 5 ? 'not-allowed' : 'pointer', opacity: guards1Int.length + extraInteriors1CL >= 5 ? 0.5 : 1 }}
               >+ Add Interior</button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -471,7 +490,7 @@ export default function EXOGuardsManagerClient({ data1CL = [], data3CL = [], soi
               <button 
                 onClick={() => setExtraInteriors3CL(prev => Math.min(10 - guards3Int.length, prev + 1))}
                 disabled={guards3Int.length + extraInteriors3CL >= 10}
-                style={{ background: 'var(--btn-bg)', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}
+                style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.3rem 0.6rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: guards3Int.length + extraInteriors3CL >= 10 ? 'not-allowed' : 'pointer', opacity: guards3Int.length + extraInteriors3CL >= 10 ? 0.5 : 1 }}
               >+ Add Interior</button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
