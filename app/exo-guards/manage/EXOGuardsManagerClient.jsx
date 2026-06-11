@@ -104,8 +104,7 @@ function getStatusFromColor3CL(hex) {
 
 export default function EXOGuardsManagerClient({ data1CL = [], data3CL = [], soiData = [], apiUrl1CL, apiUrl3CL }) {
   const router = useRouter();
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [adminUser, setAdminUser] = useState(null);
+  const { adminUser, isLoaded } = useAuth();
   
   // UI States
   const [activeTab, setActiveTab] = useState('today'); // 'today' or 'tomorrow'
@@ -116,14 +115,6 @@ export default function EXOGuardsManagerClient({ data1CL = [], data3CL = [], soi
 
   // Modal State
   const [modalConfig, setModalConfig] = useState(null); // { isOpen, role, dateStr, currentCadetName, classLevel }
-
-  useEffect(() => {
-    const userStr = localStorage.getItem('adminUser');
-    if (userStr) {
-      setAdminUser(JSON.parse(userStr));
-    }
-    setIsLoaded(true);
-  }, []);
 
   const [now] = useState(new Date());
 
