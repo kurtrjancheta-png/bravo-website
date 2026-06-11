@@ -46,7 +46,7 @@ export default function DeleteDisseminationButton({ sheetName, rowIndex, borderC
     <button
       onClick={handleDelete}
       disabled={isDeleting}
-      title="Delete this dissemination (S2 only)"
+      title="Delete this dissemination"
       style={{
         position: 'absolute',
         top: '-8px',

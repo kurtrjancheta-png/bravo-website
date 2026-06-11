@@ -46,18 +46,20 @@ async function DisseminationCards({ councilId }) {
     console.error('Failed to fetch disseminations:', error);
   }
 
-  // Filter out empty rows or rows that just have the dropdown default text "TYPE" or "URGENCY"
-  const validCards = disseminations.filter(d => {
+  // Filter out empty rows but preserve the original sheet row index (1-based, +1 for header row)
+  const validCards = disseminations.reduce((acc, d, originalIndex) => {
     const type = String(d['TYPE'] || '').trim().toUpperCase();
     const urgency = String(d['URGENCY'] || '').trim().toUpperCase();
     const content = String(d['CONTENT'] || '').trim();
-    
-    // If it's just the default dropdown label, or there's no actual content, skip it
+
     if (type === 'TYPE' || urgency.startsWith('URGE') || !content) {
-      return false;
+      return acc; // skip invalid rows
     }
-    return true;
-  });
+    // originalIndex is 0-based in the JS array, but in the sheet:
+    // row 1 = header, row 2 = first data row → sheetRowIndex = originalIndex + 2
+    acc.push({ ...d, sheetRowIndex: originalIndex + 2 });
+    return acc;
+  }, []);
 
   if (validCards.length === 0) {
     return (
@@ -131,7 +133,7 @@ async function DisseminationCards({ councilId }) {
           }}>
             <DeleteDisseminationButton
               sheetName={data.sheetTab}
-              rowIndex={i + 2}
+              rowIndex={card.sheetRowIndex}
               borderColor={style.border}
             />
             <div style={{ display: 'flex', flexDirection: 'row', gap: '1.5rem', alignItems: 'flex-start' }}>
