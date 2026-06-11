@@ -2,6 +2,7 @@ import { getSheetData } from '../../../lib/googleSheets';
 import { Suspense } from 'react';
 import CouncilAdminForms from '../CouncilAdminForms';
 import ImageGallery from '../ImageGallery';
+import DeleteDisseminationButton from '../DeleteDisseminationButton';
 
 const SHEET_ID = '1YeaoloRz4REe_iVomGfFI9WugalrDFsHiz04eOcD0a8';
 
@@ -116,6 +117,7 @@ async function DisseminationCards({ councilId }) {
 
         return (
           <div key={i} style={{
+            position: 'relative',
             background: 'var(--bg-secondary)',
             border: `2px solid ${style.border}`,
             borderTop: `12px solid ${style.border}`,
@@ -127,6 +129,11 @@ async function DisseminationCards({ councilId }) {
             gap: '1rem',
             boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
           }}>
+            <DeleteDisseminationButton
+              sheetName={data.sheetTab}
+              rowIndex={i + 2}
+              borderColor={style.border}
+            />
             <div style={{ display: 'flex', flexDirection: 'row', gap: '1.5rem', alignItems: 'flex-start' }}>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <div style={{ fontWeight: 800, fontSize: '1rem', letterSpacing: '0.05em', color: style.border, textTransform: 'uppercase', marginBottom: '1rem' }}>
