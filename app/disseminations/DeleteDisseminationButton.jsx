@@ -10,8 +10,8 @@ export default function DeleteDisseminationButton({ sheetName, rowIndex, borderC
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleted, setDeleted] = useState(false);
 
-  // Only show to S2 security admins
-  if (!isLoaded || !adminUser || adminUser.council !== 'S2') return null;
+  // Only show to the admin of this specific council
+  if (!isLoaded || !adminUser || adminUser.council !== sheetName) return null;
   if (deleted) return null;
 
   const handleDelete = async () => {
