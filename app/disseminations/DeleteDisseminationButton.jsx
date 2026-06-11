@@ -32,8 +32,8 @@ export default function DeleteDisseminationButton({ sheetName, rowIndex, borderC
           rowIndex,
         }),
       });
-      // Since no-cors returns opaque response, assume success
-      setDeleted(true);
+      // Since no-cors returns opaque response, assume success and reload
+      window.location.reload();
     } catch (error) {
       console.error("Delete failed:", error);
       alert("Failed to delete. Please try again.");
