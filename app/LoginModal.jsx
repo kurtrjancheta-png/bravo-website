@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { validateLogin } from '../lib/adminLogin';
 import { useAuth } from './AuthContext';
 
@@ -31,6 +32,7 @@ const getCouncilTitle = (councilCode) => {
 };
 
 export default function LoginModal({ isOpen, onClose }) {
+  const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -122,11 +124,13 @@ export default function LoginModal({ isOpen, onClose }) {
             )}
             <button 
               onClick={() => {
+                const targetPath = `/disseminations/${successData.council.toLowerCase()}`;
                 setShowSuccess(false);
                 setSuccessData(null);
                 setUsername('');
                 setPassword('');
                 onClose();
+                router.push(targetPath);
               }}
               style={{
                 width: '100%',
