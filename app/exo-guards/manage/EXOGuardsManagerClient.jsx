@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '../../AuthContext';
 import { driveUrlToImage } from '../../../lib/googleSheets';
 import CadetSelectionModal from './CadetSelectionModal';
 
