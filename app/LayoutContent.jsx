@@ -68,6 +68,11 @@ export default function LayoutContent({ children }) {
               <Link href="/exo-guards" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
                 Guard Posting Dashboard
               </Link>
+              {adminUser && adminUser.council === 'EXO' && (
+                <Link href="/exo-guards/manage" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center', fontWeight: 800, color: 'var(--accent-color)' }}>
+                  Guard Posting Manager
+                </Link>
+              )}
               <Link href="/disseminations/exo" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
                 Disseminations
               </Link>
