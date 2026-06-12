@@ -574,12 +574,28 @@ export default function CellphoneRackClient({ initialData }) {
             onClick={uploadChanges}
             disabled={isUploading}
             style={{
-              background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '100px',
-              padding: '8px 24px', fontWeight: 800, fontSize: '0.9rem', cursor: isUploading ? 'not-allowed' : 'pointer',
-              opacity: isUploading ? 0.7 : 1, transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px'
+              background: isUploading ? 'rgba(59, 130, 246, 0.2)' : '#3b82f6', 
+              color: isUploading ? '#60a5fa' : '#fff', 
+              border: isUploading ? '1px solid rgba(59, 130, 246, 0.5)' : '1px solid transparent', 
+              borderRadius: '100px',
+              padding: '8px 24px', 
+              fontWeight: 800, 
+              fontSize: '0.9rem', 
+              cursor: isUploading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s ease', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '12px',
+              boxShadow: isUploading ? '0 0 20px rgba(59, 130, 246, 0.6), inset 0 0 10px rgba(59, 130, 246, 0.4)' : 'none'
             }}
           >
-            {isUploading ? 'UPLOADING...' : 'UPLOAD CHANGES'}
+            {isUploading && (
+              <div style={{ position: 'relative', width: '20px', height: '20px', animation: 'spin 0.8s linear infinite' }}>
+                <span style={{ position: 'absolute', top: '-5px', left: '0', fontSize: '12px' }}>🐈</span>
+                <span style={{ position: 'absolute', bottom: '-2px', right: '0', fontSize: '10px' }}>🎾</span>
+              </div>
+            )}
+            <span>{isUploading ? 'SYNCING TO DATABASE...' : 'UPLOAD CHANGES'}</span>
           </button>
         </div>
       )}
@@ -598,6 +614,10 @@ export default function CellphoneRackClient({ initialData }) {
           0% { opacity: 1; transform: scale(1); }
           50% { opacity: 0.5; transform: scale(1.2); }
           100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
         @keyframes fade-in {
           from { opacity: 0; }
