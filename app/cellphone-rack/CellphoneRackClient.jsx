@@ -256,7 +256,7 @@ export default function CellphoneRackClient({ initialData }) {
                       <div style={{ flex: 1, padding: '2rem 1rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', overflowY: 'auto' }} className="hide-scrollbar">
                         
                         <div style={{ 
-                          width: '64px', height: '64px', 
+                          width: '64px', height: '64px', minHeight: '64px', minWidth: '64px', flexShrink: 0,
                           borderRadius: '50%', background: 'rgba(255,255,255,0.2)', 
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontSize: '1.5rem', marginBottom: '1rem',
@@ -366,7 +366,7 @@ export default function CellphoneRackClient({ initialData }) {
               
               <div style={{ flex: 1, padding: '2rem 1.5rem 2rem', overflowY: 'auto' }} className="hide-scrollbar">
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '2rem' }}>
-                  <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', marginBottom: '1rem', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(5px)' }}>
+                  <div style={{ width: '100px', height: '100px', minHeight: '100px', minWidth: '100px', flexShrink: 0, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', marginBottom: '1rem', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(5px)' }}>
                     {expandedPhone.picture ? <img src={expandedPhone.picture} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : '📱'}
                   </div>
                   <h2 style={{ color: '#fff', margin: '0 0 0.5rem', fontSize: '1.8rem', letterSpacing: '1px' }}>{expandedPhone.name}</h2>
