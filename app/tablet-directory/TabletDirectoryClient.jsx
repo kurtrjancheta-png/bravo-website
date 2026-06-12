@@ -156,7 +156,7 @@ export default function TabletDirectoryClient({ initialData }) {
                 </div>
                 <div>
                   <h4 style={{ fontSize: '1.1rem', margin: '0 0 0.2rem', color: 'var(--text-primary)', letterSpacing: '0.5px' }}>
-                    {cadet.cadetClass}CL {cadet.name}
+                    {cadet.name}
                   </h4>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 800 }}>
                     {cadet.model && cadet.model !== 'Not Specified' ? cadet.model : 'Tablet'} 
