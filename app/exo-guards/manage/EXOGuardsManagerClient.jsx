@@ -315,6 +315,8 @@ export default function EXOGuardsManagerClient({
       slots.push(guards[i] || null); // null if empty
     }
 
+    if (slots.length === 0) return null;
+
     return (
       <div style={{
         backgroundColor: 'var(--card-bg)', border: `2px solid #1f293760`,
@@ -346,61 +348,55 @@ export default function EXOGuardsManagerClient({
             </select>
           )}
         </div>
-        {slots.length === 0 ? (
-          <div style={{ padding: '1.5rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem', fontStyle: 'italic', border: '1px dashed #cbd5e1', borderRadius: '8px' }}>
-            No sentinels posted.
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-            {slots.map((s, i) => {
-              const isAssigned = !!s;
-              return (
-                <div key={i} 
-                  onClick={() => setModalConfig({ isOpen: true, role, dateStr: activeDateStr, currentCadetName: isAssigned ? s.name : null, classLevel })}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    backgroundColor: isAssigned ? 'var(--bg-secondary)' : 'transparent',
-                    padding: '0.3rem 0.75rem 0.3rem 0.3rem', borderRadius: '999px',
-                    border: isAssigned ? '1px solid var(--border-color)' : '1px dashed var(--border-color)',
-                    cursor: 'pointer', opacity: isAssigned ? 1 : 0.6, position: 'relative'
-                  }}
-                  title={isAssigned ? `Click to swap ${s.name}` : "Click to assign"}
-                >
-                  <div style={{ position: 'relative', width: '24px', height: '24px' }}>
-                    <div style={{
-                      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                      borderRadius: '50%', backgroundColor: '#f1f5f9', display: 'flex',
-                      alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', zIndex: 1
-                    }}>
-                      {isAssigned ? '👤' : '?'}
-                    </div>
-                    {isAssigned && s.imageUrl && (
-                      <img src={s.imageUrl} alt={s.name} style={{
-                        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                        width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover',
-                        backgroundColor: '#fff', zIndex: 2
-                      }} onError={(e) => { e.target.style.display = 'none'; }} />
-                    )}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+          {slots.map((s, i) => {
+            const isAssigned = !!s;
+            return (
+              <div key={i} 
+                onClick={() => setModalConfig({ isOpen: true, role, dateStr: activeDateStr, currentCadetName: isAssigned ? s.name : null, classLevel })}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  backgroundColor: isAssigned ? 'var(--bg-secondary)' : 'transparent',
+                  padding: '0.3rem 0.75rem 0.3rem 0.3rem', borderRadius: '999px',
+                  border: isAssigned ? '1px solid var(--border-color)' : '1px dashed var(--border-color)',
+                  cursor: 'pointer', opacity: isAssigned ? 1 : 0.6, position: 'relative'
+                }}
+                title={isAssigned ? `Click to swap ${s.name}` : "Click to assign"}
+              >
+                <div style={{ position: 'relative', width: '24px', height: '24px' }}>
+                  <div style={{
+                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                    borderRadius: '50%', backgroundColor: '#f1f5f9', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', zIndex: 1
+                  }}>
+                    {isAssigned ? '👤' : '?'}
                   </div>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                    {isAssigned ? s.name : 'EMPTY'}
-                  </span>
-                  
-                  {isAssigned && (
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setModalConfig({ isOpen: true, role, dateStr: activeDateStr, currentCadetName: s.name, classLevel });
-                      }}
-                      style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '0.8rem', padding: 0, marginLeft: '0.2rem' }}
-                      title="Swap"
-                    >🔄</button>
+                  {isAssigned && s.imageUrl && (
+                    <img src={s.imageUrl} alt={s.name} style={{
+                      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                      width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover',
+                      backgroundColor: '#fff', zIndex: 2
+                    }} onError={(e) => { e.target.style.display = 'none'; }} />
                   )}
                 </div>
-              );
-            })}
-          </div>
-        )}
+                <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  {isAssigned ? s.name : 'EMPTY'}
+                </span>
+                
+                {isAssigned && (
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setModalConfig({ isOpen: true, role, dateStr: activeDateStr, currentCadetName: s.name, classLevel });
+                    }}
+                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '0.8rem', padding: 0, marginLeft: '0.2rem' }}
+                    title="Swap"
+                  >🔄</button>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     );
   };
