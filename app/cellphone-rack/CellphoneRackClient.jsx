@@ -398,11 +398,11 @@ export default function CellphoneRackClient({ initialData }) {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                       <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>Model</span>
-                      <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>Not Specified</span>
+                      <span style={{ color: '#fff', fontWeight: 800 }}>{expandedPhone.model && expandedPhone.model !== 'Not Specified' && expandedPhone.model !== 'null' ? expandedPhone.model : <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>Not Specified</span>}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>Color</span>
-                      <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>Not Specified</span>
+                      <span style={{ color: '#fff', fontWeight: 800 }}>{expandedPhone.color && expandedPhone.color !== 'Not Specified' && expandedPhone.color !== 'null' ? expandedPhone.color : <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>Not Specified</span>}</span>
                     </div>
                   </div>
 

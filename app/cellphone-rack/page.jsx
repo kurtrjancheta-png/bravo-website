@@ -32,6 +32,14 @@ export default async function CellphoneRackPage() {
   }
 
   const parsedData = [];
+  let dbData = [];
+
+  try {
+    const dbRes = await getSheetData(CELLPHONE_SHEET_ID, 'DATA BASE').catch(() => []);
+    dbData = dbRes || [];
+  } catch (err) {
+    console.error('Failed to fetch DATA BASE:', err);
+  }
 
   const parseSheet = (dataArray, assignedClass) => {
     if (!dataArray || dataArray.length === 0) return;
@@ -49,6 +57,25 @@ export default async function CellphoneRackPage() {
       
       const picture = getCadetImageUrl(name, '', name);
 
+      // Find db entry
+      // Assuming 'DATA BASE' has columns like 'NAME', 'MODEL', 'COLOR'
+      let model = 'Not Specified';
+      let color = 'Not Specified';
+      if (dbData && dbData.length > 0) {
+        // We'll guess the keys for name, model, color from dbData later.
+        // For now, let's just pass the raw dbData down to see what it is, or look for matching name.
+        const dbRow = dbData.find(r => {
+          const nKey = Object.keys(r).find(k => k.toUpperCase().includes('NAME'));
+          return r[nKey] && String(r[nKey]).toUpperCase().includes(name.toUpperCase());
+        });
+        if (dbRow) {
+          const modelKey = Object.keys(dbRow).find(k => k.toUpperCase().includes('MODEL'));
+          const colorKey = Object.keys(dbRow).find(k => k.toUpperCase().includes('COLOR'));
+          if (modelKey) model = String(dbRow[modelKey]);
+          if (colorKey) color = String(dbRow[colorKey]);
+        }
+      }
+
       parsedData.push({
         name,
         status: String(row[kStatus] || '').trim(),
@@ -57,6 +84,8 @@ export default async function CellphoneRackPage() {
         numPhones: parseInt(row[kNumPhones] || '0', 10),
         phone: String(row[kPhone] || '').trim(),
         ig: String(row[kIG] || '').trim(),
+        model,
+        color,
         picture
       });
     });
