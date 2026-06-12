@@ -21,10 +21,6 @@ export default function CellphoneRackClient({ initialData }) {
   const [isLaunching, setIsLaunching] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   
-  const [mounted, setMounted] = useState(false);
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const classes = ['1', '2', '3', '4'];
   
