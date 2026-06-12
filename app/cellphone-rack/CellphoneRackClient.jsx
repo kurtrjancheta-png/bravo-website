@@ -2,17 +2,69 @@
 
 import React, { useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+import { useAuth } from '../AuthContext';
+import { useRouter } from 'next/navigation';
 
 export default function CellphoneRackClient({ initialData }) {
+  const { adminUser } = useAuth();
+  const router = useRouter();
+  const isCEIS = adminUser?.council === 'S6';
   const [filterClass, setFilterClass] = useState('All');
   const [activeContact, setActiveContact] = useState({});
   const [activeSocial, setActiveSocial] = useState({});
   const [expandedPhone, setExpandedPhone] = useState(null);
+  
+  const [pendingChanges, setPendingChanges] = useState({});
+  const [isUploading, setIsUploading] = useState(false);
 
   const classes = ['1', '2', '3', '4'];
   
+  const handleFieldChange = (cadetName, field, value) => {
+    setPendingChanges(prev => ({
+      ...prev,
+      [cadetName]: {
+        ...(prev[cadetName] || {}),
+        [field]: value
+      }
+    }));
+  };
+
+  const uploadChanges = async () => {
+    setIsUploading(true);
+    try {
+      const changesArray = Object.entries(pendingChanges).map(([name, changes]) => {
+        const cadet = initialData.find(c => c.name === name);
+        return { ...cadet, ...changes };
+      });
+      
+      const res = await fetch('/api/smartphone-rack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(changesArray)
+      });
+      
+      if (res.ok) {
+        setPendingChanges({});
+        router.refresh();
+      } else {
+        alert('Failed to upload changes');
+      }
+    } catch (e) {
+      alert('Error uploading changes');
+    }
+    setIsUploading(false);
+  };
+
+  // Merge pending changes with initialData
+  const activeData = initialData.map(cadet => {
+    if (pendingChanges[cadet.name]) {
+      return { ...cadet, ...pendingChanges[cadet.name] };
+    }
+    return cadet;
+  });
+
   // Filter and group
-  const filteredData = initialData.filter(c => filterClass === 'All' || c.cadetClass === filterClass);
+  const filteredData = activeData.filter(c => filterClass === 'All' || c.cadetClass === filterClass);
 
   const groupedData = {};
   classes.forEach(c => {
@@ -334,7 +386,10 @@ export default function CellphoneRackClient({ initialData }) {
       })}
 
       {/* Expanded Phone Modal */}
-      {expandedPhone && (
+      {expandedPhone && (() => {
+        const currentExpandedPhone = activeData.find(c => c.name === expandedPhone.name) || expandedPhone;
+        const isOut = currentExpandedPhone.status.toLowerCase() === 'logged out' || currentExpandedPhone.status.toLowerCase() === 'confiscated';
+        return (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)',
@@ -342,18 +397,18 @@ export default function CellphoneRackClient({ initialData }) {
           animation: 'fade-in 0.3s ease-out'
         }} onClick={() => setExpandedPhone(null)}>
           <div style={{
-            width: '320px', height: '640px', borderRadius: '48px', background: expandedPhone.status.toLowerCase() === 'logged out' ? '#1f2937' : '#052e16',
+            width: '320px', height: '580px', borderRadius: '48px', background: isOut ? '#1f2937' : '#052e16',
             padding: '12px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
             position: 'relative', display: 'flex', flexDirection: 'column',
             animation: 'scale-up 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
           }} onClick={e => e.stopPropagation()}>
-            <div style={{ flex: 1, background: expandedPhone.status.toLowerCase() === 'logged out' ? 'linear-gradient(135deg, #111827 0%, #374151 100%)' : 'linear-gradient(135deg, #064e3b 0%, #10b981 100%)', borderRadius: '36px', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ flex: 1, background: isOut ? 'linear-gradient(135deg, #111827 0%, #374151 100%)' : 'linear-gradient(135deg, #064e3b 0%, #10b981 100%)', borderRadius: '36px', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', border: '1px solid rgba(255,255,255,0.05)' }}>
               
               {/* Hardware Buttons (Simulated) */}
-              <div style={{ position: 'absolute', left: '-12px', top: '150px', width: '12px', height: '35px', background: expandedPhone.status.toLowerCase() === 'logged out' ? '#1f2937' : '#052e16', borderRadius: '3px 0 0 3px' }} />
-              <div style={{ position: 'absolute', left: '-12px', top: '210px', width: '12px', height: '60px', background: expandedPhone.status.toLowerCase() === 'logged out' ? '#1f2937' : '#052e16', borderRadius: '3px 0 0 3px' }} />
-              <div style={{ position: 'absolute', left: '-12px', top: '280px', width: '12px', height: '60px', background: expandedPhone.status.toLowerCase() === 'logged out' ? '#1f2937' : '#052e16', borderRadius: '3px 0 0 3px' }} />
-              <div style={{ position: 'absolute', right: '-12px', top: '210px', width: '12px', height: '90px', background: expandedPhone.status.toLowerCase() === 'logged out' ? '#1f2937' : '#052e16', borderRadius: '0 3px 3px 0' }} />
+              <div style={{ position: 'absolute', left: '-12px', top: '150px', width: '12px', height: '35px', background: isOut ? '#1f2937' : '#052e16', borderRadius: '3px 0 0 3px' }} />
+              <div style={{ position: 'absolute', left: '-12px', top: '210px', width: '12px', height: '60px', background: isOut ? '#1f2937' : '#052e16', borderRadius: '3px 0 0 3px' }} />
+              <div style={{ position: 'absolute', left: '-12px', top: '280px', width: '12px', height: '60px', background: isOut ? '#1f2937' : '#052e16', borderRadius: '3px 0 0 3px' }} />
+              <div style={{ position: 'absolute', right: '-12px', top: '210px', width: '12px', height: '90px', background: isOut ? '#1f2937' : '#052e16', borderRadius: '0 3px 3px 0' }} />
 
               {/* Notch */}
               <div style={{ position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)', width: '90px', height: '26px', background: '#000', borderRadius: '14px', zIndex: 10 }} />
@@ -361,60 +416,99 @@ export default function CellphoneRackClient({ initialData }) {
               {/* Top Status Bar */}
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 24px 0', fontSize: '0.8rem', fontWeight: 800, color: 'rgba(255,255,255,0.8)' }}>
                 <span>9:41</span>
-                <span>{expandedPhone.status.toLowerCase() === 'logged out' ? '🔴' : '🟢'}</span>
+                <span>{isOut ? '🔴' : '🟢'}</span>
               </div>
               
-              <div style={{ flex: 1, padding: '2rem 1.5rem 2rem', overflowY: 'auto' }} className="hide-scrollbar">
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '2rem' }}>
-                  <div style={{ width: '100px', height: '100px', minHeight: '100px', minWidth: '100px', flexShrink: 0, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', marginBottom: '1rem', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(5px)' }}>
-                    {expandedPhone.picture ? <img src={expandedPhone.picture} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : '📱'}
+              <div style={{ flex: 1, padding: '1rem 1.5rem 1.5rem', overflowY: 'auto' }} className="hide-scrollbar">
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '1rem' }}>
+                  <div style={{ width: '80px', height: '80px', minHeight: '80px', minWidth: '80px', flexShrink: 0, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', marginBottom: '0.5rem', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(5px)' }}>
+                    {currentExpandedPhone.picture ? <img src={currentExpandedPhone.picture} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : '📱'}
                   </div>
-                  <h2 style={{ color: '#fff', margin: '0 0 0.5rem', fontSize: '1.8rem', letterSpacing: '1px' }}>{expandedPhone.name}</h2>
-                  <span style={{ padding: '0.25rem 1rem', background: expandedPhone.status.toLowerCase() === 'logged out' ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)', color: expandedPhone.status.toLowerCase() === 'logged out' ? '#fca5a5' : '#6ee7b7', borderRadius: '999px', fontSize: '0.85rem', fontWeight: 800 }}>{expandedPhone.status.toUpperCase()}</span>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Personal Info</div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>Class</span>
-                      <span style={{ color: '#fff', fontWeight: 800 }}>{expandedPhone.cadetClass}CL</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>Phone No.</span>
-                      <span style={{ color: '#fff', fontWeight: 800 }}>{expandedPhone.phone && expandedPhone.phone !== 'null' ? expandedPhone.phone : 'N/A'}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>Signal/IG</span>
-                      <span style={{ color: '#fff', fontWeight: 800 }}>{expandedPhone.ig && expandedPhone.ig !== 'null' ? expandedPhone.ig : 'N/A'}</span>
-                    </div>
-                  </div>
-
-                  <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Device Info</div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>Devices Logged</span>
-                      <span style={{ color: '#fff', fontWeight: 800 }}>{expandedPhone.numPhones}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>Model</span>
-                      <span style={{ color: '#fff', fontWeight: 800 }}>{expandedPhone.model && expandedPhone.model !== 'Not Specified' && expandedPhone.model !== 'null' ? expandedPhone.model : <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>Not Specified</span>}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>Color</span>
-                      <span style={{ color: '#fff', fontWeight: 800 }}>{expandedPhone.color && expandedPhone.color !== 'Not Specified' && expandedPhone.color !== 'null' ? expandedPhone.color : <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>Not Specified</span>}</span>
-                    </div>
-                  </div>
-
-                  {expandedPhone.status.toLowerCase() === 'logged out' && expandedPhone.remarks && expandedPhone.remarks !== 'null' && (
-                    <div style={{ background: 'rgba(239,68,68,0.15)', padding: '1rem', borderRadius: '16px', border: '1px solid rgba(239,68,68,0.3)' }}>
-                      <div style={{ color: '#fca5a5', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Authorized Reason</div>
-                      <div style={{ color: '#fff', fontSize: '0.95rem', lineHeight: 1.4 }}>{expandedPhone.remarks}</div>
-                    </div>
+                  <h2 style={{ color: '#fff', margin: '0 0 0.25rem', fontSize: '1.5rem', letterSpacing: '1px' }}>{currentExpandedPhone.name}</h2>
+                  {isCEIS ? (
+                    <select 
+                      value={currentExpandedPhone.status} 
+                      onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'status', e.target.value)}
+                      style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', padding: '0.2rem 0.5rem', outline: 'none', fontWeight: 800, fontSize: '0.85rem' }}
+                    >
+                      <option value="LOGGED IN" style={{ color: '#000' }}>LOGGED IN</option>
+                      <option value="LOGGED OUT" style={{ color: '#000' }}>LOGGED OUT</option>
+                      <option value="CONFISCATED" style={{ color: '#000' }}>CONFISCATED</option>
+                    </select>
+                  ) : (
+                    <span style={{ padding: '0.25rem 1rem', background: isOut ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)', color: isOut ? '#fca5a5' : '#6ee7b7', borderRadius: '999px', fontSize: '0.85rem', fontWeight: 800 }}>{currentExpandedPhone.status.toUpperCase()}</span>
                   )}
                 </div>
 
-              </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div style={{ background: 'rgba(0,0,0,0.3)', padding: '0.75rem 1rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Personal Info</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Class</span>
+                      <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedPhone.cadetClass}CL</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Phone No.</span>
+                      {isCEIS ? (
+                        <input type="text" value={currentExpandedPhone.phone !== 'null' ? currentExpandedPhone.phone : ''} onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'phone', e.target.value)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '100px', fontWeight: 800, fontSize: '0.85rem' }} placeholder="N/A" />
+                      ) : (
+                        <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedPhone.phone && currentExpandedPhone.phone !== 'null' ? currentExpandedPhone.phone : 'N/A'}</span>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Signal/IG</span>
+                      {isCEIS ? (
+                        <input type="text" value={currentExpandedPhone.ig !== 'null' ? currentExpandedPhone.ig : ''} onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'ig', e.target.value)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '120px', fontWeight: 800, fontSize: '0.85rem' }} placeholder="N/A" />
+                      ) : (
+                        <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedPhone.ig && currentExpandedPhone.ig !== 'null' ? currentExpandedPhone.ig : 'N/A'}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div style={{ background: 'rgba(0,0,0,0.3)', padding: '0.75rem 1rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Device Info</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Devices Logged</span>
+                      {isCEIS ? (
+                        <input type="number" value={currentExpandedPhone.numPhones || 0} onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'numPhones', parseInt(e.target.value) || 0)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '50px', fontWeight: 800, fontSize: '0.85rem' }} />
+                      ) : (
+                        <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedPhone.numPhones}</span>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Model</span>
+                      {isCEIS ? (
+                        <input type="text" value={currentExpandedPhone.model !== 'Not Specified' && currentExpandedPhone.model !== 'null' ? currentExpandedPhone.model : ''} onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'model', e.target.value)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '120px', fontWeight: 800, fontSize: '0.85rem' }} placeholder="Not Specified" />
+                      ) : (
+                        <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedPhone.model && currentExpandedPhone.model !== 'Not Specified' && currentExpandedPhone.model !== 'null' ? currentExpandedPhone.model : <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>Not Specified</span>}</span>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Color</span>
+                      {isCEIS ? (
+                        <input type="text" value={currentExpandedPhone.color !== 'Not Specified' && currentExpandedPhone.color !== 'null' ? currentExpandedPhone.color : ''} onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'color', e.target.value)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '100px', fontWeight: 800, fontSize: '0.85rem' }} placeholder="Not Specified" />
+                      ) : (
+                        <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedPhone.color && currentExpandedPhone.color !== 'Not Specified' && currentExpandedPhone.color !== 'null' ? currentExpandedPhone.color : <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>Not Specified</span>}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {(isOut || isCEIS) && (
+                    <div style={{ background: 'rgba(239,68,68,0.15)', padding: '0.75rem 1rem', borderRadius: '16px', border: '1px solid rgba(239,68,68,0.3)' }}>
+                      <div style={{ color: '#fca5a5', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Authorized Reason</div>
+                      {isCEIS ? (
+                        <textarea 
+                          value={currentExpandedPhone.remarks !== 'null' ? currentExpandedPhone.remarks : ''} 
+                          onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'remarks', e.target.value)}
+                          style={{ width: '100%', background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '0.5rem', outline: 'none', minHeight: '60px', fontSize: '0.85rem', resize: 'vertical' }}
+                          placeholder="Enter reason..."
+                        />
+                      ) : (
+                        <div style={{ color: '#fff', fontSize: '0.85rem', lineHeight: 1.4 }}>{currentExpandedPhone.remarks && currentExpandedPhone.remarks !== 'null' ? currentExpandedPhone.remarks : 'None provided'}</div>
+                      )}
+                    </div>
+                  )}
+                </div>
               
               {/* Swipe down indicator */}
               <div 
@@ -424,6 +518,34 @@ export default function CellphoneRackClient({ initialData }) {
             </div>
           </div>
         </div>
+        );
+      })()}
+
+      {/* Upload Changes Button */}
+      {Object.keys(pendingChanges).length > 0 && (
+        <div style={{
+          position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: '100px', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: '20px',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)',
+          zIndex: 9000, backdropFilter: 'blur(10px)', animation: 'slide-up 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#3b82f6', boxShadow: '0 0 10px #3b82f6', animation: 'pulse 2s infinite' }} />
+            <span style={{ color: '#fff', fontWeight: 800, fontSize: '0.9rem' }}>{Object.keys(pendingChanges).length} Unsaved Edit{Object.keys(pendingChanges).length > 1 ? 's' : ''}</span>
+          </div>
+          <button 
+            onClick={uploadChanges}
+            disabled={isUploading}
+            style={{
+              background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '100px',
+              padding: '8px 24px', fontWeight: 800, fontSize: '0.9rem', cursor: isUploading ? 'not-allowed' : 'pointer',
+              opacity: isUploading ? 0.7 : 1, transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px'
+            }}
+          >
+            {isUploading ? 'UPLOADING...' : 'UPLOAD CHANGES'}
+          </button>
+        </div>
       )}
 
       {/* Global Styles for Animations */}
@@ -431,6 +553,15 @@ export default function CellphoneRackClient({ initialData }) {
         @keyframes slide-down {
           from { transform: translateY(-10px); opacity: 0; }
           to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes slide-up {
+          from { transform: translate(-50%, 50px); opacity: 0; }
+          to { transform: translate(-50%, 0); opacity: 1; }
+        }
+        @keyframes pulse {
+          0% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.2); }
+          100% { opacity: 1; transform: scale(1); }
         }
         @keyframes fade-in {
           from { opacity: 0; }
