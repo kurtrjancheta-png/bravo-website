@@ -64,8 +64,9 @@ export default async function CellphoneRackPage() {
       let dbRemarks = 'None';
       if (dbData && dbData.length > 0) {
         const dbRow = dbData.find(r => {
-          const nKey = Object.keys(r).find(k => k.toUpperCase().includes('NAME'));
-          return r[nKey] && String(r[nKey]).toUpperCase().includes(name.toUpperCase());
+          return Object.values(r).some(val => 
+            val && typeof val === 'string' && val.toUpperCase().includes(name.toUpperCase())
+          );
         });
         if (dbRow) {
           const modelKey = Object.keys(dbRow).find(k => k.toUpperCase().includes('PHONE') || k.toUpperCase().includes('MODEL'));

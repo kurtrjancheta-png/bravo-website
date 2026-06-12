@@ -46,8 +46,8 @@ function updateRowByName(sheet, targetName, updates) {
   const data = sheet.getDataRange().getValues();
   const headers = data[0].map(h => h.toString().toUpperCase().trim());
   
-  const nameColIdx = headers.findIndex(h => h.includes('NAME'));
-  if (nameColIdx === -1) return; // No name column found
+  let nameColIdx = headers.findIndex(h => h.includes('NAME'));
+  if (nameColIdx === -1) nameColIdx = 0; // Default to first column if no 'NAME' header
   
   // Find the row
   for (let r = 1; r < data.length; r++) {
