@@ -122,6 +122,7 @@ export default function EXOGuardsManagerClient({
   const [extraInteriors3CL, setExtraInteriors3CL] = useState(0);
   const [extraSentinels1CL, setExtraSentinels1CL] = useState(0);
   const [showAFI3CL, setShowAFI3CL] = useState(false);
+  const [showMHC3CL, setShowMHC3CL] = useState(false);
 
   // Modal State
   const [modalConfig, setModalConfig] = useState(null); // { isOpen, role, dateStr, currentCadetName, classLevel }
@@ -438,6 +439,7 @@ export default function EXOGuardsManagerClient({
   const guards3CCQ = getGuardsByRole(active3CL, 'CCQ');
   const guards3ACCQ = getGuardsByRole(active3CL, 'ACCQ');
   const guards3AFI = getGuardsByRole(active3CL, 'AFI');
+  const guards3MHC = getGuardsByRole(active3CL, 'MHC');
   const guards3Int = getGuardsByRole(active3CL, 'INTERIOR');
   const guards3Sent = getGuardsByRole(active3CL, 'SENTINEL');
 
@@ -505,21 +507,32 @@ export default function EXOGuardsManagerClient({
             </button>
           </div>
           
+          {/* 1CL Action Bar */}
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button 
+              onClick={() => setExtraInteriors1CL(prev => Math.min(5 - guards1Int.length, prev + 1))}
+              disabled={guards1Int.length + extraInteriors1CL >= 5}
+              style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '999px', padding: '0.4rem 0.8rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: guards1Int.length + extraInteriors1CL >= 5 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', opacity: guards1Int.length + extraInteriors1CL >= 5 ? 0.5 : 1 }}
+            >
+              <span style={{ fontSize: '1rem' }}>+</span> Add Interior
+            </button>
+          </div>
+          
           {renderSlot('FLOOR INSPECTOR', guards1FI[0], 'FLOOR INSPECTOR', '1CL')}
           
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <div style={{ marginBottom: '0.5rem' }}>
               <span style={{ fontWeight: 800, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>INTERIOR GUARDS</span>
-              <button 
-                onClick={() => setExtraInteriors1CL(prev => Math.min(5 - guards1Int.length, prev + 1))}
-                disabled={guards1Int.length + extraInteriors1CL >= 5}
-                style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.3rem 0.6rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: guards1Int.length + extraInteriors1CL >= 5 ? 'not-allowed' : 'pointer', opacity: guards1Int.length + extraInteriors1CL >= 5 ? 0.5 : 1 }}
-              >+ Add Interior</button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {Array.from({ length: guards1Int.length + extraInteriors1CL }).map((_, i) => (
                 <div key={i}>{renderSlot('INTERIOR', guards1Int[i], 'INTERIOR', '1CL')}</div>
               ))}
+              {guards1Int.length + extraInteriors1CL === 0 && (
+                <div style={{ padding: '1rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem', fontStyle: 'italic', border: '1px dashed #cbd5e1', borderRadius: '8px' }}>
+                  No interior guards posted.
+                </div>
+              )}
             </div>
           </div>
 
@@ -538,34 +551,51 @@ export default function EXOGuardsManagerClient({
               📄 View Spreadsheet
             </button>
           </div>
+
+          {/* 3CL Action Bar */}
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button 
+              onClick={() => setShowAFI3CL(true)}
+              disabled={showAFI3CL || guards3AFI.length > 0}
+              style={{ background: '#06b6d4', color: '#fff', border: 'none', borderRadius: '999px', padding: '0.4rem 0.8rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: (showAFI3CL || guards3AFI.length > 0) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', opacity: (showAFI3CL || guards3AFI.length > 0) ? 0.5 : 1 }}
+            >
+              <span style={{ fontSize: '1rem' }}>+</span> Add AFI
+            </button>
+            <button 
+              onClick={() => setShowMHC3CL(true)}
+              disabled={showMHC3CL || guards3MHC.length > 0}
+              style={{ background: '#8b5cf6', color: '#fff', border: 'none', borderRadius: '999px', padding: '0.4rem 0.8rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: (showMHC3CL || guards3MHC.length > 0) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', opacity: (showMHC3CL || guards3MHC.length > 0) ? 0.5 : 1 }}
+            >
+              <span style={{ fontSize: '1rem' }}>+</span> Add MHC
+            </button>
+            <button 
+              onClick={() => setExtraInteriors3CL(prev => Math.min(10 - guards3Int.length, prev + 1))}
+              disabled={guards3Int.length + extraInteriors3CL >= 10}
+              style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '999px', padding: '0.4rem 0.8rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: guards3Int.length + extraInteriors3CL >= 10 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', opacity: guards3Int.length + extraInteriors3CL >= 10 ? 0.5 : 1 }}
+            >
+              <span style={{ fontSize: '1rem' }}>+</span> Add Interior
+            </button>
+          </div>
           
           {renderSlot('CCQ', guards3CCQ[0], 'CCQ', '3CL')}
           {renderSlot('ACCQ', guards3ACCQ[0], 'ACCQ', '3CL')}
           
-          {(guards3AFI.length > 0 || showAFI3CL) ? (
-            renderSlot('AFI', guards3AFI[0], 'AFI', '3CL')
-          ) : (
-            <button 
-              onClick={() => setShowAFI3CL(true)}
-              style={{ background: '#06b6d4', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.4rem 1rem', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer', alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-            >
-              <span style={{ fontSize: '1rem' }}>+</span> Add AFI
-            </button>
-          )}
+          {(guards3AFI.length > 0 || showAFI3CL) && renderSlot('AFI', guards3AFI[0], 'AFI', '3CL')}
+          {(guards3MHC.length > 0 || showMHC3CL) && renderSlot('MHC', guards3MHC[0], 'MHC', '3CL')}
           
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <div style={{ marginBottom: '0.5rem' }}>
               <span style={{ fontWeight: 800, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>INTERIOR GUARDS</span>
-              <button 
-                onClick={() => setExtraInteriors3CL(prev => Math.min(10 - guards3Int.length, prev + 1))}
-                disabled={guards3Int.length + extraInteriors3CL >= 10}
-                style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.3rem 0.6rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: guards3Int.length + extraInteriors3CL >= 10 ? 'not-allowed' : 'pointer', opacity: guards3Int.length + extraInteriors3CL >= 10 ? 0.5 : 1 }}
-              >+ Add Interior</button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {Array.from({ length: guards3Int.length + extraInteriors3CL }).map((_, i) => (
                 <div key={i}>{renderSlot('INTERIOR', guards3Int[i], 'INTERIOR', '3CL')}</div>
               ))}
+              {guards3Int.length + extraInteriors3CL === 0 && (
+                <div style={{ padding: '1rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem', fontStyle: 'italic', border: '1px dashed #cbd5e1', borderRadius: '8px' }}>
+                  No interior guards posted.
+                </div>
+              )}
             </div>
           </div>
 
