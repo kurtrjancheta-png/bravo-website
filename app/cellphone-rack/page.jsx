@@ -78,12 +78,19 @@ export default async function CellphoneRackPage() {
         }
       }
 
+      let status = String(row[kStatus] || '').trim();
+      const numPhones = parseInt(row[kNumPhones] || '0', 10);
+      
+      if (!status && numPhones === 0) {
+        status = 'NO PHONE';
+      }
+
       parsedData.push({
         name,
-        status: String(row[kStatus] || '').trim(),
+        status,
         remarks: String(row[kRemarks] || '').trim(), // Authorized Reason
         cadetClass: assignedClass,
-        numPhones: parseInt(row[kNumPhones] || '0', 10),
+        numPhones,
         phone: String(row[kPhone] || '').trim(), // Contact number from class sheet
         ig: String(row[kIG] || '').trim(),
         model,
