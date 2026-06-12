@@ -20,6 +20,11 @@ export default function CellphoneRackClient({ initialData }) {
   const [isUploading, setIsUploading] = useState(false);
   const [isLaunching, setIsLaunching] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  
+  const [mounted, setMounted] = useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const classes = ['1', '2', '3', '4'];
   
@@ -129,7 +134,7 @@ export default function CellphoneRackClient({ initialData }) {
             <option value="4">4TH CLASS</option>
           </select>
 
-          {isCEIS && (
+          {mounted && isCEIS && (
             <a 
               href="https://docs.google.com/spreadsheets/d/13xZEcuuedRTppVj479aYhUqpgbvqOq3VMMvBJn_IH5Q/edit"
               target="_blank"
