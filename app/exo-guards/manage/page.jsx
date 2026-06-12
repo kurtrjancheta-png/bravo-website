@@ -62,6 +62,8 @@ export default async function EXOGuardsManagePage() {
         soiData={soiData} 
         apiUrl1CL={SCRIPT_URL_1CL}
         apiUrl3CL={SCRIPT_URL_3CL}
+        sheetUrl1CL="https://docs.google.com/spreadsheets/d/15h750ppwsmx_Cps87ShLlRRr30NQXPjriL1YGW0WTSU/edit?gid=71321443#gid=71321443"
+        sheetUrl3CL="https://docs.google.com/spreadsheets/d/12_4BdfSWwmhPyXulMCgf3MAzWD7NpGvFe8Q-cMZq9GI/edit?usp=sharing"
       />
     </div>
   );
