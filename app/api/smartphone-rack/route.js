@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const APPS_SCRIPT_URL = process.env.CELLPHONE_APPS_SCRIPT_URL || '';
+const APPS_SCRIPT_URL = process.env.CELLPHONE_APPS_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycby_bRO_-U_zXj79oXeKZVlKVV7y1w1XA94M9-bYUwy1BvToEt_E-dahL9W5wj7poMPU/exec';
 
 export async function POST(req) {
   try {
