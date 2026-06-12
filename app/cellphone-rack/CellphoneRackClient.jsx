@@ -43,11 +43,13 @@ export default function CellphoneRackClient({ initialData }) {
         body: JSON.stringify(changesArray)
       });
       
-      if (res.ok) {
+      const result = await res.json();
+      
+      if (res.ok && result.success) {
         setPendingChanges({});
         router.refresh();
       } else {
-        alert('Failed to upload changes');
+        alert(`Failed to upload changes: ${result.error || result.details || 'Unknown error'}`);
       }
     } catch (e) {
       alert('Error uploading changes');

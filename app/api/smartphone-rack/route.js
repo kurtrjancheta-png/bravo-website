@@ -21,7 +21,14 @@ export async function POST(req) {
       body: JSON.stringify(changes),
     });
 
-    const result = await response.json();
+    const text = await response.text();
+    let result;
+    try {
+      result = JSON.parse(text);
+    } catch (e) {
+      console.error('Failed to parse Apps Script response as JSON. Response text:', text);
+      return NextResponse.json({ success: false, error: 'Apps Script returned non-JSON response.', details: text }, { status: 500 });
+    }
     return NextResponse.json(result);
   } catch (error) {
     console.error('Error proxying to Apps Script:', error);
