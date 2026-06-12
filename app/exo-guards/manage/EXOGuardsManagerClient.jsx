@@ -507,7 +507,7 @@ export default function EXOGuardsManagerClient({
               15% { transform: translateY(20px) scale(0.9); } /* small dip to build momentum */
               100% { transform: translateY(-1500px) scale(0.5); opacity: 0; }
             }
-          `}</style>
+          `}} />
           <div style={{ position: 'relative', marginBottom: '3rem', display: 'flex', justifyContent: 'center' }}>
             <div style={{
               fontSize: '8rem',
