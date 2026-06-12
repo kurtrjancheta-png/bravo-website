@@ -450,9 +450,33 @@ export default function CellphoneRackClient({ initialData }) {
               <div style={{ position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)', width: '90px', height: '26px', background: '#000', borderRadius: '14px', zIndex: 10 }} />
               
               {/* Top Status Bar */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 24px 0', fontSize: '0.8rem', fontWeight: 800, color: 'rgba(255,255,255,0.8)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 24px 0', fontSize: '1rem', fontWeight: 800, color: 'rgba(255,255,255,0.8)' }}>
                 <span>9:41</span>
-                <span>{isOut ? '🔴' : '🟢'}</span>
+                {(() => {
+                  const hasEdits = pendingChanges && Object.keys(pendingChanges[currentExpandedPhone.name] || {}).length > 0;
+                  return (
+                    <span 
+                      onClick={() => setExpandedPhone(null)}
+                      style={{ 
+                        cursor: 'pointer', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        width: '28px', 
+                        height: '28px', 
+                        borderRadius: '50%',
+                        background: hasEdits ? '#10b981' : 'rgba(255,255,255,0.2)',
+                        color: '#fff',
+                        fontSize: hasEdits ? '0.9rem' : '0.8rem',
+                        transition: 'all 0.2s ease',
+                        boxShadow: hasEdits ? '0 0 12px rgba(16, 185, 129, 0.8)' : 'none'
+                      }}
+                      title={hasEdits ? 'Done editing (Go back)' : 'Close'}
+                    >
+                      {hasEdits ? '✔' : '✖'}
+                    </span>
+                  );
+                })()}
               </div>
               
               <div style={{ flex: 1, padding: '1rem 1.5rem 1.5rem', overflowY: 'auto' }} className="hide-scrollbar">
