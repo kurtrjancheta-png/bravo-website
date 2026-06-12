@@ -197,11 +197,11 @@ export default function CellphoneRackClient({ initialData }) {
                       
                       {/* Swipe Indicator (Home Bar) */}
                       <div 
-                        style={{ position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)', width: '40%', height: '5px', background: 'var(--border-color)', borderRadius: '3px', cursor: 'pointer', zIndex: 10, transition: 'background 0.2s' }} 
+                        style={{ position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)', width: '40%', height: '5px', background: 'var(--border-color)', borderRadius: '3px', cursor: 'pointer', zIndex: 10, transition: 'all 0.2s' }} 
                         onClick={() => setExpandedPhone(cadet)}
                         title="Click to edit"
-                        onMouseOver={(e) => e.target.style.background = 'var(--text-secondary)'}
-                        onMouseOut={(e) => e.target.style.background = 'var(--border-color)'}
+                        onMouseOver={(e) => { e.target.style.background = '#fbbf24'; e.target.style.boxShadow = '0 0 12px #fbbf24'; e.target.style.transform = 'translateX(-50%) scaleY(1.3)'; }}
+                        onMouseOut={(e) => { e.target.style.background = 'var(--border-color)'; e.target.style.boxShadow = 'none'; e.target.style.transform = 'translateX(-50%) scaleY(1)'; }}
                       />
                     </div>
                   );
@@ -395,9 +395,11 @@ export default function CellphoneRackClient({ initialData }) {
                       
                       {/* Swipe Indicator (Home Bar) */}
                       <div 
-                        style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', width: '40%', height: '5px', background: 'rgba(255,255,255,0.6)', borderRadius: '3px', cursor: 'pointer', zIndex: 10, transition: 'background 0.2s' }} 
+                        style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', width: '40%', height: '5px', background: 'rgba(255,255,255,0.6)', borderRadius: '3px', cursor: 'pointer', zIndex: 10, transition: 'all 0.2s' }} 
                         onClick={() => setExpandedPhone(cadet)}
                         title="Click to expand"
+                        onMouseOver={(e) => { e.target.style.background = '#fbbf24'; e.target.style.boxShadow = '0 0 12px #fbbf24'; e.target.style.transform = 'translateX(-50%) scaleY(1.3)'; }}
+                        onMouseOut={(e) => { e.target.style.background = 'rgba(255,255,255,0.6)'; e.target.style.boxShadow = 'none'; e.target.style.transform = 'translateX(-50%) scaleY(1)'; }}
                       />
                     </div>
                   </div>
