@@ -18,7 +18,7 @@ function doPost(e) {
           "STATUS": status,
           "REMARKS": remarks, // Authorized Reason
           "NUMBER OF PHONES": numPhones,
-          "PHONE": phone,
+          "CP NUMBER": phone,
           "IG": ig
         });
       }
