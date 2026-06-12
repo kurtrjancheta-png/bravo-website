@@ -346,56 +346,61 @@ export default function EXOGuardsManagerClient({
             </select>
           )}
         </div>
-        
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-          {slots.map((s, i) => {
-            const isAssigned = !!s;
-            return (
-              <div key={i} 
-                onClick={() => setModalConfig({ isOpen: true, role, dateStr: activeDateStr, currentCadetName: isAssigned ? s.name : null, classLevel })}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '0.5rem',
-                  backgroundColor: isAssigned ? 'var(--bg-secondary)' : 'transparent',
-                  padding: '0.3rem 0.75rem 0.3rem 0.3rem', borderRadius: '999px',
-                  border: isAssigned ? '1px solid var(--border-color)' : '1px dashed var(--border-color)',
-                  cursor: 'pointer', opacity: isAssigned ? 1 : 0.6, position: 'relative'
-                }}
-                title={isAssigned ? `Click to swap ${s.name}` : "Click to assign"}
-              >
-                <div style={{ position: 'relative', width: '24px', height: '24px' }}>
-                  <div style={{
-                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                    borderRadius: '50%', backgroundColor: '#f1f5f9', display: 'flex',
-                    alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', zIndex: 1
-                  }}>
-                    {isAssigned ? '👤' : '?'}
-                  </div>
-                  {isAssigned && s.imageUrl && (
-                    <img src={s.imageUrl} alt={s.name} style={{
+        {slots.length === 0 ? (
+          <div style={{ padding: '1.5rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem', fontStyle: 'italic', border: '1px dashed #cbd5e1', borderRadius: '8px' }}>
+            No sentinels posted.
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            {slots.map((s, i) => {
+              const isAssigned = !!s;
+              return (
+                <div key={i} 
+                  onClick={() => setModalConfig({ isOpen: true, role, dateStr: activeDateStr, currentCadetName: isAssigned ? s.name : null, classLevel })}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    backgroundColor: isAssigned ? 'var(--bg-secondary)' : 'transparent',
+                    padding: '0.3rem 0.75rem 0.3rem 0.3rem', borderRadius: '999px',
+                    border: isAssigned ? '1px solid var(--border-color)' : '1px dashed var(--border-color)',
+                    cursor: 'pointer', opacity: isAssigned ? 1 : 0.6, position: 'relative'
+                  }}
+                  title={isAssigned ? `Click to swap ${s.name}` : "Click to assign"}
+                >
+                  <div style={{ position: 'relative', width: '24px', height: '24px' }}>
+                    <div style={{
                       position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                      width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover',
-                      backgroundColor: '#fff', zIndex: 2
-                    }} onError={(e) => { e.target.style.display = 'none'; }} />
+                      borderRadius: '50%', backgroundColor: '#f1f5f9', display: 'flex',
+                      alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', zIndex: 1
+                    }}>
+                      {isAssigned ? '👤' : '?'}
+                    </div>
+                    {isAssigned && s.imageUrl && (
+                      <img src={s.imageUrl} alt={s.name} style={{
+                        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                        width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover',
+                        backgroundColor: '#fff', zIndex: 2
+                      }} onError={(e) => { e.target.style.display = 'none'; }} />
+                    )}
+                  </div>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                    {isAssigned ? s.name : 'EMPTY'}
+                  </span>
+                  
+                  {isAssigned && (
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setModalConfig({ isOpen: true, role, dateStr: activeDateStr, currentCadetName: s.name, classLevel });
+                      }}
+                      style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '0.8rem', padding: 0, marginLeft: '0.2rem' }}
+                      title="Swap"
+                    >🔄</button>
                   )}
                 </div>
-                <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                  {isAssigned ? s.name : 'EMPTY'}
-                </span>
-                
-                {isAssigned && (
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setModalConfig({ isOpen: true, role, dateStr: activeDateStr, currentCadetName: s.name, classLevel });
-                    }}
-                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '0.8rem', padding: 0, marginLeft: '0.2rem' }}
-                    title="Swap"
-                  >🔄</button>
-                )}
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   };
@@ -443,25 +448,43 @@ export default function EXOGuardsManagerClient({
           <button 
             onClick={() => setActiveTab('today')}
             style={{
-              padding: '0.75rem 2rem', fontWeight: 800, border: 'none', background: 'transparent',
+              padding: '0.6rem 2.5rem', fontWeight: 800, border: 'none', background: 'transparent',
               color: activeTab === 'today' ? '#0f172a' : '#64748b', cursor: 'pointer',
-              zIndex: 2, transition: 'color 0.3s', whiteSpace: 'nowrap', width: '220px', fontSize: '0.9rem'
+              zIndex: 2, transition: 'color 0.3s', whiteSpace: 'nowrap', width: '160px', fontSize: '0.9rem',
+              letterSpacing: '0.05em'
             }}
           >
-            POSTED - {postedDateStr}
+            POSTED
           </button>
           
           <button 
             onClick={() => setActiveTab('tomorrow')}
             style={{
-              padding: '0.75rem 2rem', fontWeight: 800, border: 'none', background: 'transparent',
+              padding: '0.6rem 2.5rem', fontWeight: 800, border: 'none', background: 'transparent',
               color: activeTab === 'tomorrow' ? '#0f172a' : '#64748b', cursor: 'pointer',
-              zIndex: 2, transition: 'color 0.3s', whiteSpace: 'nowrap', width: '220px', fontSize: '0.9rem'
+              zIndex: 2, transition: 'color 0.3s', whiteSpace: 'nowrap', width: '160px', fontSize: '0.9rem',
+              letterSpacing: '0.05em'
             }}
           >
-            INCOMING - {incomingDateStr}
+            INCOMING
           </button>
         </div>
+      </div>
+      
+      <div style={{ textAlign: 'center', marginTop: '-1.5rem', marginBottom: '3rem' }}>
+        <span style={{ 
+          display: 'inline-block',
+          padding: '0.3rem 1rem', 
+          backgroundColor: 'var(--bg-secondary)', 
+          color: 'var(--text-secondary)', 
+          borderRadius: '999px',
+          fontSize: '0.8rem', 
+          fontWeight: 700, 
+          letterSpacing: '0.05em',
+          border: '1px solid var(--border-color)'
+        }}>
+          📅 {activeTab === 'today' ? postedDateStr : incomingDateStr}
+        </span>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
@@ -469,13 +492,21 @@ export default function EXOGuardsManagerClient({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem' }}>
             <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>1CL Guards</h2>
-            <button 
-              onClick={() => sheetUrl1CL ? window.open(sheetUrl1CL, '_blank') : alert('Please provide the 1CL spreadsheet URL in page.jsx')}
-              style={{ background: '#f1f5f9', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '0.3rem 0.6rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
-              title="Open Spreadsheet in new tab"
+            <a 
+              href={sheetUrl1CL || '#'} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              onClick={(e) => { if (!sheetUrl1CL) { e.preventDefault(); alert('Please provide the 1CL spreadsheet URL in page.jsx'); } }}
+              style={{ 
+                color: '#3b82f6', textDecoration: 'none', display: 'flex', alignItems: 'center', 
+                gap: '0.4rem', fontSize: '0.8rem', fontWeight: 800, padding: '0.4rem 0.8rem', 
+                borderRadius: '8px', background: '#eff6ff', transition: 'all 0.2s' 
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#dbeafe'; e.currentTarget.style.color = '#2563eb'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = '#eff6ff'; e.currentTarget.style.color = '#3b82f6'; }}
             >
-              📄 View Spreadsheet
-            </button>
+              View Sheet <span style={{ fontSize: '1rem', lineHeight: 1 }}>↗</span>
+            </a>
           </div>
           
           {/* 1CL Action Bar */}
@@ -521,13 +552,21 @@ export default function EXOGuardsManagerClient({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem' }}>
             <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>3CL Guards</h2>
-            <button 
-              onClick={() => sheetUrl3CL ? window.open(sheetUrl3CL, '_blank') : alert('Please provide the 3CL spreadsheet URL in page.jsx')}
-              style={{ background: '#f1f5f9', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '0.3rem 0.6rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
-              title="Open Spreadsheet in new tab"
+            <a 
+              href={sheetUrl3CL || '#'} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              onClick={(e) => { if (!sheetUrl3CL) { e.preventDefault(); alert('Please provide the 3CL spreadsheet URL in page.jsx'); } }}
+              style={{ 
+                color: '#3b82f6', textDecoration: 'none', display: 'flex', alignItems: 'center', 
+                gap: '0.4rem', fontSize: '0.8rem', fontWeight: 800, padding: '0.4rem 0.8rem', 
+                borderRadius: '8px', background: '#eff6ff', transition: 'all 0.2s' 
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#dbeafe'; e.currentTarget.style.color = '#2563eb'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = '#eff6ff'; e.currentTarget.style.color = '#3b82f6'; }}
             >
-              📄 View Spreadsheet
-            </button>
+              View Sheet <span style={{ fontSize: '1rem', lineHeight: 1 }}>↗</span>
+            </a>
           </div>
 
           {/* 3CL Action Bar */}
