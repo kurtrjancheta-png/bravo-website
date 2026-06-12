@@ -18,6 +18,8 @@ export default function CellphoneRackClient({ initialData }) {
   
   const [pendingChanges, setPendingChanges] = useState({});
   const [isUploading, setIsUploading] = useState(false);
+  const [isLaunching, setIsLaunching] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   const classes = ['1', '2', '3', '4'];
   
@@ -49,14 +51,22 @@ export default function CellphoneRackClient({ initialData }) {
       
       if (res.ok && result.success) {
         setPendingChanges({});
-        router.refresh();
+        setIsLaunching(true);
+        setTimeout(() => {
+          setIsLaunching(false);
+          setIsUploading(false);
+          setShowSuccessToast(true);
+          router.refresh();
+          setTimeout(() => setShowSuccessToast(false), 3000);
+        }, 800);
       } else {
         alert(`Failed to upload changes: ${result.error || result.details || 'Unknown error'}`);
+        setIsUploading(false);
       }
     } catch (e) {
       alert('Error uploading changes');
+      setIsUploading(false);
     }
-    setIsUploading(false);
   };
 
   // Merge pending changes with initialData
@@ -557,8 +567,55 @@ export default function CellphoneRackClient({ initialData }) {
         );
       })()}
 
+      {/* Success Notification */}
+      {showSuccessToast && (
+        <div style={{
+          position: 'fixed', top: '40px', left: '50%', transform: 'translateX(-50%)',
+          background: '#10b981', color: '#fff', padding: '12px 24px', borderRadius: '100px',
+          fontWeight: 800, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '10px',
+          boxShadow: '0 10px 25px rgba(16, 185, 129, 0.4)', zIndex: 10000,
+          animation: 'slide-down 0.3s ease-out forwards'
+        }}>
+          <span>✅</span> CHANGES APPLIED SUCCESSFULLY
+        </div>
+      )}
+
+      {/* Uploading Overlay */}
+      {isUploading && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)',
+          zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          color: '#fff'
+        }}>
+          <div style={{ position: 'relative', marginBottom: '3rem', display: 'flex', justifyContent: 'center' }}>
+            <div style={{
+              fontSize: '8rem',
+              animation: isLaunching ? 'rocketBlastOff 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards' : 'rocketShake 0.1s infinite',
+              filter: isLaunching ? 'drop-shadow(0 50px 40px rgba(239, 68, 68, 0.9))' : 'drop-shadow(0 30px 25px rgba(239, 68, 68, 0.6))',
+              position: 'relative',
+              zIndex: 2,
+              display: 'inline-block'
+            }}>
+              <div style={{ transform: 'rotate(-45deg)' }}>🚀</div>
+            </div>
+            {/* Fake smoke particles disappear when launching */}
+            {!isLaunching && (
+              <>
+                <div style={{ position: 'absolute', bottom: '-20px', left: '50%', transform: 'translateX(-50%)', width: '20px', height: '20px', background: '#cbd5e1', borderRadius: '50%', animation: 'smokeParticles 0.8s infinite ease-out', zIndex: 1 }}></div>
+                <div style={{ position: 'absolute', bottom: '-10px', left: '30%', transform: 'translateX(-50%)', width: '15px', height: '15px', background: '#94a3b8', borderRadius: '50%', animation: 'smokeParticles 0.9s infinite ease-out 0.2s', zIndex: 1 }}></div>
+                <div style={{ position: 'absolute', bottom: '-15px', left: '70%', transform: 'translateX(-50%)', width: '25px', height: '25px', background: '#e2e8f0', borderRadius: '50%', animation: 'smokeParticles 1s infinite ease-out 0.4s', zIndex: 1 }}></div>
+              </>
+            )}
+          </div>
+          <h2 style={{ margin: 0, fontWeight: 900, letterSpacing: '0.15em', fontSize: '2rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>UPLOADING...</h2>
+          <p style={{ color: '#94a3b8', fontStyle: 'italic', marginTop: '1rem', marginBottom: '0.2rem', fontSize: '1.1rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>Initiating launch sequence to servers</p>
+          <p style={{ color: '#64748b', fontStyle: 'italic', margin: 0, fontSize: '0.9rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>Wait lang Ace, nag uupload pa yung changes...</p>
+        </div>
+      )}
+
       {/* Upload Changes Button */}
-      {Object.keys(pendingChanges).length > 0 && (
+      {Object.keys(pendingChanges).length > 0 && !isUploading && (
         <div style={{
           position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)',
           background: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.1)',
@@ -574,28 +631,12 @@ export default function CellphoneRackClient({ initialData }) {
             onClick={uploadChanges}
             disabled={isUploading}
             style={{
-              background: isUploading ? 'rgba(59, 130, 246, 0.2)' : '#3b82f6', 
-              color: isUploading ? '#60a5fa' : '#fff', 
-              border: isUploading ? '1px solid rgba(59, 130, 246, 0.5)' : '1px solid transparent', 
-              borderRadius: '100px',
-              padding: '8px 24px', 
-              fontWeight: 800, 
-              fontSize: '0.9rem', 
-              cursor: isUploading ? 'not-allowed' : 'pointer',
-              transition: 'all 0.3s ease', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '12px',
-              boxShadow: isUploading ? '0 0 20px rgba(59, 130, 246, 0.6), inset 0 0 10px rgba(59, 130, 246, 0.4)' : 'none'
+              background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '100px',
+              padding: '8px 24px', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer',
+              transition: 'all 0.3s ease', display: 'flex', alignItems: 'center', gap: '12px',
             }}
           >
-            {isUploading && (
-              <div style={{ position: 'relative', width: '20px', height: '20px', animation: 'spin 0.8s linear infinite' }}>
-                <span style={{ position: 'absolute', top: '-5px', left: '0', fontSize: '12px' }}>🐈</span>
-                <span style={{ position: 'absolute', bottom: '-2px', right: '0', fontSize: '10px' }}>🎾</span>
-              </div>
-            )}
-            <span>{isUploading ? 'SYNCING TO DATABASE...' : 'UPLOAD CHANGES'}</span>
+            UPLOAD CHANGES
           </button>
         </div>
       )}
@@ -603,8 +644,8 @@ export default function CellphoneRackClient({ initialData }) {
       {/* Global Styles for Animations */}
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes slide-down {
-          from { transform: translateY(-10px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
+          from { transform: translate(-50%, -20px); opacity: 0; }
+          to { transform: translate(-50%, 0); opacity: 1; }
         }
         @keyframes slide-up {
           from { transform: translate(-50%, 50px); opacity: 0; }
@@ -615,9 +656,21 @@ export default function CellphoneRackClient({ initialData }) {
           50% { opacity: 0.5; transform: scale(1.2); }
           100% { opacity: 1; transform: scale(1); }
         }
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+        @keyframes rocketShake {
+          0% { transform: translate(0, 0) rotate(0deg); }
+          25% { transform: translate(-2px, 2px) rotate(-2deg); }
+          50% { transform: translate(2px, -2px) rotate(2deg); }
+          75% { transform: translate(-2px, -2px) rotate(-1deg); }
+          100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        @keyframes smokeParticles {
+          0% { transform: translateY(0) scale(1); opacity: 0.8; }
+          100% { transform: translateY(100px) scale(3); opacity: 0; }
+        }
+        @keyframes rocketBlastOff {
+          0% { transform: translateY(0) scale(1); }
+          15% { transform: translateY(20px) scale(0.9); }
+          100% { transform: translateY(-1500px) scale(0.5); opacity: 0; }
         }
         @keyframes fade-in {
           from { opacity: 0; }
