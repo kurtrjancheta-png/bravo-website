@@ -8,7 +8,9 @@ import { useRouter } from 'next/navigation';
 export default function CellphoneRackClient({ initialData }) {
   const { adminUser } = useAuth();
   const router = useRouter();
-  const isCEIS = adminUser?.council === 'S6';
+  // Make the check robust against case and spaces
+  const userCouncil = String(adminUser?.council || '').toUpperCase().trim();
+  const isCEIS = userCouncil === 'S6' || userCouncil.includes('CEIS');
   const [filterClass, setFilterClass] = useState('All');
   const [activeContact, setActiveContact] = useState({});
   const [activeSocial, setActiveSocial] = useState({});
