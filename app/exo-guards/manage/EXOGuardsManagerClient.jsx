@@ -103,7 +103,15 @@ function getStatusFromColor3CL(hex) {
   }
 }
 
-export default function EXOGuardsManagerClient({ data1CL = [], data3CL = [], soiData = [], apiUrl1CL, apiUrl3CL }) {
+export default function EXOGuardsManagerClient({ 
+  data1CL = [], 
+  data3CL = [], 
+  soiData = [], 
+  apiUrl1CL, 
+  apiUrl3CL,
+  sheetUrl1CL,
+  sheetUrl3CL
+}) {
   const router = useRouter();
   const { adminUser, isLoaded } = useAuth();
   
@@ -486,7 +494,16 @@ export default function EXOGuardsManagerClient({ data1CL = [], data3CL = [], soi
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
         {/* 1CL Column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <h2 style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem' }}>1CL Guards</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+            <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>1CL Guards</h2>
+            <button 
+              onClick={() => sheetUrl1CL ? window.open(sheetUrl1CL, '_blank') : alert('Please provide the 1CL spreadsheet URL in page.jsx')}
+              style={{ background: '#f1f5f9', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '0.3rem 0.6rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+              title="Open Spreadsheet in new tab"
+            >
+              📄 View Spreadsheet
+            </button>
+          </div>
           
           {renderSlot('FLOOR INSPECTOR', guards1FI[0], 'FLOOR INSPECTOR', '1CL')}
           
@@ -511,7 +528,16 @@ export default function EXOGuardsManagerClient({ data1CL = [], data3CL = [], soi
         
         {/* 3CL Column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <h2 style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem' }}>3CL Guards</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+            <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>3CL Guards</h2>
+            <button 
+              onClick={() => sheetUrl3CL ? window.open(sheetUrl3CL, '_blank') : alert('Please provide the 3CL spreadsheet URL in page.jsx')}
+              style={{ background: '#f1f5f9', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '0.3rem 0.6rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+              title="Open Spreadsheet in new tab"
+            >
+              📄 View Spreadsheet
+            </button>
+          </div>
           
           {renderSlot('CCQ', guards3CCQ[0], 'CCQ', '3CL')}
           {renderSlot('ACCQ', guards3ACCQ[0], 'ACCQ', '3CL')}
