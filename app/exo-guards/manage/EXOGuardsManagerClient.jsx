@@ -117,7 +117,6 @@ export default function EXOGuardsManagerClient({
   
   // UI States
   const [activeTab, setActiveTab] = useState('today'); // 'today' or 'tomorrow'
-  const [modalConfig, setModalConfig] = useState(null); // { isOpen, role, dateStr, currentCadetName, classLevel }
   
   const [pendingChanges, setPendingChanges] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
