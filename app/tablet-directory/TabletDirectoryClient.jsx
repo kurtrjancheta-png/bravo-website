@@ -99,7 +99,7 @@ export default function TabletDirectoryClient({ initialData }) {
           const today = new Date();
           
           let progressPercent = 0;
-          let timeRemainingText = "Not Specified";
+          let timeRemainingText = "Dates Missing";
           let isExpired = false;
           let progressBarColor = '#10b981'; // Emerald
 
@@ -126,17 +126,23 @@ export default function TabletDirectoryClient({ initialData }) {
           return (
             <div key={i} style={{
               borderRadius: '24px',
-              background: 'var(--card-bg)',
-              border: '1px solid var(--border-color)',
+              background: isExpired ? 'rgba(239, 68, 68, 0.05)' : 'var(--card-bg)',
+              border: isExpired ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid var(--border-color)',
               padding: '1.5rem',
-              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+              boxShadow: isExpired ? '0 10px 25px -5px rgba(239, 68, 68, 0.2)' : '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
               position: 'relative',
               display: 'flex',
               flexDirection: 'column',
-              transition: 'transform 0.2s',
+              transition: 'all 0.3s',
             }}
-            onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
-            onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              if (isExpired) e.currentTarget.style.boxShadow = '0 15px 30px -5px rgba(239, 68, 68, 0.3)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              if (isExpired) e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(239, 68, 68, 0.2)';
+            }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                 <div style={{ 
