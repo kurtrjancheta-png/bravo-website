@@ -306,24 +306,6 @@ export default function EXOGuardsManagerClient({
 
   const renderSentinelsCard = (guards, role, classLevel, dropdownSetter) => {
     const is3CL = classLevel === '3CL';
-    
-    if (!is3CL && guards.length === 0 && extraSentinels1CL === 0) {
-      return (
-        <div 
-          onClick={() => setExtraSentinels1CL(1)}
-          style={{
-            backgroundColor: 'transparent', border: '2px dashed #94a3b8',
-            borderRadius: '12px', padding: '1.5rem', textAlign: 'center',
-            cursor: 'pointer', color: '#64748b', transition: 'background-color 0.2s'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-        >
-          <span style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem', color: '#3b82f6' }}>+</span>
-          <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, textTransform: 'uppercase' }}>Add Sentinel Posting</h3>
-        </div>
-      );
-    }
 
     const totalSlots = is3CL ? num3CLSentinels : Math.min(6, guards.length + extraSentinels1CL);
     
@@ -353,7 +335,7 @@ export default function EXOGuardsManagerClient({
             </span>
           </div>
 
-          {is3CL ? (
+          {is3CL && (
             <select 
               value={num3CLSentinels} 
               onChange={e => setNum3CLSentinels(Number(e.target.value))}
@@ -362,17 +344,6 @@ export default function EXOGuardsManagerClient({
               <option value={6}>Single Posting (6)</option>
               <option value={12}>Double Posting (12)</option>
             </select>
-          ) : (
-            <button 
-              onClick={() => setExtraSentinels1CL(prev => Math.min(6 - guards.length, prev + 1))}
-              disabled={guards.length + extraSentinels1CL >= 6}
-              style={{
-                padding: '0.25rem 0.75rem', fontSize: '0.8rem', borderRadius: '4px', fontWeight: 'bold',
-                border: 'none', background: '#3b82f6', color: '#fff', cursor: guards.length + extraSentinels1CL >= 6 ? 'not-allowed' : 'pointer', opacity: guards.length + extraSentinels1CL >= 6 ? 0.5 : 1
-              }}
-            >
-              + Add Sentinel
-            </button>
           )}
         </div>
         
@@ -515,6 +486,13 @@ export default function EXOGuardsManagerClient({
               style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '999px', padding: '0.4rem 0.8rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: guards1Int.length + extraInteriors1CL >= 5 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', opacity: guards1Int.length + extraInteriors1CL >= 5 ? 0.5 : 1 }}
             >
               <span style={{ fontSize: '1rem' }}>+</span> Add Interior
+            </button>
+            <button 
+              onClick={() => setExtraSentinels1CL(prev => Math.min(6 - guards1Sent.length, prev + 1))}
+              disabled={guards1Sent.length + extraSentinels1CL >= 6}
+              style={{ background: '#1f2937', color: '#fff', border: 'none', borderRadius: '999px', padding: '0.4rem 0.8rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: guards1Sent.length + extraSentinels1CL >= 6 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', opacity: guards1Sent.length + extraSentinels1CL >= 6 ? 0.5 : 1 }}
+            >
+              <span style={{ fontSize: '1rem' }}>+</span> Add Sentinel
             </button>
           </div>
           
