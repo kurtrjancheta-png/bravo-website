@@ -113,6 +113,7 @@ export default function EXOGuardsManagerClient({ data1CL = [], data3CL = [], soi
   const [extraInteriors1CL, setExtraInteriors1CL] = useState(0);
   const [extraInteriors3CL, setExtraInteriors3CL] = useState(0);
   const [extraSentinels1CL, setExtraSentinels1CL] = useState(0);
+  const [showAFI3CL, setShowAFI3CL] = useState(false);
 
   // Modal State
   const [modalConfig, setModalConfig] = useState(null); // { isOpen, role, dateStr, currentCadetName, classLevel }
@@ -482,7 +483,17 @@ export default function EXOGuardsManagerClient({ data1CL = [], data3CL = [], soi
           
           {renderSlot('CCQ', guards3CCQ[0], 'CCQ', '3CL')}
           {renderSlot('ACCQ', guards3ACCQ[0], 'ACCQ', '3CL')}
-          {renderSlot('AFI', guards3AFI[0], 'AFI', '3CL')}
+          
+          {(guards3AFI.length > 0 || showAFI3CL) ? (
+            renderSlot('AFI', guards3AFI[0], 'AFI', '3CL')
+          ) : (
+            <button 
+              onClick={() => setShowAFI3CL(true)}
+              style={{ background: '#06b6d4', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.4rem 1rem', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer', alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              <span style={{ fontSize: '1rem' }}>+</span> Add AFI
+            </button>
+          )}
           
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
