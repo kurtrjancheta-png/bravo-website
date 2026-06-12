@@ -5,7 +5,7 @@ import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { useAuth } from '../AuthContext';
 import { useRouter } from 'next/navigation';
 
-export default function CellphoneRackClient({ initialData }) {
+export default function TabletDirectoryClient({ initialData }) {
   const { adminUser } = useAuth();
   const router = useRouter();
   // Make the check robust against case and spaces
@@ -14,17 +14,12 @@ export default function CellphoneRackClient({ initialData }) {
   const [filterClass, setFilterClass] = useState('All');
   const [activeContact, setActiveContact] = useState({});
   const [activeSocial, setActiveSocial] = useState({});
-  const [expandedPhone, setExpandedPhone] = useState(null);
+  const [expandedTablet, setExpandedTablet] = useState(null);
   
   const [pendingChanges, setPendingChanges] = useState({});
   const [isUploading, setIsUploading] = useState(false);
   const [isLaunching, setIsLaunching] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
-  
-  const [mounted, setMounted] = useState(false);
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const classes = ['1', '2', '3', '4'];
   
@@ -46,7 +41,7 @@ export default function CellphoneRackClient({ initialData }) {
         return { ...cadet, ...changes };
       });
       
-      const res = await fetch('/api/smartphone-rack', {
+      const res = await fetch('/api/tablet-directory', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(changesArray)
@@ -91,10 +86,10 @@ export default function CellphoneRackClient({ initialData }) {
   });
 
   const summary = [
-    { name: 'Logged In', value: filteredData.filter(c => c.numPhones > 0 && c.status.toLowerCase() === 'logged in').length, fill: '#10b981' },
-    { name: 'Logged Out', value: filteredData.filter(c => c.numPhones > 0 && c.status.toLowerCase() === 'logged out').length, fill: '#374151' },
+    { name: 'Logged In', value: filteredData.filter(c => c.numTablets > 0 && c.status.toLowerCase() === 'logged in').length, fill: '#10b981' },
+    { name: 'Logged Out', value: filteredData.filter(c => c.numTablets > 0 && c.status.toLowerCase() === 'logged out').length, fill: '#374151' },
     { name: 'Confiscated', value: filteredData.filter(c => c.status.toLowerCase() === 'confiscated').length, fill: '#ef4444' },
-    { name: 'No Smartphone', value: filteredData.filter(c => !c.numPhones || c.numPhones === 0 || String(c.status).toUpperCase() === 'NO PHONE').length, fill: '#9ca3af' }
+    { name: 'No Tablet', value: filteredData.filter(c => !c.numTablets || c.numTablets === 0 || String(c.status).toUpperCase() === 'NO Tablet').length, fill: '#9ca3af' }
   ].filter(item => item.value > 0);
 
   return (
@@ -135,7 +130,7 @@ export default function CellphoneRackClient({ initialData }) {
           </select>
 
           <a 
-            href="https://docs.google.com/spreadsheets/d/13xZEcuuedRTppVj479aYhUqpgbvqOq3VMMvBJn_IH5Q/edit"
+            href="https://docs.google.com/spreadsheets/d/1LbsJwJ7nMyh9SOb-SX0MOHwmLq85UVz4BaPxtHPesqA/edit?usp=sharing"
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -206,18 +201,18 @@ export default function CellphoneRackClient({ initialData }) {
             
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(5, 180px)', 
+              gridTemplateColumns: 'repeat(4, 260px)', 
               gap: '2.5rem',
               justifyContent: 'center'
             }}>
               {classCadets.map((cadet, i) => {
-                const hasNoPhone = !cadet.numPhones || cadet.numPhones === 0 || cadet.status.toUpperCase() === 'NO PHONE';
+                const hasNoTablet = !cadet.numTablets || cadet.numTablets === 0 || cadet.status.toUpperCase() === 'NO TABLET';
 
-                if (hasNoPhone) {
+                if (hasNoTablet) {
                   return (
                     <div key={i} style={{
-                      width: '180px',
-                      height: '400px',
+                      width: '260px',
+                      height: '360px',
                       borderRadius: '36px',
                       border: '2px dashed var(--border-color)',
                       padding: '8px',
@@ -229,12 +224,12 @@ export default function CellphoneRackClient({ initialData }) {
                       position: 'relative'
                     }}>
                       <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem', color: 'var(--text-secondary)', letterSpacing: '1px' }}>{cadet.name}</h4>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 800 }}>NO SMARTPHONE</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 800 }}>NO Tablet</div>
                       
                       {/* Swipe Indicator (Home Bar) */}
                       <div 
                         style={{ position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)', width: '40%', height: '5px', background: 'var(--border-color)', borderRadius: '3px', cursor: 'pointer', zIndex: 10, transition: 'all 0.2s' }} 
-                        onClick={() => setExpandedPhone(cadet)}
+                        onClick={() => setExpandedTablet(cadet)}
                         title="Click to edit"
                         onMouseOver={(e) => { e.target.style.background = '#fbbf24'; e.target.style.boxShadow = '0 0 12px #fbbf24'; e.target.style.transform = 'translateX(-50%) scaleY(1.3)'; }}
                         onMouseOut={(e) => { e.target.style.background = 'var(--border-color)'; e.target.style.boxShadow = 'none'; e.target.style.transform = 'translateX(-50%) scaleY(1)'; }}
@@ -254,8 +249,8 @@ export default function CellphoneRackClient({ initialData }) {
 
                 return (
                   <div key={i} style={{
-                    width: '180px',
-                    height: '400px',
+                    width: '260px',
+                    height: '360px',
                     borderRadius: '36px',
                     background: bezelColor,
                     padding: '8px',
@@ -315,7 +310,7 @@ export default function CellphoneRackClient({ initialData }) {
                           <div style={{ fontSize: '1rem' }}>📞</div>
                           <div style={{ flex: 1, textAlign: 'left' }}>
                             <div style={{ fontSize: '0.5rem', fontWeight: 800, color: '#666', textTransform: 'uppercase' }}>Contact Number</div>
-                            <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#000' }}>{cadet.phone}</div>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#000' }}>{cadet.Tablet}</div>
                           </div>
                           <div 
                             style={{ fontSize: '0.7rem', cursor: 'pointer', padding: '4px', color: '#666', background: 'rgba(0,0,0,0.05)', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -386,14 +381,14 @@ export default function CellphoneRackClient({ initialData }) {
 
                         {/* App Icon grid styling for info */}
                         <div style={{ display: 'flex', gap: '1rem', marginBottom: 'auto', width: '100%', justifyContent: 'center' }}>
-                          {cadet.phone && cadet.phone !== 'null' && (
+                          {cadet.Tablet && cadet.Tablet !== 'null' && (
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
                               <div 
                                 style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.15)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', backdropFilter: 'blur(5px)', cursor: 'pointer' }} 
                                 title="Click to view contact"
                                 onClick={() => setActiveContact(prev => ({ ...prev, [cadet.name]: true }))}
                               >📞</div>
-                              <span style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.8)', fontWeight: 800 }}>Phone</span>
+                              <span style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.8)', fontWeight: 800 }}>Tablet</span>
                             </div>
                           )}
                           {cadet.ig && cadet.ig !== 'null' && (
@@ -432,7 +427,7 @@ export default function CellphoneRackClient({ initialData }) {
                       {/* Swipe Indicator (Home Bar) */}
                       <div 
                         style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', width: '40%', height: '5px', background: 'rgba(255,255,255,0.6)', borderRadius: '3px', cursor: 'pointer', zIndex: 10, transition: 'all 0.2s' }} 
-                        onClick={() => setExpandedPhone(cadet)}
+                        onClick={() => setExpandedTablet(cadet)}
                         title="Click to expand"
                         onMouseOver={(e) => { e.target.style.background = '#fbbf24'; e.target.style.boxShadow = '0 0 12px #fbbf24'; e.target.style.transform = 'translateX(-50%) scaleY(1.3)'; }}
                         onMouseOut={(e) => { e.target.style.background = 'rgba(255,255,255,0.6)'; e.target.style.boxShadow = 'none'; e.target.style.transform = 'translateX(-50%) scaleY(1)'; }}
@@ -446,17 +441,17 @@ export default function CellphoneRackClient({ initialData }) {
         );
       })}
 
-      {/* Expanded Phone Modal */}
-      {expandedPhone && (() => {
-        const currentExpandedPhone = activeData.find(c => c.name === expandedPhone.name) || expandedPhone;
-        const isOut = currentExpandedPhone.status.toLowerCase() === 'logged out' || currentExpandedPhone.status.toLowerCase() === 'confiscated';
+      {/* Expanded Tablet Modal */}
+      {expandedTablet && (() => {
+        const currentExpandedTablet = activeData.find(c => c.name === expandedTablet.name) || expandedTablet;
+        const isOut = currentExpandedTablet.status.toLowerCase() === 'logged out' || currentExpandedTablet.status.toLowerCase() === 'confiscated';
         return (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)',
           zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center',
           animation: 'fade-in 0.3s ease-out'
-        }} onClick={() => setExpandedPhone(null)}>
+        }} onClick={() => setExpandedTablet(null)}>
           <div style={{
             width: '320px', height: '580px', borderRadius: '48px', background: isOut ? '#1f2937' : '#052e16',
             padding: '12px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
@@ -478,10 +473,10 @@ export default function CellphoneRackClient({ initialData }) {
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 24px 0', fontSize: '1rem', fontWeight: 800, color: 'rgba(255,255,255,0.8)' }}>
                 <span>9:41</span>
                 {(() => {
-                  const hasEdits = pendingChanges && Object.keys(pendingChanges[currentExpandedPhone.name] || {}).length > 0;
+                  const hasEdits = pendingChanges && Object.keys(pendingChanges[currentExpandedTablet.name] || {}).length > 0;
                   return (
                     <span 
-                      onClick={() => setExpandedPhone(null)}
+                      onClick={() => setExpandedTablet(null)}
                       style={{ 
                         cursor: 'pointer', 
                         display: 'flex', 
@@ -507,22 +502,22 @@ export default function CellphoneRackClient({ initialData }) {
               <div style={{ flex: 1, padding: '1rem 1.5rem 1.5rem', overflowY: 'auto' }} className="hide-scrollbar">
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '1rem' }}>
                   <div style={{ width: '80px', height: '80px', minHeight: '80px', minWidth: '80px', flexShrink: 0, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', marginBottom: '0.5rem', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(5px)' }}>
-                    {currentExpandedPhone.picture ? <img src={currentExpandedPhone.picture} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : '📱'}
+                    {currentExpandedTablet.picture ? <img src={currentExpandedTablet.picture} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : '📱'}
                   </div>
-                  <h2 style={{ color: '#fff', margin: '0 0 0.25rem', fontSize: '1.5rem', letterSpacing: '1px' }}>{currentExpandedPhone.name}</h2>
+                  <h2 style={{ color: '#fff', margin: '0 0 0.25rem', fontSize: '1.5rem', letterSpacing: '1px' }}>{currentExpandedTablet.name}</h2>
                   {isCEIS ? (
                     <select 
-                      value={String(currentExpandedPhone.status || '').toUpperCase()} 
-                      onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'status', e.target.value)}
+                      value={String(currentExpandedTablet.status || '').toUpperCase()} 
+                      onChange={(e) => handleFieldChange(currentExpandedTablet.name, 'status', e.target.value)}
                       style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', padding: '0.2rem 0.5rem', outline: 'none', fontWeight: 800, fontSize: '0.85rem' }}
                     >
                       <option value="LOGGED IN" style={{ color: '#000' }}>LOGGED IN</option>
                       <option value="LOGGED OUT" style={{ color: '#000' }}>LOGGED OUT</option>
                       <option value="CONFISCATED" style={{ color: '#000' }}>CONFISCATED</option>
-                      <option value="NO PHONE" style={{ color: '#000' }}>NO PHONE</option>
+                      <option value="NO Tablet" style={{ color: '#000' }}>NO Tablet</option>
                     </select>
                   ) : (
-                    <span style={{ padding: '0.25rem 1rem', background: isOut ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)', color: isOut ? '#fca5a5' : '#6ee7b7', borderRadius: '999px', fontSize: '0.85rem', fontWeight: 800 }}>{currentExpandedPhone.status.toUpperCase()}</span>
+                    <span style={{ padding: '0.25rem 1rem', background: isOut ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)', color: isOut ? '#fca5a5' : '#6ee7b7', borderRadius: '999px', fontSize: '0.85rem', fontWeight: 800 }}>{currentExpandedTablet.status.toUpperCase()}</span>
                   )}
                 </div>
 
@@ -531,22 +526,22 @@ export default function CellphoneRackClient({ initialData }) {
                     <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Personal Info</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                       <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Class</span>
-                      <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedPhone.cadetClass}CL</span>
+                      <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedTablet.cadetClass}CL</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Phone No.</span>
+                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Tablet No.</span>
                       {isCEIS ? (
-                        <input type="text" value={currentExpandedPhone.phone !== 'null' ? currentExpandedPhone.phone : ''} onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'phone', e.target.value)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '100px', fontWeight: 800, fontSize: '0.85rem' }} placeholder="N/A" />
+                        <input type="text" value={currentExpandedTablet.Tablet !== 'null' ? currentExpandedTablet.Tablet : ''} onChange={(e) => handleFieldChange(currentExpandedTablet.name, 'Tablet', e.target.value)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '100px', fontWeight: 800, fontSize: '0.85rem' }} placeholder="N/A" />
                       ) : (
-                        <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedPhone.phone && currentExpandedPhone.phone !== 'null' ? currentExpandedPhone.phone : 'N/A'}</span>
+                        <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedTablet.Tablet && currentExpandedTablet.Tablet !== 'null' ? currentExpandedTablet.Tablet : 'N/A'}</span>
                       )}
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Signal/IG</span>
                       {isCEIS ? (
-                        <input type="text" value={currentExpandedPhone.ig !== 'null' ? currentExpandedPhone.ig : ''} onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'ig', e.target.value)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '120px', fontWeight: 800, fontSize: '0.85rem' }} placeholder="N/A" />
+                        <input type="text" value={currentExpandedTablet.ig !== 'null' ? currentExpandedTablet.ig : ''} onChange={(e) => handleFieldChange(currentExpandedTablet.name, 'ig', e.target.value)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '120px', fontWeight: 800, fontSize: '0.85rem' }} placeholder="N/A" />
                       ) : (
-                        <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedPhone.ig && currentExpandedPhone.ig !== 'null' ? currentExpandedPhone.ig : 'N/A'}</span>
+                        <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedTablet.ig && currentExpandedTablet.ig !== 'null' ? currentExpandedTablet.ig : 'N/A'}</span>
                       )}
                     </div>
                   </div>
@@ -556,33 +551,33 @@ export default function CellphoneRackClient({ initialData }) {
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                       <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Devices Logged</span>
                       {isCEIS ? (
-                        <input type="number" value={currentExpandedPhone.numPhones || 0} onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'numPhones', parseInt(e.target.value) || 0)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '50px', fontWeight: 800, fontSize: '0.85rem' }} />
+                        <input type="number" value={currentExpandedTablet.numTablets || 0} onChange={(e) => handleFieldChange(currentExpandedTablet.name, 'numTablets', parseInt(e.target.value) || 0)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '50px', fontWeight: 800, fontSize: '0.85rem' }} />
                       ) : (
-                        <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedPhone.numPhones}</span>
+                        <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedTablet.numTablets}</span>
                       )}
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                       <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Model</span>
                       {isCEIS ? (
-                        <input type="text" value={currentExpandedPhone.model !== 'Not Specified' && currentExpandedPhone.model !== 'null' ? currentExpandedPhone.model : ''} onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'model', e.target.value)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '120px', fontWeight: 800, fontSize: '0.85rem' }} placeholder="Not Specified" />
+                        <input type="text" value={currentExpandedTablet.model !== 'Not Specified' && currentExpandedTablet.model !== 'null' ? currentExpandedTablet.model : ''} onChange={(e) => handleFieldChange(currentExpandedTablet.name, 'model', e.target.value)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '120px', fontWeight: 800, fontSize: '0.85rem' }} placeholder="Not Specified" />
                       ) : (
-                        <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedPhone.model && currentExpandedPhone.model !== 'Not Specified' && currentExpandedPhone.model !== 'null' ? currentExpandedPhone.model : <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>Not Specified</span>}</span>
+                        <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedTablet.model && currentExpandedTablet.model !== 'Not Specified' && currentExpandedTablet.model !== 'null' ? currentExpandedTablet.model : <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>Not Specified</span>}</span>
                       )}
                     </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                         <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Color</span>
                         {isCEIS ? (
-                          <input type="text" value={currentExpandedPhone.color !== 'Not Specified' && currentExpandedPhone.color !== 'null' ? currentExpandedPhone.color : ''} onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'color', e.target.value)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '100px', fontWeight: 800, fontSize: '0.85rem' }} placeholder="Not Specified" />
+                          <input type="text" value={currentExpandedTablet.color !== 'Not Specified' && currentExpandedTablet.color !== 'null' ? currentExpandedTablet.color : ''} onChange={(e) => handleFieldChange(currentExpandedTablet.name, 'color', e.target.value)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '100px', fontWeight: 800, fontSize: '0.85rem' }} placeholder="Not Specified" />
                         ) : (
-                          <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedPhone.color && currentExpandedPhone.color !== 'Not Specified' && currentExpandedPhone.color !== 'null' ? currentExpandedPhone.color : <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>Not Specified</span>}</span>
+                          <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedTablet.color && currentExpandedTablet.color !== 'Not Specified' && currentExpandedTablet.color !== 'null' ? currentExpandedTablet.color : <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>Not Specified</span>}</span>
                         )}
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Features/Case</span>
                         {isCEIS ? (
-                          <input type="text" value={currentExpandedPhone.dbRemarks !== 'None' && currentExpandedPhone.dbRemarks !== 'null' ? currentExpandedPhone.dbRemarks : ''} onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'dbRemarks', e.target.value)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '120px', fontWeight: 800, fontSize: '0.85rem' }} placeholder="None" />
+                          <input type="text" value={currentExpandedTablet.dbRemarks !== 'None' && currentExpandedTablet.dbRemarks !== 'null' ? currentExpandedTablet.dbRemarks : ''} onChange={(e) => handleFieldChange(currentExpandedTablet.name, 'dbRemarks', e.target.value)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '120px', fontWeight: 800, fontSize: '0.85rem' }} placeholder="None" />
                         ) : (
-                          <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedPhone.dbRemarks && currentExpandedPhone.dbRemarks !== 'None' && currentExpandedPhone.dbRemarks !== 'null' ? currentExpandedPhone.dbRemarks : <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>None</span>}</span>
+                          <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedTablet.dbRemarks && currentExpandedTablet.dbRemarks !== 'None' && currentExpandedTablet.dbRemarks !== 'null' ? currentExpandedTablet.dbRemarks : <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>None</span>}</span>
                         )}
                       </div>
                     </div>
@@ -592,13 +587,13 @@ export default function CellphoneRackClient({ initialData }) {
                       <div style={{ color: '#fca5a5', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Authorized Reason</div>
                       {isCEIS ? (
                         <textarea 
-                          value={currentExpandedPhone.remarks !== 'null' ? currentExpandedPhone.remarks : ''} 
-                          onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'remarks', e.target.value)}
+                          value={currentExpandedTablet.remarks !== 'null' ? currentExpandedTablet.remarks : ''} 
+                          onChange={(e) => handleFieldChange(currentExpandedTablet.name, 'remarks', e.target.value)}
                           style={{ width: '100%', background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '0.5rem', outline: 'none', minHeight: '60px', fontSize: '0.85rem', resize: 'vertical' }}
                           placeholder="Enter reason..."
                         />
                       ) : (
-                        <div style={{ color: '#fff', fontSize: '0.85rem', lineHeight: 1.4 }}>{currentExpandedPhone.remarks && currentExpandedPhone.remarks !== 'null' ? currentExpandedPhone.remarks : 'None provided'}</div>
+                        <div style={{ color: '#fff', fontSize: '0.85rem', lineHeight: 1.4 }}>{currentExpandedTablet.remarks && currentExpandedTablet.remarks !== 'null' ? currentExpandedTablet.remarks : 'None provided'}</div>
                       )}
                     </div>
                   )}
@@ -608,7 +603,7 @@ export default function CellphoneRackClient({ initialData }) {
               {/* Swipe down indicator */}
               <div 
                 style={{ position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)', width: '40%', height: '6px', background: 'rgba(255,255,255,0.8)', borderRadius: '3px', cursor: 'pointer' }} 
-                onClick={() => setExpandedPhone(null)}
+                onClick={() => setExpandedTablet(null)}
               />
             </div>
           </div>

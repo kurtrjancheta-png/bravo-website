@@ -128,6 +128,9 @@ export default function LayoutContent({ children }) {
               <Link href="/cellphone-rack" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
                 Smartphone Rack
               </Link>
+              <Link href="/tablet-directory" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                Tablet Directory
+              </Link>
               <Link href="/disseminations/s6" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
                 Disseminations
               </Link>
