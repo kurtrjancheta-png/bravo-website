@@ -457,7 +457,48 @@ export default function EXOGuardsManagerClient({
 
   return (
     <div>
-      {pendingChanges.length > 0 && (
+      {/* Uploading Overlay */}
+      {isUploading && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)',
+          zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          color: '#fff'
+        }}>
+          <style>{`
+            @keyframes rocketShake {
+              0% { transform: translate(0, 0) rotate(0deg); }
+              25% { transform: translate(-2px, 2px) rotate(-2deg); }
+              50% { transform: translate(2px, -2px) rotate(2deg); }
+              75% { transform: translate(-2px, -2px) rotate(-1deg); }
+              100% { transform: translate(0, 0) rotate(0deg); }
+            }
+            @keyframes smokeParticles {
+              0% { transform: translateY(0) scale(1); opacity: 0.8; }
+              100% { transform: translateY(100px) scale(3); opacity: 0; }
+            }
+          `}</style>
+          <div style={{ position: 'relative', marginBottom: '3rem' }}>
+            <div style={{
+              fontSize: '8rem',
+              animation: 'rocketShake 0.1s infinite',
+              filter: 'drop-shadow(0 30px 25px rgba(239, 68, 68, 0.6))',
+              position: 'relative',
+              zIndex: 2
+            }}>
+              🚀
+            </div>
+            {/* Fake smoke particles */}
+            <div style={{ position: 'absolute', bottom: '-20px', left: '50%', transform: 'translateX(-50%)', width: '20px', height: '20px', background: '#cbd5e1', borderRadius: '50%', animation: 'smokeParticles 0.8s infinite ease-out', zIndex: 1 }}></div>
+            <div style={{ position: 'absolute', bottom: '-10px', left: '30%', transform: 'translateX(-50%)', width: '15px', height: '15px', background: '#94a3b8', borderRadius: '50%', animation: 'smokeParticles 0.9s infinite ease-out 0.2s', zIndex: 1 }}></div>
+            <div style={{ position: 'absolute', bottom: '-15px', left: '70%', transform: 'translateX(-50%)', width: '25px', height: '25px', background: '#e2e8f0', borderRadius: '50%', animation: 'smokeParticles 1s infinite ease-out 0.4s', zIndex: 1 }}></div>
+          </div>
+          <h2 style={{ margin: 0, fontWeight: 900, letterSpacing: '0.15em', fontSize: '2rem' }}>UPLOADING...</h2>
+          <p style={{ color: '#94a3b8', fontStyle: 'italic', marginTop: '1rem', fontSize: '1.1rem' }}>Initiating launch sequence to servers</p>
+        </div>
+      )}
+
+      {pendingChanges.length > 0 && !isUploading && (
         <div style={{
           position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)',
           backgroundColor: '#1f2937', color: '#fff', padding: '1rem 2rem', borderRadius: '999px',
@@ -474,7 +515,7 @@ export default function EXOGuardsManagerClient({
               opacity: isUploading ? 0.7 : 1
             }}
           >
-            {isUploading ? 'Uploading...' : 'Upload Changes'}
+            Upload Changes
           </button>
         </div>
       )}
