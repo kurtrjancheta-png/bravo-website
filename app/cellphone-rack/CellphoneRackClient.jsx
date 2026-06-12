@@ -7,6 +7,7 @@ export default function CellphoneRackClient({ initialData }) {
   const [filterClass, setFilterClass] = useState('All');
   const [activeContact, setActiveContact] = useState({});
   const [activeSocial, setActiveSocial] = useState({});
+  const [expandedPhone, setExpandedPhone] = useState(null);
 
   const classes = ['1', '2', '3', '4'];
   
@@ -252,7 +253,7 @@ export default function CellphoneRackClient({ initialData }) {
                       </div>
 
                       {/* Main Content Area */}
-                      <div style={{ flex: 1, padding: '2rem 1rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                      <div style={{ flex: 1, padding: '2rem 1rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', overflowY: 'auto' }} className="hide-scrollbar">
                         
                         <div style={{ 
                           width: '64px', height: '64px', 
@@ -315,11 +316,14 @@ export default function CellphoneRackClient({ initialData }) {
                             <div style={{ fontSize: '0.75rem', color: '#fff', textAlign: 'left', lineHeight: 1.3 }}>{cadet.remarks}</div>
                           </div>
                         )}
-
-                        {/* Swipe Indicator */}
-                        <div style={{ width: '35%', height: '4px', background: 'rgba(255,255,255,0.4)', borderRadius: '2px', marginTop: '1.5rem' }} />
-
                       </div>
+                      
+                      {/* Swipe Indicator (Home Bar) */}
+                      <div 
+                        style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', width: '40%', height: '5px', background: 'rgba(255,255,255,0.6)', borderRadius: '3px', cursor: 'pointer', zIndex: 10, transition: 'background 0.2s' }} 
+                        onClick={() => setExpandedPhone(cadet)}
+                        title="Click to expand"
+                      />
                     </div>
                   </div>
                 );
@@ -329,11 +333,119 @@ export default function CellphoneRackClient({ initialData }) {
         );
       })}
 
+      {/* Expanded Phone Modal */}
+      {expandedPhone && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)',
+          zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          animation: 'fade-in 0.3s ease-out'
+        }} onClick={() => setExpandedPhone(null)}>
+          <div style={{
+            width: '320px', height: '640px', borderRadius: '48px', background: expandedPhone.status.toLowerCase() === 'logged out' ? '#1f2937' : '#052e16',
+            padding: '12px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
+            position: 'relative', display: 'flex', flexDirection: 'column',
+            animation: 'scale-up 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ flex: 1, background: expandedPhone.status.toLowerCase() === 'logged out' ? 'linear-gradient(135deg, #111827 0%, #374151 100%)' : 'linear-gradient(135deg, #064e3b 0%, #10b981 100%)', borderRadius: '36px', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', border: '1px solid rgba(255,255,255,0.05)' }}>
+              
+              {/* Hardware Buttons (Simulated) */}
+              <div style={{ position: 'absolute', left: '-12px', top: '150px', width: '12px', height: '35px', background: expandedPhone.status.toLowerCase() === 'logged out' ? '#1f2937' : '#052e16', borderRadius: '3px 0 0 3px' }} />
+              <div style={{ position: 'absolute', left: '-12px', top: '210px', width: '12px', height: '60px', background: expandedPhone.status.toLowerCase() === 'logged out' ? '#1f2937' : '#052e16', borderRadius: '3px 0 0 3px' }} />
+              <div style={{ position: 'absolute', left: '-12px', top: '280px', width: '12px', height: '60px', background: expandedPhone.status.toLowerCase() === 'logged out' ? '#1f2937' : '#052e16', borderRadius: '3px 0 0 3px' }} />
+              <div style={{ position: 'absolute', right: '-12px', top: '210px', width: '12px', height: '90px', background: expandedPhone.status.toLowerCase() === 'logged out' ? '#1f2937' : '#052e16', borderRadius: '0 3px 3px 0' }} />
+
+              {/* Notch */}
+              <div style={{ position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)', width: '90px', height: '26px', background: '#000', borderRadius: '14px', zIndex: 10 }} />
+              
+              {/* Top Status Bar */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 24px 0', fontSize: '0.8rem', fontWeight: 800, color: 'rgba(255,255,255,0.8)' }}>
+                <span>9:41</span>
+                <span>{expandedPhone.status.toLowerCase() === 'logged out' ? '🔴' : '🟢'}</span>
+              </div>
+              
+              <div style={{ flex: 1, padding: '2rem 1.5rem 2rem', overflowY: 'auto' }} className="hide-scrollbar">
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '2rem' }}>
+                  <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', marginBottom: '1rem', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(5px)' }}>
+                    {expandedPhone.picture ? <img src={expandedPhone.picture} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : '📱'}
+                  </div>
+                  <h2 style={{ color: '#fff', margin: '0 0 0.5rem', fontSize: '1.8rem', letterSpacing: '1px' }}>{expandedPhone.name}</h2>
+                  <span style={{ padding: '0.25rem 1rem', background: expandedPhone.status.toLowerCase() === 'logged out' ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)', color: expandedPhone.status.toLowerCase() === 'logged out' ? '#fca5a5' : '#6ee7b7', borderRadius: '999px', fontSize: '0.85rem', fontWeight: 800 }}>{expandedPhone.status.toUpperCase()}</span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Personal Info</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>Class</span>
+                      <span style={{ color: '#fff', fontWeight: 800 }}>{expandedPhone.cadetClass}CL</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>Phone No.</span>
+                      <span style={{ color: '#fff', fontWeight: 800 }}>{expandedPhone.phone && expandedPhone.phone !== 'null' ? expandedPhone.phone : 'N/A'}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>Signal/IG</span>
+                      <span style={{ color: '#fff', fontWeight: 800 }}>{expandedPhone.ig && expandedPhone.ig !== 'null' ? expandedPhone.ig : 'N/A'}</span>
+                    </div>
+                  </div>
+
+                  <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Device Info</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>Devices Logged</span>
+                      <span style={{ color: '#fff', fontWeight: 800 }}>{expandedPhone.numPhones}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>Model</span>
+                      <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>Not Specified</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>Color</span>
+                      <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>Not Specified</span>
+                    </div>
+                  </div>
+
+                  {expandedPhone.status.toLowerCase() === 'logged out' && expandedPhone.remarks && expandedPhone.remarks !== 'null' && (
+                    <div style={{ background: 'rgba(239,68,68,0.15)', padding: '1rem', borderRadius: '16px', border: '1px solid rgba(239,68,68,0.3)' }}>
+                      <div style={{ color: '#fca5a5', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Authorized Reason</div>
+                      <div style={{ color: '#fff', fontSize: '0.95rem', lineHeight: 1.4 }}>{expandedPhone.remarks}</div>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+              
+              {/* Swipe down indicator */}
+              <div 
+                style={{ position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)', width: '40%', height: '6px', background: 'rgba(255,255,255,0.8)', borderRadius: '3px', cursor: 'pointer' }} 
+                onClick={() => setExpandedPhone(null)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Global Styles for Animations */}
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes slide-down {
           from { transform: translateY(-10px); opacity: 0; }
           to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scale-up {
+          from { transform: scale(0.95); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}} />
     </div>
