@@ -467,7 +467,7 @@ export default function EXOGuardsManagerClient({ data1CL = [], data3CL = [], soi
               zIndex: 2, transition: 'color 0.3s', whiteSpace: 'nowrap', width: '220px', fontSize: '0.9rem'
             }}
           >
-            TODAY - {postedDateStr}
+            POSTED - {postedDateStr}
           </button>
           
           <button 
@@ -478,7 +478,7 @@ export default function EXOGuardsManagerClient({ data1CL = [], data3CL = [], soi
               zIndex: 2, transition: 'color 0.3s', whiteSpace: 'nowrap', width: '220px', fontSize: '0.9rem'
             }}
           >
-            TOMORROW - {incomingDateStr}
+            INCOMING - {incomingDateStr}
           </button>
         </div>
       </div>
