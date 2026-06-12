@@ -522,6 +522,7 @@ export default function CellphoneRackClient({ initialData }) {
                     </div>
                   )}
                 </div>
+              </div>
               
               {/* Swipe down indicator */}
               <div 
