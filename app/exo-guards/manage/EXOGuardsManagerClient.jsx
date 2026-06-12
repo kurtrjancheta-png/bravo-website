@@ -120,6 +120,7 @@ export default function EXOGuardsManagerClient({
   
   const [pendingChanges, setPendingChanges] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isLaunching, setIsLaunching] = useState(false);
   const [num3CLSentinels, setNum3CLSentinels] = useState(6); // 6 or 12
   const [extraInteriors1CL, setExtraInteriors1CL] = useState(0);
   const [extraInteriors3CL, setExtraInteriors3CL] = useState(0);
@@ -258,11 +259,15 @@ export default function EXOGuardsManagerClient({
         });
       }
       setPendingChanges([]);
-      router.refresh();
+      setIsLaunching(true);
+      setTimeout(() => {
+        setIsLaunching(false);
+        setIsUploading(false);
+        router.refresh();
+      }, 800);
     } catch (e) {
       console.error(e);
       alert('Network error while uploading changes.');
-    } finally {
       setIsUploading(false);
     }
   };
@@ -477,24 +482,33 @@ export default function EXOGuardsManagerClient({
               0% { transform: translateY(0) scale(1); opacity: 0.8; }
               100% { transform: translateY(100px) scale(3); opacity: 0; }
             }
+            @keyframes rocketBlastOff {
+              0% { transform: translateY(0) scale(1); }
+              15% { transform: translateY(20px) scale(0.9); } /* small dip to build momentum */
+              100% { transform: translateY(-1500px) scale(0.5); opacity: 0; }
+            }
           `}</style>
           <div style={{ position: 'relative', marginBottom: '3rem' }}>
             <div style={{
               fontSize: '8rem',
-              animation: 'rocketShake 0.1s infinite',
-              filter: 'drop-shadow(0 30px 25px rgba(239, 68, 68, 0.6))',
+              animation: isLaunching ? 'rocketBlastOff 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards' : 'rocketShake 0.1s infinite',
+              filter: isLaunching ? 'drop-shadow(0 50px 40px rgba(239, 68, 68, 0.9))' : 'drop-shadow(0 30px 25px rgba(239, 68, 68, 0.6))',
               position: 'relative',
               zIndex: 2
             }}>
               🚀
             </div>
-            {/* Fake smoke particles */}
-            <div style={{ position: 'absolute', bottom: '-20px', left: '50%', transform: 'translateX(-50%)', width: '20px', height: '20px', background: '#cbd5e1', borderRadius: '50%', animation: 'smokeParticles 0.8s infinite ease-out', zIndex: 1 }}></div>
-            <div style={{ position: 'absolute', bottom: '-10px', left: '30%', transform: 'translateX(-50%)', width: '15px', height: '15px', background: '#94a3b8', borderRadius: '50%', animation: 'smokeParticles 0.9s infinite ease-out 0.2s', zIndex: 1 }}></div>
-            <div style={{ position: 'absolute', bottom: '-15px', left: '70%', transform: 'translateX(-50%)', width: '25px', height: '25px', background: '#e2e8f0', borderRadius: '50%', animation: 'smokeParticles 1s infinite ease-out 0.4s', zIndex: 1 }}></div>
+            {/* Fake smoke particles disappear when launching */}
+            {!isLaunching && (
+              <>
+                <div style={{ position: 'absolute', bottom: '-20px', left: '50%', transform: 'translateX(-50%)', width: '20px', height: '20px', background: '#cbd5e1', borderRadius: '50%', animation: 'smokeParticles 0.8s infinite ease-out', zIndex: 1 }}></div>
+                <div style={{ position: 'absolute', bottom: '-10px', left: '30%', transform: 'translateX(-50%)', width: '15px', height: '15px', background: '#94a3b8', borderRadius: '50%', animation: 'smokeParticles 0.9s infinite ease-out 0.2s', zIndex: 1 }}></div>
+                <div style={{ position: 'absolute', bottom: '-15px', left: '70%', transform: 'translateX(-50%)', width: '25px', height: '25px', background: '#e2e8f0', borderRadius: '50%', animation: 'smokeParticles 1s infinite ease-out 0.4s', zIndex: 1 }}></div>
+              </>
+            )}
           </div>
-          <h2 style={{ margin: 0, fontWeight: 900, letterSpacing: '0.15em', fontSize: '2rem' }}>UPLOADING...</h2>
-          <p style={{ color: '#94a3b8', fontStyle: 'italic', marginTop: '1rem', fontSize: '1.1rem' }}>Initiating launch sequence to servers</p>
+          <h2 style={{ margin: 0, fontWeight: 900, letterSpacing: '0.15em', fontSize: '2rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>UPLOADING...</h2>
+          <p style={{ color: '#94a3b8', fontStyle: 'italic', marginTop: '1rem', fontSize: '1.1rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>Initiating launch sequence to servers</p>
         </div>
       )}
 
