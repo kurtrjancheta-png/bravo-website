@@ -450,7 +450,7 @@ export default function CellphoneRackClient({ initialData }) {
                   <h2 style={{ color: '#fff', margin: '0 0 0.25rem', fontSize: '1.5rem', letterSpacing: '1px' }}>{currentExpandedPhone.name}</h2>
                   {isCEIS ? (
                     <select 
-                      value={currentExpandedPhone.status} 
+                      value={String(currentExpandedPhone.status || '').toUpperCase()} 
                       onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'status', e.target.value)}
                       style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', padding: '0.2rem 0.5rem', outline: 'none', fontWeight: 800, fontSize: '0.85rem' }}
                     >
