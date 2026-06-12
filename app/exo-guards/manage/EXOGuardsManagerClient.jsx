@@ -117,6 +117,10 @@ export default function EXOGuardsManagerClient({
   
   // UI States
   const [activeTab, setActiveTab] = useState('today'); // 'today' or 'tomorrow'
+  const [modalConfig, setModalConfig] = useState(null); // { isOpen, role, dateStr, currentCadetName, classLevel }
+  
+  const [pendingChanges, setPendingChanges] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
   const [num3CLSentinels, setNum3CLSentinels] = useState(6); // 6 or 12
   const [extraInteriors1CL, setExtraInteriors1CL] = useState(0);
   const [extraInteriors3CL, setExtraInteriors3CL] = useState(0);
@@ -204,30 +208,63 @@ export default function EXOGuardsManagerClient({
     const colorMap = classLevel === '1CL' ? ROLE_COLORS_1CL : ROLE_COLORS_3CL;
     const roleColor = colorMap[role] || '#000000'; 
 
-    setModalConfig(null);
-
-    // Provide immediate visual feedback or trust router.refresh
-    try {
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          action: 'assignGuard',
-          cadetName: cadetName,
-          date: dateStr,
-          color: roleColor,
-          previousCadetName: currentCadetName
-        })
-      });
-      const result = await res.json();
-      if (result.success) {
-        router.refresh(); // Tells Next.js to re-fetch the server component
-      } else {
-        alert('Failed to assign guard: ' + (result.message || 'Unknown error'));
+    setPendingChanges(prev => [...prev, {
+      classLevel,
+      dateStr,
+      role,
+      apiUrl,
+      payload: {
+        action: 'assignGuard',
+        cadetName: cadetName,
+        date: dateStr,
+        color: roleColor,
+        previousCadetName: currentCadetName
       }
+    }]);
+
+    setModalConfig(null);
+  };
+
+  const applyPendingChanges = (list, classLevelTarget, dateStrTarget) => {
+    let result = [...list];
+    
+    pendingChanges.forEach(change => {
+      if (change.classLevel !== classLevelTarget || change.dateStr !== dateStrTarget) return;
+      
+      const { cadetName, previousCadetName, color } = change.payload;
+      const role = change.role;
+      const imageUrl = getSoiPicture(cadetName, soiData);
+
+      if (previousCadetName) {
+        const idx = result.findIndex(g => g.name === previousCadetName && g.status === role);
+        if (idx !== -1) {
+          result[idx] = { ...result[idx], name: cadetName, imageUrl };
+        }
+      } else {
+        result.push({ name: cadetName, status: role, statusColor: color, imageUrl, originalItem: null });
+      }
+    });
+
+    return result;
+  };
+
+  const handleUploadChanges = async () => {
+    setIsUploading(true);
+    try {
+      for (const change of pendingChanges) {
+        await fetch(change.apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(change.payload)
+        });
+      }
+      setPendingChanges([]);
+      router.refresh();
     } catch (e) {
       console.error(e);
-      alert('Network error while assigning guard.');
+      alert('Network error while uploading changes.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -401,8 +438,12 @@ export default function EXOGuardsManagerClient({
     );
   };
 
-  const active1CL = activeTab === 'today' ? today1CL : tomorrow1CL;
-  const active3CL = activeTab === 'today' ? today3CL : tomorrow3CL;
+  let active1CL = activeTab === 'today' ? today1CL : tomorrow1CL;
+  let active3CL = activeTab === 'today' ? today3CL : tomorrow3CL;
+  const activeDateStrTarget = activeTab === 'today' ? postedDateStr : incomingDateStr;
+
+  active1CL = applyPendingChanges(active1CL, '1CL', activeDateStrTarget);
+  active3CL = applyPendingChanges(active3CL, '3CL', activeDateStrTarget);
 
   const guards1FI = getGuardsByRole(active1CL, 'FLOOR INSPECTOR');
   const guards1Int = getGuardsByRole(active1CL, 'INTERIOR');
@@ -417,6 +458,28 @@ export default function EXOGuardsManagerClient({
 
   return (
     <div>
+      {pendingChanges.length > 0 && (
+        <div style={{
+          position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)',
+          backgroundColor: '#1f2937', color: '#fff', padding: '1rem 2rem', borderRadius: '999px',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: '1rem',
+          zIndex: 1000
+        }}>
+          <span style={{ fontWeight: 'bold' }}>{pendingChanges.length} unsaved {pendingChanges.length === 1 ? 'change' : 'changes'}</span>
+          <button 
+            onClick={handleUploadChanges}
+            disabled={isUploading}
+            style={{
+              backgroundColor: '#3b82f6', color: '#fff', border: 'none', padding: '0.5rem 1.5rem',
+              borderRadius: '999px', fontWeight: 800, cursor: isUploading ? 'wait' : 'pointer',
+              opacity: isUploading ? 0.7 : 1
+            }}
+          >
+            {isUploading ? 'Uploading...' : 'Upload Changes'}
+          </button>
+        </div>
+      )}
+
       {/* Toggle Switch */}
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2.5rem' }}>
         <div style={{
