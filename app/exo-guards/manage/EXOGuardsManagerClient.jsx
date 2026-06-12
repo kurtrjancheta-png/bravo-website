@@ -488,15 +488,16 @@ export default function EXOGuardsManagerClient({
               100% { transform: translateY(-1500px) scale(0.5); opacity: 0; }
             }
           `}</style>
-          <div style={{ position: 'relative', marginBottom: '3rem' }}>
+          <div style={{ position: 'relative', marginBottom: '3rem', display: 'flex', justifyContent: 'center' }}>
             <div style={{
               fontSize: '8rem',
               animation: isLaunching ? 'rocketBlastOff 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards' : 'rocketShake 0.1s infinite',
               filter: isLaunching ? 'drop-shadow(0 50px 40px rgba(239, 68, 68, 0.9))' : 'drop-shadow(0 30px 25px rgba(239, 68, 68, 0.6))',
               position: 'relative',
-              zIndex: 2
+              zIndex: 2,
+              display: 'inline-block'
             }}>
-              🚀
+              <div style={{ transform: 'rotate(-45deg)' }}>🚀</div>
             </div>
             {/* Fake smoke particles disappear when launching */}
             {!isLaunching && (
