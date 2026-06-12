@@ -189,10 +189,20 @@ export default function CellphoneRackClient({ initialData }) {
                       flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      textAlign: 'center'
+                      textAlign: 'center',
+                      position: 'relative'
                     }}>
                       <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem', color: 'var(--text-secondary)', letterSpacing: '1px' }}>{cadet.name}</h4>
                       <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 800 }}>NO SMARTPHONE</div>
+                      
+                      {/* Swipe Indicator (Home Bar) */}
+                      <div 
+                        style={{ position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)', width: '40%', height: '5px', background: 'var(--border-color)', borderRadius: '3px', cursor: 'pointer', zIndex: 10, transition: 'background 0.2s' }} 
+                        onClick={() => setExpandedPhone(cadet)}
+                        title="Click to edit"
+                        onMouseOver={(e) => e.target.style.background = 'var(--text-secondary)'}
+                        onMouseOut={(e) => e.target.style.background = 'var(--border-color)'}
+                      />
                     </div>
                   );
                 }
@@ -447,6 +457,7 @@ export default function CellphoneRackClient({ initialData }) {
                       <option value="LOGGED IN" style={{ color: '#000' }}>LOGGED IN</option>
                       <option value="LOGGED OUT" style={{ color: '#000' }}>LOGGED OUT</option>
                       <option value="CONFISCATED" style={{ color: '#000' }}>CONFISCATED</option>
+                      <option value="NO PHONE" style={{ color: '#000' }}>NO PHONE</option>
                     </select>
                   ) : (
                     <span style={{ padding: '0.25rem 1rem', background: isOut ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)', color: isOut ? '#fca5a5' : '#6ee7b7', borderRadius: '999px', fontSize: '0.85rem', fontWeight: 800 }}>{currentExpandedPhone.status.toUpperCase()}</span>
