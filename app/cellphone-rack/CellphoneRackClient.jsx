@@ -78,7 +78,8 @@ export default function CellphoneRackClient({ initialData }) {
   const summary = [
     { name: 'Logged In', value: filteredData.filter(c => c.numPhones > 0 && c.status.toLowerCase() === 'logged in').length, fill: '#10b981' },
     { name: 'Logged Out', value: filteredData.filter(c => c.numPhones > 0 && c.status.toLowerCase() === 'logged out').length, fill: '#374151' },
-    { name: 'No Smartphone', value: filteredData.filter(c => !c.numPhones || c.numPhones === 0).length, fill: '#9ca3af' }
+    { name: 'Confiscated', value: filteredData.filter(c => c.status.toLowerCase() === 'confiscated').length, fill: '#ef4444' },
+    { name: 'No Smartphone', value: filteredData.filter(c => !c.numPhones || c.numPhones === 0 || String(c.status).toUpperCase() === 'NO PHONE').length, fill: '#9ca3af' }
   ].filter(item => item.value > 0);
 
   return (
@@ -175,7 +176,7 @@ export default function CellphoneRackClient({ initialData }) {
               justifyContent: 'center'
             }}>
               {classCadets.map((cadet, i) => {
-                const hasNoPhone = !cadet.numPhones || cadet.numPhones === 0;
+                const hasNoPhone = !cadet.numPhones || cadet.numPhones === 0 || cadet.status.toUpperCase() === 'NO PHONE';
 
                 if (hasNoPhone) {
                   return (
