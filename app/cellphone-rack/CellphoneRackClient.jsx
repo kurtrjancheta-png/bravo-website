@@ -105,7 +105,7 @@ export default function CellphoneRackClient({ initialData }) {
       </div>
       {/* Filter and Chart Header */}
       <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           <span style={{ fontWeight: 800, color: 'var(--text-secondary)' }}>FILTER BY CLASS:</span>
           <select 
             value={filterClass} 
@@ -128,6 +128,28 @@ export default function CellphoneRackClient({ initialData }) {
             <option value="3">3RD CLASS</option>
             <option value="4">4TH CLASS</option>
           </select>
+
+          {isCEIS && (
+            <a 
+              href="https://docs.google.com/spreadsheets/d/13xZEcuuedRTppVj479aYhUqpgbvqOq3VMMvBJn_IH5Q/edit"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                padding: '0.5rem 1rem', borderRadius: '4px',
+                background: 'rgba(16, 185, 129, 0.1)', color: '#10b981',
+                textDecoration: 'none', fontWeight: 800, fontSize: '0.85rem',
+                transition: 'all 0.2s ease', border: '1px solid rgba(16, 185, 129, 0.3)'
+              }}
+              onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)'; }}
+              onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)'; }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-8v-2h8v2zm0-4h-8v-2h8v2zm-3-5V3.5L18.5 9H13z" fill="currentColor"/>
+              </svg>
+              OPEN DIRECTORY SHEET
+            </a>
+          )}
         </div>
 
         {summary.length > 0 && (
