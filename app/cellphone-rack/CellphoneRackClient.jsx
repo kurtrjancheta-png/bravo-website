@@ -496,15 +496,23 @@ export default function CellphoneRackClient({ initialData }) {
                         <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedPhone.model && currentExpandedPhone.model !== 'Not Specified' && currentExpandedPhone.model !== 'null' ? currentExpandedPhone.model : <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>Not Specified</span>}</span>
                       )}
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Color</span>
-                      {isCEIS ? (
-                        <input type="text" value={currentExpandedPhone.color !== 'Not Specified' && currentExpandedPhone.color !== 'null' ? currentExpandedPhone.color : ''} onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'color', e.target.value)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '100px', fontWeight: 800, fontSize: '0.85rem' }} placeholder="Not Specified" />
-                      ) : (
-                        <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedPhone.color && currentExpandedPhone.color !== 'Not Specified' && currentExpandedPhone.color !== 'null' ? currentExpandedPhone.color : <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>Not Specified</span>}</span>
-                      )}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                        <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Color</span>
+                        {isCEIS ? (
+                          <input type="text" value={currentExpandedPhone.color !== 'Not Specified' && currentExpandedPhone.color !== 'null' ? currentExpandedPhone.color : ''} onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'color', e.target.value)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '100px', fontWeight: 800, fontSize: '0.85rem' }} placeholder="Not Specified" />
+                        ) : (
+                          <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedPhone.color && currentExpandedPhone.color !== 'Not Specified' && currentExpandedPhone.color !== 'null' ? currentExpandedPhone.color : <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>Not Specified</span>}</span>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Features/Case</span>
+                        {isCEIS ? (
+                          <input type="text" value={currentExpandedPhone.dbRemarks !== 'None' && currentExpandedPhone.dbRemarks !== 'null' ? currentExpandedPhone.dbRemarks : ''} onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'dbRemarks', e.target.value)} style={{ background: 'transparent', color: '#fff', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', outline: 'none', textAlign: 'right', width: '120px', fontWeight: 800, fontSize: '0.85rem' }} placeholder="None" />
+                        ) : (
+                          <span style={{ color: '#fff', fontWeight: 800 }}>{currentExpandedPhone.dbRemarks && currentExpandedPhone.dbRemarks !== 'None' && currentExpandedPhone.dbRemarks !== 'null' ? currentExpandedPhone.dbRemarks : <span style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>None</span>}</span>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
                   {(isOut || isCEIS) && (
                     <div style={{ background: 'rgba(239,68,68,0.15)', padding: '0.75rem 1rem', borderRadius: '16px', border: '1px solid rgba(239,68,68,0.3)' }}>

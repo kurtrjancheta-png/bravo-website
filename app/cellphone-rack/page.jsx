@@ -61,31 +61,33 @@ export default async function CellphoneRackPage() {
       // Assuming 'DATA BASE' has columns like 'NAME', 'MODEL', 'COLOR'
       let model = 'Not Specified';
       let color = 'Not Specified';
+      let dbRemarks = 'None';
       if (dbData && dbData.length > 0) {
-        // We'll guess the keys for name, model, color from dbData later.
-        // For now, let's just pass the raw dbData down to see what it is, or look for matching name.
         const dbRow = dbData.find(r => {
           const nKey = Object.keys(r).find(k => k.toUpperCase().includes('NAME'));
           return r[nKey] && String(r[nKey]).toUpperCase().includes(name.toUpperCase());
         });
         if (dbRow) {
-          const modelKey = Object.keys(dbRow).find(k => k.toUpperCase().includes('MODEL'));
+          const modelKey = Object.keys(dbRow).find(k => k.toUpperCase().includes('PHONE') || k.toUpperCase().includes('MODEL'));
           const colorKey = Object.keys(dbRow).find(k => k.toUpperCase().includes('COLOR'));
-          if (modelKey) model = String(dbRow[modelKey]);
-          if (colorKey) color = String(dbRow[colorKey]);
+          const dbRemarksKey = Object.keys(dbRow).find(k => k.toUpperCase() === 'REMARKS');
+          if (modelKey && dbRow[modelKey]) model = String(dbRow[modelKey]);
+          if (colorKey && dbRow[colorKey]) color = String(dbRow[colorKey]);
+          if (dbRemarksKey && dbRow[dbRemarksKey]) dbRemarks = String(dbRow[dbRemarksKey]);
         }
       }
 
       parsedData.push({
         name,
         status: String(row[kStatus] || '').trim(),
-        remarks: String(row[kRemarks] || '').trim(),
+        remarks: String(row[kRemarks] || '').trim(), // Authorized Reason
         cadetClass: assignedClass,
         numPhones: parseInt(row[kNumPhones] || '0', 10),
-        phone: String(row[kPhone] || '').trim(),
+        phone: String(row[kPhone] || '').trim(), // Contact number from class sheet
         ig: String(row[kIG] || '').trim(),
         model,
         color,
+        dbRemarks,
         picture
       });
     });

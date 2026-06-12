@@ -6,7 +6,7 @@ function doPost(e) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     
     for (const data of changesArray) {
-      const { name, cadetClass, status, remarks, numPhones, phone, ig, model, color } = data;
+      const { name, cadetClass, status, remarks, numPhones, phone, ig, model, color, dbRemarks } = data;
       
       // 1. Update the Class Sheet
       let classSheetName = cadetClass + 'CL';
@@ -16,7 +16,7 @@ function doPost(e) {
       if (classSheet) {
         updateRowByName(classSheet, name, {
           "STATUS": status,
-          "REMARKS": remarks,
+          "REMARKS": remarks, // Authorized Reason
           "NUMBER OF PHONES": numPhones,
           "PHONE": phone,
           "IG": ig
@@ -27,8 +27,9 @@ function doPost(e) {
       const dbSheet = ss.getSheetByName('DATA BASE');
       if (dbSheet) {
         updateRowByName(dbSheet, name, {
-          "MODEL": model,
-          "COLOR": color
+          "PHONE": model, // Phone Model
+          "COLOR": color,
+          "REMARKS": dbRemarks // Device identifying features
         });
       }
     }
