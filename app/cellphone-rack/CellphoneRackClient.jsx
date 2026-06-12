@@ -181,7 +181,7 @@ export default function CellphoneRackClient({ initialData }) {
                   return (
                     <div key={i} style={{
                       width: '180px',
-                      height: '360px',
+                      height: '400px',
                       borderRadius: '36px',
                       border: '2px dashed var(--border-color)',
                       padding: '8px',
@@ -219,7 +219,7 @@ export default function CellphoneRackClient({ initialData }) {
                 return (
                   <div key={i} style={{
                     width: '180px',
-                    height: '360px',
+                    height: '400px',
                     borderRadius: '36px',
                     background: bezelColor,
                     padding: '8px',
