@@ -121,6 +121,7 @@ export default function EXOGuardsManagerClient({
   const [pendingChanges, setPendingChanges] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isLaunching, setIsLaunching] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [num3CLSentinels, setNum3CLSentinels] = useState(6); // 6 or 12
   const [extraInteriors1CL, setExtraInteriors1CL] = useState(0);
   const [extraInteriors3CL, setExtraInteriors3CL] = useState(0);
@@ -263,7 +264,9 @@ export default function EXOGuardsManagerClient({
       setTimeout(() => {
         setIsLaunching(false);
         setIsUploading(false);
+        setShowSuccessToast(true);
         router.refresh();
+        setTimeout(() => setShowSuccessToast(false), 3000);
       }, 800);
     } catch (e) {
       console.error(e);
@@ -462,6 +465,19 @@ export default function EXOGuardsManagerClient({
 
   return (
     <div>
+      {/* Success Notification */}
+      {showSuccessToast && (
+        <div style={{
+          position: 'fixed', top: '40px', left: '50%', transform: 'translateX(-50%)',
+          background: '#10b981', color: '#fff', padding: '12px 24px', borderRadius: '100px',
+          fontWeight: 800, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '10px',
+          boxShadow: '0 10px 25px rgba(16, 185, 129, 0.4)', zIndex: 10000,
+          animation: 'slide-down 0.3s ease-out forwards'
+        }}>
+          <span>✅</span> CHANGES APPLIED SUCCESSFULLY
+        </div>
+      )}
+
       {/* Uploading Overlay */}
       {isUploading && (
         <div style={{
@@ -470,8 +486,12 @@ export default function EXOGuardsManagerClient({
           zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           color: '#fff'
         }}>
-          <style>{`
-            @keyframes rocketShake {
+          <style dangerouslySetInnerHTML={{__html: `
+        @keyframes slide-down {
+          from { transform: translate(-50%, -20px); opacity: 0; }
+          to { transform: translate(-50%, 0); opacity: 1; }
+        }
+        @keyframes rocketShake {
               0% { transform: translate(0, 0) rotate(0deg); }
               25% { transform: translate(-2px, 2px) rotate(-2deg); }
               50% { transform: translate(2px, -2px) rotate(2deg); }
@@ -509,8 +529,8 @@ export default function EXOGuardsManagerClient({
             )}
           </div>
           <h2 style={{ margin: 0, fontWeight: 900, letterSpacing: '0.15em', fontSize: '2rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>UPLOADING...</h2>
-          <p style={{ color: '#94a3b8', fontStyle: 'italic', marginTop: '1rem', marginBottom: '0.2rem', fontSize: '1.1rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>Initiating launch sequence to servers</p>
-          <p style={{ color: '#64748b', fontStyle: 'italic', margin: 0, fontSize: '0.9rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>Wait lang Ace, nag uupload pa yung changes...</p>
+          <p style={{ color: '#94a3b8', fontStyle: 'italic', marginTop: '1rem', marginBottom: '0.2rem', fontSize: '1.1rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>Transmitting your directives to the mainframe, sir.</p>
+          <p style={{ color: '#64748b', fontStyle: 'italic', margin: 0, fontSize: '0.9rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>Please stand by while I establish a secure uplink...</p>
         </div>
       )}
 
