@@ -18,8 +18,21 @@ export default function TabletDirectoryClient({ initialData }) {
 
   const parseDate = (dateStr) => {
     if (!dateStr || dateStr.toLowerCase() === 'n/a' || dateStr.trim() === '') return null;
+    
+    // Handle Google Visualization API Date string format: "Date(2026,5,12)"
+    const match = dateStr.match(/Date\((\d+),\s*(\d+),\s*(\d+)\)/);
+    if (match) {
+      // Month is 0-indexed in JS Date
+      return new Date(parseInt(match[1]), parseInt(match[2]), parseInt(match[3]));
+    }
+    
     const d = new Date(dateStr);
     return isNaN(d.getTime()) ? null : d;
+  };
+
+  const formatDate = (dateObj) => {
+    if (!dateObj) return 'N/A';
+    return dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
   return (
@@ -164,8 +177,8 @@ export default function TabletDirectoryClient({ initialData }) {
                 </div>
                 
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 800 }}>
-                  <span>{cadet.dateStarted || 'N/A'}</span>
-                  <span>{cadet.authorizedUntil || 'N/A'}</span>
+                  <span>{formatDate(startDate)}</span>
+                  <span>{formatDate(endDate)}</span>
                 </div>
               </div>
 

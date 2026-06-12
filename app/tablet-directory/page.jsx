@@ -20,13 +20,13 @@ export default async function TabletDirectoryPage() {
       getSheetData(TABLET_SHEET_ID, '3CL').catch(() => []),
       getSheetData(TABLET_SHEET_ID, '4CL').catch(() => [])
     ]);
+    const d1Str = d1 && d1.length > 0 ? JSON.stringify(d1[0]) : null;
     sheet1Data = d1 || [];
-    cl2Data = d2 || [];
-    cl3Data = d3 || [];
     
-    // Google Sheets API returns Sheet1 if 4CL doesn't exist. Check for duplicates.
-    const isD4Duplicate = d4 && d4.length > 0 && d1 && d1.length > 0 && JSON.stringify(d4[0]) === JSON.stringify(d1[0]);
-    cl4Data = isD4Duplicate ? [] : (d4 || []);
+    // Google Sheets API returns Sheet1 if a requested sheet doesn't exist. Check for duplicates.
+    cl2Data = (d2 && d2.length > 0 && JSON.stringify(d2[0]) !== d1Str) ? d2 : [];
+    cl3Data = (d3 && d3.length > 0 && JSON.stringify(d3[0]) !== d1Str) ? d3 : [];
+    cl4Data = (d4 && d4.length > 0 && JSON.stringify(d4[0]) !== d1Str) ? d4 : [];
   } catch (err) {
     console.error('Failed to fetch tablet sheets:', err);
   }
