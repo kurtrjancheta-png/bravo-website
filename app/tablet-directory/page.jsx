@@ -47,9 +47,8 @@ export default async function TabletDirectoryPage() {
     const kName = keys[0];
     const kStatus = keys[1];
     const kRemarks = keys[2];
-    const kNumPhones = keys[3]; // 'Number of Tablets'
-    const kPhone = keys[4];
-    const kIG = keys[5];
+    const kDateStarted = keys.find(k => k.toUpperCase().includes('STARTED')) || keys[4];
+    const kAuthUntil = keys.find(k => k.toUpperCase().includes('UNTIL')) || keys[5];
 
     dataArray.forEach(row => {
       const name = String(row[kName] || '').trim();
@@ -78,21 +77,12 @@ export default async function TabletDirectoryPage() {
         }
       }
 
-      let status = String(row[kStatus] || '').trim();
-      const numTablets = parseInt(row[kNumPhones] || '0', 10);
-      
-      if (!status && numTablets === 0) {
-        status = 'NO TABLET';
-      }
-
       parsedData.push({
         name,
-        status,
-        remarks: String(row[kRemarks] || '').trim(), // Authorized Reason
+        remarks: String(row[kRemarks] || '').trim(),
         cadetClass: assignedClass,
-        numTablets, // Internally still used as count
-        Tablet: String(row[kPhone] || '').trim(), // Contact number from class sheet
-        ig: String(row[kIG] || '').trim(),
+        dateStarted: String(row[kDateStarted] || '').trim(),
+        authorizedUntil: String(row[kAuthUntil] || '').trim(),
         model,
         color,
         dbRemarks,
