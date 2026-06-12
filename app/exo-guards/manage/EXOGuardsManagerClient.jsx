@@ -435,20 +435,52 @@ export default function EXOGuardsManagerClient({ data1CL = [], data3CL = [], soi
 
   return (
     <div>
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-        <button 
-          onClick={() => setActiveTab('today')}
-          style={{ padding: '0.75rem 1.5rem', fontWeight: 800, borderRadius: '8px', border: 'none', cursor: 'pointer', backgroundColor: activeTab === 'today' ? 'var(--btn-bg)' : 'var(--bg-secondary)', color: activeTab === 'today' ? '#fff' : 'var(--text-secondary)' }}
-        >
-          POSTED (TODAY) - {postedDateStr}
-        </button>
-        <button 
-          onClick={() => setActiveTab('tomorrow')}
-          style={{ padding: '0.75rem 1.5rem', fontWeight: 800, borderRadius: '8px', border: 'none', cursor: 'pointer', backgroundColor: activeTab === 'tomorrow' ? 'var(--btn-bg)' : 'var(--bg-secondary)', color: activeTab === 'tomorrow' ? '#fff' : 'var(--text-secondary)' }}
-        >
-          INCOMING (TOMORROW) - {incomingDateStr}
-        </button>
+      {/* Toggle Switch */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2.5rem' }}>
+        <div style={{
+          display: 'inline-flex',
+          backgroundColor: '#e2e8f0', // slate-200
+          borderRadius: '9999px',
+          padding: '0.35rem',
+          position: 'relative',
+          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.06)'
+        }}>
+          {/* Sliding indicator */}
+          <div style={{
+            position: 'absolute',
+            top: '0.35rem',
+            bottom: '0.35rem',
+            left: activeTab === 'today' ? '0.35rem' : '50%',
+            width: 'calc(50% - 0.35rem)',
+            backgroundColor: '#ffffff',
+            borderRadius: '9999px',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            zIndex: 1
+          }} />
+          
+          <button 
+            onClick={() => setActiveTab('today')}
+            style={{
+              padding: '0.75rem 2rem', fontWeight: 800, border: 'none', background: 'transparent',
+              color: activeTab === 'today' ? '#0f172a' : '#64748b', cursor: 'pointer',
+              zIndex: 2, transition: 'color 0.3s', whiteSpace: 'nowrap', width: '220px', fontSize: '0.9rem'
+            }}
+          >
+            TODAY - {postedDateStr}
+          </button>
+          
+          <button 
+            onClick={() => setActiveTab('tomorrow')}
+            style={{
+              padding: '0.75rem 2rem', fontWeight: 800, border: 'none', background: 'transparent',
+              color: activeTab === 'tomorrow' ? '#0f172a' : '#64748b', cursor: 'pointer',
+              zIndex: 2, transition: 'color 0.3s', whiteSpace: 'nowrap', width: '220px', fontSize: '0.9rem'
+            }}
+          >
+            TOMORROW - {incomingDateStr}
+          </button>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
