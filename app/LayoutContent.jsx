@@ -108,6 +108,9 @@ export default function LayoutContent({ children }) {
               <Link href="/disposition" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
                 Troop Disposition
               </Link>
+              <Link href="/signify-priv" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                Privilege Signify
+              </Link>
               <Link href="/disseminations/s1" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
                 Disseminations
               </Link>
