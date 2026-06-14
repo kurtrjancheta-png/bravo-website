@@ -1,10 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
 import S1AdminForms from './S1AdminForms';
+import { useAuth } from '../AuthContext';
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzklVtvSKHZmH6abCRFPSTGmh_H4-ytVjN4FYAiM1aDg4ttyUShxqRAZYGLpMKWJgylqw/exec';
 
 export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
+  const { adminUser } = useAuth();
   const [selectedPriv, setSelectedPriv] = useState(null); // Which card is clicked
   const [cadetClass, setCadetClass] = useState('1CL');
   const [fullName, setFullName] = useState('');
@@ -129,6 +131,34 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
      return new Date(deadlineStr);
   };
 
+  const handleDeletePriv = async (sheetName) => {
+    if (!window.confirm(`Are you sure you want to delete the privilege sheet "${sheetName}"?`)) {
+      return;
+    }
+    setStatus('loading');
+    try {
+      const response = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          action: 'deletePrivilege',
+          sheetName: sheetName
+        })
+      });
+      const result = await response.json();
+      if (result.status === 'success') {
+         setStatus('success');
+         setTimeout(() => window.location.reload(), 2000);
+      } else {
+         throw new Error(result.message || 'Unknown error');
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus('error');
+      setErrorMsg(err.message || 'Failed to delete privilege.');
+    }
+  };
+
   return (
     <div style={{ padding: '2rem' }}>
       
@@ -200,11 +230,44 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
                   transition: 'transform 0.2s',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '1rem'
+                  gap: '1rem',
+                  position: 'relative'
                 }}
                 onMouseEnter={(e) => { if (!isClosed) e.currentTarget.style.transform = 'translateY(-4px)'; }}
                 onMouseLeave={(e) => { if (!isClosed) e.currentTarget.style.transform = 'translateY(0)'; }}
               >
+                {adminUser && adminUser.council === 'S1' && (
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeletePriv(rawSheetName);
+                    }}
+                    style={{
+                      position: 'absolute',
+                      top: '-10px',
+                      right: '-10px',
+                      background: '#ef4444',
+                      color: 'white',
+                      border: '2px solid var(--card-bg)',
+                      borderRadius: '50%',
+                      width: '32px',
+                      height: '32px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 'bold',
+                      fontSize: '1.2rem',
+                      zIndex: 10,
+                      boxShadow: '0 4px 6px rgba(0,0,0,0.2)'
+                    }}
+                    title="Delete Privilege"
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#dc2626'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = '#ef4444'}
+                  >
+                    ✕
+                  </button>
+                )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                    <div style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--gold-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                      {formattedDate}
