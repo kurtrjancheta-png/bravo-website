@@ -60,7 +60,7 @@ export default function S1AdminForms() {
 
   if (!showAddForm) {
     return (
-       <div style={{ marginBottom: '2rem' }}>
+       <div style={{ marginBottom: '2rem', display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <button 
              onClick={() => setShowAddForm(true)}
              style={{ 
@@ -77,6 +77,30 @@ export default function S1AdminForms() {
           >
              + Add Priv
           </button>
+
+          <a 
+            href="https://docs.google.com/spreadsheets/d/16i_7nny1QbFkFvhqnTX9ebgCOT7WeUmq8Uz_r5Vaj5w/edit?gid=0#gid=0"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ 
+              padding: '1rem 2rem', 
+              background: '#e0e7ff', 
+              color: '#3730a3', 
+              borderRadius: '8px', 
+              textDecoration: 'none', 
+              fontWeight: '800', 
+              fontSize: '1.1rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+              transition: 'background 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = '#c7d2fe'}
+            onMouseLeave={(e) => e.currentTarget.style.background = '#e0e7ff'}
+          >
+            View Sheet ↗
+          </a>
        </div>
     );
   }
