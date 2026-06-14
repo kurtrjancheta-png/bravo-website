@@ -171,6 +171,16 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
             const deadline = parseDeadline(rawDeadline);
             const isClosed = deadline && currentTime > deadline;
             
+            let formattedDate = rawDate;
+            try {
+              if (rawDate !== 'No Date') {
+                const d = new Date(rawDate);
+                if (!isNaN(d)) {
+                  formattedDate = d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                }
+              }
+            } catch (e) {}
+            
             return (
               <div 
                 key={idx} 
@@ -195,28 +205,40 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
                 onMouseEnter={(e) => { if (!isClosed) e.currentTarget.style.transform = 'translateY(-4px)'; }}
                 onMouseLeave={(e) => { if (!isClosed) e.currentTarget.style.transform = 'translateY(0)'; }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                   <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                     {rawDate}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                   <div style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--gold-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                     {formattedDate}
                    </div>
                    <div style={{ 
                       background: isClosed ? '#ef4444' : '#4ade80', 
                       color: 'white', 
-                      padding: '0.2rem 0.6rem', 
-                      borderRadius: '4px', 
-                      fontSize: '0.7rem', 
-                      fontWeight: 'bold' 
+                      padding: '0.3rem 0.8rem', 
+                      borderRadius: '6px', 
+                      fontSize: '0.75rem', 
+                      fontWeight: '900',
+                      letterSpacing: '1px'
                    }}>
                      {isClosed ? 'CLOSED' : 'OPEN'}
                    </div>
                 </div>
                 
-                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', textTransform: 'capitalize' }}>
+                <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--text-primary)', textTransform: 'capitalize', marginTop: '0.5rem' }}>
                   {rawType}
                 </div>
                 
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 'auto', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem' }}>
-                  <strong>Deadline:</strong> {deadline ? deadline.toLocaleString() : 'No deadline'}
+                <div style={{ 
+                   fontSize: '0.95rem', 
+                   color: isClosed ? 'var(--text-secondary)' : '#ef4444', 
+                   marginTop: 'auto', 
+                   borderTop: '1px solid var(--border-color)', 
+                   paddingTop: '1rem',
+                   fontWeight: isClosed ? 500 : 800,
+                   display: 'flex',
+                   alignItems: 'center',
+                   gap: '0.5rem'
+                }}>
+                  <span style={{ fontSize: '1.1rem' }}>⏱️</span>
+                  <strong>DEADLINE:</strong> {deadline ? deadline.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'No deadline'}
                 </div>
               </div>
             );

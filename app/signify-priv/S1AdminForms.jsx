@@ -1,11 +1,11 @@
 'use client';
 import { useState } from 'react';
+import { useAuth } from '../AuthContext';
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzklVtvSKHZmH6abCRFPSTGmh_H4-ytVjN4FYAiM1aDg4ttyUShxqRAZYGLpMKWJgylqw/exec';
 
 export default function S1AdminForms() {
-  const [password, setPassword] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { adminUser } = useAuth();
   const [showAddForm, setShowAddForm] = useState(false);
   
   const [type, setType] = useState('Entertaining priv');
@@ -14,15 +14,6 @@ export default function S1AdminForms() {
   const [deadlineTime, setDeadlineTime] = useState('');
   const [status, setStatus] = useState('idle'); // idle, loading, success, error
   const [errorMsg, setErrorMsg] = useState('');
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (password === 'Admin') {
-      setIsAuthenticated(true);
-    } else {
-      alert('Incorrect password');
-    }
-  };
 
   const handlePublish = async (e) => {
     e.preventDefault();
@@ -62,24 +53,9 @@ export default function S1AdminForms() {
     }
   };
 
-  if (!isAuthenticated) {
-    return (
-      <div style={{ background: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '12px', marginBottom: '2rem', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 style={{ color: 'var(--text-primary)', margin: 0 }}>S1 Admin Access</h3>
-        <form onSubmit={handleLogin} style={{ display: 'flex', gap: '1rem' }}>
-          <input 
-            type="password" 
-            placeholder="Enter password..." 
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ padding: '0.5rem 1rem', borderRadius: '6px', border: '1px solid var(--border-color)', width: '200px' }}
-          />
-          <button type="submit" style={{ padding: '0.5rem 1.5rem', background: 'var(--text-primary)', color: 'white', borderRadius: '6px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>
-            Login
-          </button>
-        </form>
-      </div>
-    );
+  // Only render if logged in as S1 globally
+  if (!adminUser || adminUser.council !== 'S1') {
+    return null;
   }
 
   if (!showAddForm) {
