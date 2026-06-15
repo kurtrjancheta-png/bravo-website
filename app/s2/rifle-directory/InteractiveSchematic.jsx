@@ -2,30 +2,33 @@
 import { useState } from 'react';
 
 // labelPos = Where the text and interactive dot float in space
-// targetPos = The exact spot on the physical gun image
+// targetPos = The exact spot on the physical gun image (assembled)
+// explodedTargetPos = The spot on the exploded diagram image
 const weaponConfigs = {
   'M14': {
     title: 'M14 GARAND (MIL-SPEC)',
     image: '/weapons/m14.png',
+    explodedImage: '/weapons/m14_exploded_blueprint.png',
     caliber: '7.62x51mm NATO',
     rateOfFire: '700 RPM',
     parts: [
-      { id: 'flash_hider', name: 'Flash Suppressor', targetPos: { x: 25, y: 50 }, labelPos: { x: 20, y: 20 }, desc: 'National Match profile slotted flash suppressor.' },
-      { id: 'barrel', name: '22" Match Barrel', targetPos: { x: 35, y: 50 }, labelPos: { x: 35, y: 15 }, desc: '22-inch heavy barrel. 1:12 RH twist rate.' },
-      { id: 'gas_cylinder', name: 'Gas Cylinder', targetPos: { x: 33, y: 53 }, labelPos: { x: 30, y: 80 }, desc: 'Short-stroke gas piston system.' },
-      { id: 'front_sight', name: 'Front Sight', targetPos: { x: 27, y: 46 }, labelPos: { x: 10, y: 25 }, desc: 'Winged front sight post.' },
-      { id: 'receiver', name: 'Forged Receiver', targetPos: { x: 53, y: 48 }, labelPos: { x: 50, y: 15 }, desc: 'The core of the M14. Forged from 8620 alloy steel.' },
-      { id: 'rear_sight', name: 'Rear Peep Sight', targetPos: { x: 55, y: 45 }, labelPos: { x: 65, y: 10 }, desc: 'Fully adjustable rear aperture sight.' },
-      { id: 'trigger', name: 'Trigger Group', targetPos: { x: 53, y: 55 }, labelPos: { x: 55, y: 85 }, desc: 'Two-stage military trigger.' },
-      { id: 'magazine', name: '20-Round Box', targetPos: { x: 51, y: 62 }, labelPos: { x: 45, y: 90 }, desc: 'Detachable 20-round double-stack magazine.' },
-      { id: 'stock_front', name: 'Walnut Forestock', targetPos: { x: 43, y: 52 }, labelPos: { x: 35, y: 90 }, desc: 'The front section of the chassis.' },
-      { id: 'stock_rear', name: 'Fixed Buttstock', targetPos: { x: 68, y: 53 }, labelPos: { x: 75, y: 85 }, desc: 'A traditional sloping wooden chassis.' },
-      { id: 'buttplate', name: 'Hinged Buttplate', targetPos: { x: 81, y: 55 }, labelPos: { x: 85, y: 20 }, desc: 'Checkered steel buttplate.' }
+      { id: 'flash_hider', name: 'Flash Suppressor', targetPos: { x: 25, y: 50 }, explodedTargetPos: { x: 15, y: 40 }, labelPos: { x: 20, y: 20 }, desc: 'National Match profile slotted flash suppressor.' },
+      { id: 'barrel', name: '22" Match Barrel', targetPos: { x: 35, y: 50 }, explodedTargetPos: { x: 30, y: 40 }, labelPos: { x: 35, y: 15 }, desc: '22-inch heavy barrel. 1:12 RH twist rate.' },
+      { id: 'gas_cylinder', name: 'Gas Cylinder', targetPos: { x: 33, y: 53 }, explodedTargetPos: { x: 30, y: 65 }, labelPos: { x: 30, y: 80 }, desc: 'Short-stroke gas piston system.' },
+      { id: 'front_sight', name: 'Front Sight', targetPos: { x: 27, y: 46 }, explodedTargetPos: { x: 15, y: 25 }, labelPos: { x: 10, y: 25 }, desc: 'Winged front sight post.' },
+      { id: 'receiver', name: 'Forged Receiver', targetPos: { x: 53, y: 48 }, explodedTargetPos: { x: 50, y: 35 }, labelPos: { x: 50, y: 15 }, desc: 'The core of the M14. Forged from 8620 alloy steel.' },
+      { id: 'rear_sight', name: 'Rear Peep Sight', targetPos: { x: 55, y: 45 }, explodedTargetPos: { x: 55, y: 25 }, labelPos: { x: 65, y: 10 }, desc: 'Fully adjustable rear aperture sight.' },
+      { id: 'trigger', name: 'Trigger Group', targetPos: { x: 53, y: 55 }, explodedTargetPos: { x: 50, y: 65 }, labelPos: { x: 55, y: 85 }, desc: 'Two-stage military trigger.' },
+      { id: 'magazine', name: '10-Round Short Mag', targetPos: { x: 51, y: 62 }, explodedTargetPos: { x: 50, y: 80 }, labelPos: { x: 45, y: 90 }, desc: 'Flush-fitting 10-round magazine for precision deployment.' },
+      { id: 'stock_front', name: 'Walnut Forestock', targetPos: { x: 43, y: 52 }, explodedTargetPos: { x: 40, y: 50 }, labelPos: { x: 35, y: 90 }, desc: 'The front section of the chassis.' },
+      { id: 'stock_rear', name: 'Fixed Buttstock', targetPos: { x: 68, y: 53 }, explodedTargetPos: { x: 75, y: 55 }, labelPos: { x: 75, y: 85 }, desc: 'A traditional sloping wooden chassis.' },
+      { id: 'buttplate', name: 'Hinged Buttplate', targetPos: { x: 81, y: 55 }, explodedTargetPos: { x: 88, y: 55 }, labelPos: { x: 85, y: 20 }, desc: 'Checkered steel buttplate.' }
     ]
   },
   'M16': {
     title: 'M16A4 (MIL-SPEC)',
     image: '/weapons/m16.png',
+    explodedImage: null, // Add if generated
     caliber: '5.56x45mm NATO',
     rateOfFire: '700-950 RPM',
     parts: [
@@ -87,9 +90,11 @@ const weaponConfigs = {
 
 export default function InteractiveSchematic({ rifle }) {
   const [selectedPart, setSelectedPart] = useState(null);
+  const [isExploded, setIsExploded] = useState(false);
 
   const type = rifle.rifleType || 'M16';
   const config = weaponConfigs[type] || weaponConfigs['M16'];
+  const hasExplodedView = !!config.explodedImage;
 
   // Colors based on the requested dark blueprint aesthetic
   const colors = {
@@ -143,15 +148,35 @@ export default function InteractiveSchematic({ rifle }) {
           </h1>
         </div>
 
-        {/* Top Right: Dense Data Block */}
-        <div style={{ fontSize: '0.6rem', textAlign: 'right', opacity: 0.7, lineHeight: '1.4', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-          <div style={{ color: colors.gold, marginBottom: '5px' }}>SYSTEM REGISTRY // 0x8F9B</div>
+        {/* Top Right: Dense Data Block & Explode Toggle */}
+        <div style={{ fontSize: '0.6rem', textAlign: 'right', opacity: 0.7, lineHeight: '1.4', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px' }}>
+          {hasExplodedView && (
+            <button 
+              onClick={() => setIsExploded(!isExploded)}
+              style={{
+                backgroundColor: isExploded ? colors.highlight : 'transparent',
+                color: isExploded ? '#000' : colors.highlight,
+                border: `1px solid ${colors.highlight}`,
+                padding: '4px 12px',
+                fontSize: '0.8rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                letterSpacing: '2px',
+                marginBottom: '10px',
+                textShadow: isExploded ? 'none' : `0 0 5px ${colors.highlight}`,
+                boxShadow: isExploded ? `0 0 10px ${colors.highlight}` : 'none',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              {isExploded ? 'DEACTIVATE EXPLODED VIEW' : 'ACTIVATE EXPLODED VIEW'}
+            </button>
+          )}
+          <div style={{ color: colors.gold }}>SYSTEM REGISTRY // 0x8F9B</div>
           <div>CALIBER: {config.caliber}</div>
           <div>CYCLIC RATE: {config.rateOfFire}</div>
           <div>OPERATOR: {rifle.name}</div>
           <div>CLASS: {rifle.class}</div>
-          <div style={{ marginTop: '5px', width: '150px', height: '1px', backgroundColor: colors.accent }} />
-          <div style={{ marginTop: '5px' }}>10110010 11001010 00110101</div>
+          <div style={{ marginTop: '2px', width: '150px', height: '1px', backgroundColor: colors.accent }} />
         </div>
       </div>
 
@@ -167,28 +192,21 @@ export default function InteractiveSchematic({ rifle }) {
         
         {/* SVG Decorative Wireframes (Background) */}
         <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1 }}>
-          {/* Top Left Schematic Element */}
           <circle cx="15%" cy="20%" r="60" stroke={colors.grid} strokeWidth="2" fill="none" />
           <circle cx="15%" cy="20%" r="40" stroke={colors.accent} strokeWidth="1" fill="none" strokeDasharray="5,5" />
           <line x1="15%" y1="10%" x2="15%" y2="30%" stroke={colors.accent} strokeWidth="1" />
           <line x1="5%" y1="20%" x2="25%" y2="20%" stroke={colors.accent} strokeWidth="1" />
           
-          {/* Top Right Schematic Element */}
           <circle cx="85%" cy="15%" r="80" stroke={colors.grid} strokeWidth="1" fill="none" />
           <circle cx="85%" cy="15%" r="60" stroke={colors.gold} strokeWidth="1" fill="none" opacity="0.4" />
           <circle cx="85%" cy="15%" r="30" stroke={colors.accent} strokeWidth="2" fill="none" />
           <path d="M 85% 15% L 90% 5% L 95% 5%" stroke={colors.accent} strokeWidth="1" fill="none" />
 
-          {/* Bottom Data Grid */}
           <rect x="25%" y="80%" width="50%" height="15%" stroke={colors.grid} fill="none" strokeWidth="2" />
           <line x1="25%" y1="85%" x2="75%" y2="85%" stroke={colors.grid} strokeWidth="1" />
           <line x1="25%" y1="90%" x2="75%" y2="90%" stroke={colors.grid} strokeWidth="1" />
           <line x1="41%" y1="80%" x2="41%" y2="95%" stroke={colors.grid} strokeWidth="1" />
           <line x1="58%" y1="80%" x2="58%" y2="95%" stroke={colors.grid} strokeWidth="1" />
-
-          {/* Random Tech Lines */}
-          <polyline points="5%,50% 10%,50% 12%,55% 18%,55%" stroke={colors.gold} strokeWidth="1" fill="none" opacity="0.6" />
-          <polyline points="95%,60% 90%,60% 88%,65% 80%,65%" stroke={colors.gold} strokeWidth="1" fill="none" opacity="0.6" />
         </svg>
 
         {/* Main Weapon Container */}
@@ -198,41 +216,45 @@ export default function InteractiveSchematic({ rifle }) {
           maxWidth: '1200px',
           aspectRatio: '16/9', 
           zIndex: 10,
-          mixBlendMode: 'screen', // Helps it blend into the dark background
+          mixBlendMode: 'screen', 
         }}>
           {/* Deep Blue Schematic CSS Filter applied to the weapon image */}
           <img 
-            src={config.image} 
-            alt="Rifle"
+            src={isExploded && config.explodedImage ? config.explodedImage : config.image} 
+            alt="Rifle Schematic"
             style={{ 
               width: '100%', 
               height: '100%', 
               objectFit: 'contain',
               transform: 'scale(1.1)',
-              // The magic filter to create the dark blue schematic look
-              filter: 'sepia(100%) hue-rotate(185deg) saturate(300%) contrast(150%) brightness(85%) drop-shadow(0 0 15px rgba(77, 166, 255, 0.4))'
+              filter: 'sepia(100%) hue-rotate(185deg) saturate(300%) contrast(150%) brightness(85%) drop-shadow(0 0 15px rgba(77, 166, 255, 0.4))',
+              transition: 'opacity 0.5s ease',
+              opacity: 1
             }} 
           />
 
           {/* Permanent SVG Tracelines */}
           <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 20 }}>
-            {config.parts.map(part => (
-              <line 
-                key={`line-${part.id}`}
-                x1={`${part.labelPos.x}%`} 
-                y1={`${part.labelPos.y}%`} 
-                x2={`${part.targetPos.x}%`} 
-                y2={`${part.targetPos.y}%`} 
-                stroke={selectedPart?.id === part.id ? '#fff' : colors.highlight} 
-                strokeWidth={selectedPart?.id === part.id ? '2' : '1'} 
-                strokeDasharray={selectedPart?.id === part.id ? 'none' : '3,3'}
-                style={{ 
-                  transition: 'all 0.2s',
-                  opacity: selectedPart?.id === part.id ? 1 : 0.4,
-                  filter: selectedPart?.id === part.id ? `drop-shadow(0 0 5px ${colors.highlight})` : 'none' 
-                }}
-              />
-            ))}
+            {config.parts.map(part => {
+              const activeTargetPos = (isExploded && part.explodedTargetPos) ? part.explodedTargetPos : part.targetPos;
+              return (
+                <line 
+                  key={`line-${part.id}`}
+                  x1={`${part.labelPos.x}%`} 
+                  y1={`${part.labelPos.y}%`} 
+                  x2={`${activeTargetPos.x}%`} 
+                  y2={`${activeTargetPos.y}%`} 
+                  stroke={selectedPart?.id === part.id ? '#fff' : colors.highlight} 
+                  strokeWidth={selectedPart?.id === part.id ? '2' : '1'} 
+                  strokeDasharray={selectedPart?.id === part.id ? 'none' : '3,3'}
+                  style={{ 
+                    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                    opacity: selectedPart?.id === part.id ? 1 : 0.4,
+                    filter: selectedPart?.id === part.id ? `drop-shadow(0 0 5px ${colors.highlight})` : 'none' 
+                  }}
+                />
+              );
+            })}
           </svg>
 
           {/* Interactive Text Labels with Floating Nodes */}
@@ -255,7 +277,6 @@ export default function InteractiveSchematic({ rifle }) {
                  opacity: selectedPart && selectedPart.id !== part.id ? 0.2 : 1
                }}
              >
-               {/* The glowing target dot (floats next to label) */}
                <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '16px', height: '16px' }}>
                  <div style={{ 
                    width: selectedPart?.id === part.id ? '12px' : '6px', 
@@ -266,13 +287,11 @@ export default function InteractiveSchematic({ rifle }) {
                    transition: 'all 0.2s ease',
                    boxShadow: selectedPart?.id === part.id ? `0 0 10px ${colors.highlight}` : 'none'
                  }} />
-                 {/* Expanding radar ring on hover */}
                  {selectedPart?.id === part.id && (
                    <div style={{ position: 'absolute', width: '24px', height: '24px', border: `1px solid ${colors.highlight}`, borderRadius: '50%', animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite' }} />
                  )}
                </div>
 
-               {/* The Text Label */}
                <div style={{
                  color: selectedPart?.id === part.id ? '#fff' : colors.accent,
                  fontSize: '0.65rem',
@@ -289,25 +308,29 @@ export default function InteractiveSchematic({ rifle }) {
           ))}
 
           {/* Physical dots on the gun itself (targetPos) */}
-          {config.parts.map(part => (
-             <div 
-               key={`target-${part.id}`}
-               style={{
-                 position: 'absolute',
-                 left: `${part.targetPos.x}%`,
-                 top: `${part.targetPos.y}%`,
-                 transform: 'translate(-50%, -50%)',
-                 width: '4px',
-                 height: '4px',
-                 backgroundColor: colors.highlight,
-                 borderRadius: '50%',
-                 pointerEvents: 'none',
-                 zIndex: 30,
-                 boxShadow: `0 0 5px ${colors.highlight}`,
-                 opacity: selectedPart?.id === part.id ? 1 : 0.3
-               }}
-             />
-          ))}
+          {config.parts.map(part => {
+             const activeTargetPos = (isExploded && part.explodedTargetPos) ? part.explodedTargetPos : part.targetPos;
+             return (
+               <div 
+                 key={`target-${part.id}`}
+                 style={{
+                   position: 'absolute',
+                   left: `${activeTargetPos.x}%`,
+                   top: `${activeTargetPos.y}%`,
+                   transform: 'translate(-50%, -50%)',
+                   width: '6px',
+                   height: '6px',
+                   backgroundColor: colors.highlight,
+                   borderRadius: '50%',
+                   pointerEvents: 'none',
+                   zIndex: 30,
+                   boxShadow: `0 0 8px ${colors.highlight}`,
+                   opacity: selectedPart?.id === part.id ? 1 : 0.5,
+                   transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+                 }}
+               />
+             );
+          })}
         </div>
       </div>
 
@@ -335,13 +358,6 @@ export default function InteractiveSchematic({ rifle }) {
           </h3>
           <div style={{ fontSize: '0.8rem', lineHeight: '1.6', color: colors.accent, textAlign: 'justify' }}>
             {selectedPart.desc}
-          </div>
-          
-          {/* Decorative tech lines in the box */}
-          <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ flex: 1, height: '1px', backgroundColor: colors.grid }} />
-            <div style={{ width: '4px', height: '4px', backgroundColor: colors.highlight }} />
-            <div style={{ width: '20px', height: '1px', backgroundColor: colors.highlight }} />
           </div>
         </div>
       )}
