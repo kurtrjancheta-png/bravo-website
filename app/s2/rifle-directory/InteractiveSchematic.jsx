@@ -91,77 +91,67 @@ export default function InteractiveSchematic({ rifle }) {
   const type = rifle.rifleType || 'M16';
   const config = weaponConfigs[type] || weaponConfigs['M16'];
 
+  // Colors based on the requested dark blueprint aesthetic
+  const colors = {
+    bg: '#050a14',
+    grid: '#121f3a',
+    accent: '#a7b4c9', // muted light blue/silver for text
+    highlight: '#4da6ff', // bright cyan/blue for active elements
+    gold: '#c2a176', // gold/beige for borders and secondary accents
+  };
+
   return (
     <div style={{
       position: 'relative',
-      backgroundColor: '#041524',
+      backgroundColor: colors.bg,
       backgroundImage: `
-        linear-gradient(rgba(12, 208, 205, 0.15) 1px, transparent 1px), 
-        linear-gradient(90deg, rgba(12, 208, 205, 0.15) 1px, transparent 1px),
-        linear-gradient(rgba(12, 208, 205, 0.05) 1px, transparent 1px), 
-        linear-gradient(90deg, rgba(12, 208, 205, 0.05) 1px, transparent 1px)
+        linear-gradient(${colors.grid} 1px, transparent 1px), 
+        linear-gradient(90deg, ${colors.grid} 1px, transparent 1px),
+        linear-gradient(rgba(18, 31, 58, 0.4) 1px, transparent 1px), 
+        linear-gradient(90deg, rgba(18, 31, 58, 0.4) 1px, transparent 1px)
       `,
-      backgroundSize: '100px 100px, 100px 100px, 20px 20px, 20px 20px',
-      border: '2px solid #0cd0cd',
+      backgroundSize: '120px 120px, 120px 120px, 20px 20px, 20px 20px',
+      border: `2px solid ${colors.gold}`,
       padding: '2rem',
       fontFamily: 'monospace',
-      color: '#0cd0cd',
+      color: colors.accent,
       minHeight: '800px',
       overflow: 'hidden',
       display: 'flex',
       flexDirection: 'column',
-      boxShadow: 'inset 0 0 50px rgba(12, 208, 205, 0.2)'
+      boxShadow: `inset 0 0 100px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0,0,0,0.5)`
     }}>
       
-      {/* Decorative Corner Brackets */}
-      <div style={{ position: 'absolute', top: 10, left: 10, width: 30, height: 30, borderTop: '2px solid #0cd0cd', borderLeft: '2px solid #0cd0cd' }} />
-      <div style={{ position: 'absolute', top: 10, right: 10, width: 30, height: 30, borderTop: '2px solid #0cd0cd', borderRight: '2px solid #0cd0cd' }} />
-      <div style={{ position: 'absolute', bottom: 10, left: 10, width: 30, height: 30, borderBottom: '2px solid #0cd0cd', borderLeft: '2px solid #0cd0cd' }} />
-      <div style={{ position: 'absolute', bottom: 10, right: 10, width: 30, height: 30, borderBottom: '2px solid #0cd0cd', borderRight: '2px solid #0cd0cd' }} />
+      {/* Decorative Outer Border Lines */}
+      <div style={{ position: 'absolute', top: 5, left: 5, right: 5, bottom: 5, border: `1px solid rgba(194, 161, 118, 0.3)`, pointerEvents: 'none' }} />
+      
+      {/* Decorative Corner Elements */}
+      <div style={{ position: 'absolute', top: 15, left: 15, width: 40, height: 40, borderTop: `2px solid ${colors.gold}`, borderLeft: `2px solid ${colors.gold}` }} />
+      <div style={{ position: 'absolute', top: 15, right: 15, width: 40, height: 40, borderTop: `2px solid ${colors.gold}`, borderRight: `2px solid ${colors.gold}` }} />
+      <div style={{ position: 'absolute', bottom: 15, left: 15, width: 40, height: 40, borderBottom: `2px solid ${colors.gold}`, borderLeft: `2px solid ${colors.gold}` }} />
+      <div style={{ position: 'absolute', bottom: 15, right: 15, width: 40, height: 40, borderBottom: `2px solid ${colors.gold}`, borderRight: `2px solid ${colors.gold}` }} />
 
       {/* HEADER SECTION */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', zIndex: 10 }}>
-        {/* Top Left: Title and Data */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-          <div style={{ fontSize: '0.7rem', backgroundColor: '#0cd0cd', color: '#041524', padding: '2px 8px', alignSelf: 'flex-start', fontWeight: 'bold' }}>PREMIUM UI</div>
-          <h1 style={{ fontSize: '3.5rem', margin: '0', fontWeight: 'bold', textShadow: '0 0 10px #0cd0cd', letterSpacing: '2px' }}>
-            {config.title}
-          </h1>
-          <div style={{ fontSize: '1rem', letterSpacing: '1px' }}>SERIAL: {rifle.serialNumber}</div>
-          <div style={{ fontSize: '1rem', letterSpacing: '1px' }}>OWNER: {rifle.name} ({rifle.class})</div>
-          <div style={{ fontSize: '1rem', letterSpacing: '1px' }}>CALIBER: {config.caliber}</div>
-          <div style={{ fontSize: '1rem', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            RATE OF FIRE: {config.rateOfFire}
-            <div style={{ width: '100px', height: '10px', border: '1px solid #0cd0cd', padding: '1px' }}>
-              <div style={{ width: '70%', height: '100%', backgroundColor: '#0cd0cd' }} />
-            </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', zIndex: 10, borderBottom: `1px solid ${colors.grid}`, paddingBottom: '10px' }}>
+        {/* Top Left: Title */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div style={{ fontSize: '1.5rem', color: colors.gold, border: `1px solid ${colors.gold}`, padding: '4px 12px', letterSpacing: '4px' }}>
+            [{rifle.serialNumber.substring(0, 4)}]
           </div>
+          <h1 style={{ fontSize: '2rem', margin: '0', fontWeight: 'normal', letterSpacing: '8px', color: '#fff', textTransform: 'uppercase' }}>
+            {config.title} // MK I
+          </h1>
         </div>
 
-        {/* Top Right: Status Panels */}
-        <div style={{ display: 'flex', gap: '2rem' }}>
-          {/* Legend */}
-          <div style={{ fontSize: '0.7rem' }}>
-            <div style={{ marginBottom: '5px' }}>LEGEND</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '3px' }}><div style={{ width: 8, height: 8, backgroundColor: '#0cd0cd' }}/> TARGET NODE</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '3px' }}><div style={{ width: 8, height: 8, border: '1px solid #0cd0cd' }}/> ACTIVE TRACE</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '3px' }}><div style={{ width: 8, height: 8, border: '1px dashed rgba(12,208,205,0.5)' }}/> STANDBY</div>
-          </div>
-          {/* Status Box */}
-          <div>
-            <div style={{ marginBottom: '5px', fontSize: '0.7rem' }}>STATUS</div>
-            <div style={{ border: '1px solid #0cd0cd', padding: '10px', minWidth: '150px' }}>
-              <div style={{ fontSize: '1.2rem', marginBottom: '10px', textShadow: '0 0 5px #0cd0cd' }}>SYSTEM OK<br/>SCAN ACTIVE</div>
-              {[60, 90, 40, 75].map((w, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '2px', fontSize: '0.6rem' }}>
-                  <span>{i+1}</span>
-                  <div style={{ flex: 1, height: '4px', border: '1px solid #0cd0cd' }}>
-                    <div style={{ width: `${w}%`, height: '100%', backgroundColor: '#0cd0cd' }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* Top Right: Dense Data Block */}
+        <div style={{ fontSize: '0.6rem', textAlign: 'right', opacity: 0.7, lineHeight: '1.4', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+          <div style={{ color: colors.gold, marginBottom: '5px' }}>SYSTEM REGISTRY // 0x8F9B</div>
+          <div>CALIBER: {config.caliber}</div>
+          <div>CYCLIC RATE: {config.rateOfFire}</div>
+          <div>OPERATOR: {rifle.name}</div>
+          <div>CLASS: {rifle.class}</div>
+          <div style={{ marginTop: '5px', width: '150px', height: '1px', backgroundColor: colors.accent }} />
+          <div style={{ marginTop: '5px' }}>10110010 11001010 00110101</div>
         </div>
       </div>
 
@@ -175,15 +165,42 @@ export default function InteractiveSchematic({ rifle }) {
         position: 'relative'
       }}>
         
+        {/* SVG Decorative Wireframes (Background) */}
+        <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1 }}>
+          {/* Top Left Schematic Element */}
+          <circle cx="15%" cy="20%" r="60" stroke={colors.grid} strokeWidth="2" fill="none" />
+          <circle cx="15%" cy="20%" r="40" stroke={colors.accent} strokeWidth="1" fill="none" strokeDasharray="5,5" />
+          <line x1="15%" y1="10%" x2="15%" y2="30%" stroke={colors.accent} strokeWidth="1" />
+          <line x1="5%" y1="20%" x2="25%" y2="20%" stroke={colors.accent} strokeWidth="1" />
+          
+          {/* Top Right Schematic Element */}
+          <circle cx="85%" cy="15%" r="80" stroke={colors.grid} strokeWidth="1" fill="none" />
+          <circle cx="85%" cy="15%" r="60" stroke={colors.gold} strokeWidth="1" fill="none" opacity="0.4" />
+          <circle cx="85%" cy="15%" r="30" stroke={colors.accent} strokeWidth="2" fill="none" />
+          <path d="M 85% 15% L 90% 5% L 95% 5%" stroke={colors.accent} strokeWidth="1" fill="none" />
+
+          {/* Bottom Data Grid */}
+          <rect x="25%" y="80%" width="50%" height="15%" stroke={colors.grid} fill="none" strokeWidth="2" />
+          <line x1="25%" y1="85%" x2="75%" y2="85%" stroke={colors.grid} strokeWidth="1" />
+          <line x1="25%" y1="90%" x2="75%" y2="90%" stroke={colors.grid} strokeWidth="1" />
+          <line x1="41%" y1="80%" x2="41%" y2="95%" stroke={colors.grid} strokeWidth="1" />
+          <line x1="58%" y1="80%" x2="58%" y2="95%" stroke={colors.grid} strokeWidth="1" />
+
+          {/* Random Tech Lines */}
+          <polyline points="5%,50% 10%,50% 12%,55% 18%,55%" stroke={colors.gold} strokeWidth="1" fill="none" opacity="0.6" />
+          <polyline points="95%,60% 90%,60% 88%,65% 80%,65%" stroke={colors.gold} strokeWidth="1" fill="none" opacity="0.6" />
+        </svg>
+
         {/* Main Weapon Container */}
         <div style={{ 
           position: 'relative', 
           width: '100%', 
-          maxWidth: '1200px', // Enlarged to fill more screen
+          maxWidth: '1200px',
           aspectRatio: '16/9', 
           zIndex: 10,
-          mixBlendMode: 'screen',
+          mixBlendMode: 'screen', // Helps it blend into the dark background
         }}>
+          {/* Deep Blue Schematic CSS Filter applied to the weapon image */}
           <img 
             src={config.image} 
             alt="Rifle"
@@ -191,8 +208,9 @@ export default function InteractiveSchematic({ rifle }) {
               width: '100%', 
               height: '100%', 
               objectFit: 'contain',
-              transform: 'scale(1.1)', // Scale up the image inside the container
-              filter: 'drop-shadow(0 0 15px rgba(12, 208, 205, 0.4)) contrast(1.5) brightness(1.2)'
+              transform: 'scale(1.1)',
+              // The magic filter to create the dark blue schematic look
+              filter: 'sepia(100%) hue-rotate(185deg) saturate(300%) contrast(150%) brightness(85%) drop-shadow(0 0 15px rgba(77, 166, 255, 0.4))'
             }} 
           />
 
@@ -205,12 +223,13 @@ export default function InteractiveSchematic({ rifle }) {
                 y1={`${part.labelPos.y}%`} 
                 x2={`${part.targetPos.x}%`} 
                 y2={`${part.targetPos.y}%`} 
-                stroke={selectedPart?.id === part.id ? '#0cd0cd' : 'rgba(12, 208, 205, 0.3)'} 
+                stroke={selectedPart?.id === part.id ? '#fff' : colors.highlight} 
                 strokeWidth={selectedPart?.id === part.id ? '2' : '1'} 
-                strokeDasharray={selectedPart?.id === part.id ? 'none' : '4,4'}
+                strokeDasharray={selectedPart?.id === part.id ? 'none' : '3,3'}
                 style={{ 
                   transition: 'all 0.2s',
-                  filter: selectedPart?.id === part.id ? 'drop-shadow(0 0 5px #0cd0cd)' : 'none' 
+                  opacity: selectedPart?.id === part.id ? 1 : 0.4,
+                  filter: selectedPart?.id === part.id ? `drop-shadow(0 0 5px ${colors.highlight})` : 'none' 
                 }}
               />
             ))}
@@ -229,41 +248,39 @@ export default function InteractiveSchematic({ rifle }) {
                  transform: 'translate(-50%, -50%)',
                  display: 'flex',
                  alignItems: 'center',
-                 gap: '10px',
+                 gap: '8px',
                  cursor: 'crosshair',
                  zIndex: 35,
                  transition: 'all 0.2s ease',
-                 opacity: selectedPart && selectedPart.id !== part.id ? 0.3 : 1
+                 opacity: selectedPart && selectedPart.id !== part.id ? 0.2 : 1
                }}
              >
                {/* The glowing target dot (floats next to label) */}
-               <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '20px', height: '20px' }}>
+               <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '16px', height: '16px' }}>
                  <div style={{ 
-                   width: selectedPart?.id === part.id ? '16px' : '8px', 
-                   height: selectedPart?.id === part.id ? '16px' : '8px', 
-                   backgroundColor: selectedPart?.id === part.id ? '#0cd0cd' : 'transparent',
-                   border: '2px solid #0cd0cd',
+                   width: selectedPart?.id === part.id ? '12px' : '6px', 
+                   height: selectedPart?.id === part.id ? '12px' : '6px', 
+                   backgroundColor: selectedPart?.id === part.id ? '#fff' : 'transparent',
+                   border: `1px solid ${selectedPart?.id === part.id ? '#fff' : colors.highlight}`,
                    borderRadius: '50%', 
                    transition: 'all 0.2s ease',
-                   boxShadow: selectedPart?.id === part.id ? '0 0 15px #0cd0cd' : 'none'
+                   boxShadow: selectedPart?.id === part.id ? `0 0 10px ${colors.highlight}` : 'none'
                  }} />
                  {/* Expanding radar ring on hover */}
                  {selectedPart?.id === part.id && (
-                   <div style={{ position: 'absolute', width: '30px', height: '30px', border: '1px solid #0cd0cd', borderRadius: '50%', animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite' }} />
+                   <div style={{ position: 'absolute', width: '24px', height: '24px', border: `1px solid ${colors.highlight}`, borderRadius: '50%', animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite' }} />
                  )}
                </div>
 
                {/* The Text Label */}
                <div style={{
-                 color: selectedPart?.id === part.id ? '#020a14' : '#0cd0cd',
-                 backgroundColor: selectedPart?.id === part.id ? '#0cd0cd' : 'rgba(4, 21, 36, 0.8)',
-                 fontSize: '0.7rem',
-                 fontWeight: 'bold',
-                 padding: '4px 8px',
-                 border: `1px solid ${selectedPart?.id === part.id ? '#0cd0cd' : 'rgba(12, 208, 205, 0.5)'}`,
+                 color: selectedPart?.id === part.id ? '#fff' : colors.accent,
+                 fontSize: '0.65rem',
+                 letterSpacing: '1px',
+                 padding: '2px 6px',
+                 borderBottom: selectedPart?.id === part.id ? `1px solid ${colors.highlight}` : `1px solid transparent`,
                  whiteSpace: 'nowrap',
-                 boxShadow: selectedPart?.id === part.id ? '0 0 10px #0cd0cd' : 'none',
-                 textShadow: selectedPart?.id === part.id ? 'none' : '0 0 5px rgba(12,208,205,0.5)',
+                 textShadow: selectedPart?.id === part.id ? `0 0 8px ${colors.highlight}` : 'none',
                  transition: 'all 0.2s ease',
                }}>
                  {part.name.toUpperCase()}
@@ -271,7 +288,7 @@ export default function InteractiveSchematic({ rifle }) {
              </div>
           ))}
 
-          {/* Physical dots on the gun itself (targetPos) so users see where the line is pointing */}
+          {/* Physical dots on the gun itself (targetPos) */}
           {config.parts.map(part => (
              <div 
                key={`target-${part.id}`}
@@ -282,88 +299,53 @@ export default function InteractiveSchematic({ rifle }) {
                  transform: 'translate(-50%, -50%)',
                  width: '4px',
                  height: '4px',
-                 backgroundColor: '#0cd0cd',
+                 backgroundColor: colors.highlight,
                  borderRadius: '50%',
                  pointerEvents: 'none',
                  zIndex: 30,
-                 boxShadow: '0 0 5px #0cd0cd',
-                 opacity: selectedPart?.id === part.id ? 1 : 0.5
+                 boxShadow: `0 0 5px ${colors.highlight}`,
+                 opacity: selectedPart?.id === part.id ? 1 : 0.3
                }}
              />
           ))}
         </div>
       </div>
 
-      {/* DETAILED DESCRIPTION OVERLAY (Fixed positioned on the right) */}
+      {/* DETAILED DESCRIPTION OVERLAY */}
       {selectedPart && (
         <div style={{
           position: 'absolute',
-          top: '25%',
-          right: '3%',
-          width: '380px',
-          backgroundColor: 'rgba(4, 21, 36, 0.95)',
-          border: '1px solid #0cd0cd',
-          padding: '2rem',
+          top: '30%',
+          right: '5%',
+          width: '350px',
+          backgroundColor: 'rgba(5, 10, 20, 0.9)',
+          border: `1px solid ${colors.gold}`,
+          borderLeft: `4px solid ${colors.highlight}`,
+          padding: '1.5rem',
           zIndex: 50,
-          boxShadow: '0 0 30px rgba(0,0,0,0.9), inset 0 0 15px rgba(12,208,205,0.3)',
-          backdropFilter: 'blur(10px)',
-          pointerEvents: 'none' // Auto-vanish when mouse leaves the target node
+          boxShadow: `0 0 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(77, 166, 255, 0.1)`,
+          backdropFilter: 'blur(8px)',
+          pointerEvents: 'none'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #0cd0cd', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
-            <div>
-              <div style={{ fontSize: '0.6rem', letterSpacing: '2px', opacity: 0.8, marginBottom: '4px' }}>COMPONENT // {selectedPart.id.toUpperCase()}</div>
-              <h3 style={{ margin: 0, fontSize: '1.4rem', textTransform: 'uppercase', letterSpacing: '1px', textShadow: '0 0 8px #0cd0cd' }}>
-                {selectedPart.name}
-              </h3>
-            </div>
+          <div style={{ fontSize: '0.55rem', letterSpacing: '3px', color: colors.gold, marginBottom: '8px' }}>
+            SEC: {Math.random().toString(36).substring(2, 8).toUpperCase()} // COMPONENT_ID: {selectedPart.id.toUpperCase()}
           </div>
-          <div style={{ fontSize: '0.95rem', lineHeight: '1.7', color: '#aeeeee', textAlign: 'justify', textShadow: '0 0 1px rgba(12,208,205,0.5)' }}>
+          <h3 style={{ margin: '0 0 15px 0', fontSize: '1.2rem', color: '#fff', letterSpacing: '2px', textShadow: `0 0 5px ${colors.highlight}` }}>
+            {selectedPart.name}
+          </h3>
+          <div style={{ fontSize: '0.8rem', lineHeight: '1.6', color: colors.accent, textAlign: 'justify' }}>
             {selectedPart.desc}
           </div>
           
-          <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px dashed rgba(12,208,205,0.4)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.7rem' }}>
-            <div>
-              <div style={{ opacity: 0.6, letterSpacing: '1px' }}>MATERIAL SPEC</div>
-              <div style={{ fontWeight: 'bold' }}>MIL-SPEC STANDARD</div>
-            </div>
-            <div>
-              <div style={{ opacity: 0.6, letterSpacing: '1px' }}>DIAGNOSTIC</div>
-              <div style={{ color: '#0cd0cd', fontWeight: 'bold', textShadow: '0 0 5px #0cd0cd' }}>NOMINAL_OPERATION</div>
-            </div>
+          {/* Decorative tech lines in the box */}
+          <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ flex: 1, height: '1px', backgroundColor: colors.grid }} />
+            <div style={{ width: '4px', height: '4px', backgroundColor: colors.highlight }} />
+            <div style={{ width: '20px', height: '1px', backgroundColor: colors.highlight }} />
           </div>
         </div>
       )}
 
-      {/* BOTTOM SECTION */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '2rem', zIndex: 10 }}>
-        {/* Bottom Left: Diagnostics / Legend */}
-        <div style={{ border: '1px solid rgba(12,208,205,0.5)', padding: '10px', minWidth: '250px', fontSize: '0.7rem' }}>
-          <div style={{ backgroundColor: '#0cd0cd', color: '#041524', display: 'inline-block', padding: '2px 5px', fontWeight: 'bold', marginBottom: '10px' }}>ASSET PROFILE</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '5px', marginBottom: '5px' }}>
-            <span style={{ opacity: 0.7 }}>SERIAL:</span> <span>{rifle.serialNumber}</span>
-            <span style={{ opacity: 0.7 }}>ASSEMBLY:</span> <span>STANDARD MIL-SPEC</span>
-            <span style={{ opacity: 0.7 }}>CLASS:</span> <span>{rifle.class}</span>
-          </div>
-        </div>
-
-        {/* Bottom Right: Tactical Scan */}
-        <div style={{ border: '1px solid #0cd0cd', padding: '10px', display: 'flex', gap: '20px' }}>
-          <div style={{ fontSize: '0.7rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-            <div>TACTICAL</div>
-            <div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 'bold', textShadow: '0 0 5px #0cd0cd' }}>OK</div>
-              <div style={{ fontSize: '0.5rem', letterSpacing: '2px' }}>DIAGNOSTICS</div>
-            </div>
-          </div>
-          <div style={{ width: '150px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', paddingBottom: '5px' }}>
-            <div style={{ fontSize: '0.6rem', marginBottom: '5px', textAlign: 'right' }}>SCAN ACTIVE</div>
-            <div style={{ width: '100%', height: '8px', border: '1px solid #0cd0cd', padding: '1px' }}>
-              <div style={{ width: '85%', height: '100%', backgroundColor: '#0cd0cd' }} />
-            </div>
-          </div>
-        </div>
-      </div>
-      
       {/* CSS Animations */}
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes ping {
