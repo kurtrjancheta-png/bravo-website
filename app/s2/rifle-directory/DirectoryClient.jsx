@@ -51,7 +51,7 @@ export default function DirectoryClient({ initialInventory }) {
                 >
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{item.name}</span>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Class: {item.class}</span>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Class: {item.class} • Weapon: <span style={{ color: 'var(--accent-gold)' }}>{item.rifleType}</span></span>
                   </div>
                   <span style={{ color: 'var(--accent-gold)', fontWeight: '600' }}>SN: {item.serialNumber}</span>
                 </div>
