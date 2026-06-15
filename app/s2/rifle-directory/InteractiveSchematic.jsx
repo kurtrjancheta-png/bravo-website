@@ -1,9 +1,11 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 const weaponConfigs = {
   'M14': {
     title: 'M14 TACTICAL SCHEMATIC',
+    image: '/weapons/m14.png',
     specs: [
       { label: 'Caliber', val: '7.62x51mm NATO', char: 'C' },
       { label: 'Muzzle Velocity', val: '2,800 ft/s', char: 'V' },
@@ -11,16 +13,15 @@ const weaponConfigs = {
       { label: 'Effective Range', val: '460m (Point)', char: 'R' }
     ],
     lengthLine: '44.3 INCHES',
-    parts: [
-      { id: 'barrel', name: 'Barrel & Suppressor', desc: '22-inch barrel with long slotted flash suppressor.', defaultPos: { x: -140, y: -10 }, explodedPos: { x: -220, y: -40 }, width: 160, height: 8, borderRadius: '2px', color: '#1a1a1a' },
-      { id: 'handguard', name: 'Upper Handguard', desc: 'Protects the operators hand from the heat of the barrel.', defaultPos: { x: -50, y: -16 }, explodedPos: { x: -50, y: -60 }, width: 120, height: 12, borderRadius: '10px 10px 0 0', color: '#2a2a2a' },
-      { id: 'receiver', name: 'Receiver & Bolt', desc: 'Houses the rotating bolt and operating rod assembly.', defaultPos: { x: 30, y: -14 }, explodedPos: { x: 30, y: -50 }, width: 80, height: 20, borderRadius: '4px', color: '#111' },
-      { id: 'magazine', name: '20-Round Magazine', desc: 'Detachable box magazine holding 7.62x51mm NATO.', defaultPos: { x: 20, y: 20 }, explodedPos: { x: 20, y: 80 }, width: 45, height: 40, borderRadius: '2px 2px 8px 8px', color: '#1a1a1a' },
-      { id: 'stock', name: 'Wooden Stock', desc: 'The main chassis of the rifle.', defaultPos: { x: 40, y: 0 }, explodedPos: { x: 140, y: 40 }, width: 200, height: 35, clipPath: 'polygon(0% 0%, 50% 0%, 100% 20%, 100% 100%, 80% 100%, 60% 40%, 0% 40%)', color: '#3d2b1f' }
+    slices: [
+      { id: 'barrel', name: 'Barrel Assembly', clip: 'polygon(0% 0%, 35% 0%, 35% 100%, 0% 100%)', explodedX: -80, explodedY: -30 },
+      { id: 'receiver', name: 'Receiver & Magazine', clip: 'polygon(35% 0%, 65% 0%, 65% 100%, 35% 100%)', explodedX: 0, explodedY: 40 },
+      { id: 'stock', name: 'Wooden Stock', clip: 'polygon(65% 0%, 100% 0%, 100% 100%, 65% 100%)', explodedX: 80, explodedY: -20 }
     ]
   },
   'M16': {
     title: 'M16 TACTICAL SCHEMATIC',
+    image: '/weapons/m16.png',
     specs: [
       { label: 'Caliber', val: '5.56x45mm NATO', char: 'C' },
       { label: 'Muzzle Velocity', val: '3,150 ft/s', char: 'V' },
@@ -28,18 +29,15 @@ const weaponConfigs = {
       { label: 'Effective Range', val: '550m (Point)', char: 'R' }
     ],
     lengthLine: '39.5 INCHES',
-    parts: [
-      { id: 'barrel', name: 'Barrel Assembly', desc: '20-inch barrel with birdcage flash hider.', defaultPos: { x: -160, y: -5 }, explodedPos: { x: -240, y: -20 }, width: 140, height: 10, borderRadius: '2px', color: '#1a1a1a' },
-      { id: 'handguard', name: 'Ribbed Handguard', desc: 'Polymer handguard protecting the gas tube.', defaultPos: { x: -70, y: -5 }, explodedPos: { x: -70, y: -50 }, width: 100, height: 24, borderRadius: '12px 12px 12px 12px', color: '#222' },
-      { id: 'upper', name: 'Upper Receiver', desc: 'Houses the bolt carrier group and carry handle.', defaultPos: { x: 20, y: -15 }, explodedPos: { x: 20, y: -60 }, width: 80, height: 35, clipPath: 'polygon(0% 40%, 20% 0%, 80% 0%, 100% 40%, 100% 100%, 0% 100%)', color: '#111' },
-      { id: 'lower', name: 'Lower Receiver', desc: 'Contains the trigger assembly and mag well.', defaultPos: { x: 15, y: 15 }, explodedPos: { x: 15, y: 70 }, width: 70, height: 35, clipPath: 'polygon(0% 0%, 100% 0%, 100% 50%, 80% 100%, 40% 100%, 20% 40%, 0% 40%)', color: '#151515' },
-      { id: 'magazine', name: '30-Round Magazine', desc: 'Standard curved STANAG magazine.', defaultPos: { x: 5, y: 40 }, explodedPos: { x: -30, y: 100 }, width: 35, height: 60, borderRadius: '4px', clipPath: 'polygon(0% 0%, 100% 0%, 90% 100%, 10% 100%)', color: '#1a1a1a' },
-      { id: 'stock', name: 'Fixed Stock', desc: 'A2 profile fixed polymer stock.', defaultPos: { x: 105, y: 5 }, explodedPos: { x: 180, y: 30 }, width: 100, height: 40, clipPath: 'polygon(0% 10%, 100% 0%, 100% 100%, 0% 80%)', color: '#1a1a1a' },
-      { id: 'grip', name: 'Pistol Grip', desc: 'A2 profile pistol grip.', defaultPos: { x: 35, y: 40 }, explodedPos: { x: 60, y: 100 }, width: 25, height: 45, clipPath: 'polygon(0% 0%, 100% 0%, 80% 100%, 20% 100%)', color: '#222' }
+    slices: [
+      { id: 'barrel', name: 'Barrel & Handguard', clip: 'polygon(0% 0%, 45% 0%, 45% 100%, 0% 100%)', explodedX: -100, explodedY: -20 },
+      { id: 'receiver', name: 'Upper & Lower Receiver', clip: 'polygon(45% 0%, 75% 0%, 75% 100%, 45% 100%)', explodedX: 0, explodedY: 50 },
+      { id: 'stock', name: 'Fixed Stock', clip: 'polygon(75% 0%, 100% 0%, 100% 100%, 75% 100%)', explodedX: 90, explodedY: -10 }
     ]
   },
   'R4': {
     title: 'R4 TACTICAL SCHEMATIC',
+    image: '/weapons/r4.png',
     specs: [
       { label: 'Caliber', val: '5.56x45mm NATO', char: 'C' },
       { label: 'Muzzle Velocity', val: '2,900 ft/s', char: 'V' },
@@ -47,19 +45,15 @@ const weaponConfigs = {
       { label: 'Effective Range', val: '500m (Point)', char: 'R' }
     ],
     lengthLine: '33.0 INCHES (Collapsed)',
-    parts: [
-      { id: 'barrel', name: '14.5" Barrel', desc: 'Carbine length barrel.', defaultPos: { x: -130, y: -5 }, explodedPos: { x: -200, y: -20 }, width: 100, height: 10, borderRadius: '2px', color: '#1a1a1a' },
-      { id: 'handguard', name: 'Quad Rail System', desc: 'Allows mounting of tactical accessories.', defaultPos: { x: -60, y: -5 }, explodedPos: { x: -60, y: -50 }, width: 80, height: 24, borderRadius: '2px', color: '#222' },
-      { id: 'upper', name: 'Flat-top Upper', desc: 'Picatinny rail upper receiver.', defaultPos: { x: 20, y: -5 }, explodedPos: { x: 20, y: -40 }, width: 80, height: 25, borderRadius: '4px', color: '#111' },
-      { id: 'lower', name: 'Lower Receiver', desc: 'Contains the trigger assembly.', defaultPos: { x: 15, y: 15 }, explodedPos: { x: 15, y: 60 }, width: 70, height: 35, clipPath: 'polygon(0% 0%, 100% 0%, 100% 50%, 80% 100%, 40% 100%, 20% 40%, 0% 40%)', color: '#151515' },
-      { id: 'magazine', name: 'PMAG Magazine', desc: 'Polymer 30-round magazine.', defaultPos: { x: 5, y: 40 }, explodedPos: { x: -30, y: 90 }, width: 35, height: 60, borderRadius: '4px', clipPath: 'polygon(0% 0%, 100% 0%, 90% 100%, 10% 100%)', color: '#252525' },
-      { id: 'stock', name: 'Telescopic Stock', desc: 'Adjustable 6-position carbine stock.', defaultPos: { x: 95, y: 5 }, explodedPos: { x: 160, y: 20 }, width: 80, height: 35, clipPath: 'polygon(0% 30%, 40% 30%, 50% 0%, 100% 0%, 100% 100%, 50% 100%, 40% 70%, 0% 70%)', color: '#1a1a1a' },
-      { id: 'grip', name: 'Pistol Grip', desc: 'Ergonomic grip.', defaultPos: { x: 35, y: 40 }, explodedPos: { x: 60, y: 90 }, width: 25, height: 45, clipPath: 'polygon(0% 0%, 100% 0%, 80% 100%, 20% 100%)', color: '#222' },
-      { id: 'optic', name: 'Red Dot Sight', desc: 'Close quarters optic.', defaultPos: { x: 10, y: -25 }, explodedPos: { x: 10, y: -80 }, width: 30, height: 20, borderRadius: '4px', color: '#1a1a1a' }
+    slices: [
+      { id: 'barrel', name: 'Carbine Barrel & Rail', clip: 'polygon(0% 0%, 45% 0%, 45% 100%, 0% 100%)', explodedX: -90, explodedY: -30 },
+      { id: 'receiver', name: 'Receiver Group', clip: 'polygon(45% 0%, 70% 0%, 70% 100%, 45% 100%)', explodedX: 0, explodedY: 45 },
+      { id: 'stock', name: 'Telescopic Stock', clip: 'polygon(70% 0%, 100% 0%, 100% 100%, 70% 100%)', explodedX: 80, explodedY: -15 }
     ]
   },
   '9MM': {
     title: '9MM PISTOL SCHEMATIC',
+    image: '/weapons/9mm.png',
     specs: [
       { label: 'Caliber', val: '9x19mm Parabellum', char: 'C' },
       { label: 'Muzzle Velocity', val: '1,250 ft/s', char: 'V' },
@@ -67,12 +61,10 @@ const weaponConfigs = {
       { label: 'Effective Range', val: '50m', char: 'R' }
     ],
     lengthLine: '8.5 INCHES',
-    parts: [
-      { id: 'slide', name: 'Slide & Barrel', desc: 'Houses the firing pin and recoil spring.', defaultPos: { x: -20, y: -20 }, explodedPos: { x: -20, y: -60 }, width: 120, height: 25, borderRadius: '4px 8px 0 0', color: '#1a1a1a' },
-      { id: 'frame', name: 'Lower Frame', desc: 'Polymer or steel chassis.', defaultPos: { x: -20, y: 5 }, explodedPos: { x: -50, y: 20 }, width: 120, height: 15, borderRadius: '0 0 4px 4px', color: '#222' },
-      { id: 'grip', name: 'Pistol Grip', desc: 'Houses the magazine.', defaultPos: { x: 25, y: 35 }, explodedPos: { x: 50, y: 40 }, width: 40, height: 70, clipPath: 'polygon(0% 0%, 100% 0%, 80% 100%, 0% 100%)', color: '#151515' },
-      { id: 'magazine', name: '15-Round Magazine', desc: 'Double-stack 9mm magazine.', defaultPos: { x: 20, y: 50 }, explodedPos: { x: 50, y: 120 }, width: 30, height: 60, clipPath: 'polygon(0% 0%, 100% 0%, 80% 100%, 0% 100%)', color: '#2a2a2a' },
-      { id: 'trigger', name: 'Trigger Assembly', desc: 'Double/Single action trigger.', defaultPos: { x: -5, y: 20 }, explodedPos: { x: -20, y: 60 }, width: 25, height: 20, clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 80% 100%, 80% 20%, 0% 20%)', color: '#111' }
+    slices: [
+      { id: 'barrel', name: 'Slide & Barrel', clip: 'polygon(0% 0%, 60% 0%, 60% 40%, 0% 40%)', explodedX: -60, explodedY: -40 },
+      { id: 'frame', name: 'Lower Frame', clip: 'polygon(0% 40%, 50% 40%, 50% 100%, 0% 100%)', explodedX: -30, explodedY: 40 },
+      { id: 'grip', name: 'Grip & Magazine', clip: 'polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%)', explodedX: 60, explodedY: 20 }
     ]
   }
 };
@@ -80,138 +72,200 @@ const weaponConfigs = {
 export default function InteractiveSchematic({ rifle }) {
   const [isExploded, setIsExploded] = useState(false);
   const [hoveredPart, setHoveredPart] = useState(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const type = rifle.rifleType || 'M14';
   const config = weaponConfigs[type] || weaponConfigs['M14'];
 
+  if (!mounted) return null;
+
   return (
     <div style={{
       position: 'relative',
-      backgroundColor: '#050a0f',
-      backgroundImage: 'linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px)',
-      backgroundSize: '30px 30px',
-      borderRadius: '12px',
-      border: '1px solid rgba(0, 255, 255, 0.2)',
+      background: 'linear-gradient(135deg, #020617 0%, #0f172a 100%)',
+      borderRadius: '16px',
+      border: '1px solid rgba(56, 189, 248, 0.15)',
       overflow: 'hidden',
-      boxShadow: '0 0 30px rgba(0, 255, 255, 0.05) inset',
-      padding: '2rem',
+      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.05)',
+      padding: '2.5rem',
       display: 'flex',
       flexDirection: 'column',
-      minHeight: '600px',
+      minHeight: '650px',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
     }}>
+      {/* Background Grid Pattern */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none',
+        backgroundImage: 'linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px)',
+        backgroundSize: '40px 40px',
+        opacity: 0.8
+      }} />
+
       {/* Blueprint Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0, 255, 255, 0.2)', paddingBottom: '1rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 10 }}>
         <div>
-          <h3 style={{ color: '#0ff', margin: 0, textTransform: 'uppercase', letterSpacing: '2px', fontSize: '1.5rem', textShadow: '0 0 10px rgba(0,255,255,0.3)' }}>
-            {config.title}
-          </h3>
-          <p style={{ color: 'rgba(0, 255, 255, 0.7)', fontSize: '0.85rem', margin: '0.5rem 0 0 0', fontFamily: 'monospace' }}>
-            OWNER: {rifle.name} // SN: {rifle.serialNumber} // CLASS: {rifle.class}
-          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+            <div style={{ width: '8px', height: '24px', background: '#38bdf8', borderRadius: '4px', boxShadow: '0 0 10px rgba(56, 189, 248, 0.5)' }}></div>
+            <h3 style={{ color: '#f8fafc', margin: 0, textTransform: 'uppercase', letterSpacing: '3px', fontSize: '1.75rem', fontWeight: 800 }}>
+              {config.title}
+            </h3>
+          </div>
+          <div style={{ display: 'flex', gap: '1.5rem', marginTop: '1rem' }}>
+            <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(56, 189, 248, 0.2)', padding: '0.5rem 1rem', borderRadius: '6px' }}>
+              <span style={{ color: '#94a3b8', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px' }}>OWNER</span>
+              <div style={{ color: '#38bdf8', fontSize: '1.1rem', fontWeight: 'bold' }}>{rifle.name}</div>
+            </div>
+            <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(56, 189, 248, 0.2)', padding: '0.5rem 1rem', borderRadius: '6px' }}>
+              <span style={{ color: '#94a3b8', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px' }}>SERIAL NO.</span>
+              <div style={{ color: '#f8fafc', fontSize: '1.1rem', fontFamily: 'monospace' }}>{rifle.serialNumber}</div>
+            </div>
+          </div>
         </div>
         <button 
           onClick={() => setIsExploded(!isExploded)}
           style={{
-            background: isExploded ? 'rgba(0, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.5)',
-            border: '1px solid #0ff',
-            color: '#0ff',
-            padding: '0.5rem 1.5rem',
+            background: isExploded ? 'rgba(56, 189, 248, 0.1)' : 'linear-gradient(to bottom, #0ea5e9, #0284c7)',
+            border: isExploded ? '1px solid #38bdf8' : 'none',
+            color: isExploded ? '#38bdf8' : '#fff',
+            padding: '0.75rem 2rem',
             cursor: 'pointer',
-            borderRadius: '4px',
+            borderRadius: '8px',
             textTransform: 'uppercase',
-            fontWeight: 'bold',
-            letterSpacing: '1px',
-            transition: 'all 0.3s',
-            boxShadow: isExploded ? '0 0 15px rgba(0, 255, 255, 0.2)' : 'none'
+            fontWeight: '800',
+            letterSpacing: '1.5px',
+            transition: 'all 0.3s ease',
+            boxShadow: isExploded ? 'none' : '0 10px 20px -10px rgba(2, 132, 199, 0.5)',
+            transform: 'translateY(0)',
           }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
         >
-          {isExploded ? 'Reassemble' : '3D Blowout'}
+          {isExploded ? 'REASSEMBLE' : 'INITIATE 3D BLOWOUT'}
         </button>
       </div>
 
       {/* Schematic Container */}
-      <div style={{ flex: 1, position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '2rem' }}>
+      <div style={{ flex: 1, position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '3rem', marginBottom: '3rem' }}>
         
-        {/* Render Parts */}
-        {config.parts.map((part) => {
-          const isHovered = hoveredPart === part.id;
-          const x = isExploded ? part.explodedPos.x : part.defaultPos.x;
-          const y = isExploded ? part.explodedPos.y : part.defaultPos.y;
+        <div style={{ position: 'relative', width: '100%', maxWidth: '800px', aspectRatio: '16/9' }}>
           
-          return (
-            <div
-              key={part.id}
-              onMouseEnter={() => setHoveredPart(part.id)}
-              onMouseLeave={() => setHoveredPart(null)}
-              style={{
-                position: 'absolute',
-                width: part.width,
-                height: part.height,
-                backgroundColor: part.color,
-                borderRadius: part.borderRadius || '0',
-                clipPath: part.clipPath || 'none',
-                border: isHovered ? '2px solid #0ff' : '1px solid rgba(255,255,255,0.1)',
-                cursor: 'pointer',
-                boxShadow: isHovered ? '0 0 20px rgba(0, 255, 255, 0.6)' : 'inset 0 0 10px rgba(0,0,0,0.8), 5px 5px 15px rgba(0,0,0,0.5)',
-                zIndex: isHovered ? 10 : 1,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                transform: `translate(${x}px, ${y}px) scale(${isHovered ? 1.05 : 1})`,
-                transition: 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border 0.3s ease'
-              }}
-            >
-              {/* Tooltip */}
-              <div style={{
-                position: 'absolute',
-                top: part.height + 20,
-                width: '220px',
-                background: 'rgba(5, 15, 25, 0.95)',
-                border: '1px solid #0ff',
-                padding: '1rem',
-                borderRadius: '6px',
-                color: '#fff',
-                fontSize: '0.85rem',
-                pointerEvents: 'none',
-                zIndex: 20,
-                boxShadow: '0 8px 20px rgba(0,0,0,0.6), 0 0 15px rgba(0, 255, 255, 0.2)',
-                backdropFilter: 'blur(8px)',
-                opacity: (isHovered || isExploded) ? 1 : 0,
-                transform: `translateY(${(isHovered || isExploded) ? 0 : 10}px)`,
-                transition: 'opacity 0.3s ease, transform 0.3s ease'
-              }}>
-                <div style={{ color: '#0ff', fontWeight: 'bold', marginBottom: '0.5rem', borderBottom: '1px solid rgba(0, 255, 255, 0.3)', paddingBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                  {part.name}
-                </div>
-                <div style={{ color: 'rgba(255, 255, 255, 0.85)', lineHeight: 1.5 }}>
-                  {part.desc}
+          {/* Base invisible image to establish bounding box */}
+          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0 }}>
+            <img src={config.image} alt="Reference" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          </div>
+
+          {/* Render Slices */}
+          {config.slices.map((slice) => {
+            const isHovered = hoveredPart === slice.id;
+            const x = isExploded ? slice.explodedX : 0;
+            const y = isExploded ? slice.explodedY : 0;
+            const scale = isHovered && isExploded ? 1.05 : 1;
+            
+            return (
+              <div
+                key={slice.id}
+                onMouseEnter={() => setHoveredPart(slice.id)}
+                onMouseLeave={() => setHoveredPart(null)}
+                style={{
+                  position: 'absolute',
+                  top: 0, left: 0, right: 0, bottom: 0,
+                  clipPath: slice.clip,
+                  cursor: isExploded ? 'crosshair' : 'default',
+                  transform: `translate(${x}px, ${y}px) scale(${scale})`,
+                  transition: 'all 0.8s cubic-bezier(0.25, 1, 0.5, 1)',
+                  zIndex: isHovered ? 20 : 10,
+                }}
+              >
+                <img 
+                  src={config.image} 
+                  alt={slice.name}
+                  style={{
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'contain',
+                    mixBlendMode: 'screen', // Removes black background
+                    filter: isHovered && isExploded 
+                      ? 'drop-shadow(0 0 20px rgba(56, 189, 248, 0.8)) brightness(1.2)' 
+                      : 'drop-shadow(0 0 10px rgba(0,0,0,0.5))'
+                  }} 
+                />
+
+                {/* Tooltip for the slice (only visible when exploded and hovered) */}
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: `translate(-50%, -50%) scale(${isHovered && isExploded ? 1 : 0.8})`,
+                  opacity: isHovered && isExploded ? 1 : 0,
+                  background: 'rgba(2, 6, 23, 0.9)',
+                  border: '1px solid #38bdf8',
+                  padding: '0.75rem 1.25rem',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  fontSize: '0.9rem',
+                  fontWeight: 'bold',
+                  pointerEvents: 'none',
+                  zIndex: 30,
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.8), 0 0 15px rgba(56, 189, 248, 0.3)',
+                  backdropFilter: 'blur(4px)',
+                  transition: 'all 0.3s ease',
+                  whiteSpace: 'nowrap',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px'
+                }}>
+                  {slice.name}
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
 
         {/* Decorative blueprint lines joining parts when NOT exploded */}
         <div style={{ 
           position: 'absolute', width: '100%', height: '100%', pointerEvents: 'none',
           opacity: isExploded ? 0 : 1,
-          transition: 'opacity 0.5s ease'
+          transition: 'opacity 0.5s ease',
+          zIndex: 5
         }}>
           {/* Horizontal measurement line */}
-          <div style={{ position: 'absolute', top: '75%', left: '25%', width: '50%', height: '1px', borderBottom: '1px dashed #0ff', opacity: 0.4 }}></div>
-          <div style={{ position: 'absolute', top: '77%', left: '50%', transform: 'translateX(-50%)', color: '#0ff', fontSize: '0.75rem', fontFamily: 'monospace', letterSpacing: '1px' }}>LENGTH: {config.lengthLine}</div>
+          <div style={{ position: 'absolute', bottom: '15%', left: '20%', width: '60%', height: '1px', borderBottom: '1px dashed rgba(56, 189, 248, 0.4)' }}></div>
+          <div style={{ position: 'absolute', bottom: '12%', left: '50%', transform: 'translateX(-50%)', color: '#38bdf8', fontSize: '0.85rem', fontFamily: 'monospace', letterSpacing: '2px' }}>
+            TOTAL LENGTH: {config.lengthLine}
+          </div>
         </div>
       </div>
 
       {/* Blueprint Footer / Tech Specs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginTop: 'auto', borderTop: '1px solid rgba(0, 255, 255, 0.2)', paddingTop: '2rem' }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(4, 1fr)', 
+        gap: '1.5rem', 
+        marginTop: 'auto', 
+        background: 'rgba(15, 23, 42, 0.4)',
+        border: '1px solid rgba(56, 189, 248, 0.1)',
+        borderRadius: '12px',
+        padding: '1.5rem'
+      }}>
         {config.specs.map((spec, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid #0ff', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#0ff', fontWeight: 'bold' }}>{spec.char}</div>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+            <div style={{ 
+              width: 48, height: 48, 
+              borderRadius: '12px', 
+              background: 'rgba(56, 189, 248, 0.1)',
+              border: '1px solid rgba(56, 189, 248, 0.3)', 
+              display: 'flex', justifyContent: 'center', alignItems: 'center', 
+              color: '#38bdf8', fontSize: '1.25rem', fontWeight: 'bold',
+              boxShadow: 'inset 0 0 10px rgba(56, 189, 248, 0.1)'
+            }}>
+              {spec.char}
+            </div>
             <div>
-              <div style={{ color: 'rgba(0, 255, 255, 0.6)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1px' }}>{spec.label}</div>
-              <div style={{ color: '#fff', fontSize: '0.95rem', fontFamily: 'monospace' }}>{spec.val}</div>
+              <div style={{ color: '#94a3b8', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '0.25rem' }}>{spec.label}</div>
+              <div style={{ color: '#f8fafc', fontSize: '1.1rem', fontWeight: 600 }}>{spec.val}</div>
             </div>
           </div>
         ))}
