@@ -34,7 +34,7 @@ export default function DirectoryClient({ initialInventory }) {
           <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#0cd0cd', fontSize: '1.5rem' }}>⌕</span>
           <input 
             type="text" 
-            placeholder="SEARCH BY CADET NAME OR SERIAL NUMBER..." 
+            placeholder="SEARCH" 
             value={searchTerm}
             onChange={(e) => {
                setSearchTerm(e.target.value);
