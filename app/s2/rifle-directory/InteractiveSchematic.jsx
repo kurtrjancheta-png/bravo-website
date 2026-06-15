@@ -1,6 +1,8 @@
 'use client';
 import { useState } from 'react';
 
+// labelPos = Where the text and interactive dot float in space
+// targetPos = The exact spot on the physical gun image
 const weaponConfigs = {
   'M14': {
     title: 'M14 GARAND (MIL-SPEC)',
@@ -8,17 +10,17 @@ const weaponConfigs = {
     caliber: '7.62x51mm NATO',
     rateOfFire: '700 RPM',
     parts: [
-      { id: 'flash_hider', name: 'Flash Suppressor', node: { x: 22, y: 50 }, label: { x: 15, y: 20 }, desc: 'National Match profile slotted flash suppressor. Forged steel construction designed to reduce muzzle flash and mitigate recoil rise during rapid fire.' },
-      { id: 'barrel', name: '22" Match Barrel', node: { x: 32, y: 50 }, label: { x: 30, y: 15 }, desc: '22-inch heavy barrel. 1:12 RH twist rate, 4-groove rifling. Parkerized finish, machined from 4140 chrome-moly steel for exceptional harmonic stability and long-range accuracy.' },
-      { id: 'gas_cylinder', name: 'Gas Cylinder', node: { x: 30, y: 53 }, label: { x: 25, y: 80 }, desc: 'Short-stroke gas piston system. Features a hard-chromed piston housed within a precision-machined stainless steel cylinder, ensuring reliable cycling in adverse environments.' },
-      { id: 'front_sight', name: 'Front Sight', node: { x: 24, y: 46 }, label: { x: 20, y: 25 }, desc: 'Winged front sight post. 0.062" National Match blade, drift adjustable for zeroing windage at the armory level.' },
-      { id: 'receiver', name: 'Forged Receiver', node: { x: 50, y: 48 }, label: { x: 45, y: 15 }, desc: 'The core of the M14. Forged from 8620 alloy steel and heat-treated. Houses the dual-lug rotating bolt and robust operating rod assembly.' },
-      { id: 'rear_sight', name: 'Rear Peep Sight', node: { x: 52, y: 45 }, label: { x: 55, y: 10 }, desc: 'Fully adjustable rear aperture sight. 1 MOA elevation and windage click adjustments, ranging out to 1,000 meters.' },
-      { id: 'trigger', name: 'Trigger Group', node: { x: 50, y: 55 }, label: { x: 55, y: 85 }, desc: 'Two-stage military trigger. Crisp 4.5-pound pull weight. Contains the hammer, sear, and ambidextrous safety latch within a forged housing.' },
-      { id: 'magazine', name: '20-Round Box', node: { x: 48, y: 62 }, label: { x: 45, y: 85 }, desc: 'Detachable 20-round double-stack magazine. Constructed from stamped steel with a parkerized finish and anti-tilt follower feeding 7.62x51mm ammunition.' },
-      { id: 'stock_front', name: 'Walnut Forestock', node: { x: 40, y: 52 }, label: { x: 35, y: 85 }, desc: 'The front section of the chassis. Crafted from dense American Walnut, providing exceptional durability and thermal insulation from the barrel.' },
-      { id: 'stock_rear', name: 'Fixed Buttstock', node: { x: 65, y: 53 }, label: { x: 75, y: 85 }, desc: 'A traditional sloping wooden chassis. Reinforced with a steel recoil lug bedded into the wood to distribute the heavy 7.62 recoil forces.' },
-      { id: 'buttplate', name: 'Hinged Buttplate', node: { x: 78, y: 55 }, label: { x: 85, y: 20 }, desc: 'Checkered steel buttplate. Features a hinged shoulder rest for full-auto control, with an internal compartment housing the field cleaning kit.' }
+      { id: 'flash_hider', name: 'Flash Suppressor', targetPos: { x: 25, y: 50 }, labelPos: { x: 20, y: 20 }, desc: 'National Match profile slotted flash suppressor.' },
+      { id: 'barrel', name: '22" Match Barrel', targetPos: { x: 35, y: 50 }, labelPos: { x: 35, y: 15 }, desc: '22-inch heavy barrel. 1:12 RH twist rate.' },
+      { id: 'gas_cylinder', name: 'Gas Cylinder', targetPos: { x: 33, y: 53 }, labelPos: { x: 30, y: 80 }, desc: 'Short-stroke gas piston system.' },
+      { id: 'front_sight', name: 'Front Sight', targetPos: { x: 27, y: 46 }, labelPos: { x: 10, y: 25 }, desc: 'Winged front sight post.' },
+      { id: 'receiver', name: 'Forged Receiver', targetPos: { x: 53, y: 48 }, labelPos: { x: 50, y: 15 }, desc: 'The core of the M14. Forged from 8620 alloy steel.' },
+      { id: 'rear_sight', name: 'Rear Peep Sight', targetPos: { x: 55, y: 45 }, labelPos: { x: 65, y: 10 }, desc: 'Fully adjustable rear aperture sight.' },
+      { id: 'trigger', name: 'Trigger Group', targetPos: { x: 53, y: 55 }, labelPos: { x: 55, y: 85 }, desc: 'Two-stage military trigger.' },
+      { id: 'magazine', name: '20-Round Box', targetPos: { x: 51, y: 62 }, labelPos: { x: 45, y: 90 }, desc: 'Detachable 20-round double-stack magazine.' },
+      { id: 'stock_front', name: 'Walnut Forestock', targetPos: { x: 43, y: 52 }, labelPos: { x: 35, y: 90 }, desc: 'The front section of the chassis.' },
+      { id: 'stock_rear', name: 'Fixed Buttstock', targetPos: { x: 68, y: 53 }, labelPos: { x: 75, y: 85 }, desc: 'A traditional sloping wooden chassis.' },
+      { id: 'buttplate', name: 'Hinged Buttplate', targetPos: { x: 81, y: 55 }, labelPos: { x: 85, y: 20 }, desc: 'Checkered steel buttplate.' }
     ]
   },
   'M16': {
@@ -27,21 +29,21 @@ const weaponConfigs = {
     caliber: '5.56x45mm NATO',
     rateOfFire: '700-950 RPM',
     parts: [
-      { id: 'flash_hider', name: 'A2 Flash Hider', node: { x: 20, y: 50 }, label: { x: 15, y: 20 }, desc: 'Standard A2 birdcage flash hider. Features closed bottom slots to prevent dust kick-up when firing prone.' },
-      { id: 'barrel', name: '20" Chrome-Lined Barrel', node: { x: 30, y: 50 }, label: { x: 30, y: 15 }, desc: '20-inch 4150 CMV steel barrel, chrome-lined bore and chamber. 1:7 RH twist rate optimized for 62gr M855 penetrator rounds.' },
-      { id: 'front_sight', name: 'A2 Front Sight Base', node: { x: 28, y: 46 }, label: { x: 20, y: 25 }, desc: 'Forged A2 profile front sight base with bayonet lug. Pinned to the barrel, doubling as the gas block for the rifle-length gas system.' },
-      { id: 'handguard', name: 'Polymer Handguard', node: { x: 40, y: 50 }, label: { x: 40, y: 85 }, desc: 'Standard ribbed polymer handguard with internal aluminum heat shields. Protects the stainless steel gas tube and operator hands.' },
-      { id: 'upper', name: 'Upper Receiver', node: { x: 50, y: 48 }, label: { x: 45, y: 15 }, desc: 'Forged 7075-T6 aluminum flat-top upper receiver with Mil-Spec hardcoat anodizing. Houses the M16-profile bolt carrier group.' },
-      { id: 'carry_handle', name: 'Detachable Carry Handle', node: { x: 50, y: 43 }, label: { x: 55, y: 10 }, desc: 'Detachable A2 carry handle mounted to the Picatinny rail. Features integrated rear sights adjustable for windage and elevation.' },
-      { id: 'ejection_port', name: 'Ejection Port Cover', node: { x: 53, y: 50 }, label: { x: 65, y: 20 }, desc: 'Spring-loaded stamped steel dust cover. Automatically flips open when the bolt carrier cycles backward.' },
-      { id: 'forward_assist', name: 'Forward Assist', node: { x: 56, y: 49 }, label: { x: 75, y: 25 }, desc: 'Plunger mechanism used to manually force the bolt carrier forward into battery if fouled by carbon or debris.' },
-      { id: 'charging_handle', name: 'Charging Handle', node: { x: 57, y: 46 }, label: { x: 65, y: 15 }, desc: 'T-shaped forged aluminum handle used to manually cycle the action, chamber a round, or clear malfunctions.' },
-      { id: 'lower', name: 'Lower Receiver', node: { x: 50, y: 53 }, label: { x: 45, y: 80 }, desc: 'Forged 7075-T6 aluminum lower receiver. Houses the fire control group, magazine catch, and bolt release mechanism.' },
-      { id: 'trigger', name: 'Fire Control Group', node: { x: 52, y: 55 }, label: { x: 55, y: 85 }, desc: 'Standard mil-spec trigger group featuring a heavy 6-8 lb pull. Provides Safe, Semi, and 3-Round Burst selector options.' },
-      { id: 'grip', name: 'A2 Pistol Grip', node: { x: 54, y: 60 }, label: { x: 65, y: 85 }, desc: 'Standard A2 profile polymer pistol grip with a single finger groove and aggressive texturing.' },
-      { id: 'magazine', name: 'STANAG Magazine', node: { x: 48, y: 65 }, label: { x: 40, y: 90 }, desc: 'Standard NATO STANAG 30-round curved box magazine. Aluminum body with an anti-tilt follower and green/tan follower.' },
-      { id: 'buffer', name: 'Buffer Tube', node: { x: 65, y: 50 }, label: { x: 75, y: 15 }, desc: 'Rifle-length receiver extension. Houses the heavy rifle buffer and spring, absorbing recoil and cycling the action.' },
-      { id: 'stock', name: 'A2 Fixed Stock', node: { x: 75, y: 52 }, label: { x: 85, y: 20 }, desc: 'A2 profile fixed polymer stock. Provides a stable cheek weld, high durability, and features a trapdoor for the cleaning kit.' }
+      { id: 'flash_hider', name: 'A2 Flash Hider', targetPos: { x: 15, y: 50 }, labelPos: { x: 10, y: 20 }, desc: 'Standard A2 birdcage flash hider. Features closed bottom slots to prevent dust kick-up when firing prone.' },
+      { id: 'barrel', name: '20" Chrome-Lined Barrel', targetPos: { x: 25, y: 50 }, labelPos: { x: 25, y: 15 }, desc: '20-inch 4150 CMV steel barrel, chrome-lined bore and chamber. 1:7 RH twist rate optimized for 62gr M855 penetrator rounds.' },
+      { id: 'front_sight', name: 'A2 Front Sight Base', targetPos: { x: 23, y: 46 }, labelPos: { x: 15, y: 25 }, desc: 'Forged A2 profile front sight base with bayonet lug. Pinned to the barrel, doubling as the gas block for the rifle-length gas system.' },
+      { id: 'handguard', name: 'Polymer Handguard', targetPos: { x: 35, y: 50 }, labelPos: { x: 35, y: 85 }, desc: 'Standard ribbed polymer handguard with internal aluminum heat shields. Protects the stainless steel gas tube and operator hands.' },
+      { id: 'upper', name: 'Upper Receiver', targetPos: { x: 45, y: 48 }, labelPos: { x: 40, y: 15 }, desc: 'Forged 7075-T6 aluminum flat-top upper receiver with Mil-Spec hardcoat anodizing. Houses the M16-profile bolt carrier group.' },
+      { id: 'carry_handle', name: 'Detachable Carry Handle', targetPos: { x: 45, y: 43 }, labelPos: { x: 50, y: 10 }, desc: 'Detachable A2 carry handle mounted to the Picatinny rail. Features integrated rear sights adjustable for windage and elevation.' },
+      { id: 'ejection_port', name: 'Ejection Port Cover', targetPos: { x: 48, y: 50 }, labelPos: { x: 60, y: 20 }, desc: 'Spring-loaded stamped steel dust cover. Automatically flips open when the bolt carrier cycles backward.' },
+      { id: 'forward_assist', name: 'Forward Assist', targetPos: { x: 51, y: 49 }, labelPos: { x: 70, y: 25 }, desc: 'Plunger mechanism used to manually force the bolt carrier forward into battery if fouled by carbon or debris.' },
+      { id: 'charging_handle', name: 'Charging Handle', targetPos: { x: 52, y: 46 }, labelPos: { x: 60, y: 15 }, desc: 'T-shaped forged aluminum handle used to manually cycle the action, chamber a round, or clear malfunctions.' },
+      { id: 'lower', name: 'Lower Receiver', targetPos: { x: 45, y: 53 }, labelPos: { x: 40, y: 80 }, desc: 'Forged 7075-T6 aluminum lower receiver. Houses the fire control group, magazine catch, and bolt release mechanism.' },
+      { id: 'trigger', name: 'Fire Control Group', targetPos: { x: 47, y: 55 }, labelPos: { x: 50, y: 85 }, desc: 'Standard mil-spec trigger group featuring a heavy 6-8 lb pull. Provides Safe, Semi, and 3-Round Burst selector options.' },
+      { id: 'grip', name: 'A2 Pistol Grip', targetPos: { x: 49, y: 60 }, labelPos: { x: 60, y: 85 }, desc: 'Standard A2 profile polymer pistol grip with a single finger groove and aggressive texturing.' },
+      { id: 'magazine', name: 'STANAG Magazine', targetPos: { x: 43, y: 65 }, labelPos: { x: 35, y: 90 }, desc: 'Standard NATO STANAG 30-round curved box magazine. Aluminum body with an anti-tilt follower and green/tan follower.' },
+      { id: 'buffer', name: 'Buffer Tube', targetPos: { x: 60, y: 50 }, labelPos: { x: 70, y: 15 }, desc: 'Rifle-length receiver extension. Houses the heavy rifle buffer and spring, absorbing recoil and cycling the action.' },
+      { id: 'stock', name: 'A2 Fixed Stock', targetPos: { x: 70, y: 52 }, labelPos: { x: 80, y: 20 }, desc: 'A2 profile fixed polymer stock. Provides a stable cheek weld, high durability, and features a trapdoor for the cleaning kit.' }
     ]
   },
   'R4': {
@@ -50,17 +52,17 @@ const weaponConfigs = {
     caliber: '5.56x45mm NATO',
     rateOfFire: '700-900 RPM',
     parts: [
-      { id: 'flash_hider', name: 'A2 Flash Hider', node: { x: 30, y: 50 }, label: { x: 20, y: 20 }, desc: 'Standard A2 flash hider.' },
-      { id: 'barrel', name: '14.5" Carbine Barrel', node: { x: 35, y: 50 }, label: { x: 30, y: 15 }, desc: 'Short 14.5-inch 4150 CMV barrel. Carbine-length gas system designed for CQB engagements.' },
-      { id: 'handguard', name: 'Quad Rail System', node: { x: 45, y: 50 }, label: { x: 40, y: 85 }, desc: 'Free-floated aluminum quad-rail handguard system for mounting tactical lights, lasers, and vertical grips.' },
-      { id: 'optic', name: 'Red Dot Optic', node: { x: 52, y: 40 }, label: { x: 50, y: 15 }, desc: 'Close-quarters reflex red dot sight mounted on the upper receiver rail for rapid target acquisition.' },
-      { id: 'upper', name: 'Upper Receiver', node: { x: 55, y: 48 }, label: { x: 60, y: 15 }, desc: 'Forged 7075-T6 aluminum flat-top upper receiver.' },
-      { id: 'charging_handle', name: 'Charging Handle', node: { x: 58, y: 46 }, label: { x: 70, y: 20 }, desc: 'Used to manually chamber a round or clear malfunctions.' },
-      { id: 'lower', name: 'Lower Receiver', node: { x: 55, y: 52 }, label: { x: 45, y: 80 }, desc: 'Forged 7075-T6 aluminum lower receiver containing the fire control group.' },
-      { id: 'trigger', name: 'Trigger Assembly', node: { x: 57, y: 55 }, label: { x: 55, y: 85 }, desc: 'Mil-spec single-stage trigger group.' },
-      { id: 'grip', name: 'Ergonomic Grip', node: { x: 59, y: 62 }, label: { x: 65, y: 85 }, desc: 'Upgraded ergonomic pistol grip with stippling.' },
-      { id: 'magazine', name: 'PMAG 30', node: { x: 52, y: 65 }, label: { x: 40, y: 85 }, desc: 'Polymer 30-round magazine with a constant-curve internal geometry.' },
-      { id: 'stock', name: 'Telescopic Stock', node: { x: 70, y: 53 }, label: { x: 85, y: 20 }, desc: 'Adjustable 6-position telescopic carbine stock for varying body armor thicknesses.' }
+      { id: 'flash_hider', name: 'A2 Flash Hider', targetPos: { x: 26, y: 54 }, labelPos: { x: 15, y: 20 }, desc: 'Standard A2 flash hider.' },
+      { id: 'barrel', name: '14.5" Carbine Barrel', targetPos: { x: 36, y: 54 }, labelPos: { x: 30, y: 15 }, desc: 'Short 14.5-inch 4150 CMV barrel. Carbine-length gas system designed for CQB engagements.' },
+      { id: 'handguard', name: 'Quad Rail System', targetPos: { x: 55, y: 54 }, labelPos: { x: 50, y: 85 }, desc: 'Free-floated aluminum quad-rail handguard system for mounting tactical lights, lasers, and vertical grips.' },
+      { id: 'optic', name: 'Red Dot Optic', targetPos: { x: 80, y: 40 }, labelPos: { x: 65, y: 15 }, desc: 'Close-quarters reflex red dot sight mounted on the upper receiver rail for rapid target acquisition.' },
+      { id: 'upper', name: 'Upper Receiver', targetPos: { x: 80, y: 52 }, labelPos: { x: 75, y: 15 }, desc: 'Forged 7075-T6 aluminum flat-top upper receiver.' },
+      { id: 'charging_handle', name: 'Charging Handle', targetPos: { x: 85, y: 48 }, labelPos: { x: 90, y: 20 }, desc: 'Used to manually chamber a round or clear malfunctions.' },
+      { id: 'lower', name: 'Lower Receiver', targetPos: { x: 80, y: 60 }, labelPos: { x: 65, y: 80 }, desc: 'Forged 7075-T6 aluminum lower receiver containing the fire control group.' },
+      { id: 'trigger', name: 'Trigger Assembly', targetPos: { x: 82, y: 64 }, labelPos: { x: 75, y: 85 }, desc: 'Mil-spec single-stage trigger group.' },
+      { id: 'grip', name: 'Ergonomic Grip', targetPos: { x: 88, y: 72 }, labelPos: { x: 90, y: 85 }, desc: 'Upgraded ergonomic pistol grip with stippling.' },
+      { id: 'magazine', name: 'PMAG 30', targetPos: { x: 75, y: 75 }, labelPos: { x: 55, y: 90 }, desc: 'Polymer 30-round magazine with a constant-curve internal geometry.' },
+      { id: 'stock', name: 'Telescopic Stock', targetPos: { x: 95, y: 60 }, labelPos: { x: 95, y: 30 }, desc: 'Adjustable 6-position telescopic carbine stock for varying body armor thicknesses.' }
     ]
   },
   '9MM': {
@@ -69,16 +71,16 @@ const weaponConfigs = {
     caliber: '9x19mm Parabellum',
     rateOfFire: 'SEMI-AUTO',
     parts: [
-      { id: 'slide', name: 'Steel Slide', node: { x: 40, y: 45 }, label: { x: 30, y: 20 }, desc: 'Machined steel slide with front and rear cocking serrations. Houses the recoil spring assembly, extractor, and firing pin.' },
-      { id: 'sights', name: 'Tritium Night Sights', node: { x: 35, y: 42 }, label: { x: 45, y: 15 }, desc: 'Steel 3-dot sights equipped with tritium inserts for low-light aiming.' },
-      { id: 'barrel', name: '4.5" Cold Hammer Forged Barrel', node: { x: 45, y: 46 }, label: { x: 60, y: 15 }, desc: 'Internal 4.5-inch 9mm barrel. Cold hammer forged for extreme longevity and precision.' },
-      { id: 'ejection_port', name: 'Ejection Port & Extractor', node: { x: 50, y: 45 }, label: { x: 70, y: 25 }, desc: 'Large ejection port. Features a heavy-duty claw extractor that doubles as a tactile loaded chamber indicator.' },
-      { id: 'frame', name: 'Polymer Frame', node: { x: 45, y: 52 }, label: { x: 30, y: 80 }, desc: 'Lightweight, high-strength polymer frame. Includes a standard Picatinny accessory rail for weapon lights.' },
-      { id: 'trigger', name: 'Striker-Fired Trigger', node: { x: 48, y: 55 }, label: { x: 40, y: 85 }, desc: 'Striker-fired action with a consistent 5.5 lb trigger pull. Features an integrated blade safety.' },
-      { id: 'slide_catch', name: 'Slide Stop Lever', node: { x: 50, y: 50 }, label: { x: 65, y: 80 }, desc: 'Ambidextrous lever that automatically locks the slide back when the magazine is empty.' },
-      { id: 'mag_release', name: 'Magazine Release', node: { x: 52, y: 53 }, label: { x: 75, y: 80 }, desc: 'Reversible push-button magazine release.' },
-      { id: 'grip', name: 'Textured Grip', node: { x: 55, y: 60 }, label: { x: 80, y: 85 }, desc: 'Ergonomic grip housing with aggressive stippling and interchangeable backstraps.' },
-      { id: 'magazine', name: '17-Round Magazine', node: { x: 57, y: 70 }, label: { x: 65, y: 90 }, desc: 'Double-stack 17-round steel magazine with polymer baseplate and witness holes.' }
+      { id: 'slide', name: 'Steel Slide', targetPos: { x: 45, y: 40 }, labelPos: { x: 30, y: 20 }, desc: 'Machined steel slide with front and rear cocking serrations. Houses the recoil spring assembly, extractor, and firing pin.' },
+      { id: 'sights', name: 'Tritium Night Sights', targetPos: { x: 40, y: 37 }, labelPos: { x: 45, y: 15 }, desc: 'Steel 3-dot sights equipped with tritium inserts for low-light aiming.' },
+      { id: 'barrel', name: '4.5" Cold Hammer Forged Barrel', targetPos: { x: 50, y: 41 }, labelPos: { x: 60, y: 15 }, desc: 'Internal 4.5-inch 9mm barrel. Cold hammer forged for extreme longevity and precision.' },
+      { id: 'ejection_port', name: 'Ejection Port & Extractor', targetPos: { x: 55, y: 40 }, labelPos: { x: 70, y: 25 }, desc: 'Large ejection port. Features a heavy-duty claw extractor that doubles as a tactile loaded chamber indicator.' },
+      { id: 'frame', name: 'Polymer Frame', targetPos: { x: 50, y: 47 }, labelPos: { x: 30, y: 80 }, desc: 'Lightweight, high-strength polymer frame. Includes a standard Picatinny accessory rail for weapon lights.' },
+      { id: 'trigger', name: 'Striker-Fired Trigger', targetPos: { x: 53, y: 50 }, labelPos: { x: 40, y: 85 }, desc: 'Striker-fired action with a consistent 5.5 lb trigger pull. Features an integrated blade safety.' },
+      { id: 'slide_catch', name: 'Slide Stop Lever', targetPos: { x: 55, y: 45 }, labelPos: { x: 65, y: 80 }, desc: 'Ambidextrous lever that automatically locks the slide back when the magazine is empty.' },
+      { id: 'mag_release', name: 'Magazine Release', targetPos: { x: 57, y: 48 }, labelPos: { x: 75, y: 80 }, desc: 'Reversible push-button magazine release.' },
+      { id: 'grip', name: 'Textured Grip', targetPos: { x: 60, y: 55 }, labelPos: { x: 80, y: 85 }, desc: 'Ergonomic grip housing with aggressive stippling and interchangeable backstraps.' },
+      { id: 'magazine', name: '17-Round Magazine', targetPos: { x: 62, y: 65 }, labelPos: { x: 65, y: 95 }, desc: 'Double-stack 17-round steel magazine with polymer baseplate and witness holes.' }
     ]
   }
 };
@@ -163,7 +165,7 @@ export default function InteractiveSchematic({ rifle }) {
         </div>
       </div>
 
-      {/* CENTRAL SCHEMATIC AREA (Enlarged) */}
+      {/* CENTRAL SCHEMATIC AREA */}
       <div style={{ 
         flex: 1, 
         marginTop: '2rem', 
@@ -173,14 +175,7 @@ export default function InteractiveSchematic({ rifle }) {
         position: 'relative'
       }}>
         
-        {/* Background Decorative Wireframes */}
-        <div style={{ position: 'absolute', top: '10%', left: '5%', width: '90%', height: '80%', pointerEvents: 'none', opacity: 0.3, zIndex: 1 }}>
-          <div style={{ position: 'absolute', top: '5%', left: '15%', width: '70%', height: '50%', border: '2px solid #0cd0cd', borderBottom: 'none' }} />
-          <div style={{ position: 'absolute', top: '55%', left: '25%', width: '50%', height: '40%', border: '2px solid #0cd0cd', borderTop: 'none' }} />
-          <div style={{ position: 'absolute', top: '50%', left: '20%', width: '60%', height: '1px', backgroundColor: '#0cd0cd' }} />
-        </div>
-
-        {/* Main Weapon Container (Enlarged width) */}
+        {/* Main Weapon Container */}
         <div style={{ 
           position: 'relative', 
           width: '100%', 
@@ -196,7 +191,7 @@ export default function InteractiveSchematic({ rifle }) {
               width: '100%', 
               height: '100%', 
               objectFit: 'contain',
-              transform: 'scale(1.2)', // Scale up the image inside the container to make it larger
+              transform: 'scale(1.1)', // Scale up the image inside the container
               filter: 'drop-shadow(0 0 15px rgba(12, 208, 205, 0.4)) contrast(1.5) brightness(1.2)'
             }} 
           />
@@ -206,13 +201,13 @@ export default function InteractiveSchematic({ rifle }) {
             {config.parts.map(part => (
               <line 
                 key={`line-${part.id}`}
-                x1={`${part.node.x}%`} 
-                y1={`${part.node.y}%`} 
-                x2={`${part.label.x}%`} 
-                y2={`${part.label.y}%`} 
+                x1={`${part.labelPos.x}%`} 
+                y1={`${part.labelPos.y}%`} 
+                x2={`${part.targetPos.x}%`} 
+                y2={`${part.targetPos.y}%`} 
                 stroke={selectedPart?.id === part.id ? '#0cd0cd' : 'rgba(12, 208, 205, 0.3)'} 
                 strokeWidth={selectedPart?.id === part.id ? '2' : '1'} 
-                strokeDasharray={selectedPart?.id === part.id ? 'none' : '2,2'}
+                strokeDasharray={selectedPart?.id === part.id ? 'none' : '4,4'}
                 style={{ 
                   transition: 'all 0.2s',
                   filter: selectedPart?.id === part.id ? 'drop-shadow(0 0 5px #0cd0cd)' : 'none' 
@@ -221,7 +216,7 @@ export default function InteractiveSchematic({ rifle }) {
             ))}
           </svg>
 
-          {/* Interactive Text Labels */}
+          {/* Interactive Text Labels with Floating Nodes */}
           {config.parts.map(part => (
              <div 
                key={`label-${part.id}`}
@@ -229,60 +224,72 @@ export default function InteractiveSchematic({ rifle }) {
                onMouseLeave={() => setSelectedPart(null)}
                style={{
                  position: 'absolute',
-                 left: `${part.label.x}%`,
-                 top: `${part.label.y}%`,
+                 left: `${part.labelPos.x}%`,
+                 top: `${part.labelPos.y}%`,
                  transform: 'translate(-50%, -50%)',
+                 display: 'flex',
+                 alignItems: 'center',
+                 gap: '10px',
+                 cursor: 'crosshair',
+                 zIndex: 35,
+                 transition: 'all 0.2s ease',
+                 opacity: selectedPart && selectedPart.id !== part.id ? 0.3 : 1
+               }}
+             >
+               {/* The glowing target dot (floats next to label) */}
+               <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '20px', height: '20px' }}>
+                 <div style={{ 
+                   width: selectedPart?.id === part.id ? '16px' : '8px', 
+                   height: selectedPart?.id === part.id ? '16px' : '8px', 
+                   backgroundColor: selectedPart?.id === part.id ? '#0cd0cd' : 'transparent',
+                   border: '2px solid #0cd0cd',
+                   borderRadius: '50%', 
+                   transition: 'all 0.2s ease',
+                   boxShadow: selectedPart?.id === part.id ? '0 0 15px #0cd0cd' : 'none'
+                 }} />
+                 {/* Expanding radar ring on hover */}
+                 {selectedPart?.id === part.id && (
+                   <div style={{ position: 'absolute', width: '30px', height: '30px', border: '1px solid #0cd0cd', borderRadius: '50%', animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite' }} />
+                 )}
+               </div>
+
+               {/* The Text Label */}
+               <div style={{
                  color: selectedPart?.id === part.id ? '#020a14' : '#0cd0cd',
                  backgroundColor: selectedPart?.id === part.id ? '#0cd0cd' : 'rgba(4, 21, 36, 0.8)',
                  fontSize: '0.7rem',
                  fontWeight: 'bold',
-                 cursor: 'crosshair',
-                 zIndex: 35,
                  padding: '4px 8px',
                  border: `1px solid ${selectedPart?.id === part.id ? '#0cd0cd' : 'rgba(12, 208, 205, 0.5)'}`,
                  whiteSpace: 'nowrap',
+                 boxShadow: selectedPart?.id === part.id ? '0 0 10px #0cd0cd' : 'none',
+                 textShadow: selectedPart?.id === part.id ? 'none' : '0 0 5px rgba(12,208,205,0.5)',
                  transition: 'all 0.2s ease',
-                 boxShadow: selectedPart?.id === part.id ? '0 0 10px #0cd0cd' : 'none'
-               }}
-             >
-               {part.name.toUpperCase()}
+               }}>
+                 {part.name.toUpperCase()}
+               </div>
              </div>
           ))}
 
-          {/* Interactive Target Nodes */}
-          {config.parts.map((part) => (
-            <div
-              key={`node-${part.id}`}
-              onMouseEnter={() => setSelectedPart(part)}
-              onMouseLeave={() => setSelectedPart(null)}
-              style={{
-                position: 'absolute',
-                left: `${part.node.x}%`,
-                top: `${part.node.y}%`,
-                width: '30px',
-                height: '30px',
-                transform: 'translate(-50%, -50%)',
-                cursor: 'crosshair',
-                zIndex: 30,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}
-            >
-              <div style={{ 
-                width: selectedPart?.id === part.id ? '16px' : '6px', 
-                height: selectedPart?.id === part.id ? '16px' : '6px', 
-                backgroundColor: selectedPart?.id === part.id ? '#0cd0cd' : 'transparent',
-                border: '1px solid #0cd0cd',
-                borderRadius: '50%', 
-                transition: 'all 0.2s ease',
-                boxShadow: selectedPart?.id === part.id ? '0 0 15px #0cd0cd' : 'none'
-              }} />
-              {/* Optional expanding radar ring on hover */}
-              {selectedPart?.id === part.id && (
-                <div style={{ position: 'absolute', width: '30px', height: '30px', border: '1px solid #0cd0cd', borderRadius: '50%', animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite' }} />
-              )}
-            </div>
+          {/* Physical dots on the gun itself (targetPos) so users see where the line is pointing */}
+          {config.parts.map(part => (
+             <div 
+               key={`target-${part.id}`}
+               style={{
+                 position: 'absolute',
+                 left: `${part.targetPos.x}%`,
+                 top: `${part.targetPos.y}%`,
+                 transform: 'translate(-50%, -50%)',
+                 width: '4px',
+                 height: '4px',
+                 backgroundColor: '#0cd0cd',
+                 borderRadius: '50%',
+                 pointerEvents: 'none',
+                 zIndex: 30,
+                 boxShadow: '0 0 5px #0cd0cd',
+                 opacity: selectedPart?.id === part.id ? 1 : 0.5
+               }}
+             />
           ))}
         </div>
       </div>
@@ -300,7 +307,7 @@ export default function InteractiveSchematic({ rifle }) {
           zIndex: 50,
           boxShadow: '0 0 30px rgba(0,0,0,0.9), inset 0 0 15px rgba(12,208,205,0.3)',
           backdropFilter: 'blur(10px)',
-          pointerEvents: 'none' // Prevent mouse from accidentally staying hovered over the description instead of the node
+          pointerEvents: 'none' // Auto-vanish when mouse leaves the target node
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #0cd0cd', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
             <div>
