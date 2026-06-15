@@ -1,275 +1,343 @@
 'use client';
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
+import { useState } from 'react';
 
 const weaponConfigs = {
   'M14': {
-    title: 'M14 TACTICAL SCHEMATIC',
+    title: 'M14 GARAND',
     image: '/weapons/m14.png',
-    specs: [
-      { label: 'Caliber', val: '7.62x51mm NATO', char: 'C' },
-      { label: 'Muzzle Velocity', val: '2,800 ft/s', char: 'V' },
-      { label: 'Action', val: 'Gas-operated', char: 'A' },
-      { label: 'Effective Range', val: '460m (Point)', char: 'R' }
-    ],
-    lengthLine: '44.3 INCHES',
-    slices: [
-      { id: 'barrel', name: 'Barrel Assembly', clip: 'polygon(0% 0%, 35% 0%, 35% 100%, 0% 100%)', explodedX: -80, explodedY: -30 },
-      { id: 'receiver', name: 'Receiver & Magazine', clip: 'polygon(35% 0%, 65% 0%, 65% 100%, 35% 100%)', explodedX: 0, explodedY: 40 },
-      { id: 'stock', name: 'Wooden Stock', clip: 'polygon(65% 0%, 100% 0%, 100% 100%, 65% 100%)', explodedX: 80, explodedY: -20 }
+    caliber: '7.62x51mm NATO',
+    rateOfFire: '700 RPM',
+    parts: [
+      { 
+        id: 'barrel', 
+        name: 'Barrel & Flash Suppressor', 
+        hitbox: { left: '0%', top: '35%', width: '40%', height: '30%' },
+        desc: 'A 22-inch barrel equipped with a long, slotted flash suppressor. Designed for maximum accuracy and range with the 7.62x51mm NATO cartridge. It incorporates the gas cylinder mechanism below the barrel.'
+      },
+      { 
+        id: 'receiver', 
+        name: 'Receiver & Action', 
+        hitbox: { left: '40%', top: '20%', width: '25%', height: '50%' },
+        desc: 'The core of the M14, housing the rotating bolt and operating rod assembly. It operates using a short-stroke gas piston system. Includes the rear peep sight and stripper clip guide.'
+      },
+      { 
+        id: 'stock', 
+        name: 'Wooden Stock', 
+        hitbox: { left: '65%', top: '30%', width: '35%', height: '40%' },
+        desc: 'A traditional sloping wooden chassis that provides exceptional durability and a classic profile. It houses the trigger group assembly and features a hinged steel buttplate for cleaning kit storage.'
+      },
+      { 
+        id: 'magazine', 
+        name: '20-Round Box Magazine', 
+        hitbox: { left: '40%', top: '70%', width: '15%', height: '25%' },
+        desc: 'A detachable 20-round double-stack box magazine feeding 7.62x51mm ammunition. It rocks into place and is secured by a paddle release.'
+      }
     ]
   },
   'M16': {
-    title: 'M16 TACTICAL SCHEMATIC',
+    title: 'M16A4',
     image: '/weapons/m16.png',
-    specs: [
-      { label: 'Caliber', val: '5.56x45mm NATO', char: 'C' },
-      { label: 'Muzzle Velocity', val: '3,150 ft/s', char: 'V' },
-      { label: 'Action', val: 'Direct Impingement', char: 'A' },
-      { label: 'Effective Range', val: '550m (Point)', char: 'R' }
-    ],
-    lengthLine: '39.5 INCHES',
-    slices: [
-      { id: 'barrel', name: 'Barrel & Handguard', clip: 'polygon(0% 0%, 45% 0%, 45% 100%, 0% 100%)', explodedX: -100, explodedY: -20 },
-      { id: 'receiver', name: 'Upper & Lower Receiver', clip: 'polygon(45% 0%, 75% 0%, 75% 100%, 45% 100%)', explodedX: 0, explodedY: 50 },
-      { id: 'stock', name: 'Fixed Stock', clip: 'polygon(75% 0%, 100% 0%, 100% 100%, 75% 100%)', explodedX: 90, explodedY: -10 }
+    caliber: '5.56x45mm NATO',
+    rateOfFire: '700-950 RPM',
+    parts: [
+      { 
+        id: 'barrel', 
+        name: 'Barrel & Handguard', 
+        hitbox: { left: '0%', top: '30%', width: '45%', height: '35%' },
+        desc: '20-inch barrel maximizing the ballistic potential of the 5.56mm round. Fitted with a birdcage flash hider and a ribbed polymer handguard protecting the gas tube.'
+      },
+      { 
+        id: 'upper', 
+        name: 'Upper Receiver', 
+        hitbox: { left: '45%', top: '20%', width: '30%', height: '25%' },
+        desc: 'Forged aluminum upper receiver housing the bolt carrier group. Features an integrated carry handle (A2) or flat-top rail (A4) with adjustable rear sights.'
+      },
+      { 
+        id: 'lower', 
+        name: 'Lower Receiver & Grip', 
+        hitbox: { left: '45%', top: '45%', width: '20%', height: '35%' },
+        desc: 'Contains the fire control group, magazine well, and buffer tube interface. Fitted with the standard A2 profile pistol grip.'
+      },
+      { 
+        id: 'stock', 
+        name: 'Fixed Polymer Stock', 
+        hitbox: { left: '75%', top: '30%', width: '25%', height: '40%' },
+        desc: 'A2 profile fixed polymer stock providing a stable cheek weld and housing the rifle-length recoil buffer spring system.'
+      },
+      { 
+        id: 'magazine', 
+        name: '30-Round Magazine', 
+        hitbox: { left: '40%', top: '75%', width: '15%', height: '25%' },
+        desc: 'Standard STANAG 30-round curved box magazine. Constructed from lightweight aluminum or polymer.'
+      }
     ]
   },
   'R4': {
-    title: 'R4 TACTICAL SCHEMATIC',
+    title: 'R4 CARBINE',
     image: '/weapons/r4.png',
-    specs: [
-      { label: 'Caliber', val: '5.56x45mm NATO', char: 'C' },
-      { label: 'Muzzle Velocity', val: '2,900 ft/s', char: 'V' },
-      { label: 'Action', val: 'Direct Impingement', char: 'A' },
-      { label: 'Effective Range', val: '500m (Point)', char: 'R' }
-    ],
-    lengthLine: '33.0 INCHES (Collapsed)',
-    slices: [
-      { id: 'barrel', name: 'Carbine Barrel & Rail', clip: 'polygon(0% 0%, 45% 0%, 45% 100%, 0% 100%)', explodedX: -90, explodedY: -30 },
-      { id: 'receiver', name: 'Receiver Group', clip: 'polygon(45% 0%, 70% 0%, 70% 100%, 45% 100%)', explodedX: 0, explodedY: 45 },
-      { id: 'stock', name: 'Telescopic Stock', clip: 'polygon(70% 0%, 100% 0%, 100% 100%, 70% 100%)', explodedX: 80, explodedY: -15 }
+    caliber: '5.56x45mm NATO',
+    rateOfFire: '700-900 RPM',
+    parts: [
+      { 
+        id: 'barrel', 
+        name: 'Carbine Barrel & Rail', 
+        hitbox: { left: '0%', top: '35%', width: '45%', height: '30%' },
+        desc: 'Short 14.5-inch carbine barrel fitted with a quad-rail handguard system for mounting tactical accessories, lights, and grips.'
+      },
+      { 
+        id: 'receiver', 
+        name: 'Receiver Group', 
+        hitbox: { left: '45%', top: '20%', width: '30%', height: '50%' },
+        desc: 'Flat-top upper and standard lower receiver. Features an optic mounted on the top rail and ambidextrous controls.'
+      },
+      { 
+        id: 'stock', 
+        name: 'Telescopic Stock', 
+        hitbox: { left: '75%', top: '35%', width: '25%', height: '35%' },
+        desc: 'Adjustable 6-position telescopic carbine stock allowing the operator to adjust the length of pull for close quarters combat.'
+      }
     ]
   },
   '9MM': {
-    title: '9MM PISTOL SCHEMATIC',
+    title: '9MM TACTICAL',
     image: '/weapons/9mm.png',
-    specs: [
-      { label: 'Caliber', val: '9x19mm Parabellum', char: 'C' },
-      { label: 'Muzzle Velocity', val: '1,250 ft/s', char: 'V' },
-      { label: 'Action', val: 'Short Recoil', char: 'A' },
-      { label: 'Effective Range', val: '50m', char: 'R' }
-    ],
-    lengthLine: '8.5 INCHES',
-    slices: [
-      { id: 'barrel', name: 'Slide & Barrel', clip: 'polygon(0% 0%, 60% 0%, 60% 40%, 0% 40%)', explodedX: -60, explodedY: -40 },
-      { id: 'frame', name: 'Lower Frame', clip: 'polygon(0% 40%, 50% 40%, 50% 100%, 0% 100%)', explodedX: -30, explodedY: 40 },
-      { id: 'grip', name: 'Grip & Magazine', clip: 'polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%)', explodedX: 60, explodedY: 20 }
+    caliber: '9x19mm Parabellum',
+    rateOfFire: 'SEMI-AUTO',
+    parts: [
+      { 
+        id: 'slide', 
+        name: 'Slide Assembly', 
+        hitbox: { left: '10%', top: '20%', width: '60%', height: '35%' },
+        desc: 'The upper slide housing the barrel, recoil spring, extractor, and firing pin. Recoils backward to eject spent casings and load a fresh round.'
+      },
+      { 
+        id: 'frame', 
+        name: 'Lower Frame', 
+        hitbox: { left: '10%', top: '55%', width: '40%', height: '30%' },
+        desc: 'The polymer chassis containing the trigger mechanism, slide catch, and accessory rail.'
+      },
+      { 
+        id: 'grip', 
+        name: 'Pistol Grip & Mag Well', 
+        hitbox: { left: '50%', top: '55%', width: '40%', height: '40%' },
+        desc: 'Ergonomic grip housing the double-stack 15-round magazine. Features stippled texturing for maximum control.'
+      }
     ]
   }
 };
 
 export default function InteractiveSchematic({ rifle }) {
-  const [isExploded, setIsExploded] = useState(false);
-  const [hoveredPart, setHoveredPart] = useState(null);
-  const [mounted, setMounted] = useState(false);
+  const [selectedPart, setSelectedPart] = useState(null);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const type = rifle.rifleType || 'M14';
-  const config = weaponConfigs[type] || weaponConfigs['M14'];
-
-  if (!mounted) return null;
+  const type = rifle.rifleType || 'M16';
+  const config = weaponConfigs[type] || weaponConfigs['M16'];
 
   return (
     <div style={{
       position: 'relative',
-      background: 'linear-gradient(135deg, #020617 0%, #0f172a 100%)',
-      borderRadius: '16px',
-      border: '1px solid rgba(56, 189, 248, 0.15)',
+      backgroundColor: '#041524',
+      backgroundImage: `
+        linear-gradient(rgba(12, 208, 205, 0.15) 1px, transparent 1px), 
+        linear-gradient(90deg, rgba(12, 208, 205, 0.15) 1px, transparent 1px),
+        linear-gradient(rgba(12, 208, 205, 0.05) 1px, transparent 1px), 
+        linear-gradient(90deg, rgba(12, 208, 205, 0.05) 1px, transparent 1px)
+      `,
+      backgroundSize: '100px 100px, 100px 100px, 20px 20px, 20px 20px',
+      border: '2px solid #0cd0cd',
+      padding: '2rem',
+      fontFamily: 'monospace',
+      color: '#0cd0cd',
+      minHeight: '800px',
       overflow: 'hidden',
-      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.05)',
-      padding: '2.5rem',
       display: 'flex',
       flexDirection: 'column',
-      minHeight: '650px',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+      boxShadow: 'inset 0 0 50px rgba(12, 208, 205, 0.2)'
     }}>
-      {/* Background Grid Pattern */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none',
-        backgroundImage: 'linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px)',
-        backgroundSize: '40px 40px',
-        opacity: 0.8
-      }} />
+      
+      {/* Decorative Corner Brackets */}
+      <div style={{ position: 'absolute', top: 10, left: 10, width: 30, height: 30, borderTop: '2px solid #0cd0cd', borderLeft: '2px solid #0cd0cd' }} />
+      <div style={{ position: 'absolute', top: 10, right: 10, width: 30, height: 30, borderTop: '2px solid #0cd0cd', borderRight: '2px solid #0cd0cd' }} />
+      <div style={{ position: 'absolute', bottom: 10, left: 10, width: 30, height: 30, borderBottom: '2px solid #0cd0cd', borderLeft: '2px solid #0cd0cd' }} />
+      <div style={{ position: 'absolute', bottom: 10, right: 10, width: 30, height: 30, borderBottom: '2px solid #0cd0cd', borderRight: '2px solid #0cd0cd' }} />
 
-      {/* Blueprint Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 10 }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-            <div style={{ width: '8px', height: '24px', background: '#38bdf8', borderRadius: '4px', boxShadow: '0 0 10px rgba(56, 189, 248, 0.5)' }}></div>
-            <h3 style={{ color: '#f8fafc', margin: 0, textTransform: 'uppercase', letterSpacing: '3px', fontSize: '1.75rem', fontWeight: 800 }}>
-              {config.title}
-            </h3>
-          </div>
-          <div style={{ display: 'flex', gap: '1.5rem', marginTop: '1rem' }}>
-            <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(56, 189, 248, 0.2)', padding: '0.5rem 1rem', borderRadius: '6px' }}>
-              <span style={{ color: '#94a3b8', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px' }}>OWNER</span>
-              <div style={{ color: '#38bdf8', fontSize: '1.1rem', fontWeight: 'bold' }}>{rifle.name}</div>
-            </div>
-            <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(56, 189, 248, 0.2)', padding: '0.5rem 1rem', borderRadius: '6px' }}>
-              <span style={{ color: '#94a3b8', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px' }}>SERIAL NO.</span>
-              <div style={{ color: '#f8fafc', fontSize: '1.1rem', fontFamily: 'monospace' }}>{rifle.serialNumber}</div>
+      {/* HEADER SECTION */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', zIndex: 10 }}>
+        {/* Top Left: Title and Data */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+          <div style={{ fontSize: '0.7rem', backgroundColor: '#0cd0cd', color: '#041524', padding: '2px 8px', alignSelf: 'flex-start', fontWeight: 'bold' }}>PREMIUM UI</div>
+          <h1 style={{ fontSize: '3.5rem', margin: '0', fontWeight: 'bold', textShadow: '0 0 10px #0cd0cd', letterSpacing: '2px' }}>
+            {config.title}
+          </h1>
+          <div style={{ fontSize: '1rem', letterSpacing: '1px' }}>SERIAL: {rifle.serialNumber}</div>
+          <div style={{ fontSize: '1rem', letterSpacing: '1px' }}>OWNER: {rifle.name} ({rifle.class})</div>
+          <div style={{ fontSize: '1rem', letterSpacing: '1px' }}>CALIBER: {config.caliber}</div>
+          <div style={{ fontSize: '1rem', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            RATE OF FIRE: {config.rateOfFire}
+            <div style={{ width: '100px', height: '10px', border: '1px solid #0cd0cd', padding: '1px' }}>
+              <div style={{ width: '70%', height: '100%', backgroundColor: '#0cd0cd' }} />
             </div>
           </div>
         </div>
-        <button 
-          onClick={() => setIsExploded(!isExploded)}
-          style={{
-            background: isExploded ? 'rgba(56, 189, 248, 0.1)' : 'linear-gradient(to bottom, #0ea5e9, #0284c7)',
-            border: isExploded ? '1px solid #38bdf8' : 'none',
-            color: isExploded ? '#38bdf8' : '#fff',
-            padding: '0.75rem 2rem',
-            cursor: 'pointer',
-            borderRadius: '8px',
-            textTransform: 'uppercase',
-            fontWeight: '800',
-            letterSpacing: '1.5px',
-            transition: 'all 0.3s ease',
-            boxShadow: isExploded ? 'none' : '0 10px 20px -10px rgba(2, 132, 199, 0.5)',
-            transform: 'translateY(0)',
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-        >
-          {isExploded ? 'REASSEMBLE' : 'INITIATE 3D BLOWOUT'}
-        </button>
-      </div>
 
-      {/* Schematic Container */}
-      <div style={{ flex: 1, position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '3rem', marginBottom: '3rem' }}>
-        
-        <div style={{ position: 'relative', width: '100%', maxWidth: '800px', aspectRatio: '16/9' }}>
-          
-          {/* Base invisible image to establish bounding box */}
-          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0 }}>
-            <img src={config.image} alt="Reference" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        {/* Top Right: Status Panels */}
+        <div style={{ display: 'flex', gap: '2rem' }}>
+          {/* Legend */}
+          <div style={{ fontSize: '0.7rem' }}>
+            <div style={{ marginBottom: '5px' }}>LEGEND</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '3px' }}><div style={{ width: 8, height: 8, backgroundColor: '#0cd0cd' }}/> RECEIVER</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '3px' }}><div style={{ width: 8, height: 8, border: '1px solid #0cd0cd' }}/> KINETIC VECTOR</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '3px' }}><div style={{ width: 8, height: 8, border: '1px solid rgba(12,208,205,0.5)' }}/> DIAGNOSTIC</div>
           </div>
-
-          {/* Render Slices */}
-          {config.slices.map((slice) => {
-            const isHovered = hoveredPart === slice.id;
-            const x = isExploded ? slice.explodedX : 0;
-            const y = isExploded ? slice.explodedY : 0;
-            const scale = isHovered && isExploded ? 1.05 : 1;
-            
-            return (
-              <div
-                key={slice.id}
-                onMouseEnter={() => setHoveredPart(slice.id)}
-                onMouseLeave={() => setHoveredPart(null)}
-                style={{
-                  position: 'absolute',
-                  top: 0, left: 0, right: 0, bottom: 0,
-                  clipPath: slice.clip,
-                  cursor: isExploded ? 'crosshair' : 'default',
-                  transform: `translate(${x}px, ${y}px) scale(${scale})`,
-                  transition: 'all 0.8s cubic-bezier(0.25, 1, 0.5, 1)',
-                  zIndex: isHovered ? 20 : 10,
-                }}
-              >
-                <img 
-                  src={config.image} 
-                  alt={slice.name}
-                  style={{
-                    width: '100%', 
-                    height: '100%', 
-                    objectFit: 'contain',
-                    mixBlendMode: 'screen', // Removes black background
-                    filter: isHovered && isExploded 
-                      ? 'drop-shadow(0 0 20px rgba(56, 189, 248, 0.8)) brightness(1.2)' 
-                      : 'drop-shadow(0 0 10px rgba(0,0,0,0.5))'
-                  }} 
-                />
-
-                {/* Tooltip for the slice (only visible when exploded and hovered) */}
-                <div style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: `translate(-50%, -50%) scale(${isHovered && isExploded ? 1 : 0.8})`,
-                  opacity: isHovered && isExploded ? 1 : 0,
-                  background: 'rgba(2, 6, 23, 0.9)',
-                  border: '1px solid #38bdf8',
-                  padding: '0.75rem 1.25rem',
-                  borderRadius: '8px',
-                  color: '#fff',
-                  fontSize: '0.9rem',
-                  fontWeight: 'bold',
-                  pointerEvents: 'none',
-                  zIndex: 30,
-                  boxShadow: '0 10px 25px rgba(0,0,0,0.8), 0 0 15px rgba(56, 189, 248, 0.3)',
-                  backdropFilter: 'blur(4px)',
-                  transition: 'all 0.3s ease',
-                  whiteSpace: 'nowrap',
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px'
-                }}>
-                  {slice.name}
+          {/* Status Box */}
+          <div>
+            <div style={{ marginBottom: '5px', fontSize: '0.7rem' }}>STATUS</div>
+            <div style={{ border: '1px solid #0cd0cd', padding: '10px', minWidth: '150px' }}>
+              <div style={{ fontSize: '1.2rem', marginBottom: '10px', textShadow: '0 0 5px #0cd0cd' }}>SYSTEM OK<br/>SCAN ACTIVE</div>
+              {[60, 90, 40, 75].map((w, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '2px', fontSize: '0.6rem' }}>
+                  <span>{i+1}</span>
+                  <div style={{ flex: 1, height: '4px', border: '1px solid #0cd0cd' }}>
+                    <div style={{ width: `${w}%`, height: '100%', backgroundColor: '#0cd0cd' }} />
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Decorative blueprint lines joining parts when NOT exploded */}
-        <div style={{ 
-          position: 'absolute', width: '100%', height: '100%', pointerEvents: 'none',
-          opacity: isExploded ? 0 : 1,
-          transition: 'opacity 0.5s ease',
-          zIndex: 5
-        }}>
-          {/* Horizontal measurement line */}
-          <div style={{ position: 'absolute', bottom: '15%', left: '20%', width: '60%', height: '1px', borderBottom: '1px dashed rgba(56, 189, 248, 0.4)' }}></div>
-          <div style={{ position: 'absolute', bottom: '12%', left: '50%', transform: 'translateX(-50%)', color: '#38bdf8', fontSize: '0.85rem', fontFamily: 'monospace', letterSpacing: '2px' }}>
-            TOTAL LENGTH: {config.lengthLine}
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Blueprint Footer / Tech Specs */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(4, 1fr)', 
-        gap: '1.5rem', 
-        marginTop: 'auto', 
-        background: 'rgba(15, 23, 42, 0.4)',
-        border: '1px solid rgba(56, 189, 248, 0.1)',
-        borderRadius: '12px',
-        padding: '1.5rem'
-      }}>
-        {config.specs.map((spec, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-            <div style={{ 
-              width: 48, height: 48, 
-              borderRadius: '12px', 
-              background: 'rgba(56, 189, 248, 0.1)',
-              border: '1px solid rgba(56, 189, 248, 0.3)', 
-              display: 'flex', justifyContent: 'center', alignItems: 'center', 
-              color: '#38bdf8', fontSize: '1.25rem', fontWeight: 'bold',
-              boxShadow: 'inset 0 0 10px rgba(56, 189, 248, 0.1)'
-            }}>
-              {spec.char}
+      {/* CENTRAL SCHEMATIC AREA */}
+      <div style={{ flex: 1, position: 'relative', marginTop: '4rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        
+        {/* Background Decorative Wireframes (Mimicking Blueprint) */}
+        <div style={{ position: 'absolute', top: '-50px', left: '10%', width: '80%', height: '100%', pointerEvents: 'none', opacity: 0.3 }}>
+          {/* Fake receiver wireframe outline */}
+          <div style={{ position: 'absolute', top: '10%', left: '20%', width: '60%', height: '40%', border: '2px solid #0cd0cd', borderBottom: 'none' }} />
+          <div style={{ position: 'absolute', top: '50%', left: '30%', width: '40%', height: '30%', border: '2px solid #0cd0cd', borderTop: 'none' }} />
+          <div style={{ position: 'absolute', top: '45%', left: '25%', width: '50%', height: '1px', backgroundColor: '#0cd0cd' }} />
+          {/* Grid target markings */}
+          <div style={{ position: 'absolute', top: '20%', left: '15%', width: '20px', height: '20px', border: '1px solid #0cd0cd', borderRadius: '50%' }} />
+          <div style={{ position: 'absolute', top: '60%', left: '75%', width: '20px', height: '20px', border: '1px solid #0cd0cd', borderRadius: '50%' }} />
+        </div>
+
+        {/* Leader Lines (Decorative) */}
+        <div style={{ position: 'absolute', width: '100%', height: '100%', pointerEvents: 'none', zIndex: 5 }}>
+          <div style={{ position: 'absolute', top: '20%', left: '45%', width: '1px', height: '15%', backgroundColor: '#0cd0cd', opacity: 0.6 }} />
+          <div style={{ position: 'absolute', top: '20%', left: '35%', width: '10%', height: '1px', backgroundColor: '#0cd0cd', opacity: 0.6 }} />
+          <div style={{ position: 'absolute', top: '18%', left: '32%', fontSize: '0.6rem' }}>OPTIC SENSOR</div>
+          
+          <div style={{ position: 'absolute', bottom: '30%', left: '55%', width: '1px', height: '15%', backgroundColor: '#0cd0cd', opacity: 0.6 }} />
+          <div style={{ position: 'absolute', bottom: '30%', left: '55%', width: '10%', height: '1px', backgroundColor: '#0cd0cd', opacity: 0.6 }} />
+          <div style={{ position: 'absolute', bottom: '28%', left: '66%', fontSize: '0.6rem' }}>MAGAZINE WELL</div>
+        </div>
+
+        {/* Main Weapon Image Container */}
+        <div style={{ position: 'relative', width: '100%', maxWidth: '800px', aspectRatio: '16/9', zIndex: 10 }}>
+          <img 
+            src={config.image} 
+            alt="Rifle"
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'contain',
+              mixBlendMode: 'screen',
+              filter: 'drop-shadow(0 0 15px rgba(12, 208, 205, 0.4)) contrast(1.2)'
+            }} 
+          />
+
+          {/* Interactive Hitboxes */}
+          {config.parts.map((part) => (
+            <div
+              key={part.id}
+              onClick={() => setSelectedPart(part)}
+              style={{
+                position: 'absolute',
+                left: part.hitbox.left,
+                top: part.hitbox.top,
+                width: part.hitbox.width,
+                height: part.hitbox.height,
+                cursor: 'crosshair',
+                backgroundColor: selectedPart?.id === part.id ? 'rgba(12, 208, 205, 0.2)' : 'transparent',
+                border: selectedPart?.id === part.id ? '1px dashed #0cd0cd' : '1px solid transparent',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => { if(selectedPart?.id !== part.id) e.currentTarget.style.backgroundColor = 'rgba(12, 208, 205, 0.1)'; e.currentTarget.style.border = '1px solid rgba(12, 208, 205, 0.5)'; }}
+              onMouseLeave={(e) => { if(selectedPart?.id !== part.id) e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.border = '1px solid transparent'; }}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* DETAILED DESCRIPTION OVERLAY */}
+      {selectedPart && (
+        <div style={{
+          position: 'absolute',
+          top: '30%',
+          right: '5%',
+          width: '350px',
+          backgroundColor: 'rgba(4, 21, 36, 0.95)',
+          border: '1px solid #0cd0cd',
+          padding: '1.5rem',
+          zIndex: 50,
+          boxShadow: '0 0 30px rgba(0,0,0,0.8), inset 0 0 15px rgba(12,208,205,0.2)',
+          backdropFilter: 'blur(5px)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #0cd0cd', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
+            <h3 style={{ margin: 0, fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '1px', textShadow: '0 0 5px #0cd0cd' }}>
+              {selectedPart.name}
+            </h3>
+            <button 
+              onClick={() => setSelectedPart(null)}
+              style={{ background: 'none', border: 'none', color: '#0cd0cd', cursor: 'pointer', fontSize: '1.2rem', fontWeight: 'bold' }}
+            >×</button>
+          </div>
+          <div style={{ fontSize: '0.9rem', lineHeight: '1.6', color: '#aeeeee', textAlign: 'justify' }}>
+            {selectedPart.desc}
+          </div>
+          
+          <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px dashed rgba(12,208,205,0.4)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.7rem' }}>
+            <div>
+              <div style={{ opacity: 0.6 }}>MATERIAL</div>
+              <div>AEROSPACE GRADE</div>
             </div>
             <div>
-              <div style={{ color: '#94a3b8', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '0.25rem' }}>{spec.label}</div>
-              <div style={{ color: '#f8fafc', fontSize: '1.1rem', fontWeight: 600 }}>{spec.val}</div>
+              <div style={{ opacity: 0.6 }}>STATUS</div>
+              <div style={{ color: '#0cd0cd', fontWeight: 'bold' }}>NOMINAL</div>
             </div>
           </div>
-        ))}
+        </div>
+      )}
+
+      {/* BOTTOM SECTION */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '2rem', zIndex: 10 }}>
+        {/* Bottom Left: Diagnostics / Legend */}
+        <div style={{ border: '1px solid rgba(12,208,205,0.5)', padding: '10px', minWidth: '250px', fontSize: '0.7rem' }}>
+          <div style={{ backgroundColor: '#0cd0cd', color: '#041524', display: 'inline-block', padding: '2px 5px', fontWeight: 'bold', marginBottom: '10px' }}>LEGEND</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '5px', marginBottom: '5px' }}>
+            <span style={{ opacity: 0.7 }}>SERIAL:</span> <span>{rifle.serialNumber}</span>
+            <span style={{ opacity: 0.7 }}>ASSEMBLY:</span> <span>STANDARD MIL-SPEC</span>
+            <span style={{ opacity: 0.7 }}>CLASS:</span> <span>{rifle.class}</span>
+          </div>
+        </div>
+
+        {/* Bottom Right: Tactical Scan */}
+        <div style={{ border: '1px solid #0cd0cd', padding: '10px', display: 'flex', gap: '20px' }}>
+          <div style={{ fontSize: '0.7rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div>TACTICAL</div>
+            <div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 'bold', textShadow: '0 0 5px #0cd0cd' }}>OK</div>
+              <div style={{ fontSize: '0.5rem', letterSpacing: '2px' }}>DIAGNOSTICS</div>
+            </div>
+          </div>
+          <div style={{ width: '150px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', paddingBottom: '5px' }}>
+            <div style={{ fontSize: '0.6rem', marginBottom: '5px', textAlign: 'right' }}>SCAN ACTIVE</div>
+            <div style={{ width: '100%', height: '8px', border: '1px solid #0cd0cd', padding: '1px' }}>
+              <div style={{ width: '85%', height: '100%', backgroundColor: '#0cd0cd' }} />
+            </div>
+          </div>
+        </div>
       </div>
+      
     </div>
   );
 }
