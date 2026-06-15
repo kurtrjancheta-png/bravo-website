@@ -8,30 +8,17 @@ const weaponConfigs = {
     caliber: '7.62x51mm NATO',
     rateOfFire: '700 RPM',
     parts: [
-      { 
-        id: 'barrel', 
-        name: 'Barrel & Flash Suppressor', 
-        hitbox: { left: '0%', top: '35%', width: '40%', height: '30%' },
-        desc: 'A 22-inch barrel equipped with a long, slotted flash suppressor. Designed for maximum accuracy and range with the 7.62x51mm NATO cartridge. It incorporates the gas cylinder mechanism below the barrel.'
-      },
-      { 
-        id: 'receiver', 
-        name: 'Receiver & Action', 
-        hitbox: { left: '40%', top: '20%', width: '25%', height: '50%' },
-        desc: 'The core of the M14, housing the rotating bolt and operating rod assembly. It operates using a short-stroke gas piston system. Includes the rear peep sight and stripper clip guide.'
-      },
-      { 
-        id: 'stock', 
-        name: 'Wooden Stock', 
-        hitbox: { left: '65%', top: '30%', width: '35%', height: '40%' },
-        desc: 'A traditional sloping wooden chassis that provides exceptional durability and a classic profile. It houses the trigger group assembly and features a hinged steel buttplate for cleaning kit storage.'
-      },
-      { 
-        id: 'magazine', 
-        name: '20-Round Box Magazine', 
-        hitbox: { left: '40%', top: '70%', width: '15%', height: '25%' },
-        desc: 'A detachable 20-round double-stack box magazine feeding 7.62x51mm ammunition. It rocks into place and is secured by a paddle release.'
-      }
+      { id: 'flash_hider', name: 'Flash Suppressor', hitbox: { left: '5%', top: '38%', width: '10%', height: '10%' }, desc: 'Long, slotted flash suppressor to reduce muzzle flash and recoil.' },
+      { id: 'barrel', name: '22" Barrel', hitbox: { left: '15%', top: '38%', width: '25%', height: '10%' }, desc: '22-inch barrel designed for maximum accuracy with the 7.62x51mm NATO cartridge.' },
+      { id: 'gas_cylinder', name: 'Gas Cylinder', hitbox: { left: '20%', top: '48%', width: '15%', height: '8%' }, desc: 'Short-stroke gas piston system located below the barrel.' },
+      { id: 'front_sight', name: 'Front Sight', hitbox: { left: '10%', top: '32%', width: '5%', height: '6%' }, desc: 'Winged front sight post.' },
+      { id: 'receiver', name: 'Receiver & Bolt', hitbox: { left: '40%', top: '35%', width: '15%', height: '15%' }, desc: 'The core of the M14, housing the rotating bolt and operating rod assembly.' },
+      { id: 'rear_sight', name: 'Rear Peep Sight', hitbox: { left: '50%', top: '30%', width: '5%', height: '8%' }, desc: 'Fully adjustable rear peep sight for windage and elevation.' },
+      { id: 'trigger', name: 'Trigger Group', hitbox: { left: '45%', top: '50%', width: '10%', height: '15%' }, desc: 'Contains the trigger, hammer, and safety latch.' },
+      { id: 'magazine', name: '20-Round Magazine', hitbox: { left: '40%', top: '65%', width: '10%', height: '20%' }, desc: 'Detachable 20-round double-stack box magazine feeding 7.62x51mm ammunition.' },
+      { id: 'stock_front', name: 'Forestock', hitbox: { left: '25%', top: '42%', width: '15%', height: '10%' }, desc: 'The front section of the wooden chassis.' },
+      { id: 'stock_rear', name: 'Wooden Buttstock', hitbox: { left: '55%', top: '40%', width: '35%', height: '20%' }, desc: 'A traditional sloping wooden chassis that provides exceptional durability.' },
+      { id: 'buttplate', name: 'Hinged Buttplate', hitbox: { left: '90%', top: '40%', width: '5%', height: '20%' }, desc: 'Steel buttplate with a hinged door for the cleaning kit.' }
     ]
   },
   'M16': {
@@ -40,36 +27,21 @@ const weaponConfigs = {
     caliber: '5.56x45mm NATO',
     rateOfFire: '700-950 RPM',
     parts: [
-      { 
-        id: 'barrel', 
-        name: 'Barrel & Handguard', 
-        hitbox: { left: '0%', top: '30%', width: '45%', height: '35%' },
-        desc: '20-inch barrel maximizing the ballistic potential of the 5.56mm round. Fitted with a birdcage flash hider and a ribbed polymer handguard protecting the gas tube.'
-      },
-      { 
-        id: 'upper', 
-        name: 'Upper Receiver', 
-        hitbox: { left: '45%', top: '20%', width: '30%', height: '25%' },
-        desc: 'Forged aluminum upper receiver housing the bolt carrier group. Features an integrated carry handle (A2) or flat-top rail (A4) with adjustable rear sights.'
-      },
-      { 
-        id: 'lower', 
-        name: 'Lower Receiver & Grip', 
-        hitbox: { left: '45%', top: '45%', width: '20%', height: '35%' },
-        desc: 'Contains the fire control group, magazine well, and buffer tube interface. Fitted with the standard A2 profile pistol grip.'
-      },
-      { 
-        id: 'stock', 
-        name: 'Fixed Polymer Stock', 
-        hitbox: { left: '75%', top: '30%', width: '25%', height: '40%' },
-        desc: 'A2 profile fixed polymer stock providing a stable cheek weld and housing the rifle-length recoil buffer spring system.'
-      },
-      { 
-        id: 'magazine', 
-        name: '30-Round Magazine', 
-        hitbox: { left: '40%', top: '75%', width: '15%', height: '25%' },
-        desc: 'Standard STANAG 30-round curved box magazine. Constructed from lightweight aluminum or polymer.'
-      }
+      { id: 'flash_hider', name: 'Birdcage Flash Hider', hitbox: { left: '5%', top: '40%', width: '5%', height: '10%' }, desc: 'Standard A2 birdcage flash hider to dissipate muzzle flash.' },
+      { id: 'barrel', name: '20" Barrel', hitbox: { left: '10%', top: '40%', width: '20%', height: '8%' }, desc: '20-inch barrel maximizing the ballistic potential of the 5.56mm round.' },
+      { id: 'front_sight', name: 'Front Sight Base', hitbox: { left: '20%', top: '30%', width: '5%', height: '15%' }, desc: 'A2 profile front sight base with bayonet lug and gas block.' },
+      { id: 'handguard', name: 'Ribbed Handguard', hitbox: { left: '25%', top: '38%', width: '25%', height: '12%' }, desc: 'Ribbed polymer handguard protecting the gas tube.' },
+      { id: 'upper', name: 'Upper Receiver', hitbox: { left: '50%', top: '35%', width: '15%', height: '10%' }, desc: 'Forged aluminum upper receiver housing the bolt carrier group.' },
+      { id: 'carry_handle', name: 'Carry Handle / Rear Sight', hitbox: { left: '50%', top: '25%', width: '15%', height: '10%' }, desc: 'Integrated carry handle with adjustable rear sights.' },
+      { id: 'ejection_port', name: 'Ejection Port Cover', hitbox: { left: '55%', top: '40%', width: '5%', height: '5%' }, desc: 'Dust cover protecting the bolt carrier group from debris.' },
+      { id: 'forward_assist', name: 'Forward Assist', hitbox: { left: '60%', top: '38%', width: '5%', height: '5%' }, desc: 'Plunger to manually force the bolt carrier forward.' },
+      { id: 'charging_handle', name: 'Charging Handle', hitbox: { left: '65%', top: '32%', width: '5%', height: '5%' }, desc: 'T-shaped handle used to manually chamber a round.' },
+      { id: 'lower', name: 'Lower Receiver', hitbox: { left: '50%', top: '45%', width: '15%', height: '10%' }, desc: 'Contains the fire control group and magazine well.' },
+      { id: 'trigger', name: 'Trigger Assembly', hitbox: { left: '52%', top: '55%', width: '5%', height: '10%' }, desc: 'Standard mil-spec trigger group.' },
+      { id: 'grip', name: 'Pistol Grip', hitbox: { left: '58%', top: '55%', width: '8%', height: '20%' }, desc: 'A2 profile pistol grip.' },
+      { id: 'magazine', name: '30-Round Magazine', hitbox: { left: '48%', top: '65%', width: '10%', height: '25%' }, desc: 'Standard STANAG 30-round curved box magazine.' },
+      { id: 'buffer', name: 'Buffer Tube', hitbox: { left: '65%', top: '40%', width: '10%', height: '8%' }, desc: 'Houses the rifle-length recoil buffer spring system.' },
+      { id: 'stock', name: 'Fixed Polymer Stock', hitbox: { left: '75%', top: '35%', width: '20%', height: '20%' }, desc: 'A2 profile fixed polymer stock providing a stable cheek weld.' }
     ]
   },
   'R4': {
@@ -78,24 +50,17 @@ const weaponConfigs = {
     caliber: '5.56x45mm NATO',
     rateOfFire: '700-900 RPM',
     parts: [
-      { 
-        id: 'barrel', 
-        name: 'Carbine Barrel & Rail', 
-        hitbox: { left: '0%', top: '35%', width: '45%', height: '30%' },
-        desc: 'Short 14.5-inch carbine barrel fitted with a quad-rail handguard system for mounting tactical accessories, lights, and grips.'
-      },
-      { 
-        id: 'receiver', 
-        name: 'Receiver Group', 
-        hitbox: { left: '45%', top: '20%', width: '30%', height: '50%' },
-        desc: 'Flat-top upper and standard lower receiver. Features an optic mounted on the top rail and ambidextrous controls.'
-      },
-      { 
-        id: 'stock', 
-        name: 'Telescopic Stock', 
-        hitbox: { left: '75%', top: '35%', width: '25%', height: '35%' },
-        desc: 'Adjustable 6-position telescopic carbine stock allowing the operator to adjust the length of pull for close quarters combat.'
-      }
+      { id: 'flash_hider', name: 'Flash Hider', hitbox: { left: '10%', top: '40%', width: '5%', height: '10%' }, desc: 'Standard A2 flash hider.' },
+      { id: 'barrel', name: '14.5" Barrel', hitbox: { left: '15%', top: '40%', width: '15%', height: '8%' }, desc: 'Short 14.5-inch carbine barrel.' },
+      { id: 'handguard', name: 'Quad Rail System', hitbox: { left: '30%', top: '35%', width: '20%', height: '15%' }, desc: 'Quad-rail handguard system for mounting tactical accessories.' },
+      { id: 'optic', name: 'Optic Sight', hitbox: { left: '45%', top: '25%', width: '10%', height: '10%' }, desc: 'Close-quarters red dot optic mounted on the upper rail.' },
+      { id: 'upper', name: 'Upper Receiver', hitbox: { left: '50%', top: '35%', width: '15%', height: '10%' }, desc: 'Flat-top upper receiver.' },
+      { id: 'charging_handle', name: 'Charging Handle', hitbox: { left: '62%', top: '32%', width: '5%', height: '5%' }, desc: 'Used to chamber a round.' },
+      { id: 'lower', name: 'Lower Receiver', hitbox: { left: '50%', top: '45%', width: '15%', height: '10%' }, desc: 'Contains the trigger assembly.' },
+      { id: 'trigger', name: 'Trigger Assembly', hitbox: { left: '52%', top: '55%', width: '5%', height: '10%' }, desc: 'Mil-spec trigger group.' },
+      { id: 'grip', name: 'Pistol Grip', hitbox: { left: '58%', top: '55%', width: '8%', height: '20%' }, desc: 'Ergonomic pistol grip.' },
+      { id: 'magazine', name: 'PMAG Magazine', hitbox: { left: '48%', top: '60%', width: '10%', height: '25%' }, desc: 'Polymer 30-round magazine.' },
+      { id: 'stock', name: 'Telescopic Stock', hitbox: { left: '65%', top: '35%', width: '25%', height: '20%' }, desc: 'Adjustable 6-position telescopic carbine stock.' }
     ]
   },
   '9MM': {
@@ -104,24 +69,16 @@ const weaponConfigs = {
     caliber: '9x19mm Parabellum',
     rateOfFire: 'SEMI-AUTO',
     parts: [
-      { 
-        id: 'slide', 
-        name: 'Slide Assembly', 
-        hitbox: { left: '10%', top: '20%', width: '60%', height: '35%' },
-        desc: 'The upper slide housing the barrel, recoil spring, extractor, and firing pin. Recoils backward to eject spent casings and load a fresh round.'
-      },
-      { 
-        id: 'frame', 
-        name: 'Lower Frame', 
-        hitbox: { left: '10%', top: '55%', width: '40%', height: '30%' },
-        desc: 'The polymer chassis containing the trigger mechanism, slide catch, and accessory rail.'
-      },
-      { 
-        id: 'grip', 
-        name: 'Pistol Grip & Mag Well', 
-        hitbox: { left: '50%', top: '55%', width: '40%', height: '40%' },
-        desc: 'Ergonomic grip housing the double-stack 15-round magazine. Features stippled texturing for maximum control.'
-      }
+      { id: 'slide', name: 'Slide', hitbox: { left: '20%', top: '30%', width: '40%', height: '15%' }, desc: 'The upper slide housing the recoil spring and firing pin.' },
+      { id: 'sights', name: 'Iron Sights', hitbox: { left: '20%', top: '25%', width: '40%', height: '5%' }, desc: 'Front and rear aiming sights.' },
+      { id: 'barrel', name: 'Barrel', hitbox: { left: '25%', top: '35%', width: '30%', height: '5%' }, desc: 'Internal 9mm barrel.' },
+      { id: 'ejection_port', name: 'Ejection Port', hitbox: { left: '45%', top: '32%', width: '10%', height: '10%' }, desc: 'Where spent casings are ejected.' },
+      { id: 'frame', name: 'Lower Frame', hitbox: { left: '20%', top: '45%', width: '30%', height: '15%' }, desc: 'The polymer chassis and accessory rail.' },
+      { id: 'trigger', name: 'Trigger', hitbox: { left: '40%', top: '55%', width: '10%', height: '10%' }, desc: 'Double/Single action trigger.' },
+      { id: 'slide_catch', name: 'Slide Catch', hitbox: { left: '45%', top: '45%', width: '5%', height: '5%' }, desc: 'Locks the slide back when empty.' },
+      { id: 'mag_release', name: 'Magazine Release', hitbox: { left: '48%', top: '55%', width: '5%', height: '5%' }, desc: 'Button to drop the magazine.' },
+      { id: 'grip', name: 'Pistol Grip', hitbox: { left: '50%', top: '45%', width: '20%', height: '35%' }, desc: 'Ergonomic grip housing the magazine.' },
+      { id: 'magazine', name: '15-Round Magazine', hitbox: { left: '55%', top: '75%', width: '10%', height: '15%' }, desc: 'Double-stack 15-round magazine.' }
     ]
   }
 };
@@ -207,32 +164,33 @@ export default function InteractiveSchematic({ rifle }) {
       </div>
 
       {/* CENTRAL SCHEMATIC AREA */}
-      <div style={{ flex: 1, position: 'relative', marginTop: '4rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{ 
+        flex: 1, 
+        marginTop: '4rem', 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        // Moving mix-blend-mode to a container that doesn't create a stacking context blocking blending with the document!
+      }}>
         
         {/* Background Decorative Wireframes (Mimicking Blueprint) */}
-        <div style={{ position: 'absolute', top: '-50px', left: '10%', width: '80%', height: '100%', pointerEvents: 'none', opacity: 0.3 }}>
-          {/* Fake receiver wireframe outline */}
+        <div style={{ position: 'absolute', top: '15%', left: '10%', width: '80%', height: '70%', pointerEvents: 'none', opacity: 0.3, zIndex: 1 }}>
           <div style={{ position: 'absolute', top: '10%', left: '20%', width: '60%', height: '40%', border: '2px solid #0cd0cd', borderBottom: 'none' }} />
           <div style={{ position: 'absolute', top: '50%', left: '30%', width: '40%', height: '30%', border: '2px solid #0cd0cd', borderTop: 'none' }} />
           <div style={{ position: 'absolute', top: '45%', left: '25%', width: '50%', height: '1px', backgroundColor: '#0cd0cd' }} />
-          {/* Grid target markings */}
           <div style={{ position: 'absolute', top: '20%', left: '15%', width: '20px', height: '20px', border: '1px solid #0cd0cd', borderRadius: '50%' }} />
           <div style={{ position: 'absolute', top: '60%', left: '75%', width: '20px', height: '20px', border: '1px solid #0cd0cd', borderRadius: '50%' }} />
         </div>
 
-        {/* Leader Lines (Decorative) */}
-        <div style={{ position: 'absolute', width: '100%', height: '100%', pointerEvents: 'none', zIndex: 5 }}>
-          <div style={{ position: 'absolute', top: '20%', left: '45%', width: '1px', height: '15%', backgroundColor: '#0cd0cd', opacity: 0.6 }} />
-          <div style={{ position: 'absolute', top: '20%', left: '35%', width: '10%', height: '1px', backgroundColor: '#0cd0cd', opacity: 0.6 }} />
-          <div style={{ position: 'absolute', top: '18%', left: '32%', fontSize: '0.6rem' }}>OPTIC SENSOR</div>
-          
-          <div style={{ position: 'absolute', bottom: '30%', left: '55%', width: '1px', height: '15%', backgroundColor: '#0cd0cd', opacity: 0.6 }} />
-          <div style={{ position: 'absolute', bottom: '30%', left: '55%', width: '10%', height: '1px', backgroundColor: '#0cd0cd', opacity: 0.6 }} />
-          <div style={{ position: 'absolute', bottom: '28%', left: '66%', fontSize: '0.6rem' }}>MAGAZINE WELL</div>
-        </div>
-
-        {/* Main Weapon Image Container */}
-        <div style={{ position: 'relative', width: '100%', maxWidth: '800px', aspectRatio: '16/9', zIndex: 10 }}>
+        {/* Main Weapon Image Container with mixBlendMode applied to the entire box */}
+        <div style={{ 
+          position: 'relative', 
+          width: '100%', 
+          maxWidth: '900px', 
+          aspectRatio: '16/9', 
+          zIndex: 10,
+          mixBlendMode: 'screen', // Apply screen blending here to drop the black background of the image
+        }}>
           <img 
             src={config.image} 
             alt="Rifle"
@@ -240,8 +198,8 @@ export default function InteractiveSchematic({ rifle }) {
               width: '100%', 
               height: '100%', 
               objectFit: 'contain',
-              mixBlendMode: 'screen',
-              filter: 'drop-shadow(0 0 15px rgba(12, 208, 205, 0.4)) contrast(1.2)'
+              // Add a heavy contrast and brightness filter to ensure the AI's "dark gray" background becomes pure black for the screen blend
+              filter: 'drop-shadow(0 0 15px rgba(12, 208, 205, 0.4)) contrast(1.5) brightness(1.2)'
             }} 
           />
 
@@ -257,13 +215,16 @@ export default function InteractiveSchematic({ rifle }) {
                 width: part.hitbox.width,
                 height: part.hitbox.height,
                 cursor: 'crosshair',
-                backgroundColor: selectedPart?.id === part.id ? 'rgba(12, 208, 205, 0.2)' : 'transparent',
+                backgroundColor: selectedPart?.id === part.id ? 'rgba(12, 208, 205, 0.3)' : 'transparent',
                 border: selectedPart?.id === part.id ? '1px dashed #0cd0cd' : '1px solid transparent',
                 transition: 'all 0.2s ease',
               }}
-              onMouseEnter={(e) => { if(selectedPart?.id !== part.id) e.currentTarget.style.backgroundColor = 'rgba(12, 208, 205, 0.1)'; e.currentTarget.style.border = '1px solid rgba(12, 208, 205, 0.5)'; }}
+              onMouseEnter={(e) => { if(selectedPart?.id !== part.id) e.currentTarget.style.backgroundColor = 'rgba(12, 208, 205, 0.15)'; e.currentTarget.style.border = '1px solid rgba(12, 208, 205, 0.5)'; }}
               onMouseLeave={(e) => { if(selectedPart?.id !== part.id) e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.border = '1px solid transparent'; }}
-            />
+            >
+              {/* Optional glowing dot indicating interactivity */}
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 4, height: 4, backgroundColor: '#0cd0cd', borderRadius: '50%', opacity: 0.5 }} />
+            </div>
           ))}
         </div>
       </div>
