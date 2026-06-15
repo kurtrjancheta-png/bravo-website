@@ -117,7 +117,20 @@ export default function LayoutContent({ children }) {
             </div>
           </details>
 
-          <Link href="/disseminations/s2" id="nav-s2" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>🛡️</span> S2 Security</Link>
+          <details className="nav-item-group" style={{ cursor: 'pointer' }}>
+            <summary id="nav-s2" className="nav-item" style={{ display: 'flex', alignItems: 'center' }}>
+              <span style={{ marginRight: '10px' }}>🛡️</span> S2 Security
+              <span className="dropdown-arrow">▼</span>
+            </summary>
+            <div style={{ marginLeft: '1.5rem', borderLeft: '1px solid var(--border-color)', paddingLeft: '0.5rem', marginTop: '0.25rem', marginBottom: '0.5rem' }}>
+              <Link href="/s2/rifle-directory" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                Rifle Directory
+              </Link>
+              <Link href="/disseminations/s2" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                Disseminations
+              </Link>
+            </div>
+          </details>
           <Link href="/disseminations/s3" id="nav-s3" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>⌖</span> S3 Operations</Link>
           <Link href="/disseminations/s4" id="nav-s4" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>📦</span> S4 Logistics</Link>
           <Link href="/disseminations/s5" id="nav-s5" className="nav-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>📊</span> S5 Plans & Programs</Link>
