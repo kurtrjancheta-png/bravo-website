@@ -2,9 +2,9 @@
 import { useState } from 'react';
 
 // M14 SVG Trace Component
-const M14Trace = () => (
-  <svg viewBox="0 0 1000 400" style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 0 15px #0cd0cd)' }}>
-    <g fill="rgba(12, 208, 205, 0.05)" stroke="#0cd0cd" strokeWidth="2">
+const M14Trace = ({ color }) => (
+  <svg viewBox="0 0 1000 400" style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.1))' }}>
+    <g fill="rgba(255, 255, 255, 0.05)" stroke={color} strokeWidth="2">
       {/* Barrel */}
       <rect x="150" y="180" width="300" height="8" />
       {/* Flash Hider */}
@@ -17,7 +17,7 @@ const M14Trace = () => (
       <polygon points="130,180 130,160 145,160 150,180" />
       {/* Gas Cylinder */}
       <rect x="250" y="195" width="120" height="12" rx="4" />
-      <circle cx="260" cy="201" r="3" fill="#0cd0cd" />
+      <circle cx="260" cy="201" r="3" fill={color} />
       {/* Stock Front */}
       <path d="M 370 190 L 550 190 L 550 220 L 370 210 Z" />
       <line x1="450" y1="195" x2="450" y2="215" strokeDasharray="2,2" />
@@ -28,7 +28,7 @@ const M14Trace = () => (
       <rect x="640" y="165" width="40" height="10" />
       {/* Rear Sight */}
       <circle cx="690" cy="150" r="10" />
-      <circle cx="690" cy="150" r="3" fill="#0cd0cd" />
+      <circle cx="690" cy="150" r="3" fill={color} />
       {/* Magazine */}
       <path d="M 570 220 L 610 220 L 600 320 L 560 310 Z" />
       <line x1="575" y1="230" x2="565" y2="300" />
@@ -38,17 +38,17 @@ const M14Trace = () => (
       {/* Stock Rear & Butt */}
       <path d="M 700 160 L 950 180 L 950 280 L 850 250 L 720 260 L 700 190 Z" />
       <circle cx="750" cy="210" r="15" fill="none" />
-      <circle cx="750" cy="210" r="5" fill="#0cd0cd" />
+      <circle cx="750" cy="210" r="5" fill={color} />
       {/* Buttplate */}
       <rect x="950" y="180" width="10" height="100" rx="3" />
     </g>
   </svg>
 );
 
-// Generic Trace for other platforms to maintain consistency
-const TacticalTrace = () => (
-  <svg viewBox="0 0 1000 400" style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 0 15px #0cd0cd)' }}>
-    <g fill="rgba(12, 208, 205, 0.05)" stroke="#0cd0cd" strokeWidth="2">
+// Generic Trace for other platforms
+const TacticalTrace = ({ color }) => (
+  <svg viewBox="0 0 1000 400" style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.1))' }}>
+    <g fill="rgba(255, 255, 255, 0.05)" stroke={color} strokeWidth="2">
       <rect x="150" y="180" width="200" height="10" />
       <rect x="100" y="177" width="50" height="16" />
       <polygon points="250,180 250,130 270,130 280,180" />
@@ -69,10 +69,7 @@ const TacticalTrace = () => (
 
 const weaponConfigs = {
   'M14': {
-    title: 'M14 GARAND (VECTOR TRACE)',
     TraceComponent: M14Trace,
-    caliber: '7.62x51mm NATO',
-    rateOfFire: '700 RPM',
     parts: [
       { id: 'flash_hider', name: 'Flash Suppressor', targetPos: { x: 12, y: 46 }, labelPos: { x: 10, y: 20 }, desc: 'National Match profile slotted flash suppressor.' },
       { id: 'front_sight', name: 'Front Sight', targetPos: { x: 14, y: 42 }, labelPos: { x: 25, y: 15 }, desc: 'Winged front sight post.' },
@@ -88,10 +85,7 @@ const weaponConfigs = {
     ]
   },
   'M16': {
-    title: 'M16A4 (VECTOR TRACE)',
     TraceComponent: TacticalTrace,
-    caliber: '5.56x45mm NATO',
-    rateOfFire: '700-950 RPM',
     parts: [
       { id: 'flash_hider', name: 'A2 Flash Hider', targetPos: { x: 12, y: 46 }, labelPos: { x: 10, y: 20 }, desc: 'Standard A2 birdcage flash hider.' },
       { id: 'front_sight', name: 'A2 Front Sight Base', targetPos: { x: 26, y: 38 }, labelPos: { x: 25, y: 15 }, desc: 'Forged A2 profile front sight base.' },
@@ -110,58 +104,29 @@ const weaponConfigs = {
 export default function InteractiveSchematic({ rifle }) {
   const [selectedPart, setSelectedPart] = useState(null);
 
-  // Fallback to M16 mapping for unknown traces (like R4 or 9MM)
   const type = weaponConfigs[rifle.rifleType] ? rifle.rifleType : 'M16';
   const config = weaponConfigs[type];
   const TraceComponent = config.TraceComponent;
 
+  // New elegant color palette: Gold, White, Gray
   const colors = {
-    bg: '#020a14',
-    grid: '#0cd0cd',
-    accent: '#0cd0cd',
-    highlight: '#ffffff',
+    base: '#808080',      // Gray for the base rifle trace
+    highlight: '#d4af37', // Gold for active/hover states
+    text: '#ffffff',      // White for text
   };
 
   return (
     <div style={{
       position: 'relative',
-      backgroundColor: colors.bg,
-      border: `2px solid ${colors.grid}`,
-      padding: '2rem',
+      backgroundColor: 'transparent',
       fontFamily: 'monospace',
-      color: colors.accent,
-      minHeight: '800px',
+      minHeight: '600px',
       overflow: 'hidden',
       display: 'flex',
       flexDirection: 'column',
-      boxShadow: `inset 0 0 50px rgba(12, 208, 205, 0.1)`
     }}>
       
-      {/* Decorative Corner Elements */}
-      <div style={{ position: 'absolute', top: 10, left: 10, width: 20, height: 20, borderTop: `2px solid ${colors.grid}`, borderLeft: `2px solid ${colors.grid}` }} />
-      <div style={{ position: 'absolute', top: 10, right: 10, width: 20, height: 20, borderTop: `2px solid ${colors.grid}`, borderRight: `2px solid ${colors.grid}` }} />
-      <div style={{ position: 'absolute', bottom: 10, left: 10, width: 20, height: 20, borderBottom: `2px solid ${colors.grid}`, borderLeft: `2px solid ${colors.grid}` }} />
-      <div style={{ position: 'absolute', bottom: 10, right: 10, width: 20, height: 20, borderBottom: `2px solid ${colors.grid}`, borderRight: `2px solid ${colors.grid}` }} />
-
-      {/* HEADER SECTION */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', zIndex: 10, borderBottom: `1px solid ${colors.grid}`, paddingBottom: '10px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div style={{ fontSize: '1.2rem', color: colors.bg, backgroundColor: colors.grid, padding: '4px 12px', fontWeight: 'bold' }}>
-            {rifle.serialNumber.substring(0, 6)}
-          </div>
-          <h1 style={{ fontSize: '2rem', margin: '0', fontWeight: 'bold', letterSpacing: '4px', textShadow: `0 0 10px ${colors.grid}` }}>
-            {config.title}
-          </h1>
-        </div>
-
-        <div style={{ fontSize: '0.8rem', textAlign: 'right', opacity: 0.8, lineHeight: '1.4' }}>
-          <div style={{ color: colors.highlight, fontWeight: 'bold' }}>GEOMETRIC VECTOR TRACE // ONLINE</div>
-          <div>CALIBER: {config.caliber}</div>
-          <div>OPERATOR: {rifle.name}</div>
-        </div>
-      </div>
-
-      {/* CENTRAL SCHEMATIC AREA */}
+      {/* CENTRAL SCHEMATIC AREA - Stripped of borders and backgrounds */}
       <div style={{ 
         flex: 1, 
         marginTop: '2rem', 
@@ -176,13 +141,13 @@ export default function InteractiveSchematic({ rifle }) {
           position: 'relative', 
           width: '100%', 
           maxWidth: '1200px',
-          aspectRatio: '2.5', // 1000/400 to match the SVG viewbox exactly
+          aspectRatio: '2.5', // Matches SVG viewbox exactly
           zIndex: 10,
         }}>
           
           {/* NATIVE SVG RIFLE TRACE */}
           <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 5 }}>
-            <TraceComponent />
+            <TraceComponent color={colors.base} />
           </div>
 
           {/* SVG Tracelines overlay */}
@@ -194,7 +159,7 @@ export default function InteractiveSchematic({ rifle }) {
                 y1={`${part.labelPos.y}%`} 
                 x2={`${part.targetPos.x}%`} 
                 y2={`${part.targetPos.y}%`} 
-                stroke={selectedPart?.id === part.id ? colors.highlight : colors.grid} 
+                stroke={selectedPart?.id === part.id ? colors.highlight : colors.base} 
                 strokeWidth={selectedPart?.id === part.id ? '2' : '1'} 
                 strokeDasharray={selectedPart?.id === part.id ? 'none' : '4,4'}
                 style={{ 
@@ -231,7 +196,7 @@ export default function InteractiveSchematic({ rifle }) {
                    width: selectedPart?.id === part.id ? '12px' : '6px', 
                    height: selectedPart?.id === part.id ? '12px' : '6px', 
                    backgroundColor: selectedPart?.id === part.id ? colors.highlight : 'transparent',
-                   border: `1px solid ${selectedPart?.id === part.id ? colors.highlight : colors.grid}`,
+                   border: `1px solid ${selectedPart?.id === part.id ? colors.highlight : colors.base}`,
                    borderRadius: '50%', 
                    transition: 'all 0.2s ease',
                    boxShadow: selectedPart?.id === part.id ? `0 0 10px ${colors.highlight}` : 'none'
@@ -242,15 +207,14 @@ export default function InteractiveSchematic({ rifle }) {
                </div>
 
                <div style={{
-                 color: selectedPart?.id === part.id ? colors.bg : colors.grid,
-                 backgroundColor: selectedPart?.id === part.id ? colors.highlight : 'rgba(2, 10, 20, 0.9)',
-                 fontSize: '0.75rem',
+                 color: selectedPart?.id === part.id ? colors.highlight : colors.text,
+                 fontSize: '0.8rem',
                  fontWeight: 'bold',
                  letterSpacing: '1px',
                  padding: '4px 8px',
-                 border: `1px solid ${selectedPart?.id === part.id ? colors.highlight : 'rgba(12, 208, 205, 0.3)'}`,
+                 borderBottom: `1px solid ${selectedPart?.id === part.id ? colors.highlight : 'transparent'}`,
                  whiteSpace: 'nowrap',
-                 boxShadow: selectedPart?.id === part.id ? `0 0 10px ${colors.highlight}` : 'none',
+                 textShadow: selectedPart?.id === part.id ? `0 0 10px ${colors.highlight}` : 'none',
                  transition: 'all 0.2s ease',
                }}>
                  {part.name.toUpperCase()}
@@ -267,13 +231,13 @@ export default function InteractiveSchematic({ rifle }) {
                  left: `${part.targetPos.x}%`,
                  top: `${part.targetPos.y}%`,
                  transform: 'translate(-50%, -50%)',
-                 width: '4px',
-                 height: '4px',
+                 width: '6px',
+                 height: '6px',
                  backgroundColor: colors.highlight,
                  borderRadius: '50%',
                  pointerEvents: 'none',
                  zIndex: 30,
-                 boxShadow: `0 0 5px ${colors.highlight}`,
+                 boxShadow: `0 0 8px ${colors.highlight}`,
                  opacity: selectedPart?.id === part.id ? 1 : 0
                }}
              />
@@ -281,28 +245,26 @@ export default function InteractiveSchematic({ rifle }) {
         </div>
       </div>
 
-      {/* DETAILED DESCRIPTION OVERLAY */}
+      {/* DETAILED DESCRIPTION OVERLAY - Minimalist floating panel */}
       {selectedPart && (
         <div style={{
           position: 'absolute',
           top: '30%',
           right: '5%',
           width: '350px',
-          backgroundColor: 'rgba(2, 10, 20, 0.95)',
-          border: `1px solid ${colors.grid}`,
-          borderLeft: `4px solid ${colors.highlight}`,
-          padding: '1.5rem',
+          backgroundColor: 'transparent',
+          borderLeft: `2px solid ${colors.highlight}`,
+          padding: '1rem',
           zIndex: 50,
-          boxShadow: `0 0 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(12, 208, 205, 0.1)`,
           pointerEvents: 'none'
         }}>
-          <div style={{ fontSize: '0.6rem', letterSpacing: '3px', color: colors.grid, marginBottom: '8px' }}>
+          <div style={{ fontSize: '0.7rem', letterSpacing: '3px', color: colors.base, marginBottom: '8px' }}>
             ID // {selectedPart.id.toUpperCase()}
           </div>
-          <h3 style={{ margin: '0 0 15px 0', fontSize: '1.2rem', color: colors.highlight, letterSpacing: '2px', textShadow: `0 0 5px ${colors.highlight}` }}>
+          <h3 style={{ margin: '0 0 10px 0', fontSize: '1.4rem', color: colors.highlight, letterSpacing: '2px', textShadow: `0 0 5px rgba(212, 175, 55, 0.5)` }}>
             {selectedPart.name}
           </h3>
-          <div style={{ fontSize: '0.85rem', lineHeight: '1.6', color: colors.accent, textAlign: 'justify' }}>
+          <div style={{ fontSize: '0.9rem', lineHeight: '1.6', color: colors.text, textAlign: 'justify' }}>
             {selectedPart.desc}
           </div>
         </div>
