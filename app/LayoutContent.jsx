@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import AutoRefresh from './AutoRefresh';
 import LoginModal from './LoginModal';
 import { useAuth } from './AuthContext';
@@ -10,6 +11,7 @@ export default function LayoutContent({ children }) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const { adminUser, logout, isLoaded } = useAuth();
+  const pathname = usePathname();
 
   useEffect(() => {
     const savedMode = localStorage.getItem('bravo_dark_mode') === 'true';
@@ -215,20 +217,22 @@ export default function LayoutContent({ children }) {
 
       {/* Main Content Area */}
       <div className="main-wrapper">
-        {/* Top Bar */}
-        <header className="topbar">
-          <div className="breadcrumbs">
-            BRAVO CO. BULLETIN BOARD / HOME
-          </div>
-          <div className="topbar-actions">
-            <div className="badge-outline">
-              <div className="live-indicator"></div> LIVE FEED
+        {/* Top Bar (Only visible on Home Overview) */}
+        {pathname === '/' && (
+          <header className="topbar">
+            <div className="breadcrumbs">
+              BRAVO CO. BULLETIN BOARD / HOME
             </div>
-            <div className="badge-outline">
-              ⚙️ SETTINGS
+            <div className="topbar-actions">
+              <div className="badge-outline">
+                <div className="live-indicator"></div> LIVE FEED
+              </div>
+              <div className="badge-outline">
+                ⚙️ SETTINGS
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
+        )}
 
         {/* Page Content */}
         <main className="main-content">
