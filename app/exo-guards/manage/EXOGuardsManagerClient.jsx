@@ -136,7 +136,11 @@ export default function EXOGuardsManagerClient({
 
   const [now] = useState(new Date());
 
-  const { today1CL, tomorrow1CL, today3CL, tomorrow3CL, postedDateStr, incomingDateStr, postedDateObj, incomingDateObj } = useMemo(() => {
+  const { 
+    today1CL, tomorrow1CL, permanent1CL,
+    today3CL, tomorrow3CL, permanent3CL,
+    postedDateStr, incomingDateStr, postedDateObj, incomingDateObj 
+  } = useMemo(() => {
     const nowStr = now.toLocaleString('en-US', { timeZone: 'Asia/Manila' });
     const manilaNow = new Date(nowStr);
     const isBeforeGuardMount = (manilaNow.getHours() < 18) || (manilaNow.getHours() === 18 && manilaNow.getMinutes() < 30);

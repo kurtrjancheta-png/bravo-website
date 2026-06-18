@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../AuthContext';
 import { driveUrlToImage } from '../../lib/googleSheets';
 
 const BLACKLIST = ['INTERIOR', 'SENTINEL', 'NON POSTING', 'NON-POSTING', 'FI', 'CCQ', 'ACCQ', 'MHC', 'AFI'];
@@ -92,8 +94,27 @@ function getStatusFromColor3CL(hex) {
   }
 }
 
-export default function EXOGuardsClient({ data1CL = [], data3CL = [], soiData = [] }) {
+function getStatusFromColor2CL(hex) {
+  if (!hex) return { label: 'UNKNOWN', color: '#64748b' };
+  
+  if (hex === '#ffff00' || hex === '#ffff01') {
+    return { label: 'PLEBE DETAIL', color: '#eab308' }; // Yellow
+  } else if (hex === '#00ffff' || hex === '#00ffff') {
+    return { label: 'SENTINEL (TOC)', color: '#06b6d4' }; // Cyan
+  } else if (hex === '#ff00ff' || hex === '#ff00fe') {
+    return { label: 'INTERIOR', color: '#d946ef' }; // Magenta
+  } else if (hex === '#b45f06' || hex === '#b87333' || hex === '#a67c00' || hex === '#bf9000') {
+    return { label: 'AFI', color: '#b45309' }; // Brown
+  }
+  
+  return { label: 'POSTED', color: '#cbd5e1' };
+}
+
+export default function EXOGuardsClient({ data1CL = [], data2CL = [], data3CL = [], soiData = [] }) {
   const [now, setNow] = useState(new Date());
+  const [activeTab, setActiveTab] = useState('1CL');
+  const router = useRouter();
+  const { adminUser } = useAuth() || {};
 
   useEffect(() => {
     // Keep time updated slightly
@@ -148,7 +169,7 @@ export default function EXOGuardsClient({ data1CL = [], data3CL = [], soiData = 
     return { todayList, tomorrowList };
   };
 
-  const { today1CL, tomorrow1CL, today3CL, tomorrow3CL, postedDateStr, incomingDateStr } = useMemo(() => {
+  const { today1CL, tomorrow1CL, today2CL, tomorrow2CL, today3CL, tomorrow3CL, postedDateStr, incomingDateStr } = useMemo(() => {
     // Current time in Manila
     const nowStr = now.toLocaleString('en-US', { timeZone: 'Asia/Manila' });
     const manilaNow = new Date(nowStr);
@@ -183,18 +204,28 @@ export default function EXOGuardsClient({ data1CL = [], data3CL = [], soiData = 
       'SENTINEL': 6
     };
 
+    const order2CL = {
+      'PLEBE DETAIL': 1,
+      'AFI': 2,
+      'INTERIOR': 3,
+      'SENTINEL (TOC)': 4
+    };
+
     const result1CL = processGuards(data1CL, getStatusFromColor1CL, postedDate, incomingDate, order1CL);
+    const result2CL = processGuards(data2CL, getStatusFromColor2CL, postedDate, incomingDate, order2CL);
     const result3CL = processGuards(data3CL, getStatusFromColor3CL, postedDate, incomingDate, order3CL);
 
     return { 
       today1CL: result1CL.todayList, 
       tomorrow1CL: result1CL.tomorrowList,
+      today2CL: result2CL.todayList, 
+      tomorrow2CL: result2CL.tomorrowList,
       today3CL: result3CL.todayList, 
       tomorrow3CL: result3CL.tomorrowList,
       postedDateStr: formatDate(postedDate),
       incomingDateStr: formatDate(incomingDate)
     };
-  }, [data1CL, data3CL, now]);
+  }, [data1CL, data2CL, data3CL, now]);
 
   const renderGuardCard = (guard, idx) => (
     <div key={idx} style={{
@@ -394,11 +425,64 @@ export default function EXOGuardsClient({ data1CL = [], data3CL = [], soiData = 
     );
   };
 
-  const getRegularGuards = (guards) => guards.filter(g => g.status !== 'SENTINEL');
-  const getSentinels = (guards) => guards.filter(g => g.status === 'SENTINEL');
+  const getRegularGuards = (guards) => guards.filter(g => !g.status.includes('SENTINEL'));
+  const getSentinels = (guards) => guards.filter(g => g.status.includes('SENTINEL'));
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          {['1CL', '2CL', '3CL'].map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                padding: '0.5rem 1.5rem',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: activeTab === tab ? 'var(--text-primary)' : 'var(--card-bg)',
+                color: activeTab === tab ? 'var(--bg-primary)' : 'var(--text-secondary)',
+                fontWeight: 700,
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: activeTab === tab ? '0 4px 12px rgba(0,0,0,0.1)' : 'none'
+              }}
+            >
+              {tab} POSTINGS
+            </button>
+          ))}
+        </div>
+        
+        {adminUser && (
+          <button 
+            onClick={() => router.push('/exo-guards/manage')}
+            style={{
+              padding: '0.5rem 1.5rem',
+              backgroundColor: '#ef4444',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+            MANAGE POSTINGS
+          </button>
+        )}
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <h2 style={{ color: 'var(--text-primary)', fontSize: '1.4rem', fontWeight: 900, margin: 0 }}>
@@ -418,19 +502,32 @@ export default function EXOGuardsClient({ data1CL = [], data3CL = [], soiData = 
         </div>
       </div>
       
-      {today1CL.length === 0 && today3CL.length === 0 && tomorrow1CL.length === 0 && tomorrow3CL.length === 0 ? (
+      {((activeTab === '1CL' && today1CL.length === 0 && tomorrow1CL.length === 0) ||
+        (activeTab === '2CL' && today2CL.length === 0 && tomorrow2CL.length === 0) ||
+        (activeTab === '3CL' && today3CL.length === 0 && tomorrow3CL.length === 0)) ? (
         <div style={{ padding: '3rem', textAlign: 'center', backgroundColor: 'var(--card-bg)', borderRadius: '16px', border: '2px dashed var(--border-color)', color: 'var(--text-secondary)' }}>
-          No guards found for {postedDateStr} or {incomingDateStr}.
+          No {activeTab} guards found for {postedDateStr} or {incomingDateStr}.
         </div>
       ) : (
         <>
-          {/* 1CL Block */}
-          {renderGuardCardRow('First Class', getRegularGuards(today1CL), getRegularGuards(tomorrow1CL), false)}
-          {renderGuardCardRow('First Class Sentinels', getSentinels(today1CL), getSentinels(tomorrow1CL), true)}
-
-          {/* 3CL Block */}
-          {renderGuardCardRow('Third Class', getRegularGuards(today3CL), getRegularGuards(tomorrow3CL), false)}
-          {renderGuardCardRow('Third Class Sentinels', getSentinels(today3CL), getSentinels(tomorrow3CL), true)}
+          {activeTab === '1CL' && (
+            <>
+              {renderGuardCardRow('First Class', getRegularGuards(today1CL), getRegularGuards(tomorrow1CL), false)}
+              {renderGuardCardRow('First Class Sentinels', getSentinels(today1CL), getSentinels(tomorrow1CL), true)}
+            </>
+          )}
+          {activeTab === '2CL' && (
+            <>
+              {renderGuardCardRow('Second Class', getRegularGuards(today2CL), getRegularGuards(tomorrow2CL), false)}
+              {renderGuardCardRow('Second Class Sentinels', getSentinels(today2CL), getSentinels(tomorrow2CL), true)}
+            </>
+          )}
+          {activeTab === '3CL' && (
+            <>
+              {renderGuardCardRow('Third Class', getRegularGuards(today3CL), getRegularGuards(tomorrow3CL), false)}
+              {renderGuardCardRow('Third Class Sentinels', getSentinels(today3CL), getSentinels(tomorrow3CL), true)}
+            </>
+          )}
         </>
       )}
     </div>
