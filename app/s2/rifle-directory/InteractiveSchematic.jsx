@@ -520,7 +520,7 @@ export default function InteractiveSchematic({ rifle }) {
       {isExploded && (
         <div style={{
           position: 'absolute',
-          top: '5%',
+          bottom: '2%',
           left: '5%',
           width: '320px',
           backgroundColor: 'rgba(255, 255, 255, 0.85)',
