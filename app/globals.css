@@ -44,6 +44,10 @@ body.dark-mode {
   padding: 0;
 }
 
+html {
+  overflow-y: scroll;
+}
+
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
