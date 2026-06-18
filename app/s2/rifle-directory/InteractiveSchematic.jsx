@@ -406,10 +406,10 @@ export default function InteractiveSchematic({ rifle }) {
                >
                  <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '16px', height: '16px', flexShrink: 0 }}>
                    <div style={{ 
-                     width: selectedPart?.id === part.id ? '12px' : '6px', 
-                     height: selectedPart?.id === part.id ? '12px' : '6px', 
+                     width: '8px', 
+                     height: '8px', 
                      backgroundColor: selectedPart?.id === part.id ? colors.highlight : '#ffffff',
-                     border: `1.5px solid ${selectedPart?.id === part.id ? colors.highlight : colors.highlight}`, 
+                     border: `1.5px solid ${colors.highlight}`, 
                      borderRadius: '50%', 
                      transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
                      boxShadow: selectedPart?.id === part.id ? `0 4px 12px rgba(212, 175, 55, 0.4)` : '0 2px 4px rgba(0,0,0,0.1)'
