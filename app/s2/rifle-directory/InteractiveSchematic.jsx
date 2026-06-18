@@ -256,7 +256,7 @@ export default function InteractiveSchematic({ rifle }) {
   const handleMouseLeave = () => {
     hoverTimer.current = setTimeout(() => {
       setSelectedPart(null);
-    }, 150);
+    }, 3000);
   };
 
   const type = weaponConfigs[rifle.rifleType] ? rifle.rifleType : 'M16';
