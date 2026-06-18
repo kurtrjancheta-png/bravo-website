@@ -10,6 +10,7 @@ const BLACKLIST = ['INTERIOR', 'SENTINEL', 'NON POSTING', 'NON-POSTING', 'FI', '
 
 function parseDateHeader(header) {
   if (!header) return null;
+  if (header === 'PERMANENT') return 'PERMANENT';
   const parts = header.split(' | ');
   try {
     const d = new Date(parts[0]);
@@ -131,6 +132,7 @@ export default function EXOGuardsManagerClient({
 
   // Modal State
   const [modalConfig, setModalConfig] = useState(null); // { isOpen, role, dateStr, currentCadetName, classLevel }
+  const [showNonPostingModal, setShowNonPostingModal] = useState(null); // '1CL' or '3CL'
 
   const [now] = useState(new Date());
 
@@ -151,30 +153,41 @@ export default function EXOGuardsManagerClient({
     const processGuards = (data, getStatusFn) => {
       const todayList = [];
       const tomorrowList = [];
+      const permanentNonPostingList = [];
+
       (data || []).forEach(item => {
         const cleanName = (item.name || '').replace(' AS', '').trim();
         if (BLACKLIST.includes(cleanName.toUpperCase())) return;
+        
         const d = parseDateHeader(item.dateHeader);
         if (!d) return;
-        const itemObj = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
-        itemObj.setHours(0,0,0,0);
-        
+
         const status = getStatusFn(item.color);
         const imageUrl = getSoiPicture(cleanName, soiData) || item.localImageUrl || null;
         const entry = { name: cleanName, status: status.label, statusColor: status.color, imageUrl, originalItem: item };
 
+        if (d === 'PERMANENT' && status.label === 'NON-POSTING') {
+          permanentNonPostingList.push(entry);
+          return;
+        }
+
+        if (d === 'PERMANENT') return;
+
+        const itemObj = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+        itemObj.setHours(0,0,0,0);
+
         if (itemObj.getTime() === postedDate.getTime()) todayList.push(entry);
         else if (itemObj.getTime() === incomingDate.getTime()) tomorrowList.push(entry);
       });
-      return { todayList, tomorrowList };
+      return { todayList, tomorrowList, permanentNonPostingList };
     };
 
     const res1 = processGuards(data1CL, getStatusFromColor1CL);
     const res3 = processGuards(data3CL, getStatusFromColor3CL);
 
     return { 
-      today1CL: res1.todayList, tomorrow1CL: res1.tomorrowList,
-      today3CL: res3.todayList, tomorrow3CL: res3.tomorrowList,
+      today1CL: res1.todayList, tomorrow1CL: res1.tomorrowList, permanent1CL: res1.permanentNonPostingList,
+      today3CL: res3.todayList, tomorrow3CL: res3.tomorrowList, permanent3CL: res3.permanentNonPostingList,
       postedDateStr: formatDate(postedDate), incomingDateStr: formatDate(incomingDate),
       postedDateObj: postedDate, incomingDateObj: incomingDate
     };
@@ -205,6 +218,24 @@ export default function EXOGuardsManagerClient({
   const handleAssign = async (cadetName) => {
     if (!modalConfig) return;
     const { role, dateStr, currentCadetName, classLevel } = modalConfig;
+    
+    // VALIDATION: Prevent assigning if cadet is non-posting
+    if (role !== 'NON-POSTING') {
+      const permanentList = classLevel === '1CL' ? permanent1CL : permanent3CL;
+      const todayList = classLevel === '1CL' ? today1CL : today3CL;
+      const tomorrowList = classLevel === '1CL' ? tomorrow1CL : tomorrow3CL;
+      
+      const isPermanentNP = permanentList.some(g => g.name === cadetName);
+      
+      const activeList = activeDateStr === postedDateStr ? todayList : tomorrowList;
+      const isTempNP = activeList.some(g => g.name === cadetName && g.status === 'NON-POSTING');
+      
+      if (isPermanentNP || isTempNP) {
+        alert(`ERROR: ${classLevel} ${cadetName} IS NON POSTING`);
+        return;
+      }
+    }
+
     const apiUrl = classLevel === '1CL' ? apiUrl1CL : apiUrl3CL;
     const colorMap = classLevel === '1CL' ? ROLE_COLORS_1CL : ROLE_COLORS_3CL;
     const roleColor = colorMap[role] || '#000000'; 
@@ -625,42 +656,41 @@ export default function EXOGuardsManagerClient({
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
         {/* 1CL Column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem' }}>
-            <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>1CL Guards</h2>
-            <a 
-              href={sheetUrl1CL || '#'} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              onClick={(e) => { if (!sheetUrl1CL) { e.preventDefault(); alert('Please provide the 1CL spreadsheet URL in page.jsx'); } }}
-              style={{ 
-                color: '#3b82f6', textDecoration: 'none', display: 'flex', alignItems: 'center', 
-                gap: '0.4rem', fontSize: '0.8rem', fontWeight: 800, padding: '0.4rem 0.8rem', 
-                borderRadius: '8px', background: '#eff6ff', transition: 'all 0.2s' 
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = '#dbeafe'; e.currentTarget.style.color = '#2563eb'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = '#eff6ff'; e.currentTarget.style.color = '#3b82f6'; }}
-            >
-              View Sheet <span style={{ fontSize: '1rem', lineHeight: 1 }}>↗</span>
-            </a>
-          </div>
-          
-          {/* 1CL Action Bar */}
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <button 
-              onClick={() => setExtraInteriors1CL(prev => Math.min(5 - guards1Int.length, prev + 1))}
-              disabled={guards1Int.length + extraInteriors1CL >= 5}
-              style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '999px', padding: '0.4rem 0.8rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: guards1Int.length + extraInteriors1CL >= 5 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', opacity: guards1Int.length + extraInteriors1CL >= 5 ? 0.5 : 1 }}
-            >
-              <span style={{ fontSize: '1rem' }}>+</span> Add Interior
-            </button>
-            <button 
-              onClick={() => setExtraSentinels1CL(prev => Math.min(6 - guards1Sent.length, prev + 1))}
-              disabled={guards1Sent.length + extraSentinels1CL >= 6}
-              style={{ background: '#1f2937', color: '#fff', border: 'none', borderRadius: '999px', padding: '0.4rem 0.8rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: guards1Sent.length + extraSentinels1CL >= 6 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', opacity: guards1Sent.length + extraSentinels1CL >= 6 ? 0.5 : 1 }}
-            >
-              <span style={{ fontSize: '1rem' }}>+</span> Add Sentinel
-            </button>
-          </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
+              <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>1CL Guards</h2>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <a href={sheetUrl1CL} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#3b82f6', textDecoration: 'none', background: 'rgba(59, 130, 246, 0.1)', padding: '0.25rem 0.75rem', borderRadius: '16px', fontWeight: 600 }}>
+                  View Sheet ↗
+                </a>
+                <button 
+                  onClick={() => setShowNonPostingModal('1CL')}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.1)', border: 'none', padding: '0.25rem 0.75rem', borderRadius: '16px', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Non Posting List
+                </button>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+              <button 
+                onClick={() => setModalConfig({ isOpen: true, role: 'INTERIOR', dateStr: activeDateStr, currentCadetName: null, classLevel: '1CL' })}
+                style={{ padding: '0.4rem 1rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+              >
+                + Add Interior
+              </button>
+              <button 
+                onClick={() => setModalConfig({ isOpen: true, role: 'SENTINEL', dateStr: activeDateStr, currentCadetName: null, classLevel: '1CL' })}
+                style={{ padding: '0.4rem 1rem', background: '#1f2937', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+              >
+                + Add Sentinel
+              </button>
+              <button 
+                onClick={() => setModalConfig({ isOpen: true, role: 'NON-POSTING', dateStr: activeDateStr, currentCadetName: null, classLevel: '1CL' })}
+                style={{ padding: '0.4rem 1rem', background: '#60a5fa', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+              >
+                + Add Non-Posting
+              </button>
+            </div>
           
           {renderSlot('FLOOR INSPECTOR', guards1FI[0], 'FLOOR INSPECTOR', '1CL')}
           
@@ -685,49 +715,47 @@ export default function EXOGuardsManagerClient({
         
         {/* 3CL Column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem' }}>
-            <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>3CL Guards</h2>
-            <a 
-              href={sheetUrl3CL || '#'} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              onClick={(e) => { if (!sheetUrl3CL) { e.preventDefault(); alert('Please provide the 3CL spreadsheet URL in page.jsx'); } }}
-              style={{ 
-                color: '#3b82f6', textDecoration: 'none', display: 'flex', alignItems: 'center', 
-                gap: '0.4rem', fontSize: '0.8rem', fontWeight: 800, padding: '0.4rem 0.8rem', 
-                borderRadius: '8px', background: '#eff6ff', transition: 'all 0.2s' 
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = '#dbeafe'; e.currentTarget.style.color = '#2563eb'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = '#eff6ff'; e.currentTarget.style.color = '#3b82f6'; }}
-            >
-              View Sheet <span style={{ fontSize: '1rem', lineHeight: 1 }}>↗</span>
-            </a>
-          </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
+              <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>3CL Guards</h2>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <a href={sheetUrl3CL} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#3b82f6', textDecoration: 'none', background: 'rgba(59, 130, 246, 0.1)', padding: '0.25rem 0.75rem', borderRadius: '16px', fontWeight: 600 }}>
+                  View Sheet ↗
+                </a>
+                <button 
+                  onClick={() => setShowNonPostingModal('3CL')}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.1)', border: 'none', padding: '0.25rem 0.75rem', borderRadius: '16px', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Non Posting List
+                </button>
+              </div>
+            </div>
 
-          {/* 3CL Action Bar */}
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <button 
-              onClick={() => setShowAFI3CL(true)}
-              disabled={showAFI3CL || guards3AFI.length > 0}
-              style={{ background: '#06b6d4', color: '#fff', border: 'none', borderRadius: '999px', padding: '0.4rem 0.8rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: (showAFI3CL || guards3AFI.length > 0) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', opacity: (showAFI3CL || guards3AFI.length > 0) ? 0.5 : 1 }}
-            >
-              <span style={{ fontSize: '1rem' }}>+</span> Add AFI
-            </button>
-            <button 
-              onClick={() => setShowMHC3CL(true)}
-              disabled={showMHC3CL || guards3MHC.length > 0}
-              style={{ background: '#8b5cf6', color: '#fff', border: 'none', borderRadius: '999px', padding: '0.4rem 0.8rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: (showMHC3CL || guards3MHC.length > 0) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', opacity: (showMHC3CL || guards3MHC.length > 0) ? 0.5 : 1 }}
-            >
-              <span style={{ fontSize: '1rem' }}>+</span> Add MHC
-            </button>
-            <button 
-              onClick={() => setExtraInteriors3CL(prev => Math.min(10 - guards3Int.length, prev + 1))}
-              disabled={guards3Int.length + extraInteriors3CL >= 10}
-              style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '999px', padding: '0.4rem 0.8rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: guards3Int.length + extraInteriors3CL >= 10 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', opacity: guards3Int.length + extraInteriors3CL >= 10 ? 0.5 : 1 }}
-            >
-              <span style={{ fontSize: '1rem' }}>+</span> Add Interior
-            </button>
-          </div>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+              <button 
+                onClick={() => setModalConfig({ isOpen: true, role: 'AFI', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
+                style={{ padding: '0.4rem 1rem', background: '#06b6d4', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+              >
+                + Add AFI
+              </button>
+              <button 
+                onClick={() => setModalConfig({ isOpen: true, role: 'MHC', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
+                style={{ padding: '0.4rem 1rem', background: '#8b5cf6', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+              >
+                + Add MHC
+              </button>
+              <button 
+                onClick={() => setModalConfig({ isOpen: true, role: 'INTERIOR', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
+                style={{ padding: '0.4rem 1rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+              >
+                + Add Interior
+              </button>
+              <button 
+                onClick={() => setModalConfig({ isOpen: true, role: 'NON-POSTING', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
+                style={{ padding: '0.4rem 1rem', background: '#60a5fa', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+              >
+                + Add Non-Posting
+              </button>
+            </div>
           
           {renderSlot('CCQ', guards3CCQ[0], 'CCQ', '3CL')}
           {renderSlot('ACCQ', guards3ACCQ[0], 'ACCQ', '3CL')}
@@ -765,6 +793,105 @@ export default function EXOGuardsManagerClient({
         soiData={soiData}
         onAssign={handleAssign}
       />
+
+      {showNonPostingModal && (
+        <NonPostingListModal
+          isOpen={!!showNonPostingModal}
+          onClose={() => setShowNonPostingModal(null)}
+          classLevel={showNonPostingModal}
+          dateStr={activeDateStr}
+          permanentList={showNonPostingModal === '1CL' ? permanent1CL : permanent3CL}
+          todayList={showNonPostingModal === '1CL' ? getGuardsByRole(today1CL, 'NON-POSTING') : getGuardsByRole(today3CL, 'NON-POSTING')}
+          tomorrowList={showNonPostingModal === '1CL' ? getGuardsByRole(tomorrow1CL, 'NON-POSTING') : getGuardsByRole(tomorrow3CL, 'NON-POSTING')}
+          soiData={soiData}
+          onTogglePermanent={(cadetName, isPermanent) => {
+            const apiUrl = showNonPostingModal === '1CL' ? apiUrl1CL : apiUrl3CL;
+            setPendingChanges(prev => [...prev, {
+              classLevel: showNonPostingModal,
+              dateStr: 'PERMANENT',
+              role: 'NON-POSTING',
+              apiUrl,
+              payload: {
+                action: 'setPermanentNonPosting',
+                cadetName: cadetName,
+                isNonPosting: isPermanent
+              }
+            }]);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// Temporary inline component for the modal
+function NonPostingListModal({ isOpen, onClose, classLevel, dateStr, permanentList, todayList, tomorrowList, soiData, onTogglePermanent }) {
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const allCadets = soiData.filter(row => {
+    const cl = String(row['CL'] || row['CLASS'] || '').trim();
+    return classLevel === '1CL' ? (cl === '1' || cl === '1CL') : (cl === '3' || cl === '3CL');
+  }).map(row => String(row['SURNAME'] || '').trim()).filter(Boolean);
+  const uniqueCadets = [...new Set(allCadets)].sort();
+
+  if (!isOpen) return null;
+
+  return (
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+      <div style={{ background: 'var(--bg-secondary)', padding: '2rem', borderRadius: '12px', width: '90%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h3 style={{ margin: 0, color: 'var(--text-primary)' }}>{classLevel} Non-Posting List</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+          <div>
+            <h4 style={{ color: '#8b5cf6', borderBottom: '2px solid #8b5cf6', paddingBottom: '0.5rem' }}>Permanent</h4>
+            {permanentList.length === 0 ? <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>None assigned.</p> : (
+              <ul style={{ listStyle: 'none', padding: 0 }}>
+                {permanentList.map(g => (
+                  <li key={g.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem', background: 'var(--bg-primary)', marginBottom: '0.5rem', borderRadius: '6px' }}>
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{g.name}</span>
+                    <button onClick={() => onTogglePermanent(g.name, false)} style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'none', borderRadius: '4px', padding: '0.25rem 0.5rem', cursor: 'pointer', fontSize: '0.75rem' }}>Remove</button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            
+            <div style={{ marginTop: '1.5rem' }}>
+              <input type="text" placeholder="Search cadet to add..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', marginBottom: '0.5rem' }} />
+              {searchTerm && (
+                <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: '6px' }}>
+                  {uniqueCadets.filter(name => name.toLowerCase().includes(searchTerm.toLowerCase())).map(name => (
+                    <div key={name} onClick={() => { onTogglePermanent(name, true); setSearchTerm(''); }} style={{ padding: '0.5rem', borderBottom: '1px solid var(--border-color)', cursor: 'pointer', color: 'var(--text-primary)' }}>
+                      {name} <span style={{ color: '#10b981', fontSize: '0.8rem', float: 'right' }}>+ Add</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <h4 style={{ color: '#60a5fa', borderBottom: '2px solid #60a5fa', paddingBottom: '0.5rem' }}>Temporary ({dateStr})</h4>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>To add temporary non-posting, close this modal and use the <strong>+ Add Non-Posting</strong> button.</p>
+            {todayList.length === 0 && tomorrowList.length === 0 ? <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>None assigned for today/tomorrow.</p> : (
+              <ul style={{ listStyle: 'none', padding: 0 }}>
+                {todayList.map(g => (
+                  <li key={`today-${g.name}`} style={{ padding: '0.5rem', background: 'var(--bg-primary)', marginBottom: '0.5rem', borderRadius: '6px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                    {g.name} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: '0.5rem' }}>(Today)</span>
+                  </li>
+                ))}
+                {tomorrowList.map(g => (
+                  <li key={`tomorrow-${g.name}`} style={{ padding: '0.5rem', background: 'var(--bg-primary)', marginBottom: '0.5rem', borderRadius: '6px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                    {g.name} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: '0.5rem' }}>(Tomorrow)</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
