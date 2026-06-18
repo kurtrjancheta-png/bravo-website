@@ -93,8 +93,27 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
     const formattedData = `CDT ${cadetClass} ${fullName.toUpperCase()} ${serialNumber.toUpperCase()} 'B' CO CCAFP`;
 
     setStatus('loading');
+    setErrorMsg('');
     
     try {
+      // Check for duplicates first
+      const checkRes = await fetch(`/api/privilege-signees?sheetName=${encodeURIComponent(selectedPriv.sheetName)}`);
+      if (checkRes.ok) {
+        const checkResult = await checkRes.json();
+        const signees = checkResult.data || [];
+        
+        // Check if serial number already exists in any of the rows
+        const alreadySignified = signees.some(row => 
+           Object.values(row).some(val => String(val).toUpperCase().includes(serialNumber.toUpperCase()))
+        );
+        
+        if (alreadySignified) {
+           setStatus('error');
+           setErrorMsg('You have already signified for this privilege.');
+           return;
+        }
+      }
+
       const response = await fetch(SCRIPT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

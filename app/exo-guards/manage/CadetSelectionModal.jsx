@@ -17,8 +17,9 @@ export default function CadetSelectionModal({ isOpen, onClose, role, dateStr, cl
       // "only display the last name of the 1cl cadets since only 1cl cadets will be posting for those guard types."
       // Let's check if there's a 'CL' or 'CLASS' column in soiData.
       const cl = String(row['CL'] || row['CLASS'] || '').trim();
-      if (classLevel === '1CL' && cl !== '1' && cl !== '1CL') return false; // This might fail if the column is missing, so we'll be loose.
-      // Wait, let's just make it a pure search for now, and if they typed, we match last name.
+      if (classLevel === '1CL' && cl !== '1' && cl !== '1CL') return false;
+      if (classLevel === '2CL' && cl !== '2' && cl !== '2CL') return false;
+      if (classLevel === '3CL' && cl !== '3' && cl !== '3CL') return false;
       return name.toLowerCase().includes(searchTerm.toLowerCase());
     }).map(row => String(row['SURNAME'] || '').trim()).filter(Boolean);
   }, [soiData, searchTerm, classLevel]);

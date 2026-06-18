@@ -247,6 +247,26 @@ export default function EXOGuardsManagerClient({
   const getGuardsByRole = (list, role) => list.filter(g => g.status === role);
 
   const activeDateStr = activeTab === 'today' ? postedDateStr : incomingDateStr;
+  const handleRemoveTemporary = (cadetName, targetClassLevel, isTomorrow) => {
+    const apiUrl = targetClassLevel === '1CL' ? apiUrl1CL : targetClassLevel === '2CL' ? apiUrl2CL : apiUrl3CL;
+    const targetDateStr = isTomorrow ? incomingDateStr : postedDateStr;
+
+    setPendingChanges(prev => [...prev, {
+      cadetName,
+      role: 'CLEAR',
+      date: targetDateStr,
+      apiUrl,
+      classLevel: targetClassLevel,
+      payload: {
+        action: 'assignGuard',
+        cadetName: cadetName,
+        previousCadetName: cadetName,
+        date: targetDateStr,
+        color: null
+      }
+    }]);
+  };
+
   const handleAssign = async (cadetName) => {
     if (!modalConfig) return;
     const { role, dateStr, currentCadetName, classLevel } = modalConfig;
@@ -935,7 +955,7 @@ export default function EXOGuardsManagerClient({
           tomorrowList={showNonPostingModal === '1CL' ? getGuardsByRole(tomorrow1CL, 'NON-POSTING') : getGuardsByRole(tomorrow3CL, 'NON-POSTING')}
           soiData={soiData}
           onTogglePermanent={(cadetName, isPermanent) => {
-            const apiUrl = showNonPostingModal === '1CL' ? apiUrl1CL : apiUrl3CL;
+            const apiUrl = showNonPostingModal === '1CL' ? apiUrl1CL : showNonPostingModal === '2CL' ? apiUrl2CL : apiUrl3CL;
             setPendingChanges(prev => [...prev, {
               classLevel: showNonPostingModal,
               dateStr: 'PERMANENT',
@@ -948,6 +968,7 @@ export default function EXOGuardsManagerClient({
               }
             }]);
           }}
+          onRemoveTemporary={(cadetName, isTomorrow) => handleRemoveTemporary(cadetName, showNonPostingModal, isTomorrow)}
         />
       )}
     </div>
@@ -955,12 +976,14 @@ export default function EXOGuardsManagerClient({
 }
 
 // Temporary inline component for the modal
-function NonPostingListModal({ isOpen, onClose, classLevel, dateStr, permanentList, todayList, tomorrowList, soiData, onTogglePermanent }) {
+function NonPostingListModal({ isOpen, onClose, classLevel, dateStr, permanentList, todayList, tomorrowList, soiData, onTogglePermanent, onRemoveTemporary }) {
   const [searchTerm, setSearchTerm] = useState('');
   
   const allCadets = soiData.filter(row => {
     const cl = String(row['CL'] || row['CLASS'] || '').trim();
-    return classLevel === '1CL' ? (cl === '1' || cl === '1CL') : (cl === '3' || cl === '3CL');
+    if (classLevel === '1CL') return cl === '1' || cl === '1CL';
+    if (classLevel === '2CL') return cl === '2' || cl === '2CL';
+    return cl === '3' || cl === '3CL';
   }).map(row => String(row['SURNAME'] || '').trim()).filter(Boolean);
   const uniqueCadets = [...new Set(allCadets)].sort();
 
@@ -1008,13 +1031,21 @@ function NonPostingListModal({ isOpen, onClose, classLevel, dateStr, permanentLi
             {todayList.length === 0 && tomorrowList.length === 0 ? <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>None assigned for today/tomorrow.</p> : (
               <ul style={{ listStyle: 'none', padding: 0 }}>
                 {todayList.map(g => (
-                  <li key={`today-${g.name}`} style={{ padding: '0.5rem', background: 'var(--bg-primary)', marginBottom: '0.5rem', borderRadius: '6px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    {g.name} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: '0.5rem' }}>(Today)</span>
+                  <li key={`today-${g.name}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem', background: 'var(--bg-primary)', marginBottom: '0.5rem', borderRadius: '6px' }}>
+                    <div>
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{g.name}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: '0.5rem' }}>(Today)</span>
+                    </div>
+                    <button onClick={() => onRemoveTemporary(g.name, false)} style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'none', borderRadius: '4px', padding: '0.25rem 0.5rem', cursor: 'pointer', fontSize: '0.75rem' }}>Remove</button>
                   </li>
                 ))}
                 {tomorrowList.map(g => (
-                  <li key={`tomorrow-${g.name}`} style={{ padding: '0.5rem', background: 'var(--bg-primary)', marginBottom: '0.5rem', borderRadius: '6px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    {g.name} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: '0.5rem' }}>(Tomorrow)</span>
+                  <li key={`tomorrow-${g.name}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem', background: 'var(--bg-primary)', marginBottom: '0.5rem', borderRadius: '6px' }}>
+                    <div>
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{g.name}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: '0.5rem' }}>(Tomorrow)</span>
+                    </div>
+                    <button onClick={() => onRemoveTemporary(g.name, true)} style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'none', borderRadius: '4px', padding: '0.25rem 0.5rem', cursor: 'pointer', fontSize: '0.75rem' }}>Remove</button>
                   </li>
                 ))}
               </ul>
