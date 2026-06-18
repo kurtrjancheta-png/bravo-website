@@ -158,13 +158,14 @@ export default function EXOGuardsManagerClient({
   // Modal State
   const [modalConfig, setModalConfig] = useState(null); // { isOpen, role, dateStr, currentCadetName, classLevel }
   const [showNonPostingModal, setShowNonPostingModal] = useState(null); // '1CL' or '3CL'
+  const [isTallyModalOpen, setIsTallyModalOpen] = useState(false);
 
   const [now] = useState(new Date());
 
   const { 
-    today1CL, tomorrow1CL, permanent1CL,
-    today2CL, tomorrow2CL, permanent2CL,
-    today3CL, tomorrow3CL, permanent3CL,
+    today1CL, tomorrow1CL, permanent1CL, tally1CL,
+    today2CL, tomorrow2CL, permanent2CL, tally2CL,
+    today3CL, tomorrow3CL, permanent3CL, tally3CL,
     postedDateStr, incomingDateStr, postedDateObj, incomingDateObj 
   } = useMemo(() => {
     const nowStr = now.toLocaleString('en-US', { timeZone: 'Asia/Manila' });
@@ -184,6 +185,7 @@ export default function EXOGuardsManagerClient({
       const todayList = [];
       const tomorrowList = [];
       const permanentNonPostingList = [];
+      const tally = {}; // { [cadetName]: { [dateStr]: { label, color } } }
 
       (data || []).forEach(item => {
         const cleanName = (item.name || '').replace(' AS', '').trim();
@@ -208,8 +210,13 @@ export default function EXOGuardsManagerClient({
 
         if (itemObj.getTime() === postedDate.getTime()) todayList.push(entry);
         else if (itemObj.getTime() === incomingDate.getTime()) tomorrowList.push(entry);
+
+        // Populate Tally
+        if (!tally[cleanName]) tally[cleanName] = {};
+        const dateStrKey = formatDate(itemObj);
+        tally[cleanName][dateStrKey] = { label: status.label, color: status.color };
       });
-      return { todayList, tomorrowList, permanentNonPostingList };
+      return { todayList, tomorrowList, permanentNonPostingList, tally };
     };
 
     const res1 = processGuards(data1CL, getStatusFromColor1CL);
@@ -217,9 +224,9 @@ export default function EXOGuardsManagerClient({
     const res3 = processGuards(data3CL, getStatusFromColor3CL);
 
     return { 
-      today1CL: res1.todayList, tomorrow1CL: res1.tomorrowList, permanent1CL: res1.permanentNonPostingList,
-      today2CL: res2.todayList, tomorrow2CL: res2.tomorrowList, permanent2CL: res2.permanentNonPostingList,
-      today3CL: res3.todayList, tomorrow3CL: res3.tomorrowList, permanent3CL: res3.permanentNonPostingList,
+      today1CL: res1.todayList, tomorrow1CL: res1.tomorrowList, permanent1CL: res1.permanentNonPostingList, tally1CL: res1.tally,
+      today2CL: res2.todayList, tomorrow2CL: res2.tomorrowList, permanent2CL: res2.permanentNonPostingList, tally2CL: res2.tally,
+      today3CL: res3.todayList, tomorrow3CL: res3.tomorrowList, permanent3CL: res3.permanentNonPostingList, tally3CL: res3.tally,
       postedDateStr: formatDate(postedDate), incomingDateStr: formatDate(incomingDate),
       postedDateObj: postedDate, incomingDateObj: incomingDate
     };
@@ -431,10 +438,9 @@ export default function EXOGuardsManagerClient({
     );
   };
 
-  const renderSentinelsCard = (guards, role, classLevel, dropdownSetter) => {
+  const renderMultiSlotCard = (guards, role, classLevel, title, baseColor, numSlots, extraSlots = 0) => {
     const is3CL = classLevel === '3CL';
-
-    const totalSlots = is3CL ? num3CLSentinels : Math.min(6, guards.length + extraSentinels1CL);
+    const totalSlots = is3CL && role === 'SENTINEL' ? num3CLSentinels : Math.min(numSlots, guards.length + extraSlots);
     
     // Create array of exactly totalSlots
     const slots = [];
@@ -446,25 +452,25 @@ export default function EXOGuardsManagerClient({
 
     return (
       <div style={{
-        backgroundColor: 'var(--card-bg)', border: `2px solid #1f293760`,
-        borderTop: `10px solid #1f2937`, borderRadius: '12px', padding: '1.25rem',
+        backgroundColor: 'var(--card-bg)', border: `2px solid ${baseColor}60`,
+        borderTop: `10px solid ${baseColor}`, borderRadius: '12px', padding: '1.25rem',
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)', position: 'relative'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: 'var(--card-text)', letterSpacing: '0.05em' }}>
-              SENTINELS
+              {title}
             </h3>
             <span style={{
-              backgroundColor: `#1f293715`, color: '#1f2937', padding: '0.2rem 0.6rem',
+              backgroundColor: `${baseColor}15`, color: baseColor, padding: '0.2rem 0.6rem',
               borderRadius: '9999px', fontSize: '0.65rem', fontWeight: 800,
-              textTransform: 'uppercase', border: `1px solid #1f2937`
+              textTransform: 'uppercase', border: `1px solid ${baseColor}`
             }}>
               {guards.length} POSTED
             </span>
           </div>
 
-          {is3CL && (
+          {is3CL && role === 'SENTINEL' && (
             <select 
               value={num3CLSentinels} 
               onChange={e => setNum3CLSentinels(Number(e.target.value))}
@@ -647,7 +653,7 @@ export default function EXOGuardsManagerClient({
       )}
 
       {/* Toggle Switch */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1.5rem', marginBottom: '2.5rem' }}>
         <div style={{
           display: 'inline-flex',
           backgroundColor: '#e2e8f0', // slate-200
@@ -694,6 +700,18 @@ export default function EXOGuardsManagerClient({
             INCOMING
           </button>
         </div>
+        
+        <button 
+          onClick={() => setIsTallyModalOpen(true)}
+          style={{
+            padding: '0.6rem 1.5rem', fontWeight: 800, border: 'none', background: 'var(--btn-bg)',
+            color: '#ffffff', cursor: 'pointer', borderRadius: '8px',
+            transition: 'background 0.3s', whiteSpace: 'nowrap', fontSize: '0.9rem',
+            letterSpacing: '0.05em', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+          }}
+        >
+          📊 WEEKLY TALLY
+        </button>
       </div>
       
       {/* Class Tabs */}
@@ -794,7 +812,7 @@ export default function EXOGuardsManagerClient({
               </div>
             </div>
 
-            {renderSentinelsCard(guards1Sent, 'SENTINEL', '1CL')}
+            {renderMultiSlotCard(guards1Sent, 'SENTINEL', '1CL', 'SENTINELS', '#1f2937', 6, extraSentinels1CL)}
           </div>
         )}
 
@@ -824,6 +842,12 @@ export default function EXOGuardsManagerClient({
                   + Add Plebe Detail
                 </button>
                 <button 
+                  onClick={() => setModalConfig({ isOpen: true, role: 'SENTINEL (TOC)', dateStr: activeDateStr, currentCadetName: null, classLevel: '2CL' })}
+                  style={{ padding: '0.4rem 1rem', background: '#06b6d4', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                >
+                  + Add Sentinel
+                </button>
+                <button 
                   onClick={() => setModalConfig({ isOpen: true, role: 'AFI', dateStr: activeDateStr, currentCadetName: null, classLevel: '2CL' })}
                   style={{ padding: '0.4rem 1rem', background: '#b45309', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                 >
@@ -843,7 +867,7 @@ export default function EXOGuardsManagerClient({
                 </button>
               </div>
             
-            {renderSlot('PLEBE DETAIL', guards2Plebe[0], 'PLEBE DETAIL', '2CL')}
+            {renderMultiSlotCard(guards2Plebe, 'PLEBE DETAIL', '2CL', 'PLEBE DETAIL', '#eab308', 6, 0)}
             {renderSlot('AFI', guards2AFI[0], 'AFI', '2CL')}
             
             <div>
@@ -857,7 +881,7 @@ export default function EXOGuardsManagerClient({
               </div>
             </div>
 
-            {renderSentinelsCard(guards2Sent, 'SENTINEL (TOC)', '2CL')}
+            {renderMultiSlotCard(guards2Sent, 'SENTINEL (TOC)', '2CL', 'SENTINELS (TOC)', '#06b6d4', 6, 0)}
           </div>
         )}
         
@@ -928,7 +952,7 @@ export default function EXOGuardsManagerClient({
               </div>
             </div>
 
-            {renderSentinelsCard(guards3Sent, 'SENTINEL', '3CL')}
+            {renderMultiSlotCard(guards3Sent, 'SENTINEL', '3CL', 'SENTINELS', '#1f2937', 6, 0)}
           </div>
         )}
       </div>
@@ -969,6 +993,213 @@ export default function EXOGuardsManagerClient({
             }]);
           }}
           onRemoveTemporary={(cadetName, isTomorrow) => handleRemoveTemporary(cadetName, showNonPostingModal, isTomorrow)}
+        />
+      )}
+
+      {isTallyModalOpen && (
+        <TallySheetModal
+          isOpen={isTallyModalOpen}
+          onClose={() => setIsTallyModalOpen(false)}
+          tally1CL={tally1CL}
+          tally2CL={tally2CL}
+          tally3CL={tally3CL}
+          soiData={soiData}
+          postedDateObj={postedDateObj}
+        />
+      )}
+    </div>
+  );
+}
+
+// Temporary inline component for the modal
+function NonPostingListModal({ isOpen, onClose, classLevel, dateStr, permanentList, todayList, tomorrowList, soiData, onTogglePermanent, onRemoveTemporary }) {
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const allCadets = soiData.filter(row => {
+    const cl = String(row['CL'] || row['CLASS'] || '').trim();
+    if (classLevel === '1CL') return cl === '1' || cl === '1CL';
+    if (classLevel === '2CL') return cl === '2' || cl === '2CL';
+    return cl === '3' || cl === '3CL';
+  }).map(row => String(row['SURNAME'] || '').trim()).filter(Boolean);
+  const uniqueCadets = [...new Set(allCadets)].sort();
+
+  if (!isOpen) return null;
+
+  return (
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+      <div style={{ background: 'var(--bg-secondary)', padding: '2rem', borderRadius: '12px', width: '90%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h3 style={{ margin: 0, color: 'var(--text-primary)' }}>{classLevel} Non-Posting List</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+          <div>
+            <h4 style={{ color: '#8b5cf6', borderBottom: '2px solid #8b5cf6', paddingBottom: '0.5rem' }}>Permanent</h4>
+            {permanentList.length === 0 ? <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>None assigned.</p> : (
+              <ul style={{ listStyle: 'none', padding: 0 }}>
+                {permanentList.map(g => (
+                  <li key={g.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem', background: 'var(--bg-primary)', marginBottom: '0.5rem', borderRadius: '6px' }}>
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{g.name}</span>
+                    <button onClick={() => onTogglePermanent(g.name, false)} style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'none', borderRadius: '4px', padding: '0.25rem 0.5rem', cursor: 'pointer', fontSize: '0.75rem' }}>Remove</button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            
+            <div style={{ marginTop: '1.5rem' }}>
+              <input type="text" placeholder="Search cadet to add..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', marginBottom: '0.5rem' }} />
+              {searchTerm && (
+                <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: '6px' }}>
+                  {uniqueCadets.filter(name => name.toLowerCase().includes(searchTerm.toLowerCase())).map(name => (
+                    <div key={name} onClick={() => { onTogglePermanent(name, true); setSearchTerm(''); }} style={{ padding: '0.5rem', borderBottom: '1px solid var(--border-color)', cursor: 'pointer', color: 'var(--text-primary)' }}>
+                      {name} <span style={{ color: '#10b981', fontSize: '0.8rem', float: 'right' }}>+ Add</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+            
+            {renderMultiSlotCard(guards2Plebe, 'PLEBE DETAIL', '2CL', 'PLEBE DETAIL', '#eab308', 6, 0)}
+            {renderSlot('AFI', guards2AFI[0], 'AFI', '2CL')}
+            
+            <div>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <span style={{ fontWeight: 800, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>INTERIOR GUARDS</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {Array.from({ length: Math.max(1, guards2Int.length) }).map((_, i) => (
+                  <div key={i}>{renderSlot('INTERIOR', guards2Int[i], 'INTERIOR', '2CL')}</div>
+                ))}
+              </div>
+            </div>
+
+            {renderMultiSlotCard(guards2Sent, 'SENTINEL (TOC)', '2CL', 'SENTINELS (TOC)', '#06b6d4', 6, 0)}
+          </div>
+        )}
+        
+        {/* 3CL Column */}
+        {activeClassTab === '3CL' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
+                <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>3CL Guards</h2>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <a href={sheetUrl3CL} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#3b82f6', textDecoration: 'none', background: 'rgba(59, 130, 246, 0.1)', padding: '0.25rem 0.75rem', borderRadius: '16px', fontWeight: 600 }}>
+                    View Sheet ↗
+                  </a>
+                  <button 
+                    onClick={() => setShowNonPostingModal('3CL')}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.1)', border: 'none', padding: '0.25rem 0.75rem', borderRadius: '16px', fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    Non Posting List
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                <button 
+                  onClick={() => setModalConfig({ isOpen: true, role: 'AFI', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
+                  style={{ padding: '0.4rem 1rem', background: '#06b6d4', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                >
+                  + Add AFI
+                </button>
+                <button 
+                  onClick={() => setModalConfig({ isOpen: true, role: 'MHC', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
+                  style={{ padding: '0.4rem 1rem', background: '#8b5cf6', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                >
+                  + Add MHC
+                </button>
+                <button 
+                  onClick={() => setModalConfig({ isOpen: true, role: 'INTERIOR', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
+                  style={{ padding: '0.4rem 1rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                >
+                  + Add Interior
+                </button>
+                <button 
+                  onClick={() => setModalConfig({ isOpen: true, role: 'NON-POSTING', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
+                  style={{ padding: '0.4rem 1rem', background: '#60a5fa', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                >
+                  + Add Non-Posting
+                </button>
+              </div>
+            
+            {renderSlot('CCQ', guards3CCQ[0], 'CCQ', '3CL')}
+            {renderSlot('ACCQ', guards3ACCQ[0], 'ACCQ', '3CL')}
+            
+            {(guards3AFI.length > 0 || showAFI3CL) && renderSlot('AFI', guards3AFI[0], 'AFI', '3CL')}
+            {(guards3MHC.length > 0 || showMHC3CL) && renderSlot('MHC', guards3MHC[0], 'MHC', '3CL')}
+            
+            <div>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <span style={{ fontWeight: 800, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>INTERIOR GUARDS</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {Array.from({ length: guards3Int.length + extraInteriors3CL }).map((_, i) => (
+                  <div key={i}>{renderSlot('INTERIOR', guards3Int[i], 'INTERIOR', '3CL')}</div>
+                ))}
+                {guards3Int.length + extraInteriors3CL === 0 && (
+                  <div style={{ padding: '1rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem', fontStyle: 'italic', border: '1px dashed #cbd5e1', borderRadius: '8px' }}>
+                    No interior guards posted.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {renderMultiSlotCard(guards3Sent, 'SENTINEL', '3CL', 'SENTINELS', '#1f2937', 6, 0)}
+          </div>
+        )}
+      </div>
+      
+      <CadetSelectionModal 
+        isOpen={modalConfig?.isOpen}
+        onClose={() => setModalConfig(null)}
+        role={modalConfig?.role}
+        dateStr={modalConfig?.dateStr}
+        classLevel={modalConfig?.classLevel}
+        currentCadetName={modalConfig?.currentCadetName}
+        soiData={soiData}
+        onAssign={handleAssign}
+      />
+
+      {showNonPostingModal && (
+        <NonPostingListModal
+          isOpen={!!showNonPostingModal}
+          onClose={() => setShowNonPostingModal(null)}
+          classLevel={showNonPostingModal}
+          dateStr={activeDateStr}
+          permanentList={showNonPostingModal === '1CL' ? permanent1CL : permanent3CL}
+          todayList={showNonPostingModal === '1CL' ? getGuardsByRole(today1CL, 'NON-POSTING') : getGuardsByRole(today3CL, 'NON-POSTING')}
+          tomorrowList={showNonPostingModal === '1CL' ? getGuardsByRole(tomorrow1CL, 'NON-POSTING') : getGuardsByRole(tomorrow3CL, 'NON-POSTING')}
+          soiData={soiData}
+          onTogglePermanent={(cadetName, isPermanent) => {
+            const apiUrl = showNonPostingModal === '1CL' ? apiUrl1CL : showNonPostingModal === '2CL' ? apiUrl2CL : apiUrl3CL;
+            setPendingChanges(prev => [...prev, {
+              classLevel: showNonPostingModal,
+              dateStr: 'PERMANENT',
+              role: 'NON-POSTING',
+              apiUrl,
+              payload: {
+                action: 'setPermanentNonPosting',
+                cadetName: cadetName,
+                isNonPosting: isPermanent
+              }
+            }]);
+          }}
+          onRemoveTemporary={(cadetName, isTomorrow) => handleRemoveTemporary(cadetName, showNonPostingModal, isTomorrow)}
+        />
+      )}
+
+      {isTallyModalOpen && (
+        <TallySheetModal
+          isOpen={isTallyModalOpen}
+          onClose={() => setIsTallyModalOpen(false)}
+          tally1CL={tally1CL}
+          tally2CL={tally2CL}
+          tally3CL={tally3CL}
+          soiData={soiData}
+          postedDateObj={postedDateObj}
         />
       )}
     </div>
@@ -1051,6 +1282,158 @@ function NonPostingListModal({ isOpen, onClose, classLevel, dateStr, permanentLi
               </ul>
             )}
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TallySheetModal({ isOpen, onClose, tally1CL, tally2CL, tally3CL, soiData, postedDateObj }) {
+  const [activeTab, setActiveTab] = useState('1CL');
+  const [weekOffset, setWeekOffset] = useState(0);
+
+  if (!isOpen) return null;
+
+  // Compute the 7 days starting from postedDateObj - 7 days + weekOffset * 7
+  const dates = [];
+  const start = new Date(postedDateObj);
+  start.setDate(start.getDate() - 7 + (weekOffset * 7));
+  
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    dates.push(d);
+  }
+
+  const formatDate = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const formatHeader = (date) => date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', weekday: 'short' });
+
+  // Get tally for current class
+  const activeTally = activeTab === '1CL' ? tally1CL : activeTab === '2CL' ? tally2CL : tally3CL;
+
+  // Get cadets for current class
+  const classCadets = soiData.filter(row => {
+    const cl = String(row['CL'] || row['CLASS'] || '').trim();
+    if (activeTab === '1CL') return cl === '1' || cl === '1CL';
+    if (activeTab === '2CL') return cl === '2' || cl === '2CL';
+    return cl === '3' || cl === '3CL';
+  }).map(row => String(row['SURNAME'] || '').trim()).filter(Boolean);
+
+  const uniqueCadets = [...new Set(classCadets)].sort();
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      zIndex: 1000, padding: '2rem'
+    }}>
+      <div style={{
+        background: 'var(--bg-primary)',
+        borderRadius: '12px',
+        width: '100%',
+        maxWidth: '1200px',
+        maxHeight: '90vh',
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        overflow: 'hidden'
+      }}>
+        {/* Header */}
+        <div style={{ padding: '1.5rem 2rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            <h2 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--text-primary)', fontWeight: 900 }}>WEEKLY POSTING TALLY</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-primary)', padding: '0.25rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              <button 
+                onClick={() => setWeekOffset(prev => prev - 1)}
+                style={{ padding: '0.25rem 0.75rem', border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 700, color: 'var(--text-secondary)' }}
+              >
+                &larr; Prev
+              </button>
+              <div style={{ width: '1px', height: '1.5rem', background: 'var(--border-color)' }} />
+              <button 
+                onClick={() => setWeekOffset(prev => prev + 1)}
+                style={{ padding: '0.25rem 0.75rem', border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 700, color: 'var(--text-secondary)' }}
+              >
+                Next &rarr;
+              </button>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-secondary)' }}>&times;</button>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ display: 'flex', padding: '1rem 2rem', gap: '1rem', borderBottom: '1px solid var(--border-color)' }}>
+          {['1CL', '2CL', '3CL'].map(tab => (
+             <button
+               key={tab}
+               onClick={() => setActiveTab(tab)}
+               style={{
+                 padding: '0.5rem 2rem',
+                 borderRadius: '999px',
+                 border: 'none',
+                 backgroundColor: activeTab === tab ? '#0f172a' : '#e2e8f0',
+                 color: activeTab === tab ? '#ffffff' : '#64748b',
+                 fontWeight: 800,
+                 cursor: 'pointer',
+                 transition: 'all 0.2s'
+               }}
+             >
+               {tab} POSTINGS
+             </button>
+          ))}
+        </div>
+
+        {/* Tally Grid */}
+        <div style={{ overflow: 'auto', flex: 1, padding: '0' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '800px' }}>
+            <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-secondary)', zIndex: 10 }}>
+              <tr>
+                <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid var(--border-color)', borderRight: '1px solid var(--border-color)', width: '200px', position: 'sticky', left: 0, background: 'var(--bg-secondary)', zIndex: 11 }}>CADET</th>
+                {dates.map((d, i) => (
+                  <th key={i} style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid var(--border-color)', borderRight: '1px solid var(--border-color)', minWidth: '100px', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                    {formatHeader(d)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {uniqueCadets.map((cadet, rowIdx) => (
+                <tr key={cadet} style={{ borderBottom: '1px solid var(--border-color)', background: rowIdx % 2 === 0 ? 'var(--bg-primary)' : 'var(--bg-secondary)' }}>
+                  <td style={{ padding: '0.75rem 1rem', fontWeight: 700, borderRight: '1px solid var(--border-color)', position: 'sticky', left: 0, background: rowIdx % 2 === 0 ? 'var(--bg-primary)' : 'var(--bg-secondary)', zIndex: 5, color: 'var(--text-primary)' }}>
+                    {cadet}
+                  </td>
+                  {dates.map((d, colIdx) => {
+                    const dateStr = formatDate(d);
+                    const posting = activeTally[cadet] ? activeTally[cadet][dateStr] : null;
+                    return (
+                      <td key={colIdx} style={{ borderRight: '1px solid var(--border-color)', padding: '0.5rem', textAlign: 'center' }}>
+                        {posting ? (
+                          <div 
+                            title={posting.label}
+                            style={{
+                              background: posting.color,
+                              height: '24px',
+                              borderRadius: '4px',
+                              width: '100%',
+                              boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.1)'
+                            }}
+                          />
+                        ) : (
+                          <div style={{ height: '24px', width: '100%' }} />
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+              {uniqueCadets.length === 0 && (
+                <tr>
+                  <td colSpan={dates.length + 1} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>No cadets found for {activeTab}.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

@@ -178,6 +178,21 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
     }
   };
 
+  const filteredPrivileges = activePrivileges.filter((priv) => {
+    const rawDate = priv.DATE || priv['DATE OF PRIV'] || 'No Date';
+    if (rawDate !== 'No Date') {
+      const d = new Date(rawDate);
+      if (!isNaN(d)) {
+        const privDateStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const currentDateStart = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate());
+        if (currentDateStart.getTime() >= privDateStart.getTime()) {
+          return false;
+        }
+      }
+    }
+    return true;
+  });
+
   return (
     <div style={{ padding: '2rem' }}>
       
@@ -205,13 +220,13 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
 
       <h2 style={{ color: 'var(--text-primary)', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Active Privileges</h2>
 
-      {activePrivileges.length === 0 ? (
+      {filteredPrivileges.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '3rem', background: 'rgba(0,0,0,0.02)', borderRadius: '12px', color: 'var(--text-secondary)' }}>
           No active privileges found at this time.
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-          {activePrivileges.map((priv, idx) => {
+          {filteredPrivileges.map((priv, idx) => {
             const rawType = priv.TYPE || priv['TYPE OF PRIV'] || 'Unknown';
             const rawDate = priv.DATE || priv['DATE OF PRIV'] || 'No Date';
             const rawDeadline = priv.DEADLINE || priv['DEADLINE '] || null;
