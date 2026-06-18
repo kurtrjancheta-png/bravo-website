@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 // ----------------------------------------------------
 // 1. ANIMATED TRACES (UNIFIED)
@@ -243,6 +243,21 @@ const weaponConfigs = {
 export default function InteractiveSchematic({ rifle }) {
   const [selectedPart, setSelectedPart] = useState(null);
   const [isExploded, setIsExploded] = useState(false);
+  const hoverTimer = useRef(null);
+
+  const handleMouseEnter = (part) => {
+    if (hoverTimer.current) {
+      clearTimeout(hoverTimer.current);
+      hoverTimer.current = null;
+    }
+    setSelectedPart(part);
+  };
+
+  const handleMouseLeave = () => {
+    hoverTimer.current = setTimeout(() => {
+      setSelectedPart(null);
+    }, 150);
+  };
 
   const type = weaponConfigs[rifle.rifleType] ? rifle.rifleType : 'M16';
   const config = weaponConfigs[type];
@@ -367,8 +382,8 @@ export default function InteractiveSchematic({ rifle }) {
              return (
                <div 
                  key={`label-${part.id}-${isExploded}`}
-                 onMouseEnter={() => setSelectedPart(part)}
-                 onMouseLeave={() => setSelectedPart(null)}
+                 onMouseEnter={() => handleMouseEnter(part)}
+                 onMouseLeave={handleMouseLeave}
                  style={{
                    position: 'absolute',
                    ...(isLeft ? { left: `${part.labelPos.x}%` } : 
@@ -404,9 +419,9 @@ export default function InteractiveSchematic({ rifle }) {
                  <div style={{
                    color: selectedPart?.id === part.id ? colors.highlight : colors.text,
                    fontSize: '0.85rem',
-                   fontWeight: selectedPart?.id === part.id ? '700' : '600',
+                   fontWeight: '600',
                    letterSpacing: '0.5px',
-                   padding: '2px 8px',
+                   padding: '4px 10px',
                    backgroundColor: selectedPart?.id === part.id ? 'rgba(212, 175, 55, 0.05)' : 'rgba(255, 255, 255, 0.9)',
                    backdropFilter: 'blur(4px)',
                    borderRadius: '8px',
