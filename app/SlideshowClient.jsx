@@ -121,13 +121,13 @@ export default function SlideshowClient({ disseminations }) {
       
       <button 
         onClick={prevSlide}
-        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)'; e.currentTarget.style.backgroundColor = 'var(--border-color)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(-50%) scale(1)'; e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'; }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-50%)'; e.currentTarget.style.backgroundColor = 'var(--border-color)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(-50%)'; e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'; }}
         style={{
           position: 'absolute',
           left: '0',
           top: '50%',
-          transform: 'translateY(-50%) scale(1)',
+          transform: 'translateY(-50%)',
           background: 'var(--bg-secondary)',
           border: '1px solid var(--border-color)',
           borderRadius: '50%',
@@ -267,13 +267,13 @@ export default function SlideshowClient({ disseminations }) {
 
       <button 
         onClick={nextSlide}
-        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)'; e.currentTarget.style.backgroundColor = 'var(--border-color)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(-50%) scale(1)'; e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'; }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-50%)'; e.currentTarget.style.backgroundColor = 'var(--border-color)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(-50%)'; e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'; }}
         style={{
           position: 'absolute',
           right: '0',
           top: '50%',
-          transform: 'translateY(-50%) scale(1)',
+          transform: 'translateY(-50%)',
           background: 'var(--bg-secondary)',
           border: '1px solid var(--border-color)',
           borderRadius: '50%',
