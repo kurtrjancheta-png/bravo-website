@@ -17,6 +17,7 @@ export default function ReportForm({ rifle, isS2Admin }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: rifle.name,
+          rifleType: rifle.rifleType,
           serialNumber: rifle.serialNumber,
           reportType,
           description,
