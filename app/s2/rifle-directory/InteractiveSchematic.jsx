@@ -23,8 +23,8 @@ const M14Trace = ({ color }) => (
       <path d="M 660 165 L 660 145 L 685 145 L 685 165" />
       <circle cx="672" cy="150" r="6" />
       <circle cx="672" cy="150" r="2" />
-      <path d="M 545 215 L 585 215 L 580 257 L 540 255 Z" />
-      <line x1="550" y1="225" x2="546" y2="255" />
+      <path d="M 545 215 L 585 215 L 583 236 L 543 235 Z" />
+      <line x1="550" y1="220" x2="548" y2="232" />
       <path d="M 610 215 C 610 245, 650 245, 660 215" fill="none" />
       <path d="M 630 215 Q 630 230 640 235" fill="none" />
       <path d="M 950 185 L 960 185 L 960 272 L 950 270 Z" />
@@ -100,7 +100,7 @@ const weaponConfigs = {
       { id: 'gas_cylinder', name: 'Gas Cylinder', targetPos: { x: 30, y: 50.08 }, labelPos: { x: 5, y: 74, align: 'left' }, desc: 'Short-stroke gas piston system.' },
       
       { id: 'trigger', name: 'Trigger Group', targetPos: { x: 63.5, y: 52.5 }, labelPos: { x: 95, y: 81, align: 'right' }, desc: 'Two-stage military trigger.' },
-      { id: 'magazine', name: '20-Round Box', targetPos: { x: 56, y: 53.33 }, labelPos: { x: 5, y: 88, align: 'left' }, desc: 'Detachable 20-round double-stack magazine.' },
+      { id: 'magazine', name: '20-Round Box', targetPos: { x: 56, y: 52.1 }, labelPos: { x: 5, y: 88, align: 'left' }, desc: 'Detachable 20-round double-stack magazine.' },
     ]
   },
   'M16': {
