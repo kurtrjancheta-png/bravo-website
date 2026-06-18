@@ -7,11 +7,17 @@ export default async function RifleDirectoryPage() {
   return (
     <div style={{ 
       backgroundColor: '#f5f5f7', // iOS light gray background
-      minHeight: '100vh', 
-      padding: '3rem 2rem', 
+      minHeight: 'calc(100vh - 64px)', 
+      padding: '3rem 4rem', 
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif', 
       color: '#1d1d1f' 
     }}>
+      <style>{`
+        .main-content {
+          max-width: 100% !important;
+          padding: 0 !important;
+        }
+      `}</style>
       <div style={{ 
         width: '100%', 
         maxWidth: '1600px',
