@@ -65,29 +65,36 @@ export const ROLE_COLORS_1CL = {
   'NON-POSTING': '#0000ff'
 };
 
+export const ROLE_COLORS_2CL = {
+  'PLEBE DETAIL': '#ffff00',
+  'SENTINEL (TOC)': '#00ffff',
+  'INTERIOR': '#ff00ff',
+  'AFI': '#b45f06',
+  'NON-POSTING': '#0000ff'
+};
+
 export const ROLE_COLORS_3CL = {
   'CCQ': '#ff0000',
   'ACCQ': '#4a86e8',
   'AFI': '#00ffff',
-  'INTERIOR': '#ff9900',
   'MHC': '#00ff00',
-  'SENTINEL': '#000000'
+  'INTERIOR': '#ff9900',
+  'SENTINEL': '#ff00ff',
+  'NON-POSTING': '#0000ff'
 };
 
 function getStatusFromColor1CL(hex) {
-  if (!hex) return { label: 'UNKNOWN', color: '#64748b' };
-  if (hex === '#ff0000' || hex === '#ea4335') return { label: 'INTERIOR', color: '#f87171' };
-  if (hex === '#ffc000' || hex === '#ffa500' || hex === '#fbbc04' || hex === '#ff9900') return { label: 'FLOOR INSPECTOR', color: '#fb923c' };
-  if (hex === '#00ff00' || hex === '#34a853') return { label: 'SENTINEL', color: '#4ade80' };
-  if (hex === '#0000ff' || hex === '#4285f4' || hex === '#00b0f0' || hex === '#a4c2f4') return { label: 'NON-POSTING', color: '#60a5fa' };
-  return { label: 'POSTED', color: '#cbd5e1' };
+  if (!hex) return { label: 'UNKNOWN', color: '#64748b' }; // slate-500
+  if (hex === '#ffc000' || hex === '#ffc001') return { label: 'FLOOR INSPECTOR', color: '#f59e0b' }; // amber-500
+  if (hex === '#ff0000' || hex === '#ff0001') return { label: 'INTERIOR', color: '#ef4444' }; // red-500
+  if (hex === '#00ff00' || hex === '#00ff01') return { label: 'SENTINEL', color: '#22c55e' }; // green-500
+  if (hex === '#0000ff' || hex === '#0000fe' || hex === '#4285f4' || hex === '#a4c2f4' || hex === '#cfe2f3' || hex === '#9fc5e8') return { label: 'NON-POSTING', color: '#60a5fa' }; // blue-400
+  return { label: 'POSTED', color: '#cbd5e1' }; // slate-300
 }
 
 function getStatusFromColor3CL(hex) {
   if (!hex) return { label: 'UNKNOWN', color: '#64748b' };
-  switch (hex) {
-    case '#000000': 
-    case '#111111': return { label: 'SENTINEL', color: '#1f2937' };
+  switch(hex.toLowerCase()) {
     case '#ff0000': 
     case '#ea4335': return { label: 'CCQ', color: '#ef4444' };
     case '#4a86e8': 
@@ -98,19 +105,36 @@ function getStatusFromColor3CL(hex) {
     case '#ff9900': 
     case '#ffa500': 
     case '#ffc000': return { label: 'INTERIOR', color: '#f59e0b' };
+    case '#ff00ff': return { label: 'SENTINEL', color: '#d946ef' };
     case '#00ffff': 
     case '#00b0f0': return { label: 'AFI', color: '#06b6d4' };
+    case '#cfe2f3':
+    case '#9fc5e8':
+    case '#a4c2f4': return { label: 'NON-POSTING', color: '#60a5fa' };
     default: return { label: 'POSTED', color: '#cbd5e1' };
   }
 }
 
+function getStatusFromColor2CL(hex) {
+  if (!hex) return { label: 'UNKNOWN', color: '#64748b' };
+  if (hex === '#ffff00' || hex === '#ffff01') return { label: 'PLEBE DETAIL', color: '#eab308' }; // Yellow
+  if (hex === '#00ffff' || hex === '#00b0f0') return { label: 'SENTINEL (TOC)', color: '#06b6d4' }; // Cyan
+  if (hex === '#ff00ff' || hex === '#ff00fe') return { label: 'INTERIOR', color: '#d946ef' }; // Magenta
+  if (hex === '#b45f06' || hex === '#b87333' || hex === '#a67c00' || hex === '#bf9000') return { label: 'AFI', color: '#b45309' }; // Brown
+  if (hex === '#0000ff' || hex === '#4285f4' || hex === '#00b0f0' || hex === '#a4c2f4' || hex === '#cfe2f3' || hex === '#9fc5e8') return { label: 'NON-POSTING', color: '#60a5fa' };
+  return { label: 'POSTED', color: '#cbd5e1' };
+}
+
 export default function EXOGuardsManagerClient({ 
   data1CL = [], 
+  data2CL = [],
   data3CL = [], 
   soiData = [], 
   apiUrl1CL, 
+  apiUrl2CL,
   apiUrl3CL,
   sheetUrl1CL,
+  sheetUrl2CL,
   sheetUrl3CL
 }) {
   const router = useRouter();
@@ -118,6 +142,7 @@ export default function EXOGuardsManagerClient({
   
   // UI States
   const [activeTab, setActiveTab] = useState('today'); // 'today' or 'tomorrow'
+  const [activeClassTab, setActiveClassTab] = useState('1CL');
   
   const [pendingChanges, setPendingChanges] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -138,6 +163,7 @@ export default function EXOGuardsManagerClient({
 
   const { 
     today1CL, tomorrow1CL, permanent1CL,
+    today2CL, tomorrow2CL, permanent2CL,
     today3CL, tomorrow3CL, permanent3CL,
     postedDateStr, incomingDateStr, postedDateObj, incomingDateObj 
   } = useMemo(() => {
@@ -187,15 +213,17 @@ export default function EXOGuardsManagerClient({
     };
 
     const res1 = processGuards(data1CL, getStatusFromColor1CL);
+    const res2 = processGuards(data2CL, getStatusFromColor2CL);
     const res3 = processGuards(data3CL, getStatusFromColor3CL);
 
     return { 
       today1CL: res1.todayList, tomorrow1CL: res1.tomorrowList, permanent1CL: res1.permanentNonPostingList,
+      today2CL: res2.todayList, tomorrow2CL: res2.tomorrowList, permanent2CL: res2.permanentNonPostingList,
       today3CL: res3.todayList, tomorrow3CL: res3.tomorrowList, permanent3CL: res3.permanentNonPostingList,
       postedDateStr: formatDate(postedDate), incomingDateStr: formatDate(incomingDate),
       postedDateObj: postedDate, incomingDateObj: incomingDate
     };
-  }, [data1CL, data3CL, now, soiData]);
+  }, [data1CL, data2CL, data3CL, now, soiData]);
 
   if (!isLoaded) return null;
   
@@ -225,9 +253,9 @@ export default function EXOGuardsManagerClient({
     
     // VALIDATION: Prevent assigning if cadet is non-posting
     if (role !== 'NON-POSTING') {
-      const permanentList = classLevel === '1CL' ? permanent1CL : permanent3CL;
-      const todayList = classLevel === '1CL' ? today1CL : today3CL;
-      const tomorrowList = classLevel === '1CL' ? tomorrow1CL : tomorrow3CL;
+      const permanentList = classLevel === '1CL' ? permanent1CL : classLevel === '2CL' ? permanent2CL : permanent3CL;
+      const todayList = classLevel === '1CL' ? today1CL : classLevel === '2CL' ? today2CL : today3CL;
+      const tomorrowList = classLevel === '1CL' ? tomorrow1CL : classLevel === '2CL' ? tomorrow2CL : tomorrow3CL;
       
       const isPermanentNP = permanentList.some(g => g.name === cadetName);
       
@@ -240,8 +268,8 @@ export default function EXOGuardsManagerClient({
       }
     }
 
-    const apiUrl = classLevel === '1CL' ? apiUrl1CL : apiUrl3CL;
-    const colorMap = classLevel === '1CL' ? ROLE_COLORS_1CL : ROLE_COLORS_3CL;
+    const apiUrl = classLevel === '1CL' ? apiUrl1CL : classLevel === '2CL' ? apiUrl2CL : apiUrl3CL;
+    const colorMap = classLevel === '1CL' ? ROLE_COLORS_1CL : classLevel === '2CL' ? ROLE_COLORS_2CL : ROLE_COLORS_3CL;
     const roleColor = colorMap[role] || '#000000'; 
 
     setPendingChanges(prev => [...prev, {
@@ -481,15 +509,22 @@ export default function EXOGuardsManagerClient({
   };
 
   let active1CL = activeTab === 'today' ? today1CL : tomorrow1CL;
+  let active2CL = activeTab === 'today' ? today2CL : tomorrow2CL;
   let active3CL = activeTab === 'today' ? today3CL : tomorrow3CL;
   const activeDateStrTarget = activeTab === 'today' ? postedDateStr : incomingDateStr;
 
   active1CL = applyPendingChanges(active1CL, '1CL', activeDateStrTarget);
+  active2CL = applyPendingChanges(active2CL, '2CL', activeDateStrTarget);
   active3CL = applyPendingChanges(active3CL, '3CL', activeDateStrTarget);
 
   const guards1FI = getGuardsByRole(active1CL, 'FLOOR INSPECTOR');
   const guards1Int = getGuardsByRole(active1CL, 'INTERIOR');
   const guards1Sent = getGuardsByRole(active1CL, 'SENTINEL');
+
+  const guards2Plebe = getGuardsByRole(active2CL, 'PLEBE DETAIL');
+  const guards2Int = getGuardsByRole(active2CL, 'INTERIOR');
+  const guards2AFI = getGuardsByRole(active2CL, 'AFI');
+  const guards2Sent = getGuardsByRole(active2CL, 'SENTINEL (TOC)');
 
   const guards3CCQ = getGuardsByRole(active3CL, 'CCQ');
   const guards3ACCQ = getGuardsByRole(active3CL, 'ACCQ');
@@ -641,7 +676,31 @@ export default function EXOGuardsManagerClient({
         </div>
       </div>
       
-      <div style={{ textAlign: 'center', marginTop: '-1.5rem', marginBottom: '3rem' }}>
+      {/* Class Tabs */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem', gap: '0.5rem' }}>
+        {['1CL', '2CL', '3CL'].map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveClassTab(tab)}
+            style={{
+              padding: '0.5rem 2rem',
+              borderRadius: '999px',
+              border: 'none',
+              backgroundColor: activeClassTab === tab ? '#0f172a' : '#e2e8f0',
+              color: activeClassTab === tab ? '#ffffff' : '#64748b',
+              fontWeight: 800,
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: activeClassTab === tab ? '0 4px 12px rgba(0,0,0,0.15)' : 'none'
+            }}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ textAlign: 'center', marginTop: '-0.5rem', marginBottom: '3rem' }}>
         <span style={{ 
           display: 'inline-block',
           padding: '0.3rem 1rem', 
@@ -657,134 +716,201 @@ export default function EXOGuardsManagerClient({
         </span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem', maxWidth: '800px', margin: '0 auto' }}>
         {/* 1CL Column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
-              <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>1CL Guards</h2>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <a href={sheetUrl1CL} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#3b82f6', textDecoration: 'none', background: 'rgba(59, 130, 246, 0.1)', padding: '0.25rem 0.75rem', borderRadius: '16px', fontWeight: 600 }}>
-                  View Sheet ↗
-                </a>
+        {activeClassTab === '1CL' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
+                <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>1CL Guards</h2>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <a href={sheetUrl1CL} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#3b82f6', textDecoration: 'none', background: 'rgba(59, 130, 246, 0.1)', padding: '0.25rem 0.75rem', borderRadius: '16px', fontWeight: 600 }}>
+                    View Sheet ↗
+                  </a>
+                  <button 
+                    onClick={() => setShowNonPostingModal('1CL')}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.1)', border: 'none', padding: '0.25rem 0.75rem', borderRadius: '16px', fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    Non Posting List
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
                 <button 
-                  onClick={() => setShowNonPostingModal('1CL')}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.1)', border: 'none', padding: '0.25rem 0.75rem', borderRadius: '16px', fontWeight: 600, cursor: 'pointer' }}
+                  onClick={() => setModalConfig({ isOpen: true, role: 'INTERIOR', dateStr: activeDateStr, currentCadetName: null, classLevel: '1CL' })}
+                  style={{ padding: '0.4rem 1rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                 >
-                  Non Posting List
+                  + Add Interior
                 </button>
+                <button 
+                  onClick={() => setModalConfig({ isOpen: true, role: 'SENTINEL', dateStr: activeDateStr, currentCadetName: null, classLevel: '1CL' })}
+                  style={{ padding: '0.4rem 1rem', background: '#1f2937', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                >
+                  + Add Sentinel
+                </button>
+                <button 
+                  onClick={() => setModalConfig({ isOpen: true, role: 'NON-POSTING', dateStr: activeDateStr, currentCadetName: null, classLevel: '1CL' })}
+                  style={{ padding: '0.4rem 1rem', background: '#60a5fa', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                >
+                  + Add Non-Posting
+                </button>
+              </div>
+            
+            {renderSlot('FLOOR INSPECTOR', guards1FI[0], 'FLOOR INSPECTOR', '1CL')}
+            
+            <div>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <span style={{ fontWeight: 800, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>INTERIOR GUARDS</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {Array.from({ length: guards1Int.length + extraInteriors1CL }).map((_, i) => (
+                  <div key={i}>{renderSlot('INTERIOR', guards1Int[i], 'INTERIOR', '1CL')}</div>
+                ))}
+                {guards1Int.length + extraInteriors1CL === 0 && (
+                  <div style={{ padding: '1rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem', fontStyle: 'italic', border: '1px dashed #cbd5e1', borderRadius: '8px' }}>
+                    No interior guards posted.
+                  </div>
+                )}
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-              <button 
-                onClick={() => setModalConfig({ isOpen: true, role: 'INTERIOR', dateStr: activeDateStr, currentCadetName: null, classLevel: '1CL' })}
-                style={{ padding: '0.4rem 1rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-              >
-                + Add Interior
-              </button>
-              <button 
-                onClick={() => setModalConfig({ isOpen: true, role: 'SENTINEL', dateStr: activeDateStr, currentCadetName: null, classLevel: '1CL' })}
-                style={{ padding: '0.4rem 1rem', background: '#1f2937', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-              >
-                + Add Sentinel
-              </button>
-              <button 
-                onClick={() => setModalConfig({ isOpen: true, role: 'NON-POSTING', dateStr: activeDateStr, currentCadetName: null, classLevel: '1CL' })}
-                style={{ padding: '0.4rem 1rem', background: '#60a5fa', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-              >
-                + Add Non-Posting
-              </button>
-            </div>
-          
-          {renderSlot('FLOOR INSPECTOR', guards1FI[0], 'FLOOR INSPECTOR', '1CL')}
-          
-          <div>
-            <div style={{ marginBottom: '0.5rem' }}>
-              <span style={{ fontWeight: 800, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>INTERIOR GUARDS</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {Array.from({ length: guards1Int.length + extraInteriors1CL }).map((_, i) => (
-                <div key={i}>{renderSlot('INTERIOR', guards1Int[i], 'INTERIOR', '1CL')}</div>
-              ))}
-              {guards1Int.length + extraInteriors1CL === 0 && (
-                <div style={{ padding: '1rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem', fontStyle: 'italic', border: '1px dashed #cbd5e1', borderRadius: '8px' }}>
-                  No interior guards posted.
-                </div>
-              )}
-            </div>
+            {renderSentinelsCard(guards1Sent, 'SENTINEL', '1CL')}
           </div>
+        )}
 
-          {renderSentinelsCard(guards1Sent, 'SENTINEL', '1CL')}
-        </div>
+        {/* 2CL Column */}
+        {activeClassTab === '2CL' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
+                <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>2CL Guards</h2>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <a href={sheetUrl2CL} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#3b82f6', textDecoration: 'none', background: 'rgba(59, 130, 246, 0.1)', padding: '0.25rem 0.75rem', borderRadius: '16px', fontWeight: 600 }}>
+                    View Sheet ↗
+                  </a>
+                  <button 
+                    onClick={() => setShowNonPostingModal('2CL')}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.1)', border: 'none', padding: '0.25rem 0.75rem', borderRadius: '16px', fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    Non Posting List
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                <button 
+                  onClick={() => setModalConfig({ isOpen: true, role: 'PLEBE DETAIL', dateStr: activeDateStr, currentCadetName: null, classLevel: '2CL' })}
+                  style={{ padding: '0.4rem 1rem', background: '#eab308', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                >
+                  + Add Plebe Detail
+                </button>
+                <button 
+                  onClick={() => setModalConfig({ isOpen: true, role: 'AFI', dateStr: activeDateStr, currentCadetName: null, classLevel: '2CL' })}
+                  style={{ padding: '0.4rem 1rem', background: '#b45309', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                >
+                  + Add AFI
+                </button>
+                <button 
+                  onClick={() => setModalConfig({ isOpen: true, role: 'INTERIOR', dateStr: activeDateStr, currentCadetName: null, classLevel: '2CL' })}
+                  style={{ padding: '0.4rem 1rem', background: '#d946ef', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                >
+                  + Add Interior
+                </button>
+                <button 
+                  onClick={() => setModalConfig({ isOpen: true, role: 'NON-POSTING', dateStr: activeDateStr, currentCadetName: null, classLevel: '2CL' })}
+                  style={{ padding: '0.4rem 1rem', background: '#60a5fa', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                >
+                  + Add Non-Posting
+                </button>
+              </div>
+            
+            {renderSlot('PLEBE DETAIL', guards2Plebe[0], 'PLEBE DETAIL', '2CL')}
+            {renderSlot('AFI', guards2AFI[0], 'AFI', '2CL')}
+            
+            <div>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <span style={{ fontWeight: 800, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>INTERIOR GUARDS</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {Array.from({ length: Math.max(1, guards2Int.length) }).map((_, i) => (
+                  <div key={i}>{renderSlot('INTERIOR', guards2Int[i], 'INTERIOR', '2CL')}</div>
+                ))}
+              </div>
+            </div>
+
+            {renderSentinelsCard(guards2Sent, 'SENTINEL (TOC)', '2CL')}
+          </div>
+        )}
         
         {/* 3CL Column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
-              <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>3CL Guards</h2>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <a href={sheetUrl3CL} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#3b82f6', textDecoration: 'none', background: 'rgba(59, 130, 246, 0.1)', padding: '0.25rem 0.75rem', borderRadius: '16px', fontWeight: 600 }}>
-                  View Sheet ↗
-                </a>
+        {activeClassTab === '3CL' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
+                <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>3CL Guards</h2>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <a href={sheetUrl3CL} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#3b82f6', textDecoration: 'none', background: 'rgba(59, 130, 246, 0.1)', padding: '0.25rem 0.75rem', borderRadius: '16px', fontWeight: 600 }}>
+                    View Sheet ↗
+                  </a>
+                  <button 
+                    onClick={() => setShowNonPostingModal('3CL')}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.1)', border: 'none', padding: '0.25rem 0.75rem', borderRadius: '16px', fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    Non Posting List
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
                 <button 
-                  onClick={() => setShowNonPostingModal('3CL')}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.1)', border: 'none', padding: '0.25rem 0.75rem', borderRadius: '16px', fontWeight: 600, cursor: 'pointer' }}
+                  onClick={() => setModalConfig({ isOpen: true, role: 'AFI', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
+                  style={{ padding: '0.4rem 1rem', background: '#06b6d4', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                 >
-                  Non Posting List
+                  + Add AFI
                 </button>
+                <button 
+                  onClick={() => setModalConfig({ isOpen: true, role: 'MHC', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
+                  style={{ padding: '0.4rem 1rem', background: '#8b5cf6', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                >
+                  + Add MHC
+                </button>
+                <button 
+                  onClick={() => setModalConfig({ isOpen: true, role: 'INTERIOR', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
+                  style={{ padding: '0.4rem 1rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                >
+                  + Add Interior
+                </button>
+                <button 
+                  onClick={() => setModalConfig({ isOpen: true, role: 'NON-POSTING', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
+                  style={{ padding: '0.4rem 1rem', background: '#60a5fa', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                >
+                  + Add Non-Posting
+                </button>
+              </div>
+            
+            {renderSlot('CCQ', guards3CCQ[0], 'CCQ', '3CL')}
+            {renderSlot('ACCQ', guards3ACCQ[0], 'ACCQ', '3CL')}
+            
+            {(guards3AFI.length > 0 || showAFI3CL) && renderSlot('AFI', guards3AFI[0], 'AFI', '3CL')}
+            {(guards3MHC.length > 0 || showMHC3CL) && renderSlot('MHC', guards3MHC[0], 'MHC', '3CL')}
+            
+            <div>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <span style={{ fontWeight: 800, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>INTERIOR GUARDS</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {Array.from({ length: guards3Int.length + extraInteriors3CL }).map((_, i) => (
+                  <div key={i}>{renderSlot('INTERIOR', guards3Int[i], 'INTERIOR', '3CL')}</div>
+                ))}
+                {guards3Int.length + extraInteriors3CL === 0 && (
+                  <div style={{ padding: '1rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem', fontStyle: 'italic', border: '1px dashed #cbd5e1', borderRadius: '8px' }}>
+                    No interior guards posted.
+                  </div>
+                )}
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-              <button 
-                onClick={() => setModalConfig({ isOpen: true, role: 'AFI', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
-                style={{ padding: '0.4rem 1rem', background: '#06b6d4', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-              >
-                + Add AFI
-              </button>
-              <button 
-                onClick={() => setModalConfig({ isOpen: true, role: 'MHC', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
-                style={{ padding: '0.4rem 1rem', background: '#8b5cf6', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-              >
-                + Add MHC
-              </button>
-              <button 
-                onClick={() => setModalConfig({ isOpen: true, role: 'INTERIOR', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
-                style={{ padding: '0.4rem 1rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-              >
-                + Add Interior
-              </button>
-              <button 
-                onClick={() => setModalConfig({ isOpen: true, role: 'NON-POSTING', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
-                style={{ padding: '0.4rem 1rem', background: '#60a5fa', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-              >
-                + Add Non-Posting
-              </button>
-            </div>
-          
-          {renderSlot('CCQ', guards3CCQ[0], 'CCQ', '3CL')}
-          {renderSlot('ACCQ', guards3ACCQ[0], 'ACCQ', '3CL')}
-          
-          {(guards3AFI.length > 0 || showAFI3CL) && renderSlot('AFI', guards3AFI[0], 'AFI', '3CL')}
-          {(guards3MHC.length > 0 || showMHC3CL) && renderSlot('MHC', guards3MHC[0], 'MHC', '3CL')}
-          
-          <div>
-            <div style={{ marginBottom: '0.5rem' }}>
-              <span style={{ fontWeight: 800, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>INTERIOR GUARDS</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {Array.from({ length: guards3Int.length + extraInteriors3CL }).map((_, i) => (
-                <div key={i}>{renderSlot('INTERIOR', guards3Int[i], 'INTERIOR', '3CL')}</div>
-              ))}
-              {guards3Int.length + extraInteriors3CL === 0 && (
-                <div style={{ padding: '1rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem', fontStyle: 'italic', border: '1px dashed #cbd5e1', borderRadius: '8px' }}>
-                  No interior guards posted.
-                </div>
-              )}
-            </div>
+            {renderSentinelsCard(guards3Sent, 'SENTINEL', '3CL')}
           </div>
-
-          {renderSentinelsCard(guards3Sent, 'SENTINEL', '3CL')}
-        </div>
+        )}
       </div>
       
       <CadetSelectionModal 
