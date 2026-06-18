@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useAuth } from '../AuthContext';
 
 function parseGoogleDate(dateStr) {
   if (!dateStr) return null;
@@ -50,6 +51,7 @@ const getMaxDemerits = (rank) => {
 
 export default function ExoPunishmentClient({ initialCadets }) {
   const [viewModes, setViewModes] = useState({});
+  const { adminUser } = useAuth();
 
   if (!initialCadets || initialCadets.length === 0) {
     return (
@@ -86,8 +88,39 @@ export default function ExoPunishmentClient({ initialCadets }) {
   });
 
   return (
-    <div className="table-container" style={{ marginTop: '2rem', width: '100%', overflowX: 'auto' }}>
-      <table style={{ width: '100%', minWidth: '1000px', borderCollapse: 'collapse' }}>
+    <div style={{ width: '100%' }}>
+      {adminUser && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem', width: '100%' }}>
+          <a
+            href="https://docs.google.com/spreadsheets/d/1kdpf8pdHx2ETbfLqyJfyxcOnWGiz08JxI__FvJIRH3M/edit?gid=0#gid=0"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              padding: '0.5rem 1rem',
+              background: 'rgba(16, 185, 129, 0.1)',
+              color: '#10b981',
+              textDecoration: 'none',
+              borderRadius: '8px',
+              fontWeight: 800,
+              fontSize: '0.85rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              transition: 'background 0.2s ease'
+            }}
+            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)'; }}
+            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)'; }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-8v-2h8v2zm0-4h-8v-2h8v2zm-3-5V3.5L18.5 9H13z" fill="currentColor"/>
+            </svg>
+            VIEW SPREADSHEET
+          </a>
+        </div>
+      )}
+      <div className="table-container" style={{ marginTop: '0rem', width: '100%', overflowX: 'auto' }}>
+        <table style={{ width: '100%', minWidth: '1000px', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
             <th style={{ padding: '1rem', textAlign: 'left', width: '25%' }}>Cadet Profile</th>
@@ -417,6 +450,7 @@ export default function ExoPunishmentClient({ initialCadets }) {
           border-radius: 4px;
         }
       `}} />
+      </div>
     </div>
   );
 }

@@ -13,7 +13,8 @@ export default async function RifleDirectoryPage() {
       color: '#1d1d1f' 
     }}>
       <div style={{ 
-        maxWidth: '1200px', 
+        width: '100%', 
+        maxWidth: '1600px',
         margin: '0 auto', 
         display: 'flex', 
         flexDirection: 'column',
@@ -38,7 +39,7 @@ export default async function RifleDirectoryPage() {
         </div>
       </div>
       
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={{ width: '100%', maxWidth: '1600px', margin: '0 auto' }}>
         <DirectoryClient initialInventory={inventory} />
       </div>
     </div>

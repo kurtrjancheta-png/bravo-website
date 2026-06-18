@@ -131,32 +131,32 @@ const weaponConfigs = {
   'M14': {
     TraceComponent: M14Trace,
     parts: [
-      { id: 'flash_hider', name: 'Flash Suppressor', targetPos: { x: 10.5, y: 46 }, labelPos: { x: 10, y: 20 }, desc: 'National Match profile slotted flash suppressor.' },
-      { id: 'front_sight', name: 'Front Sight', targetPos: { x: 12, y: 42 }, labelPos: { x: 25, y: 15 }, desc: 'Winged front sight post.' },
-      { id: 'barrel', name: '22" Match Barrel', targetPos: { x: 20, y: 46 }, labelPos: { x: 20, y: 75 }, desc: '22-inch heavy barrel. 1:12 RH twist rate.' },
-      { id: 'gas_cylinder', name: 'Gas Cylinder', targetPos: { x: 30, y: 50.2 }, labelPos: { x: 35, y: 85 }, desc: 'Short-stroke gas piston system.' },
+      { id: 'flash_hider', name: 'Flash Suppressor', targetPos: { x: 10.5, y: 46 }, labelPos: { x: 10, y: 10 }, desc: 'National Match profile slotted flash suppressor.' },
+      { id: 'front_sight', name: 'Front Sight', targetPos: { x: 12, y: 42 }, labelPos: { x: 25, y: 25 }, desc: 'Winged front sight post.' },
+      { id: 'barrel', name: '22" Match Barrel', targetPos: { x: 20, y: 46 }, labelPos: { x: 20, y: 80 }, desc: '22-inch heavy barrel. 1:12 RH twist rate.' },
+      { id: 'gas_cylinder', name: 'Gas Cylinder', targetPos: { x: 30, y: 50.2 }, labelPos: { x: 35, y: 95 }, desc: 'Short-stroke gas piston system.' },
       { id: 'stock_front', name: 'Walnut Forestock', targetPos: { x: 45, y: 48.7 }, labelPos: { x: 50, y: 80 }, desc: 'The front section of the chassis.' },
-      { id: 'receiver', name: 'Forged Receiver', targetPos: { x: 60, y: 43 }, labelPos: { x: 55, y: 15 }, desc: 'The core of the M14. Forged from 8620 alloy steel.' },
-      { id: 'rear_sight', name: 'Rear Peep Sight', targetPos: { x: 67.2, y: 37.5 }, labelPos: { x: 75, y: 15 }, desc: 'Fully adjustable rear aperture sight.' },
-      { id: 'magazine', name: '20-Round Box', targetPos: { x: 56, y: 65 }, labelPos: { x: 40, y: 90 }, desc: 'Detachable 20-round double-stack magazine.' },
-      { id: 'trigger', name: 'Trigger Group', targetPos: { x: 63.5, y: 57.5 }, labelPos: { x: 65, y: 85 }, desc: 'Two-stage military trigger.' },
-      { id: 'stock_rear', name: 'Fixed Buttstock', targetPos: { x: 80, y: 55 }, labelPos: { x: 90, y: 85 }, desc: 'A traditional sloping wooden chassis.' },
-      { id: 'buttplate', name: 'Hinged Buttplate', targetPos: { x: 95.5, y: 57 }, labelPos: { x: 90, y: 15 }, desc: 'Checkered steel buttplate.' }
+      { id: 'receiver', name: 'Forged Receiver', targetPos: { x: 60, y: 43 }, labelPos: { x: 55, y: 10 }, desc: 'The core of the M14. Forged from 8620 alloy steel.' },
+      { id: 'rear_sight', name: 'Rear Peep Sight', targetPos: { x: 67.2, y: 37.5 }, labelPos: { x: 75, y: 25 }, desc: 'Fully adjustable rear aperture sight.' },
+      { id: 'magazine', name: '20-Round Box', targetPos: { x: 56, y: 65 }, labelPos: { x: 40, y: 95 }, desc: 'Detachable 20-round double-stack magazine.' },
+      { id: 'trigger', name: 'Trigger Group', targetPos: { x: 63.5, y: 57.5 }, labelPos: { x: 65, y: 80 }, desc: 'Two-stage military trigger.' },
+      { id: 'stock_rear', name: 'Fixed Buttstock', targetPos: { x: 80, y: 55 }, labelPos: { x: 90, y: 95 }, desc: 'A traditional sloping wooden chassis.' },
+      { id: 'buttplate', name: 'Hinged Buttplate', targetPos: { x: 95.5, y: 57 }, labelPos: { x: 90, y: 10 }, desc: 'Checkered steel buttplate.' }
     ]
   },
   'M16': {
     TraceComponent: TacticalTrace,
     parts: [
-      { id: 'flash_hider', name: 'A2 Flash Hider', targetPos: { x: 9.5, y: 46 }, labelPos: { x: 10, y: 20 }, desc: 'Standard A2 birdcage flash hider.' },
-      { id: 'front_sight', name: 'A2 Front Sight Base', targetPos: { x: 26, y: 37.5 }, labelPos: { x: 25, y: 15 }, desc: 'Forged A2 profile front sight base.' },
-      { id: 'barrel', name: '20" Chrome-Lined Barrel', targetPos: { x: 18, y: 46 }, labelPos: { x: 20, y: 75 }, desc: '20-inch 4150 CMV steel barrel.' },
-      { id: 'handguard', name: 'Polymer Handguard', targetPos: { x: 38, y: 46.7 }, labelPos: { x: 40, y: 85 }, desc: 'Standard ribbed polymer handguard.' },
-      { id: 'upper', name: 'Upper Receiver', targetPos: { x: 55, y: 44.2 }, labelPos: { x: 55, y: 15 }, desc: 'Forged 7075-T6 aluminum flat-top upper receiver.' },
-      { id: 'carry_handle', name: 'Detachable Carry Handle', targetPos: { x: 58, y: 36.2 }, labelPos: { x: 70, y: 15 }, desc: 'Detachable A2 carry handle mounted to the Picatinny rail.' },
+      { id: 'flash_hider', name: 'A2 Flash Hider', targetPos: { x: 9.5, y: 46 }, labelPos: { x: 10, y: 10 }, desc: 'Standard A2 birdcage flash hider.' },
+      { id: 'front_sight', name: 'A2 Front Sight Base', targetPos: { x: 26, y: 37.5 }, labelPos: { x: 25, y: 25 }, desc: 'Forged A2 profile front sight base.' },
+      { id: 'barrel', name: '20" Chrome-Lined Barrel', targetPos: { x: 18, y: 46 }, labelPos: { x: 20, y: 80 }, desc: '20-inch 4150 CMV steel barrel.' },
+      { id: 'handguard', name: 'Polymer Handguard', targetPos: { x: 38, y: 46.7 }, labelPos: { x: 40, y: 95 }, desc: 'Standard ribbed polymer handguard.' },
+      { id: 'upper', name: 'Upper Receiver', targetPos: { x: 55, y: 44.2 }, labelPos: { x: 55, y: 10 }, desc: 'Forged 7075-T6 aluminum flat-top upper receiver.' },
+      { id: 'carry_handle', name: 'Detachable Carry Handle', targetPos: { x: 58, y: 36.2 }, labelPos: { x: 70, y: 25 }, desc: 'Detachable A2 carry handle mounted to the Picatinny rail.' },
       { id: 'lower', name: 'Lower Receiver', targetPos: { x: 55, y: 51.2 }, labelPos: { x: 65, y: 80 }, desc: 'Forged 7075-T6 aluminum lower receiver.' },
-      { id: 'grip', name: 'A2 Pistol Grip', targetPos: { x: 59, y: 65 }, labelPos: { x: 80, y: 85 }, desc: 'Standard A2 profile polymer pistol grip.' },
-      { id: 'magazine', name: 'STANAG Magazine', targetPos: { x: 51.5, y: 70 }, labelPos: { x: 40, y: 90 }, desc: 'Standard NATO STANAG 30-round curved box magazine.' },
-      { id: 'stock', name: 'A2 Fixed Stock', targetPos: { x: 80, y: 52.5 }, labelPos: { x: 90, y: 20 }, desc: 'A2 profile fixed polymer stock.' }
+      { id: 'grip', name: 'A2 Pistol Grip', targetPos: { x: 59, y: 65 }, labelPos: { x: 80, y: 95 }, desc: 'Standard A2 profile polymer pistol grip.' },
+      { id: 'magazine', name: 'STANAG Magazine', targetPos: { x: 51.5, y: 70 }, labelPos: { x: 40, y: 95 }, desc: 'Standard NATO STANAG 30-round curved box magazine.' },
+      { id: 'stock', name: 'A2 Fixed Stock', targetPos: { x: 80, y: 52.5 }, labelPos: { x: 90, y: 10 }, desc: 'A2 profile fixed polymer stock.' }
     ]
   }
 };
@@ -192,14 +192,15 @@ export default function InteractiveSchematic({ rifle }) {
         display: 'flex', 
         justifyContent: 'center', 
         alignItems: 'center',
-        position: 'relative'
+        position: 'relative',
+        padding: '0 1rem'
       }}>
         
         {/* Main Weapon Container */}
         <div style={{ 
           position: 'relative', 
           width: '100%', 
-          maxWidth: '1200px',
+          maxWidth: 'none',
           aspectRatio: '2.5', // Matches SVG viewbox exactly
           zIndex: 10,
         }}>
