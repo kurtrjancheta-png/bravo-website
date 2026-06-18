@@ -1060,96 +1060,37 @@ function NonPostingListModal({ isOpen, onClose, classLevel, dateStr, permanentLi
               )}
             </div>
           </div>
-
-            
-            {renderMultiSlotCard(guards2Plebe, 'PLEBE DETAIL', '2CL', 'PLEBE DETAIL', '#eab308', 6, 0)}
-            {renderSlot('AFI', guards2AFI[0], 'AFI', '2CL')}
-            
-            <div>
-              <div style={{ marginBottom: '0.5rem' }}>
-                <span style={{ fontWeight: 800, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>INTERIOR GUARDS</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {Array.from({ length: Math.max(1, guards2Int.length) }).map((_, i) => (
-                  <div key={i}>{renderSlot('INTERIOR', guards2Int[i], 'INTERIOR', '2CL')}</div>
+          <div>
+            <h4 style={{ color: '#60a5fa', borderBottom: '2px solid #60a5fa', paddingBottom: '0.5rem' }}>Temporary ({dateStr})</h4>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>To add temporary non-posting, close this modal and use the <strong>+ Add Non-Posting</strong> button.</p>
+            {todayList.length === 0 && tomorrowList.length === 0 ? <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>None assigned for today/tomorrow.</p> : (
+              <ul style={{ listStyle: 'none', padding: 0 }}>
+                {todayList.map(g => (
+                  <li key={`today-${g.name}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem', background: 'var(--bg-primary)', marginBottom: '0.5rem', borderRadius: '6px' }}>
+                    <div>
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{g.name}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: '0.5rem' }}>(Today)</span>
+                    </div>
+                    <button onClick={() => onRemoveTemporary(g.name, false)} style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'none', borderRadius: '4px', padding: '0.25rem 0.5rem', cursor: 'pointer', fontSize: '0.75rem' }}>Remove</button>
+                  </li>
                 ))}
-              </div>
-            </div>
-
-            {renderMultiSlotCard(guards2Sent, 'SENTINEL (TOC)', '2CL', 'SENTINELS (TOC)', '#06b6d4', 6, 0)}
-          </div>
-        )}
-        
-        {/* 3CL Column */}
-        {activeClassTab === '3CL' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
-                <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>3CL Guards</h2>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <a href={sheetUrl3CL} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#3b82f6', textDecoration: 'none', background: 'rgba(59, 130, 246, 0.1)', padding: '0.25rem 0.75rem', borderRadius: '16px', fontWeight: 600 }}>
-                    View Sheet ↗
-                  </a>
-                  <button 
-                    onClick={() => setShowNonPostingModal('3CL')}
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.1)', border: 'none', padding: '0.25rem 0.75rem', borderRadius: '16px', fontWeight: 600, cursor: 'pointer' }}
-                  >
-                    Non Posting List
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-                <button 
-                  onClick={() => setModalConfig({ isOpen: true, role: 'AFI', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
-                  style={{ padding: '0.4rem 1rem', background: '#06b6d4', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                >
-                  + Add AFI
-                </button>
-                <button 
-                  onClick={() => setModalConfig({ isOpen: true, role: 'MHC', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
-                  style={{ padding: '0.4rem 1rem', background: '#8b5cf6', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                >
-                  + Add MHC
-                </button>
-                <button 
-                  onClick={() => setModalConfig({ isOpen: true, role: 'INTERIOR', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
-                  style={{ padding: '0.4rem 1rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                >
-                  + Add Interior
-                </button>
-                <button 
-                  onClick={() => setModalConfig({ isOpen: true, role: 'NON-POSTING', dateStr: activeDateStr, currentCadetName: null, classLevel: '3CL' })}
-                  style={{ padding: '0.4rem 1rem', background: '#60a5fa', color: '#fff', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                >
-                  + Add Non-Posting
-                </button>
-              </div>
-            
-            {renderSlot('CCQ', guards3CCQ[0], 'CCQ', '3CL')}
-            {renderSlot('ACCQ', guards3ACCQ[0], 'ACCQ', '3CL')}
-            
-            {(guards3AFI.length > 0 || showAFI3CL) && renderSlot('AFI', guards3AFI[0], 'AFI', '3CL')}
-            {(guards3MHC.length > 0 || showMHC3CL) && renderSlot('MHC', guards3MHC[0], 'MHC', '3CL')}
-            
-            <div>
-              <div style={{ marginBottom: '0.5rem' }}>
-                <span style={{ fontWeight: 800, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>INTERIOR GUARDS</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {Array.from({ length: guards3Int.length + extraInteriors3CL }).map((_, i) => (
-                  <div key={i}>{renderSlot('INTERIOR', guards3Int[i], 'INTERIOR', '3CL')}</div>
+                {tomorrowList.map(g => (
+                  <li key={`tomorrow-${g.name}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem', background: 'var(--bg-primary)', marginBottom: '0.5rem', borderRadius: '6px' }}>
+                    <div>
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{g.name}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: '0.5rem' }}>(Tomorrow)</span>
+                    </div>
+                    <button onClick={() => onRemoveTemporary(g.name, true)} style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'none', borderRadius: '4px', padding: '0.25rem 0.5rem', cursor: 'pointer', fontSize: '0.75rem' }}>Remove</button>
+                  </li>
                 ))}
-                {guards3Int.length + extraInteriors3CL === 0 && (
-                  <div style={{ padding: '1rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem', fontStyle: 'italic', border: '1px dashed #cbd5e1', borderRadius: '8px' }}>
-                    No interior guards posted.
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {renderMultiSlotCard(guards3Sent, 'SENTINEL', '3CL', 'SENTINELS', '#1f2937', 6, 0)}
+              </ul>
+            )}
           </div>
-        )}
+        </div>
+      </div>
+    </div>
+  );
+}
       </div>
       
       <CadetSelectionModal 
