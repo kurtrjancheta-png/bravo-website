@@ -2,9 +2,10 @@
 import { useState } from 'react';
 
 // Highly Accurate M14 Silhouette using complex SVG paths
+// Note: SVG is shifted down 100 units via translate to center it in a taller 1000x600 viewBox
 const M14Trace = ({ color }) => (
-  <svg viewBox="0 0 1000 400" style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.05))' }}>
-    <g fill="rgba(212, 175, 55, 0.05)" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round">
+  <svg viewBox="0 0 1000 600" style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.05))' }}>
+    <g transform="translate(0, 100)" fill="rgba(212, 175, 55, 0.05)" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round">
       {/* Flash Hider */}
       <path d="M 80 178 L 130 178 L 130 190 L 80 190 L 70 184 Z" />
       <line x1="90" y1="178" x2="90" y2="190" />
@@ -57,8 +58,8 @@ const M14Trace = ({ color }) => (
 
 // Highly Accurate M16 Silhouette using complex SVG paths
 const TacticalTrace = ({ color }) => (
-  <svg viewBox="0 0 1000 400" style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.05))' }}>
-    <g fill="rgba(212, 175, 55, 0.05)" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round">
+  <svg viewBox="0 0 1000 600" style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.05))' }}>
+    <g transform="translate(0, 100)" fill="rgba(212, 175, 55, 0.05)" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round">
       {/* Flash Hider */}
       <path d="M 80 178 L 110 178 L 110 190 L 80 190 Z" />
       <line x1="90" y1="178" x2="90" y2="190" />
@@ -131,32 +132,34 @@ const weaponConfigs = {
   'M14': {
     TraceComponent: M14Trace,
     parts: [
-      { id: 'flash_hider', name: 'Flash Suppressor', targetPos: { x: 10.5, y: 46 }, labelPos: { x: 10, y: 10 }, desc: 'National Match profile slotted flash suppressor.' },
-      { id: 'front_sight', name: 'Front Sight', targetPos: { x: 12, y: 42 }, labelPos: { x: 25, y: 25 }, desc: 'Winged front sight post.' },
-      { id: 'barrel', name: '22" Match Barrel', targetPos: { x: 20, y: 46 }, labelPos: { x: 20, y: 80 }, desc: '22-inch heavy barrel. 1:12 RH twist rate.' },
-      { id: 'gas_cylinder', name: 'Gas Cylinder', targetPos: { x: 30, y: 50.2 }, labelPos: { x: 35, y: 95 }, desc: 'Short-stroke gas piston system.' },
-      { id: 'stock_front', name: 'Walnut Forestock', targetPos: { x: 45, y: 48.7 }, labelPos: { x: 50, y: 80 }, desc: 'The front section of the chassis.' },
-      { id: 'receiver', name: 'Forged Receiver', targetPos: { x: 60, y: 43 }, labelPos: { x: 55, y: 10 }, desc: 'The core of the M14. Forged from 8620 alloy steel.' },
-      { id: 'rear_sight', name: 'Rear Peep Sight', targetPos: { x: 67.2, y: 37.5 }, labelPos: { x: 75, y: 25 }, desc: 'Fully adjustable rear aperture sight.' },
-      { id: 'magazine', name: '20-Round Box', targetPos: { x: 56, y: 65 }, labelPos: { x: 40, y: 95 }, desc: 'Detachable 20-round double-stack magazine.' },
-      { id: 'trigger', name: 'Trigger Group', targetPos: { x: 63.5, y: 57.5 }, labelPos: { x: 65, y: 80 }, desc: 'Two-stage military trigger.' },
-      { id: 'stock_rear', name: 'Fixed Buttstock', targetPos: { x: 80, y: 55 }, labelPos: { x: 90, y: 95 }, desc: 'A traditional sloping wooden chassis.' },
-      { id: 'buttplate', name: 'Hinged Buttplate', targetPos: { x: 95.5, y: 57 }, labelPos: { x: 90, y: 10 }, desc: 'Checkered steel buttplate.' }
+      { id: 'flash_hider', name: 'Flash Suppressor', targetPos: { x: 10.5, y: 47.33 }, labelPos: { x: 10, y: 5 }, desc: 'National Match profile slotted flash suppressor.' },
+      { id: 'barrel', name: '22" Match Barrel', targetPos: { x: 20, y: 47.33 }, labelPos: { x: 25, y: 15 }, desc: '22-inch heavy barrel. 1:12 RH twist rate.' },
+      { id: 'stock_front', name: 'Walnut Forestock', targetPos: { x: 45, y: 49.16 }, labelPos: { x: 45, y: 5 }, desc: 'The front section of the chassis.' },
+      { id: 'receiver', name: 'Forged Receiver', targetPos: { x: 60, y: 45.33 }, labelPos: { x: 65, y: 15 }, desc: 'The core of the M14. Forged from 8620 alloy steel.' },
+      { id: 'rear_sight', name: 'Rear Peep Sight', targetPos: { x: 67.2, y: 41.66 }, labelPos: { x: 80, y: 5 }, desc: 'Fully adjustable rear aperture sight.' },
+      { id: 'buttplate', name: 'Hinged Buttplate', targetPos: { x: 95.5, y: 54.66 }, labelPos: { x: 95, y: 15 }, desc: 'Checkered steel buttplate.' },
+      
+      { id: 'front_sight', name: 'Front Sight', targetPos: { x: 12, y: 44.66 }, labelPos: { x: 15, y: 85 }, desc: 'Winged front sight post.' },
+      { id: 'gas_cylinder', name: 'Gas Cylinder', targetPos: { x: 30, y: 50.16 }, labelPos: { x: 35, y: 95 }, desc: 'Short-stroke gas piston system.' },
+      { id: 'magazine', name: '20-Round Box', targetPos: { x: 56, y: 60 }, labelPos: { x: 55, y: 85 }, desc: 'Detachable 20-round double-stack magazine.' },
+      { id: 'trigger', name: 'Trigger Group', targetPos: { x: 63.5, y: 55 }, labelPos: { x: 70, y: 95 }, desc: 'Two-stage military trigger.' },
+      { id: 'stock_rear', name: 'Fixed Buttstock', targetPos: { x: 80, y: 53.33 }, labelPos: { x: 85, y: 85 }, desc: 'A traditional sloping wooden chassis.' }
     ]
   },
   'M16': {
     TraceComponent: TacticalTrace,
     parts: [
-      { id: 'flash_hider', name: 'A2 Flash Hider', targetPos: { x: 9.5, y: 46 }, labelPos: { x: 10, y: 10 }, desc: 'Standard A2 birdcage flash hider.' },
-      { id: 'front_sight', name: 'A2 Front Sight Base', targetPos: { x: 26, y: 37.5 }, labelPos: { x: 25, y: 25 }, desc: 'Forged A2 profile front sight base.' },
-      { id: 'barrel', name: '20" Chrome-Lined Barrel', targetPos: { x: 18, y: 46 }, labelPos: { x: 20, y: 80 }, desc: '20-inch 4150 CMV steel barrel.' },
-      { id: 'handguard', name: 'Polymer Handguard', targetPos: { x: 38, y: 46.7 }, labelPos: { x: 40, y: 95 }, desc: 'Standard ribbed polymer handguard.' },
-      { id: 'upper', name: 'Upper Receiver', targetPos: { x: 55, y: 44.2 }, labelPos: { x: 55, y: 10 }, desc: 'Forged 7075-T6 aluminum flat-top upper receiver.' },
-      { id: 'carry_handle', name: 'Detachable Carry Handle', targetPos: { x: 58, y: 36.2 }, labelPos: { x: 70, y: 25 }, desc: 'Detachable A2 carry handle mounted to the Picatinny rail.' },
-      { id: 'lower', name: 'Lower Receiver', targetPos: { x: 55, y: 51.2 }, labelPos: { x: 65, y: 80 }, desc: 'Forged 7075-T6 aluminum lower receiver.' },
-      { id: 'grip', name: 'A2 Pistol Grip', targetPos: { x: 59, y: 65 }, labelPos: { x: 80, y: 95 }, desc: 'Standard A2 profile polymer pistol grip.' },
-      { id: 'magazine', name: 'STANAG Magazine', targetPos: { x: 51.5, y: 70 }, labelPos: { x: 40, y: 95 }, desc: 'Standard NATO STANAG 30-round curved box magazine.' },
-      { id: 'stock', name: 'A2 Fixed Stock', targetPos: { x: 80, y: 52.5 }, labelPos: { x: 90, y: 10 }, desc: 'A2 profile fixed polymer stock.' }
+      { id: 'flash_hider', name: 'A2 Flash Hider', targetPos: { x: 9.5, y: 47.33 }, labelPos: { x: 10, y: 5 }, desc: 'Standard A2 birdcage flash hider.' },
+      { id: 'barrel', name: '20" Chrome-Lined Barrel', targetPos: { x: 18, y: 47.33 }, labelPos: { x: 25, y: 15 }, desc: '20-inch 4150 CMV steel barrel.' },
+      { id: 'handguard', name: 'Polymer Handguard', targetPos: { x: 38, y: 47.83 }, labelPos: { x: 45, y: 5 }, desc: 'Standard ribbed polymer handguard.' },
+      { id: 'upper', name: 'Upper Receiver', targetPos: { x: 55, y: 46.16 }, labelPos: { x: 65, y: 15 }, desc: 'Forged 7075-T6 aluminum flat-top upper receiver.' },
+      { id: 'carry_handle', name: 'Detachable Carry Handle', targetPos: { x: 58, y: 40.83 }, labelPos: { x: 80, y: 5 }, desc: 'Detachable A2 carry handle mounted to the Picatinny rail.' },
+      { id: 'stock', name: 'A2 Fixed Stock', targetPos: { x: 80, y: 51.66 }, labelPos: { x: 95, y: 15 }, desc: 'A2 profile fixed polymer stock.' },
+      
+      { id: 'front_sight', name: 'A2 Front Sight Base', targetPos: { x: 26, y: 41.66 }, labelPos: { x: 15, y: 85 }, desc: 'Forged A2 profile front sight base.' },
+      { id: 'lower', name: 'Lower Receiver', targetPos: { x: 55, y: 50.83 }, labelPos: { x: 35, y: 95 }, desc: 'Forged 7075-T6 aluminum lower receiver.' },
+      { id: 'magazine', name: 'STANAG Magazine', targetPos: { x: 51.5, y: 63.33 }, labelPos: { x: 55, y: 85 }, desc: 'Standard NATO STANAG 30-round curved box magazine.' },
+      { id: 'grip', name: 'A2 Pistol Grip', targetPos: { x: 59, y: 60 }, labelPos: { x: 75, y: 95 }, desc: 'Standard A2 profile polymer pistol grip.' }
     ]
   }
 };
@@ -180,7 +183,7 @@ export default function InteractiveSchematic({ rifle }) {
       position: 'relative',
       backgroundColor: 'transparent',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-      minHeight: '500px',
+      minHeight: '600px',
       display: 'flex',
       flexDirection: 'column',
     }}>
@@ -193,7 +196,7 @@ export default function InteractiveSchematic({ rifle }) {
         justifyContent: 'center', 
         alignItems: 'center',
         position: 'relative',
-        padding: '0 1rem'
+        padding: '0'
       }}>
         
         {/* Main Weapon Container */}
@@ -201,7 +204,7 @@ export default function InteractiveSchematic({ rifle }) {
           position: 'relative', 
           width: '100%', 
           maxWidth: 'none',
-          aspectRatio: '2.5', // Matches SVG viewbox exactly
+          aspectRatio: '1.66', // Matches 1000/600 SVG viewbox precisely
           zIndex: 10,
         }}>
           
@@ -268,7 +271,7 @@ export default function InteractiveSchematic({ rifle }) {
                  fontWeight: selectedPart?.id === part.id ? '700' : '600',
                  letterSpacing: '0.5px',
                  padding: '4px 8px',
-                 backgroundColor: selectedPart?.id === part.id ? 'rgba(212, 175, 55, 0.05)' : 'rgba(255, 255, 255, 0.8)',
+                 backgroundColor: selectedPart?.id === part.id ? 'rgba(212, 175, 55, 0.05)' : 'rgba(255, 255, 255, 0.9)',
                  backdropFilter: 'blur(4px)',
                  borderRadius: '8px',
                  border: `1px solid ${selectedPart?.id === part.id ? 'rgba(212, 175, 55, 0.3)' : 'transparent'}`,

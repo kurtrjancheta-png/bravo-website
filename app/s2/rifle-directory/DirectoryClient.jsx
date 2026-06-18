@@ -21,7 +21,7 @@ export default function DirectoryClient({ initialInventory }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
       
       {/* iOS Style Search Section */}
-      <div style={{ position: 'relative', zIndex: 50 }}>
+      <div style={{ position: 'relative', zIndex: 50, width: '100%', maxWidth: '100%', margin: '0 auto' }}>
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
