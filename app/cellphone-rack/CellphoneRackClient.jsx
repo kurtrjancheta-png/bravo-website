@@ -90,7 +90,7 @@ export default function CellphoneRackClient({ initialData }) {
     { name: 'Logged In', value: filteredData.filter(c => c.numPhones > 0 && c.status.toLowerCase() === 'logged in').length, fill: '#10b981' },
     { name: 'Logged Out', value: filteredData.filter(c => c.numPhones > 0 && c.status.toLowerCase() === 'logged out').length, fill: '#374151' },
     { name: 'Confiscated', value: filteredData.filter(c => c.status.toLowerCase() === 'confiscated').length, fill: '#ef4444' },
-    { name: 'No Smartphone', value: filteredData.filter(c => !c.numPhones || c.numPhones === 0 || String(c.status).toUpperCase() === 'NO PHONE').length, fill: '#9ca3af' }
+    { name: 'No Smartphone', value: filteredData.filter(c => !c.numPhones || c.numPhones === 0 || String(c.status).toUpperCase() === 'NO SMARTPHONE').length, fill: '#9ca3af' }
   ].filter(item => item.value > 0);
 
   return (
@@ -207,7 +207,7 @@ export default function CellphoneRackClient({ initialData }) {
               justifyContent: 'center'
             }}>
               {classCadets.map((cadet, i) => {
-                const hasNoPhone = !cadet.numPhones || cadet.numPhones === 0 || cadet.status.toUpperCase() === 'NO PHONE';
+                const hasNoPhone = !cadet.numPhones || cadet.numPhones === 0 || cadet.status.toUpperCase() === 'NO SMARTPHONE';
 
                 if (hasNoPhone) {
                   return (
@@ -508,14 +508,19 @@ export default function CellphoneRackClient({ initialData }) {
                   <h2 style={{ color: '#fff', margin: '0 0 0.25rem', fontSize: '1.5rem', letterSpacing: '1px' }}>{currentExpandedPhone.name}</h2>
                   {isCEIS ? (
                     <select 
-                      value={String(currentExpandedPhone.status || '').toUpperCase()} 
+                      value={
+                        String(currentExpandedPhone.status || '').toLowerCase().includes('out') ? 'Logged Out' :
+                        String(currentExpandedPhone.status || '').toLowerCase().includes('confiscat') ? 'Confiscated' :
+                        String(currentExpandedPhone.status || '').toLowerCase().includes('no') ? 'No Smartphone' :
+                        'Logged In'
+                      } 
                       onChange={(e) => handleFieldChange(currentExpandedPhone.name, 'status', e.target.value)}
                       style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', padding: '0.2rem 0.5rem', outline: 'none', fontWeight: 800, fontSize: '0.85rem' }}
                     >
-                      <option value="LOGGED IN" style={{ color: '#000' }}>LOGGED IN</option>
-                      <option value="LOGGED OUT" style={{ color: '#000' }}>LOGGED OUT</option>
-                      <option value="CONFISCATED" style={{ color: '#000' }}>CONFISCATED</option>
-                      <option value="NO PHONE" style={{ color: '#000' }}>NO PHONE</option>
+                      <option value="Logged In" style={{ color: '#000' }}>LOGGED IN</option>
+                      <option value="Logged Out" style={{ color: '#000' }}>LOGGED OUT</option>
+                      <option value="Confiscated" style={{ color: '#000' }}>CONFISCATED</option>
+                      <option value="No Smartphone" style={{ color: '#000' }}>NO SMARTPHONE</option>
                     </select>
                   ) : (
                     <span style={{ padding: '0.25rem 1rem', background: isOut ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)', color: isOut ? '#fca5a5' : '#6ee7b7', borderRadius: '999px', fontSize: '0.85rem', fontWeight: 800 }}>{currentExpandedPhone.status.toUpperCase()}</span>

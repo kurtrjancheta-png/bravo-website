@@ -6,6 +6,17 @@ export async function POST(req) {
   try {
     const changes = await req.json();
 
+    // Normalize status to strictly match Google Sheets Data Validation rules
+    changes.forEach(c => {
+      if (c.status) {
+        const s = String(c.status).toLowerCase();
+        if (s.includes('out')) c.status = 'Logged Out';
+        else if (s.includes('in')) c.status = 'Logged In';
+        else if (s.includes('confiscat')) c.status = 'Confiscated';
+        else if (s.includes('no')) c.status = 'No Smartphone';
+      }
+    });
+
     if (!APPS_SCRIPT_URL) {
       console.warn('CELLPHONE_APPS_SCRIPT_URL is not defined.');
       // Simulate success if no URL is set so UI testing doesn't break

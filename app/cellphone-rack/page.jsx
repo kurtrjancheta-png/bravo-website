@@ -82,7 +82,7 @@ export default async function CellphoneRackPage() {
       const numPhones = parseInt(row[kNumPhones] || '0', 10);
       
       if (!status && numPhones === 0) {
-        status = 'NO PHONE';
+        status = 'No Smartphone';
       }
 
       parsedData.push({
