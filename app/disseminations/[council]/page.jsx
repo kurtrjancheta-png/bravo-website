@@ -196,7 +196,10 @@ async function DisseminationCards({ councilId }) {
 }
 
 export default function CouncilDisseminationPage({ params }) {
-  const councilId = params.council.toLowerCase();
+  let councilId = params.council.toLowerCase();
+  if (councilId === 'hcomm') {
+    councilId = 'honor-comm';
+  }
   const data = councilData[councilId];
 
   if (!data) {

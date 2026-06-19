@@ -5,6 +5,16 @@ import { useAuth } from "../AuthContext";
 
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbynZfRwktqV30Wf4Np3oRWAdeWu02JQkfN6zZNQnV2Vk9tEy_h-Dps9js5ZKXJbjvGcPg/exec";
 
+const isMatchingCouncil = (userCouncil, formCouncil) => {
+  if (!userCouncil || !formCouncil) return false;
+  const u = String(userCouncil).toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const f = String(formCouncil).toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if ((u === 'HCOMM' || u === 'HONORCOMM') && (f === 'HCOMM' || f === 'HONORCOMM' || f === 'HONORCOMMITTEE')) {
+    return true;
+  }
+  return u === f;
+};
+
 export default function CouncilAdminForms({ councilName }) {
   const [modalState, setModalState] = useState("CLOSED"); // CLOSED, FORM
   const [activeFormType, setActiveFormType] = useState(""); // ANNOUNCEMENT or ACTIVITY
@@ -23,7 +33,7 @@ export default function CouncilAdminForms({ councilName }) {
   const [selectedFiles, setSelectedFiles] = useState([]);
 
   // Only render if the user is authenticated as the correct council administrator
-  if (!isLoaded || !adminUser || adminUser.council !== councilName) {
+  if (!isLoaded || !adminUser || !isMatchingCouncil(adminUser.council, councilName)) {
     return null;
   }
 

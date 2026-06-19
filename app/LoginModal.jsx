@@ -124,7 +124,14 @@ export default function LoginModal({ isOpen, onClose }) {
             )}
             <button 
               onClick={() => {
-                const targetPath = `/disseminations/${successData.council.toLowerCase()}`;
+                const getCouncilRoute = (council) => {
+                  const c = String(council).toUpperCase().replace(/[^A-Z0-9]/g, '');
+                  if (c === 'HCOMM' || c === 'HONORCOMM') {
+                    return 'honor-comm';
+                  }
+                  return council.toLowerCase();
+                };
+                const targetPath = `/disseminations/${getCouncilRoute(successData.council)}`;
                 setShowSuccess(false);
                 setSuccessData(null);
                 setUsername('');
