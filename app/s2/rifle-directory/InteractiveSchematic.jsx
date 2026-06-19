@@ -5,20 +5,61 @@ import { useState, useRef } from 'react';
 // 1. ANIMATED TRACES (UNIFIED)
 // ----------------------------------------------------
 
-const M14AnimatedTrace = ({ color, isExploded }) => {
-  // A springy, explosive transition
-  const transition = 'transform 0.8s cubic-bezier(0.2, 1.2, 0.4, 1), opacity 0.5s ease';
-  
-  // Helper to manage transforms: (explodedX, explodedY, assembledX, assembledY)
-  const t = (ex, ey, ax = 0, ay = 0) => 
-    isExploded ? `translate(${ex}px, ${ey}px)` : `translate(${ax}px, ${ay}px)`;
+const m14GroupMapping = {
+  flash_hider: 'upper_assembly',
+  rear_sight: 'upper_assembly',
+  receiver: 'upper_assembly',
+  barrel: 'upper_assembly',
+  front_sight: 'upper_assembly',
+  stock_front: 'stock_chassis',
+  buttplate: 'stock_chassis',
+  stock_rear: 'stock_chassis',
+  gas_cylinder: 'op_rod',
+  trigger: 'trigger_assembly',
+  magazine: 'magazine'
+};
+
+const m16GroupMapping = {
+  flash_hider: 'upper_rec',
+  carry_handle: 'upper_rec',
+  handguard: 'upper_rec',
+  upper: 'upper_rec',
+  barrel: 'upper_rec',
+  front_sight: 'upper_rec',
+  stock: 'lower_rec',
+  lower: 'lower_rec',
+  grip: 'lower_rec',
+  magazine: 'magazine'
+};
+
+const M14AnimatedTrace = ({ color, isExploded, selectedPartId }) => {
+  const getStyle = (groupId, ex, ey, ax = 0, ay = 0, isInternal = false) => {
+    const isSelected = selectedPartId === groupId || m14GroupMapping[selectedPartId] === groupId;
+    const baseTransform = isExploded ? `translate(${ex}px, ${ey}px)` : `translate(${ax}px, ${ay}px)`;
+    
+    let opacity = 1;
+    if (isInternal) {
+       opacity = isExploded || isSelected ? 1 : 0;
+    }
+    
+    return {
+      transform: baseTransform + (isSelected ? ' scale(1.03)' : ''),
+      transformBox: 'fill-box',
+      transformOrigin: 'center',
+      filter: isSelected ? 'drop-shadow(0 0 10px rgba(212, 175, 55, 0.8))' : 'none',
+      stroke: isSelected ? '#d4af37' : color,
+      strokeWidth: isSelected ? '2.5' : '1.5',
+      opacity,
+      transition: 'transform 0.8s cubic-bezier(0.2, 1.2, 0.4, 1), opacity 0.5s ease, filter 0.3s ease, stroke-width 0.3s ease'
+    };
+  };
 
   return (
     <svg viewBox="0 0 1000 1200" style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.05))' }}>
       <g transform="translate(0, 400)" fill="rgba(212, 175, 55, 0.05)" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round">
         
         {/* 1. UPPER ASSEMBLY (Receiver & Barrel) */}
-        <g style={{ transform: t(-10, -80), transition }}>
+        <g style={getStyle('upper_assembly', -10, -80)}>
           <path d="M 80 178 L 130 178 L 130 190 L 80 190 L 70 184 Z" />
           <line x1="90" y1="178" x2="90" y2="190" />
           <line x1="100" y1="178" x2="100" y2="190" />
@@ -37,7 +78,7 @@ const M14AnimatedTrace = ({ color, isExploded }) => {
         </g>
 
         {/* 2. CHASSIS / STOCK */}
-        <g style={{ transform: t(10, 40), transition }}>
+        <g style={getStyle('stock_chassis', 10, 40)}>
           <path d="M 230 195 L 380 195 L 380 208 L 230 208 Z" />
           <path d="M 380 195 L 530 195 L 530 215 L 680 215 L 710 240 L 740 250 L 830 240 L 940 270 L 950 270 L 950 185 L 940 185 L 700 195 L 530 195 Z" fill="rgba(134,134,139,0.05)" />
           <path d="M 950 185 L 960 185 L 960 272 L 950 270 Z" />
@@ -46,27 +87,27 @@ const M14AnimatedTrace = ({ color, isExploded }) => {
         </g>
 
         {/* 3. TRIGGER GROUP */}
-        <g style={{ transform: t(10, 110), transition }}>
+        <g style={getStyle('trigger_assembly', 10, 110)}>
           <path d="M 610 215 C 610 245, 650 245, 660 215" fill="none" />
           <path d="M 630 215 Q 630 230 640 235" fill="none" />
           <rect x="615" y="215" width="40" height="10" />
         </g>
 
         {/* 4. MAGAZINE */}
-        <g style={{ transform: t(-10, 100), transition }}>
+        <g style={getStyle('magazine', -10, 100)}>
           <path d="M 545 215 L 585 215 L 583 236 L 543 235 Z" />
           <line x1="550" y1="220" x2="548" y2="232" />
         </g>
 
         {/* 5. GAS CYLINDER / OP ROD (Internal) */}
-        <g style={{ transform: t(-40, -40, 0, 0), opacity: isExploded ? 1 : 0, transition }}>
+        <g style={getStyle('op_rod', -40, -40, 0, 0, true)}>
           <path d="M 230 195 L 480 195 L 480 205 L 230 205 Z" fill="rgba(212,175,55,0.1)" />
           <rect x="440" y="190" width="10" height="20" />
           <circle cx="240" cy="200" r="4" />
         </g>
 
         {/* 6. BOLT & SPRING (Internal) */}
-        <g style={{ transform: t(530, -30, 530, 0), opacity: isExploded ? 1 : 0, transition }}>
+        <g style={getStyle('bolt', 530, -30, 530, 0, true)}>
           <rect x="0" y="170" width="80" height="15" rx="3" fill="rgba(212,175,55,0.15)" />
           <line x1="10" y1="172" x2="10" y2="183" />
           <line x1="15" y1="172" x2="15" y2="183" />
@@ -74,7 +115,7 @@ const M14AnimatedTrace = ({ color, isExploded }) => {
         </g>
 
         {/* 7. 7.62x51mm NATO BULLET */}
-        <g style={{ transform: t(450, -220, 560, 185), opacity: isExploded ? 1 : 0, transition }}>
+        <g style={getStyle('bullet', 450, -220, 560, 185, true)}>
           <path d="M 0 10 L 30 10 L 35 13 L 40 13 L 40 27 L 35 27 L 30 30 L 0 30 Z" fill="rgba(212,175,55,0.2)" stroke={color} />
           <path d="M 40 14 L 60 16 L 65 20 L 60 24 L 40 26 Z" fill="rgba(134,134,139,0.3)" stroke={color} />
           <text x="32" y="50" fontSize="13" fontWeight="600" fill={color} textAnchor="middle" stroke="none">7.62×51mm NATO</text>
@@ -86,17 +127,34 @@ const M14AnimatedTrace = ({ color, isExploded }) => {
 };
 
 
-const TacticalAnimatedTrace = ({ color, isExploded }) => {
-  const transition = 'transform 0.8s cubic-bezier(0.2, 1.2, 0.4, 1), opacity 0.5s ease';
-  const t = (ex, ey, ax = 0, ay = 0) => 
-    isExploded ? `translate(${ex}px, ${ey}px)` : `translate(${ax}px, ${ay}px)`;
+const TacticalAnimatedTrace = ({ color, isExploded, selectedPartId }) => {
+  const getStyle = (groupId, ex, ey, ax = 0, ay = 0, isInternal = false) => {
+    const isSelected = selectedPartId === groupId || m16GroupMapping[selectedPartId] === groupId;
+    const baseTransform = isExploded ? `translate(${ex}px, ${ey}px)` : `translate(${ax}px, ${ay}px)`;
+    
+    let opacity = 1;
+    if (isInternal) {
+       opacity = isExploded || isSelected ? 1 : 0;
+    }
+    
+    return {
+      transform: baseTransform + (isSelected ? ' scale(1.03)' : ''),
+      transformBox: 'fill-box',
+      transformOrigin: 'center',
+      filter: isSelected ? 'drop-shadow(0 0 10px rgba(212, 175, 55, 0.8))' : 'none',
+      stroke: isSelected ? '#d4af37' : color,
+      strokeWidth: isSelected ? '2.5' : '1.5',
+      opacity,
+      transition: 'transform 0.8s cubic-bezier(0.2, 1.2, 0.4, 1), opacity 0.5s ease, filter 0.3s ease, stroke-width 0.3s ease'
+    };
+  };
 
   return (
     <svg viewBox="0 0 1000 1200" style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.05))' }}>
       <g transform="translate(0, 400)" fill="rgba(212, 175, 55, 0.05)" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round">
         
         {/* 1. UPPER RECEIVER & BARREL */}
-        <g style={{ transform: t(-10, -70), transition }}>
+        <g style={getStyle('upper_rec', -10, -70)}>
           <path d="M 80 178 L 110 178 L 110 190 L 80 190 Z" />
           <line x1="90" y1="178" x2="90" y2="190" />
           <line x1="100" y1="178" x2="100" y2="190" />
@@ -116,7 +174,7 @@ const TacticalAnimatedTrace = ({ color, isExploded }) => {
         </g>
 
         {/* 2. LOWER RECEIVER & STOCK */}
-        <g style={{ transform: t(10, 40), transition }}>
+        <g style={getStyle('lower_rec', 10, 40)}>
           <path d="M 490 190 L 650 190 L 650 215 L 610 215 L 610 225 L 490 225 Z" />
           <circle cx="530" cy="205" r="3" />
           <circle cx="630" cy="200" r="4" />
@@ -128,14 +186,14 @@ const TacticalAnimatedTrace = ({ color, isExploded }) => {
         </g>
 
         {/* 3. MAGAZINE */}
-        <g style={{ transform: t(10, 100), transition }}>
+        <g style={getStyle('magazine', 10, 100)}>
           <path d="M 495 225 L 540 225 L 535 340 L 485 330 C 485 330, 480 280, 495 225 Z" />
           <path d="M 505 235 C 495 280, 500 325, 500 325" fill="none" />
           <path d="M 525 235 C 515 280, 520 325, 520 325" fill="none" />
         </g>
 
         {/* 4. BOLT CARRIER GROUP (BCG) (Internal) */}
-        <g style={{ transform: t(640, -50, 490, -10), opacity: isExploded ? 1 : 0, transition }}>
+        <g style={getStyle('bcg', 640, -50, 490, -10, true)}>
           <path d="M 0 175 L 80 175 L 80 188 L 0 188 Z" fill="rgba(212,175,55,0.15)" />
           <rect x="20" y="170" width="30" height="5" />
           <circle cx="10" cy="181.5" r="3" />
@@ -143,19 +201,19 @@ const TacticalAnimatedTrace = ({ color, isExploded }) => {
         </g>
 
         {/* 5. CHARGING HANDLE (Internal) */}
-        <g style={{ transform: t(680, -90, 490, -5), opacity: isExploded ? 1 : 0, transition }}>
+        <g style={getStyle('charging_handle', 680, -90, 490, -5, true)}>
           <rect x="0" y="170" width="100" height="6" />
           <path d="M 100 165 L 110 165 L 110 180 L 100 180 Z" />
           <circle cx="110" cy="172.5" r="3" />
         </g>
 
         {/* 6. BUFFER SPRING (Internal) */}
-        <g style={{ transform: t(800, -20, 710, -10), opacity: isExploded ? 1 : 0, transition }}>
+        <g style={getStyle('buffer', 800, -20, 710, -10, true)}>
           <path d="M 0 185 Q 10 175 20 185 T 40 185 T 60 185 T 80 185 T 100 185 T 120 185 T 140 185" fill="none" />
         </g>
 
         {/* 7. 5.56x45mm NATO BULLET */}
-        <g style={{ transform: t(450, -220, 500, 205), opacity: isExploded ? 1 : 0, transition }}>
+        <g style={getStyle('bullet', 450, -220, 500, 205, true)}>
           <path d="M 0 10 L 25 10 L 30 13 L 35 13 L 35 27 L 30 27 L 25 30 L 0 30 Z" fill="rgba(212,175,55,0.2)" stroke={color} />
           <path d="M 35 14 L 50 15 L 55 20 L 50 25 L 35 26 Z" fill="rgba(134,134,139,0.3)" stroke={color} />
           <text x="27" y="50" fontSize="13" fontWeight="600" fill={color} textAnchor="middle" stroke="none">5.56×45mm NATO</text>
@@ -348,7 +406,7 @@ export default function InteractiveSchematic({ rifle }) {
           
           {/* NATIVE SVG RIFLE TRACE (Animated) */}
           <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 5 }}>
-            <AnimatedTraceComponent color={colors.base} isExploded={isExploded} />
+            <AnimatedTraceComponent color={colors.base} isExploded={isExploded} selectedPartId={selectedPart?.id} />
           </div>
 
           {/* SVG Tracelines overlay */}

@@ -141,9 +141,10 @@ export default function EXOGuardsManagerClient({
   const { adminUser, isLoaded } = useAuth();
   
   // UI States
-  const [activeTab, setActiveTab] = useState('today'); // 'today' or 'tomorrow'
   const [activeClassTab, setActiveClassTab] = useState('1CL');
-  
+  const [isTallyModalOpen, setIsTallyModalOpen] = useState(false);
+  const [roleModalConfig, setRoleModalConfig] = useState({ isOpen: false });
+
   const [pendingChanges, setPendingChanges] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isLaunching, setIsLaunching] = useState(false);
@@ -158,7 +159,6 @@ export default function EXOGuardsManagerClient({
   // Modal State
   const [modalConfig, setModalConfig] = useState(null); // { isOpen, role, dateStr, currentCadetName, classLevel }
   const [showNonPostingModal, setShowNonPostingModal] = useState(null); // '1CL' or '3CL'
-  const [isTallyModalOpen, setIsTallyModalOpen] = useState(false);
 
   const [now] = useState(new Date());
 
@@ -1010,8 +1010,43 @@ export default function EXOGuardsManagerClient({
           tally3CL={tally3CL}
           soiData={soiData}
           postedDateObj={postedDateObj}
+          pendingChanges={pendingChanges}
+          isUploading={isUploading}
+          handleUploadChanges={handleUploadChanges}
+          onAssignFromTally={(cadetName, classLevel, dateStr) => {
+            setRoleModalConfig({ isOpen: true, cadetName, classLevel, dateStr });
+          }}
         />
       )}
+
+      <RoleSelectionModal
+        isOpen={roleModalConfig.isOpen}
+        onClose={() => setRoleModalConfig({ isOpen: false })}
+        cadetName={roleModalConfig.cadetName}
+        dateStr={roleModalConfig.dateStr}
+        classLevel={roleModalConfig.classLevel}
+        onAssignRole={(role) => {
+          if (!roleModalConfig.cadetName || !roleModalConfig.classLevel || !roleModalConfig.dateStr) return;
+          const classLevel = roleModalConfig.classLevel;
+          const apiUrl = classLevel === '1CL' ? apiUrl1CL : classLevel === '2CL' ? apiUrl2CL : apiUrl3CL;
+          const colorMap = classLevel === '1CL' ? ROLE_COLORS_1CL : classLevel === '2CL' ? ROLE_COLORS_2CL : ROLE_COLORS_3CL;
+          const roleColor = colorMap[role] || '#000000';
+          setPendingChanges(prev => [...prev, {
+            classLevel,
+            dateStr: roleModalConfig.dateStr,
+            role,
+            apiUrl,
+            payload: {
+              action: 'assignGuard',
+              cadetName: roleModalConfig.cadetName,
+              date: roleModalConfig.dateStr,
+              color: roleColor,
+              previousCadetName: ''
+            }
+          }]);
+          setRoleModalConfig({ isOpen: false });
+        }}
+      />
     </div>
   );
 }
@@ -1100,16 +1135,91 @@ function NonPostingListModal({ isOpen, onClose, classLevel, dateStr, permanentLi
   );
 }
 
-function TallySheetModal({ isOpen, onClose, tally1CL, tally2CL, tally3CL, soiData, postedDateObj }) {
+function RoleSelectionModal({ isOpen, onClose, cadetName, dateStr, classLevel, onAssignRole }) {
+  if (!isOpen) return null;
+  
+  const roles1CL = ['FLOOR INSPECTOR', 'INTERIOR', 'SENTINEL', 'NON-POSTING'];
+  const roles2CL = ['PLEBE DETAIL', 'SENTINEL (TOC)', 'INTERIOR', 'AFI', 'NON-POSTING'];
+  const roles3CL = ['CCQ', 'ACCQ', 'AFI', 'MHC', 'INTERIOR', 'SENTINEL', 'NON-POSTING'];
+  
+  const roles = classLevel === '1CL' ? roles1CL : classLevel === '2CL' ? roles2CL : roles3CL;
+  
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      zIndex: 2000, padding: '1rem'
+    }}>
+      <div style={{ background: 'var(--card-bg)', borderRadius: '12px', width: '100%', maxWidth: '400px', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', border: '1px solid var(--border-color)' }}>
+        <div style={{ padding: '1.25rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)' }}>
+          <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.1rem', fontWeight: 800 }}>Assign Role</h3>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-secondary)' }}>&times;</button>
+        </div>
+        <div style={{ padding: '1.5rem' }}>
+          <p style={{ margin: '0 0 1rem 0', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+            Assigning <strong>{cadetName}</strong> ({classLevel}) on <strong>{dateStr}</strong>
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {roles.map(r => (
+              <button
+                key={r}
+                onClick={() => onAssignRole(r)}
+                style={{
+                  padding: '0.75rem', textAlign: 'left', background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-color)', borderRadius: '8px',
+                  color: 'var(--text-primary)', fontWeight: 600, cursor: 'pointer',
+                  transition: 'background 0.2s, border-color 0.2s'
+                }}
+                onMouseEnter={e => { e.target.style.background = 'rgba(59, 130, 246, 0.1)'; e.target.style.borderColor = '#3b82f6'; }}
+                onMouseLeave={e => { e.target.style.background = 'var(--bg-secondary)'; e.target.style.borderColor = 'var(--border-color)'; }}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TallySheetModal({ isOpen, onClose, tally1CL, tally2CL, tally3CL, soiData, postedDateObj, pendingChanges, isUploading, handleUploadChanges, onAssignFromTally }) {
   const [activeTab, setActiveTab] = useState('1CL');
   const [weekOffset, setWeekOffset] = useState(0);
+  const [animState, setAnimState] = useState({ opacity: 1, transform: 'translateX(0)', transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' });
+  const [hoveredCell, setHoveredCell] = useState(null); // { cadet, dateStr }
 
   if (!isOpen) return null;
 
-  // Compute the 7 days starting from postedDateObj - 7 days + weekOffset * 7
+  const handlePrev = () => {
+    setAnimState({ opacity: 0, transform: 'translateX(20px)', transition: 'opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s cubic-bezier(0.4, 0, 0.2, 1)' });
+    setTimeout(() => {
+      setWeekOffset(prev => prev - 1);
+      setAnimState({ opacity: 0, transform: 'translateX(-20px)', transition: 'none' });
+      // Force reflow
+      setTimeout(() => {
+        setAnimState({ opacity: 1, transform: 'translateX(0)', transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' });
+      }, 50);
+    }, 150);
+  };
+
+  const handleNext = () => {
+    setAnimState({ opacity: 0, transform: 'translateX(-20px)', transition: 'opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s cubic-bezier(0.4, 0, 0.2, 1)' });
+    setTimeout(() => {
+      setWeekOffset(prev => prev + 1);
+      setAnimState({ opacity: 0, transform: 'translateX(20px)', transition: 'none' });
+      // Force reflow
+      setTimeout(() => {
+        setAnimState({ opacity: 1, transform: 'translateX(0)', transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' });
+      }, 50);
+    }, 150);
+  };
+
+  // Compute the 7 days starting from postedDateObj - 3 days + weekOffset * 7 (index 3 is today)
   const dates = [];
   const start = new Date(postedDateObj);
-  start.setDate(start.getDate() - 7 + (weekOffset * 7));
+  start.setDate(start.getDate() - 3 + (weekOffset * 7));
   
   for (let i = 0; i < 7; i++) {
     const d = new Date(start);
@@ -1120,8 +1230,31 @@ function TallySheetModal({ isOpen, onClose, tally1CL, tally2CL, tally3CL, soiDat
   const formatDate = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const formatHeader = (date) => date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', weekday: 'short' });
 
+  const isToday = (date) => date.toDateString() === new Date(postedDateObj).toDateString();
+
   // Get tally for current class
-  const activeTally = activeTab === '1CL' ? tally1CL : activeTab === '2CL' ? tally2CL : tally3CL;
+  const baseTally = activeTab === '1CL' ? tally1CL : activeTab === '2CL' ? tally2CL : tally3CL;
+
+  // Merge pendingChanges into the tally for immediate visual feedback
+  const activeTally = (() => {
+    const merged = {};
+    // Copy base
+    Object.keys(baseTally).forEach(cadet => {
+      merged[cadet] = { ...(baseTally[cadet] || {}) };
+    });
+    // Overlay pending changes for this class
+    (pendingChanges || []).forEach(change => {
+      if (change.classLevel !== activeTab) return;
+      const cadetName = change.payload?.cadetName;
+      const dateStr = change.payload?.date;
+      const role = change.role;
+      if (!cadetName || !dateStr || !role) return;
+      if (!merged[cadetName]) merged[cadetName] = {};
+      const colorMap = activeTab === '1CL' ? ROLE_COLORS_1CL : activeTab === '2CL' ? ROLE_COLORS_2CL : ROLE_COLORS_3CL;
+      merged[cadetName][dateStr] = { label: role, color: colorMap[role] || '#64748b', pending: true };
+    });
+    return merged;
+  })();
 
   // Get cadets for current class
   const classCadets = soiData.filter(row => {
@@ -1136,59 +1269,77 @@ function TallySheetModal({ isOpen, onClose, tally1CL, tally2CL, tally3CL, soiDat
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)',
+      backgroundColor: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(8px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 1000, padding: '2rem'
+      zIndex: 1000, padding: '1rem'
     }}>
       <div style={{
         background: 'var(--bg-primary)',
-        borderRadius: '12px',
+        borderRadius: '16px',
         width: '100%',
-        maxWidth: '1200px',
-        maxHeight: '90vh',
+        maxWidth: '1400px',
+        height: '95vh',
         display: 'flex',
         flexDirection: 'column',
         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        border: '1px solid rgba(255,255,255,0.05)'
       }}>
         {/* Header */}
-        <div style={{ padding: '1.5rem 2rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)' }}>
+        <div style={{ padding: '1.25rem 2rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            <h2 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--text-primary)', fontWeight: 900 }}>WEEKLY POSTING TALLY</h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-primary)', padding: '0.25rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+            <h2 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--text-primary)', fontWeight: 900, letterSpacing: '0.05em' }}>WEEKLY POSTING TALLY</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'var(--bg-primary)', padding: '0.25rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
               <button 
-                onClick={() => setWeekOffset(prev => prev - 1)}
-                style={{ padding: '0.25rem 0.75rem', border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 700, color: 'var(--text-secondary)' }}
+                onClick={handlePrev}
+                style={{ padding: '0.25rem 0.75rem', border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 700, color: 'var(--text-secondary)', transition: 'color 0.2s' }}
+                onMouseEnter={e => e.target.style.color = 'var(--text-primary)'}
+                onMouseLeave={e => e.target.style.color = 'var(--text-secondary)'}
               >
                 &larr; Prev
               </button>
-              <div style={{ width: '1px', height: '1.5rem', background: 'var(--border-color)' }} />
+              <div style={{ width: '1px', height: '1.5rem', background: 'var(--border-color)', margin: '0 0.25rem' }} />
               <button 
-                onClick={() => setWeekOffset(prev => prev + 1)}
-                style={{ padding: '0.25rem 0.75rem', border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 700, color: 'var(--text-secondary)' }}
+                onClick={handleNext}
+                style={{ padding: '0.25rem 0.75rem', border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 700, color: 'var(--text-secondary)', transition: 'color 0.2s' }}
+                onMouseEnter={e => e.target.style.color = 'var(--text-primary)'}
+                onMouseLeave={e => e.target.style.color = 'var(--text-secondary)'}
               >
                 Next &rarr;
               </button>
             </div>
           </div>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-secondary)' }}>&times;</button>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', fontSize: '2rem', cursor: 'pointer', color: 'var(--text-secondary)', lineHeight: 1, transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = 'var(--text-primary)'} onMouseLeave={e => e.target.style.color = 'var(--text-secondary)'}>&times;</button>
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', padding: '1rem 2rem', gap: '1rem', borderBottom: '1px solid var(--border-color)' }}>
+        <div style={{ display: 'flex', padding: '0.75rem 2rem', gap: '0.5rem', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-primary)' }}>
           {['1CL', '2CL', '3CL'].map(tab => (
              <button
                key={tab}
                onClick={() => setActiveTab(tab)}
                style={{
-                 padding: '0.5rem 2rem',
+                 padding: '0.4rem 1.5rem',
                  borderRadius: '999px',
-                 border: 'none',
-                 backgroundColor: activeTab === tab ? '#0f172a' : '#e2e8f0',
-                 color: activeTab === tab ? '#ffffff' : '#64748b',
+                 border: '1px solid',
+                 borderColor: activeTab === tab ? '#3b82f6' : 'var(--border-color)',
+                 backgroundColor: activeTab === tab ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                 color: activeTab === tab ? '#3b82f6' : 'var(--text-secondary)',
                  fontWeight: 800,
                  cursor: 'pointer',
-                 transition: 'all 0.2s'
+                 transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+               }}
+               onMouseEnter={e => {
+                 if (activeTab !== tab) {
+                   e.target.style.color = 'var(--text-primary)';
+                   e.target.style.borderColor = 'var(--text-primary)';
+                 }
+               }}
+               onMouseLeave={e => {
+                 if (activeTab !== tab) {
+                   e.target.style.color = 'var(--text-secondary)';
+                   e.target.style.borderColor = 'var(--border-color)';
+                 }
                }}
              >
                {tab} POSTINGS
@@ -1197,56 +1348,156 @@ function TallySheetModal({ isOpen, onClose, tally1CL, tally2CL, tally3CL, soiDat
         </div>
 
         {/* Tally Grid */}
-        <div style={{ overflow: 'auto', flex: 1, padding: '0' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '800px' }}>
-            <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-secondary)', zIndex: 10 }}>
-              <tr>
-                <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid var(--border-color)', borderRight: '1px solid var(--border-color)', width: '200px', position: 'sticky', left: 0, background: 'var(--bg-secondary)', zIndex: 11 }}>CADET</th>
-                {dates.map((d, i) => (
-                  <th key={i} style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid var(--border-color)', borderRight: '1px solid var(--border-color)', minWidth: '100px', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                    {formatHeader(d)}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {uniqueCadets.map((cadet, rowIdx) => (
-                <tr key={cadet} style={{ borderBottom: '1px solid var(--border-color)', background: rowIdx % 2 === 0 ? 'var(--bg-primary)' : 'var(--bg-secondary)' }}>
-                  <td style={{ padding: '0.75rem 1rem', fontWeight: 700, borderRight: '1px solid var(--border-color)', position: 'sticky', left: 0, background: rowIdx % 2 === 0 ? 'var(--bg-primary)' : 'var(--bg-secondary)', zIndex: 5, color: 'var(--text-primary)' }}>
-                    {cadet}
-                  </td>
-                  {dates.map((d, colIdx) => {
-                    const dateStr = formatDate(d);
-                    const posting = activeTally[cadet] ? activeTally[cadet][dateStr] : null;
+        <div style={{ overflow: 'auto', flex: 1, padding: '0', background: 'var(--bg-primary)' }}>
+          <div style={{ ...animState, minHeight: '100%' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '800px', fontSize: '0.8rem' }}>
+              <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
+                <tr>
+                  <th style={{ padding: '0.5rem 1rem', textAlign: 'left', borderBottom: '2px solid var(--border-color)', borderRight: '1px solid var(--border-color)', width: '180px', position: 'sticky', left: 0, background: 'var(--bg-secondary)', zIndex: 11, color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>CADET</th>
+                  {dates.map((d, i) => {
+                    const today = isToday(d);
                     return (
-                      <td key={colIdx} style={{ borderRight: '1px solid var(--border-color)', padding: '0.5rem', textAlign: 'center' }}>
-                        {posting ? (
-                          <div 
-                            title={posting.label}
-                            style={{
-                              background: posting.color,
-                              height: '24px',
-                              borderRadius: '4px',
-                              width: '100%',
-                              boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.1)'
-                            }}
-                          />
-                        ) : (
-                          <div style={{ height: '24px', width: '100%' }} />
-                        )}
-                      </td>
+                      <th key={i} style={{ 
+                        padding: '0.5rem', 
+                        textAlign: 'center', 
+                        borderBottom: '2px solid var(--border-color)', 
+                        borderRight: '1px solid var(--border-color)', 
+                        minWidth: '100px', 
+                        color: today ? '#3b82f6' : 'var(--text-secondary)', 
+                        fontWeight: 800,
+                        background: today ? 'rgba(59, 130, 246, 0.05)' : 'var(--bg-secondary)',
+                        position: 'relative'
+                      }}>
+                        {today && <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.1rem', color: '#3b82f6', fontWeight: 900 }}>TODAY</div>}
+                        <div style={{ fontSize: today ? '0.9rem' : '0.8rem' }}>{formatHeader(d)}</div>
+                        {today && <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px', background: '#3b82f6' }} />}
+                      </th>
                     );
                   })}
                 </tr>
-              ))}
-              {uniqueCadets.length === 0 && (
-                <tr>
-                  <td colSpan={dates.length + 1} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>No cadets found for {activeTab}.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {uniqueCadets.map((cadet, rowIdx) => (
+                  <tr key={cadet} style={{ borderBottom: '1px solid var(--border-color)', background: rowIdx % 2 === 0 ? 'var(--bg-primary)' : 'var(--bg-secondary)' }}>
+                    <td style={{ padding: '0.35rem 1rem', fontWeight: 600, borderRight: '1px solid var(--border-color)', position: 'sticky', left: 0, background: 'inherit', zIndex: 5, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
+                      {cadet}
+                    </td>
+                    {dates.map((d, colIdx) => {
+                      const dateStr = formatDate(d);
+                      const posting = activeTally[cadet] ? activeTally[cadet][dateStr] : null;
+                      const today = isToday(d);
+                      const cellKey = `${cadet}__${dateStr}`;
+                      const isHovered = hoveredCell === cellKey;
+                      return (
+                        <td
+                          key={colIdx}
+                          style={{
+                            borderRight: '1px solid var(--border-color)',
+                            padding: '0.2rem 0.35rem',
+                            textAlign: 'center',
+                            background: today
+                              ? 'rgba(59, 130, 246, 0.02)'
+                              : isHovered && !posting
+                              ? 'rgba(59, 130, 246, 0.06)'
+                              : 'transparent',
+                            cursor: posting ? 'default' : 'pointer',
+                            transition: 'background 0.15s'
+                          }}
+                          onMouseEnter={() => setHoveredCell(cellKey)}
+                          onMouseLeave={() => setHoveredCell(null)}
+                          onClick={() => {
+                            if (!posting) {
+                              onAssignFromTally(cadet, activeTab, dateStr);
+                            }
+                          }}
+                          title={posting ? posting.label : `Click to assign ${cadet} on ${dateStr}`}
+                        >
+                          {posting ? (
+                            <div
+                              style={{
+                                background: posting.color,
+                                color: '#fff',
+                                padding: '0.15rem 0.5rem',
+                                borderRadius: '6px',
+                                display: 'inline-block',
+                                fontSize: '0.7rem',
+                                fontWeight: 800,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.02em',
+                                boxShadow: posting.pending
+                                  ? '0 0 0 2px #facc15, 0 2px 4px rgba(0,0,0,0.1)'
+                                  : '0 2px 4px rgba(0,0,0,0.1)',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                maxWidth: '100px',
+                                opacity: posting.pending ? 0.85 : 1,
+                                transition: 'opacity 0.2s'
+                              }}
+                            >
+                              {posting.label}
+                              {posting.pending && <span style={{ fontSize: '0.55rem', marginLeft: '3px', opacity: 0.8 }}>●</span>}
+                            </div>
+                          ) : (
+                            <div style={{
+                              height: '24px',
+                              width: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: isHovered ? 'rgba(59, 130, 246, 0.5)' : 'transparent',
+                              fontSize: '1rem',
+                              transition: 'color 0.15s',
+                              userSelect: 'none'
+                            }}>+</div>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+                {uniqueCadets.length === 0 && (
+                  <tr>
+                    <td colSpan={dates.length + 1} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                      No cadets found for {activeTab}.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
+
+        {/* Upload Changes Button — inside modal */}
+        {pendingChanges && pendingChanges.length > 0 && (
+          <div style={{
+            padding: '0.75rem 2rem',
+            borderTop: '1px solid var(--border-color)',
+            background: 'var(--bg-secondary)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '1rem'
+          }}>
+            <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.9rem' }}>
+              {pendingChanges.length} unsaved {pendingChanges.length === 1 ? 'change' : 'changes'}
+            </span>
+            <button
+              onClick={handleUploadChanges}
+              disabled={isUploading}
+              style={{
+                backgroundColor: '#3b82f6', color: '#fff', border: 'none',
+                padding: '0.5rem 1.5rem', borderRadius: '999px', fontWeight: 800,
+                cursor: isUploading ? 'wait' : 'pointer',
+                opacity: isUploading ? 0.7 : 1,
+                transition: 'opacity 0.2s',
+                fontSize: '0.9rem', letterSpacing: '0.03em'
+              }}
+            >
+              {isUploading ? 'Uploading...' : 'Upload Changes'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

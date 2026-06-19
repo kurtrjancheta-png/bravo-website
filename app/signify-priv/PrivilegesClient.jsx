@@ -102,9 +102,16 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
         const checkResult = await checkRes.json();
         const signees = checkResult.data || [];
         
-        // Check if serial number already exists in any of the rows
+        // Check if serial number or full name already exists in any of the rows
+        const nameUpper = fullName.trim().toUpperCase();
+        const serialUpper = serialNumber.trim().toUpperCase();
+        
         const alreadySignified = signees.some(row => 
-           Object.values(row).some(val => String(val).toUpperCase().includes(serialNumber.toUpperCase()))
+           Object.values(row).some(val => {
+             const strVal = String(val).toUpperCase();
+             return (serialUpper && strVal.includes(serialUpper)) || 
+                    (nameUpper && strVal.includes(nameUpper));
+           })
         );
         
         if (alreadySignified) {
