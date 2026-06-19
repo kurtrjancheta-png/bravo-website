@@ -159,6 +159,7 @@ export default function EXOGuardsManagerClient({
   // Modal State
   const [modalConfig, setModalConfig] = useState(null); // { isOpen, role, dateStr, currentCadetName, classLevel }
   const [showNonPostingModal, setShowNonPostingModal] = useState(null); // '1CL' or '3CL'
+  const [activeTab, setActiveTab] = useState('today'); // 'today' or 'tomorrow'
 
   const [now] = useState(new Date());
 
