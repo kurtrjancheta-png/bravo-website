@@ -12,12 +12,16 @@ export default async function RifleDirectoryPage() {
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif', 
       color: '#1d1d1f' 
     }}>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .main-content {
           max-width: 100% !important;
+          width: 100% !important;
           padding: 0 !important;
         }
-      `}</style>
+        .main-wrapper {
+          background-color: #f5f5f7 !important;
+        }
+      `}} />
       <div style={{ 
         width: '100%', 
         maxWidth: '1600px',

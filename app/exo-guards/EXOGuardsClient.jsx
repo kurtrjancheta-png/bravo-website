@@ -139,6 +139,9 @@ export default function EXOGuardsClient({ data1CL = [], data2CL = [], data3CL = 
 
       const status = getStatusFn(item.color);
       
+      // Do not show non-posting guards in the dashboard
+      if (status.label === 'NON-POSTING') return;
+      
       // Try SOI picture first, then fallback to local image matcher
       const soiPic = getSoiPicture(cleanName, soiData);
       const imageUrl = soiPic || item.localImageUrl || null;
