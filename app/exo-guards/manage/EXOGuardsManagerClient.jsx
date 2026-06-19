@@ -704,7 +704,7 @@ export default function EXOGuardsManagerClient({
         <button 
           onClick={() => setIsTallyModalOpen(true)}
           style={{
-            padding: '0.6rem 1.5rem', fontWeight: 800, border: 'none', background: 'var(--btn-bg)',
+            padding: '0.6rem 1.5rem', fontWeight: 800, border: 'none', background: '#3b82f6',
             color: '#ffffff', cursor: 'pointer', borderRadius: '8px',
             transition: 'background 0.3s', whiteSpace: 'nowrap', fontSize: '0.9rem',
             letterSpacing: '0.05em', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
@@ -875,9 +875,14 @@ export default function EXOGuardsManagerClient({
                 <span style={{ fontWeight: 800, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>INTERIOR GUARDS</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {Array.from({ length: Math.max(1, guards2Int.length) }).map((_, i) => (
-                  <div key={i}>{renderSlot('INTERIOR', guards2Int[i], 'INTERIOR', '2CL')}</div>
+                {guards2Int.map((guard, i) => (
+                  <div key={i}>{renderSlot('INTERIOR', guard, 'INTERIOR', '2CL')}</div>
                 ))}
+                {guards2Int.length === 0 && (
+                  <div style={{ padding: '1rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem', fontStyle: 'italic', border: '1px dashed #cbd5e1', borderRadius: '8px' }}>
+                    No interior guards posted.
+                  </div>
+                )}
               </div>
             </div>
 
@@ -974,9 +979,9 @@ export default function EXOGuardsManagerClient({
           onClose={() => setShowNonPostingModal(null)}
           classLevel={showNonPostingModal}
           dateStr={activeDateStr}
-          permanentList={showNonPostingModal === '1CL' ? permanent1CL : permanent3CL}
-          todayList={showNonPostingModal === '1CL' ? getGuardsByRole(today1CL, 'NON-POSTING') : getGuardsByRole(today3CL, 'NON-POSTING')}
-          tomorrowList={showNonPostingModal === '1CL' ? getGuardsByRole(tomorrow1CL, 'NON-POSTING') : getGuardsByRole(tomorrow3CL, 'NON-POSTING')}
+          permanentList={showNonPostingModal === '1CL' ? permanent1CL : showNonPostingModal === '2CL' ? permanent2CL : permanent3CL}
+          todayList={showNonPostingModal === '1CL' ? getGuardsByRole(today1CL, 'NON-POSTING') : showNonPostingModal === '2CL' ? getGuardsByRole(today2CL, 'NON-POSTING') : getGuardsByRole(today3CL, 'NON-POSTING')}
+          tomorrowList={showNonPostingModal === '1CL' ? getGuardsByRole(tomorrow1CL, 'NON-POSTING') : showNonPostingModal === '2CL' ? getGuardsByRole(tomorrow2CL, 'NON-POSTING') : getGuardsByRole(tomorrow3CL, 'NON-POSTING')}
           soiData={soiData}
           onTogglePermanent={(cadetName, isPermanent) => {
             const apiUrl = showNonPostingModal === '1CL' ? apiUrl1CL : showNonPostingModal === '2CL' ? apiUrl2CL : apiUrl3CL;
