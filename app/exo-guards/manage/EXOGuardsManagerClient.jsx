@@ -89,7 +89,7 @@ function getStatusFromColor1CL(hex) {
   if (hex === '#ff0000' || hex === '#ff0001') return { label: 'INTERIOR', color: '#ef4444' }; // red-500
   if (hex === '#00ff00' || hex === '#00ff01') return { label: 'SENTINEL', color: '#22c55e' }; // green-500
   if (hex === '#0000ff' || hex === '#0000fe' || hex === '#4285f4' || hex === '#a4c2f4' || hex === '#cfe2f3' || hex === '#9fc5e8') return { label: 'NON-POSTING', color: '#60a5fa' }; // blue-400
-  return { label: 'POSTED', color: '#cbd5e1' }; // slate-300
+  return { label: 'SENTINEL', color: '#22c55e' }; // green-500
 }
 
 function getStatusFromColor3CL(hex) {
@@ -111,7 +111,8 @@ function getStatusFromColor3CL(hex) {
     case '#cfe2f3':
     case '#9fc5e8':
     case '#a4c2f4': return { label: 'NON-POSTING', color: '#60a5fa' };
-    default: return { label: 'POSTED', color: '#cbd5e1' };
+    case '#ff00ff': 
+    default: return { label: 'SENTINEL', color: '#d946ef' };
   }
 }
 
@@ -122,7 +123,7 @@ function getStatusFromColor2CL(hex) {
   if (hex === '#ff00ff' || hex === '#ff00fe') return { label: 'INTERIOR', color: '#d946ef' }; // Magenta
   if (hex === '#b45f06' || hex === '#b87333' || hex === '#a67c00' || hex === '#bf9000') return { label: 'AFI', color: '#b45309' }; // Brown
   if (hex === '#0000ff' || hex === '#4285f4' || hex === '#00b0f0' || hex === '#a4c2f4' || hex === '#cfe2f3' || hex === '#9fc5e8') return { label: 'NON-POSTING', color: '#60a5fa' };
-  return { label: 'POSTED', color: '#cbd5e1' };
+  return { label: 'SENTINEL (TOC)', color: '#06b6d4' };
 }
 
 export default function EXOGuardsManagerClient({ 
