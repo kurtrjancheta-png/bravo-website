@@ -238,6 +238,39 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
     pft1Data && [...pft1Data.all.passed, ...pft1Data.all.failed, ...pft1Data.all.smc].length > 0 ? 'pft1' : 'mock'
   );
 
+  // Individual Cadet Modal State
+  const [selectedCadet, setSelectedCadet] = useState(null);
+
+  const handleCadetClick = (cadetName) => {
+    try {
+      const getCadetRecord = (pftData) => {
+      if (!pftData) return null;
+      for (const cls of ['1cl', '2cl', '3cl']) {
+        if (!pftData[cls]) continue;
+        const allCadets = [
+          ...(pftData[cls].passed || []),
+          ...(pftData[cls].failed || []),
+          ...(pftData[cls].smc || []),
+          ...(pftData[cls].fad || [])
+        ];
+        const cadet = allCadets.find(c => c.name === cadetName);
+        if (cadet) return cadet;
+      }
+      return null;
+    };
+    
+    try {
+      setSelectedCadet({
+        name: cadetName,
+        mock: getCadetRecord(mockData),
+        pft1: getCadetRecord(pft1Data),
+        pft2: getCadetRecord(pft2Data)
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const pftTypes = {
     mock: { label: 'Mock PFT', data: mockData },
     pft1: { label: 'PFT 1', data: pft1Data },
@@ -790,9 +823,28 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
           <div className="cadet-list-grid">
             {activeList.cadets.length > 0 ? (
               activeList.cadets.map((cadet, idx) => (
-                <div key={idx} className="cadet-list-item">
+                <button 
+                  key={idx} 
+                  className="cadet-list-item clickable" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleCadetClick(cadet.name);
+                  }}
+                  style={{ 
+                    cursor: 'pointer', 
+                    transition: 'all 0.2s',
+                    textAlign: 'left',
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'flex-start',
+                    border: '1px solid var(--border-color)',
+                    background: 'var(--bg-secondary)',
+                    fontFamily: 'inherit'
+                  }}
+                >
                   <span className="cadet-name">{cadet.name}</span>
-                </div>
+                </button>
               ))
             ) : (
               <div className="cadet-list-empty">No cadets in this category.</div>
@@ -963,6 +1015,169 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Individual Cadet Modal */}
+      {selectedCadet && (
+        <div className="pft-modal-overlay" onClick={() => setSelectedCadet(null)}>
+          <div className="pft-modal-content cadet-details-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px', width: '95%' }}>
+            <div className="pft-modal-header">
+              <h2 className="pft-modal-title">Cadet PFT Profile: {selectedCadet.name}</h2>
+              <button className="pft-modal-close-icon" onClick={() => setSelectedCadet(null)}>
+                &times;
+              </button>
+            </div>
+            
+            <div className="pft-modal-body">
+              {/* Cadet Data Table */}
+              <div className="table-container" style={{ marginBottom: '2rem' }}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: 'left' }}>Event</th>
+                      <th>Mock PFT</th>
+                      <th>PFT 1</th>
+                      <th>PFT 2</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {['Push-ups', 'Sit-ups', 'Pull-ups', '3.2KM Run', 'Average'].map(ev => {
+                      const keys = { 'Push-ups': 'pushups', 'Sit-ups': 'situps', 'Pull-ups': 'pullups', '3.2KM Run': 'run', 'Average': 'average' };
+                      const k = keys[ev];
+                      return (
+                        <tr key={ev}>
+                          <td style={{ fontWeight: ev === 'Average' ? 700 : 600, textAlign: 'left' }}>{ev}</td>
+                          <td style={{ fontWeight: ev === 'Average' ? 700 : 400, textAlign: 'center' }}>{selectedCadet.mock?.scores?.[k] !== undefined ? selectedCadet.mock.scores[k].toFixed(2) : '-'}</td>
+                          <td style={{ fontWeight: ev === 'Average' ? 700 : 400, textAlign: 'center' }}>{selectedCadet.pft1?.scores?.[k] !== undefined ? selectedCadet.pft1.scores[k].toFixed(2) : '-'}</td>
+                          <td style={{ fontWeight: ev === 'Average' ? 700 : 400, textAlign: 'center' }}>{selectedCadet.pft2?.scores?.[k] !== undefined ? selectedCadet.pft2.scores[k].toFixed(2) : '-'}</td>
+                        </tr>
+                      );
+                    })}
+                    <tr>
+                      <td style={{ fontWeight: 600, textAlign: 'left' }}>Remarks</td>
+                      <td style={{ color: selectedCadet.mock?.remarks?.includes('PASSED') || selectedCadet.mock?.remarks === 'P' ? '#1a7a3a' : selectedCadet.mock?.remarks ? '#c0392b' : 'inherit', fontWeight: 700, textAlign: 'center' }}>
+                        {selectedCadet.mock?.remarks || '-'}
+                      </td>
+                      <td style={{ color: selectedCadet.pft1?.remarks?.includes('PASSED') || selectedCadet.pft1?.remarks === 'P' ? '#1a7a3a' : selectedCadet.pft1?.remarks ? '#c0392b' : 'inherit', fontWeight: 700, textAlign: 'center' }}>
+                        {selectedCadet.pft1?.remarks || '-'}
+                      </td>
+                      <td style={{ color: selectedCadet.pft2?.remarks?.includes('PASSED') || selectedCadet.pft2?.remarks === 'P' ? '#1a7a3a' : selectedCadet.pft2?.remarks ? '#c0392b' : 'inherit', fontWeight: 700, textAlign: 'center' }}>
+                        {selectedCadet.pft2?.remarks || '-'}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Cadet Progression Line Chart */}
+              <div className="pft-chart-card" style={{ marginBottom: '2rem' }}>
+                <h3 className="pft-chart-title">Event Progression</h3>
+                <div style={{ width: '100%', height: 300, marginTop: '1rem' }}>
+                  <ResponsiveContainer>
+                    <LineChart 
+                      data={[
+                        { 
+                          event: 'Push-ups', 
+                          'Mock PFT': selectedCadet.mock?.scores?.pushups, 
+                          'PFT 1': selectedCadet.pft1?.scores?.pushups, 
+                          'PFT 2': selectedCadet.pft2?.scores?.pushups,
+                          'Overall': [selectedCadet.mock?.scores?.pushups, selectedCadet.pft1?.scores?.pushups, selectedCadet.pft2?.scores?.pushups].filter(v => v !== undefined && v !== null).reduce((a, b, _, arr) => a + b / arr.length, 0)
+                        },
+                        { 
+                          event: 'Sit-ups', 
+                          'Mock PFT': selectedCadet.mock?.scores?.situps, 
+                          'PFT 1': selectedCadet.pft1?.scores?.situps, 
+                          'PFT 2': selectedCadet.pft2?.scores?.situps,
+                          'Overall': [selectedCadet.mock?.scores?.situps, selectedCadet.pft1?.scores?.situps, selectedCadet.pft2?.scores?.situps].filter(v => v !== undefined && v !== null).reduce((a, b, _, arr) => a + b / arr.length, 0)
+                        },
+                        { 
+                          event: 'Pull-ups', 
+                          'Mock PFT': selectedCadet.mock?.scores?.pullups, 
+                          'PFT 1': selectedCadet.pft1?.scores?.pullups, 
+                          'PFT 2': selectedCadet.pft2?.scores?.pullups,
+                          'Overall': [selectedCadet.mock?.scores?.pullups, selectedCadet.pft1?.scores?.pullups, selectedCadet.pft2?.scores?.pullups].filter(v => v !== undefined && v !== null).reduce((a, b, _, arr) => a + b / arr.length, 0)
+                        },
+                        { 
+                          event: '3.2KM Run', 
+                          'Mock PFT': selectedCadet.mock?.scores?.run, 
+                          'PFT 1': selectedCadet.pft1?.scores?.run, 
+                          'PFT 2': selectedCadet.pft2?.scores?.run,
+                          'Overall': [selectedCadet.mock?.scores?.run, selectedCadet.pft1?.scores?.run, selectedCadet.pft2?.scores?.run].filter(v => v !== undefined && v !== null).reduce((a, b, _, arr) => a + b / arr.length, 0)
+                        }
+                      ]} 
+                      margin={{ top: 5, right: 30, left: -20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+                      <XAxis dataKey="event" stroke="var(--text-secondary)" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                      <YAxis stroke="var(--text-secondary)" domain={[0, 10]} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                      <Tooltip contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 8 }} />
+                      <Legend wrapperStyle={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', paddingTop: 10 }} />
+                      
+                      <ReferenceArea y1={8.0} y2={8.5} fill="#10b981" fillOpacity={0.12} />
+                      <ReferenceLine y={7.0} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1.5} />
+                      
+                      <Line type="monotone" dataKey="Mock PFT" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} connectNulls />
+                      <Line type="monotone" dataKey="PFT 1" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} connectNulls />
+                      <Line type="monotone" dataKey="PFT 2" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} connectNulls />
+                      <Line type="monotone" dataKey="Overall" stroke="#d97706" strokeWidth={3} strokeDasharray="5 5" activeDot={{ r: 8 }} connectNulls />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Individual Insight Generator */}
+              {(() => {
+                const getEvtAvg = (evtKey) => {
+                  const scores = [
+                    selectedCadet.mock?.scores?.[evtKey],
+                    selectedCadet.pft1?.scores?.[evtKey],
+                    selectedCadet.pft2?.scores?.[evtKey]
+                  ].filter(v => v !== undefined && v !== null && v > 0);
+                  if (scores.length === 0) return 100;
+                  return scores.reduce((a, b) => a + b, 0) / scores.length;
+                };
+
+                const averages = [
+                  { key: 'pushups', name: 'Push-ups', val: getEvtAvg('pushups') },
+                  { key: 'situps', name: 'Sit-ups', val: getEvtAvg('situps') },
+                  { key: 'pullups', name: 'Pull-ups', val: getEvtAvg('pullups') },
+                  { key: 'run', name: '3.2KM Run', val: getEvtAvg('run') }
+                ].filter(a => a.val !== 100).sort((a, b) => a.val - b.val);
+
+                if (averages.length === 0) {
+                  return <div style={{ color: 'var(--text-secondary)', textAlign: 'center' }}>No performance data to analyze.</div>;
+                }
+
+                const weakest = averages[0];
+                const cRemediation = getRemediationRecommendation(weakest.key);
+
+                return (
+                  <div className="pft-remediation-box">
+                    <div className="pft-remediation-title">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                      </svg>
+                      Personalized Insight: {cRemediation.title}
+                    </div>
+                    <p className="pft-remediation-text" style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+                      Based on {selectedCadet.name}'s data, {weakest.name} is the weakest event with an average score of {weakest.val.toFixed(2)}.
+                    </p>
+                    <p className="pft-remediation-text">
+                      {cRemediation.text}
+                    </p>
+                    <ul className="pft-remediation-list">
+                      {cRemediation.tips.map((tip, i) => (
+                        <li key={i}>{tip}</li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>

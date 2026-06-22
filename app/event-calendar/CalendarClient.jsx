@@ -175,14 +175,14 @@ export default function CalendarClient({ birthdays, activities }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flexGrow: 1, overflowY: 'auto' }}>
               {/* Event Chips */}
               {dayBDays.map((b, idx) => (
-                <div key={`bday-${idx}`} style={{ backgroundColor: '#ec4899', color: 'white', padding: '2px 4px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div key={`bday-${idx}`} className="clickable-event-chip birthday-chip" style={{ backgroundColor: '#ec4899', color: 'white', padding: '2px 4px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   🎂 {b.lastName}
                 </div>
               ))}
               {dayActs.map((act, idx) => {
                 const color = act.color || '#3b82f6';
                 return (
-                  <div key={`act-${idx}`} style={{ backgroundColor: color, color: 'white', padding: '2px 4px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div key={`act-${idx}`} className="clickable-event-chip" style={{ backgroundColor: color, color: 'white', padding: '2px 4px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {act.title || act.content || 'Untitled Event'}
                   </div>
                 );
@@ -304,9 +304,8 @@ export default function CalendarClient({ birthdays, activities }) {
                 <div 
                   key={`act-${i}`} 
                   onClick={() => setSelectedEventDetails(a)}
-                  style={{ padding: '0.75rem', backgroundColor: 'rgba(255,255,255,0.05)', borderLeft: `4px solid ${a.color || '#3b82f6'}`, borderRadius: '4px', cursor: 'pointer', transition: 'background-color 0.2s' }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'}
+                  className="clickable-event-list-item"
+                  style={{ padding: '0.75rem', backgroundColor: 'rgba(255,255,255,0.05)', borderLeft: `4px solid ${a.color || '#3b82f6'}`, borderRadius: '4px', cursor: 'pointer' }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
                     <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{a.title || a.content || 'Untitled Event'}</div>

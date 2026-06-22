@@ -477,6 +477,7 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
                     draggable
                     onDragStart={(e) => handleDragStart(e, act, 'move')}
                     onClick={(e) => handleEventClick(e, act)}
+                    className="clickable-event-chip"
                     style={{ 
                       backgroundColor: color, 
                       color: 'white', 
@@ -492,11 +493,9 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      opacity: 0.9,
+                      opacity: 1,
                       border: '1px solid rgba(255,255,255,0.2)'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
-                    onMouseLeave={(e) => e.currentTarget.style.opacity = 0.9}
                   >
                     {/* Left Resize Handle */}
                     {isStart && (
@@ -708,7 +707,7 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
                 <button 
                   type="submit" 
                   disabled={isUploadingFile}
-                  style={{ padding: '0.75rem 2rem', backgroundColor: 'var(--gold-primary)', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: isUploadingFile ? 'not-allowed' : 'pointer', boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3)', opacity: isUploadingFile ? 0.7 : 1 }}
+                  style={{ padding: '0.75rem 2rem', backgroundColor: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: isUploadingFile ? 'not-allowed' : 'pointer', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)', opacity: isUploadingFile ? 0.7 : 1 }}
                 >
                   {isUploadingFile ? 'Uploading...' : 'Save'}
                 </button>
@@ -801,9 +800,10 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
           <button 
             onClick={handleUploadChanges}
             style={{ 
-              backgroundColor: 'var(--gold-primary)', color: '#000', border: 'none', 
+              backgroundColor: '#3b82f6', color: '#fff', border: 'none', 
               padding: '0.5rem 1.5rem', borderRadius: '999px', fontWeight: 900, 
-              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem'
+              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem',
+              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
             }}
           >
             <span>🚀</span> UPLOAD TO DATABASE

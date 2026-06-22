@@ -133,14 +133,16 @@ a {
   color: var(--text-secondary);
   font-weight: 500;
   font-size: 0.95rem;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
   cursor: pointer;
   border-left: 4px solid transparent;
+  position: relative;
 }
 
 .nav-item:hover {
-  background-color: rgba(212, 175, 55, 0.05);
+  background-color: rgba(212, 175, 55, 0.08);
   color: var(--text-primary);
+  transform: translateX(4px);
 }
 
 .nav-item.active {
@@ -148,6 +150,7 @@ a {
   color: var(--text-primary);
   border-left: 4px solid var(--accent-gold);
   font-weight: 600;
+  box-shadow: inset 4px 0 10px rgba(212, 175, 55, 0.03);
 }
 
 /* Gold glow when hovering linked org chart cards */
@@ -341,12 +344,13 @@ details[open] > summary .dropdown-arrow {
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  transition: all 0.2s ease;
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, border-color 0.3s ease;
   box-shadow: 0 1px 3px rgba(0,0,0,0.02);
 }
 
 .info-card:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08), 0 0 15px rgba(212, 175, 55, 0.12);
   border-color: var(--accent-gold);
 }
 
@@ -755,11 +759,12 @@ tr:last-child td {
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  transition: box-shadow 0.2s, border-color 0.2s;
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .pft-chart-card:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12), 0 0 15px rgba(212, 175, 55, 0.15);
   border-color: var(--accent-gold);
 }
 
@@ -1223,4 +1228,77 @@ tr:last-child td {
   visibility: visible;
   opacity: 1;
   transform: translateY(0);
+}
+
+/* --- DYNAMIC INTERACTION CLASSES --- */
+
+/* Clickable Event Chips in Calendar Grid */
+.clickable-event-chip {
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.2s ease, filter 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.clickable-event-chip:hover {
+  transform: translateY(-3px) scale(1.03);
+  filter: brightness(1.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3), 0 0 10px currentColor, 0 0 15px rgba(255, 255, 255, 0.4);
+  z-index: 50; /* Stay on top of neighbor elements when floating */
+}
+
+/* Hover for birthday events specifically (pink theme glow) */
+.clickable-event-chip.birthday-chip:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3), 0 0 10px #ec4899, 0 0 15px rgba(236, 72, 153, 0.5);
+}
+
+/* Hover for modal event list items */
+.clickable-event-list-item {
+  transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.2s, box-shadow 0.2s;
+}
+
+.clickable-event-list-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15), 0 0 8px rgba(212, 175, 55, 0.15);
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* General table row highlights */
+tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+tbody tr:hover {
+  background-color: rgba(212, 175, 55, 0.03) !important;
+}
+
+/* Cadet list items in PFT list */
+.cadet-list-item.clickable {
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.2s, box-shadow 0.2s;
+}
+
+.cadet-list-item.clickable:hover {
+  transform: translateY(-2px);
+  background-color: rgba(212, 175, 55, 0.1) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Button & input micro-animations */
+.badge-outline, .pft-insight-btn, .pft-select, .pft-modal-tab-btn {
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.badge-outline:hover {
+  background-color: rgba(212, 175, 55, 0.1) !important;
+  border-color: var(--accent-gold) !important;
+  transform: translateY(-1px);
+}
+
+.pft-select:hover {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
+}
+
+.pft-modal-tab-btn:hover {
+  background-color: rgba(212, 175, 55, 0.1);
+  color: var(--accent-gold);
 }
