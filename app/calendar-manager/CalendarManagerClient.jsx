@@ -20,6 +20,7 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
 
   // Upload states
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
   const [isLaunching, setIsLaunching] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
@@ -204,6 +205,48 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
     } catch (err) {
       setIsUploading(false);
       alert(`Upload Failed: ${err.message}`);
+    }
+  };
+
+  const handleFileUpload = async (e, fieldName) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploadingFile(true);
+    try {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Data = reader.result.split(',')[1];
+        
+        const payload = {
+          action: 'uploadFile',
+          filename: file.name,
+          mimeType: file.type,
+          base64Data: base64Data
+        };
+
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        
+        if (data.success && data.url) {
+          setFormData(prev => ({ ...prev, [fieldName]: data.url }));
+        } else {
+          alert('Failed to upload file: ' + (data.error || 'Unknown error'));
+        }
+        setIsUploadingFile(false);
+      };
+      reader.onerror = () => {
+        alert('Failed to read file locally');
+        setIsUploadingFile(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      alert(`Upload error: ${err.message}`);
+      setIsUploadingFile(false);
     }
   };
 
@@ -557,19 +600,41 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
             <div style={{ display: 'flex', gap: '1rem' }}>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Photos URL (Optional)</label>
-                <input 
-                  type="url" placeholder="https://..."
-                  value={formData.photos} onChange={e => setFormData({...formData, photos: e.target.value})}
-                  style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
-                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <input 
+                    type="url" placeholder="https://..."
+                    value={formData.photos} onChange={e => setFormData({...formData, photos: e.target.value})}
+                    style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
+                  />
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span>Or upload a file:</span>
+                    <input 
+                      type="file" 
+                      onChange={e => handleFileUpload(e, 'photos')} 
+                      disabled={isUploadingFile}
+                      style={{ fontSize: '0.75rem' }}
+                    />
+                  </div>
+                </div>
               </div>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Files/Drive Link (Optional)</label>
-                <input 
-                  type="url" placeholder="https://..."
-                  value={formData.files} onChange={e => setFormData({...formData, files: e.target.value})}
-                  style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
-                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <input 
+                    type="url" placeholder="https://..."
+                    value={formData.files} onChange={e => setFormData({...formData, files: e.target.value})}
+                    style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
+                  />
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span>Or upload a file:</span>
+                    <input 
+                      type="file" 
+                      onChange={e => handleFileUpload(e, 'files')} 
+                      disabled={isUploadingFile}
+                      style={{ fontSize: '0.75rem' }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -611,8 +676,12 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
                 <button type="button" onClick={() => setIsModalOpen(false)} style={{ padding: '0.75rem 1.5rem', backgroundColor: 'transparent', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
                   Cancel
                 </button>
-                <button type="submit" style={{ padding: '0.75rem 2rem', backgroundColor: 'var(--gold-primary)', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3)' }}>
-                  Save
+                <button 
+                  type="submit" 
+                  disabled={isUploadingFile}
+                  style={{ padding: '0.75rem 2rem', backgroundColor: 'var(--gold-primary)', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: isUploadingFile ? 'not-allowed' : 'pointer', boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3)', opacity: isUploadingFile ? 0.7 : 1 }}
+                >
+                  {isUploadingFile ? 'Uploading...' : 'Save'}
                 </button>
               </div>
             </div>
