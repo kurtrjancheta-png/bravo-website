@@ -565,56 +565,47 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
             </div>
             <div style={{ width: '100%', height: 280, marginTop: '0.5rem' }}>
               <ResponsiveContainer>
-                <LineChart data={progressChartData} margin={{ top: 15, right: 30, left: -20, bottom: 5 }}>
+                <BarChart data={progressChartData} margin={{ top: 15, right: 30, left: -20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                   <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 500 }} />
                   <YAxis stroke="var(--text-secondary)" unit="%" domain={yDomain} tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 500 }} />
                   <Tooltip contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'var(--text-primary)' }} />
                   <Legend wrapperStyle={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)', paddingTop: 10 }} />
-                  <Line 
-                    type="monotone" 
+                  <Bar 
                     dataKey="Overall" 
-                    stroke="#d97706" 
-                    strokeWidth={selectedClass === 'all' ? 4 : 2} 
-                    strokeOpacity={isLineActive('Overall') ? 1.0 : 0.25}
-                    activeDot={{ r: 7 }} 
-                    dot={{ r: 4 }} 
+                    fill="#d97706" 
+                    fillOpacity={isBarActive('Overall') ? 1.0 : 0.25} 
+                    radius={[3, 3, 0, 0]} 
                     name="Overall" 
                   />
-                  <Line 
-                    type="monotone" 
+                  <Bar 
                     dataKey="1CL" 
-                    stroke="#3b82f6" 
-                    strokeWidth={selectedClass === '1cl' ? 4 : 2} 
-                    strokeOpacity={isLineActive('1cl') ? 1.0 : 0.25}
-                    dot={{ r: 3 }} 
+                    fill="#3b82f6" 
+                    fillOpacity={isBarActive('1cl') ? 1.0 : 0.25} 
+                    radius={[3, 3, 0, 0]} 
                     name="1CL" 
                   />
-                  <Line 
-                    type="monotone" 
+                  <Bar 
                     dataKey="2CL" 
-                    stroke="#10b981" 
-                    strokeWidth={selectedClass === '2cl' ? 4 : 2} 
-                    strokeOpacity={isLineActive('2cl') ? 1.0 : 0.25}
-                    dot={{ r: 3 }} 
+                    fill="#10b981" 
+                    fillOpacity={isBarActive('2cl') ? 1.0 : 0.25} 
+                    radius={[3, 3, 0, 0]} 
                     name="2CL" 
                   />
-                  <Line 
-                    type="monotone" 
+                  <Bar 
                     dataKey="3CL" 
-                    stroke="#8b5cf6" 
-                    strokeWidth={selectedClass === '3cl' ? 4 : 2} 
-                    strokeOpacity={isLineActive('3cl') ? 1.0 : 0.25}
-                    dot={{ r: 3 }} 
+                    fill="#8b5cf6" 
+                    fillOpacity={isBarActive('3cl') ? 1.0 : 0.25} 
+                    radius={[3, 3, 0, 0]} 
                     name="3CL" 
                   />
-                </LineChart>
+                </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
         )}
 
-        {/* Average Event Grades Bar Chart Card */}
+        {/* Average Event Grades Line Chart Card */}
         <div className="pft-chart-card">
           <div className="chart-header-container">
             <h3 className="pft-chart-title">{getAverageChartTitle()}</h3>
@@ -631,7 +622,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
           </div>
           <div style={{ width: '100%', height: 280, marginTop: '0.5rem' }}>
             <ResponsiveContainer>
-              <BarChart data={averageGradesData} margin={{ top: 15, right: 30, left: -20, bottom: 5 }}>
+              <LineChart data={averageGradesData} margin={{ top: 15, right: 30, left: -20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                 <XAxis dataKey="event" stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 500 }} />
                 <YAxis stroke="var(--text-secondary)" domain={gradeYDomain} tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 500 }} />
@@ -643,35 +634,44 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                 {/* Reference Line for passing threshold 7.0 */}
                 <ReferenceLine y={7.0} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1.5} label={{ value: 'Pass: 7.0', fill: '#ef4444', fontSize: 9, position: 'top', fontWeight: 600 }} />
 
-                <Bar 
+                <Line 
+                  type="monotone" 
                   dataKey="Overall" 
-                  fill="#d97706" 
-                  fillOpacity={isBarActive('Overall') ? 1.0 : 0.25} 
-                  radius={[3, 3, 0, 0]} 
+                  stroke="#d97706" 
+                  strokeWidth={selectedClass === 'all' ? 4 : 2} 
+                  strokeOpacity={isLineActive('Overall') ? 1.0 : 0.25}
+                  activeDot={{ r: 7 }} 
+                  dot={{ r: 4 }} 
                   name="Overall" 
                 />
-                <Bar 
+                <Line 
+                  type="monotone" 
                   dataKey="1CL" 
-                  fill="#3b82f6" 
-                  fillOpacity={isBarActive('1cl') ? 1.0 : 0.25} 
-                  radius={[3, 3, 0, 0]} 
+                  stroke="#3b82f6" 
+                  strokeWidth={selectedClass === '1cl' ? 4 : 2} 
+                  strokeOpacity={isLineActive('1cl') ? 1.0 : 0.25}
+                  dot={{ r: 3 }} 
                   name="1CL" 
                 />
-                <Bar 
+                <Line 
+                  type="monotone" 
                   dataKey="2CL" 
-                  fill="#10b981" 
-                  fillOpacity={isBarActive('2cl') ? 1.0 : 0.25} 
-                  radius={[3, 3, 0, 0]} 
+                  stroke="#10b981" 
+                  strokeWidth={selectedClass === '2cl' ? 4 : 2} 
+                  strokeOpacity={isLineActive('2cl') ? 1.0 : 0.25}
+                  dot={{ r: 3 }} 
                   name="2CL" 
                 />
-                <Bar 
+                <Line 
+                  type="monotone" 
                   dataKey="3CL" 
-                  fill="#8b5cf6" 
-                  fillOpacity={isBarActive('3cl') ? 1.0 : 0.25} 
-                  radius={[3, 3, 0, 0]} 
+                  stroke="#8b5cf6" 
+                  strokeWidth={selectedClass === '3cl' ? 4 : 2} 
+                  strokeOpacity={isLineActive('3cl') ? 1.0 : 0.25}
+                  dot={{ r: 3 }} 
                   name="3CL" 
                 />
-              </BarChart>
+              </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
