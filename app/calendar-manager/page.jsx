@@ -1,13 +1,51 @@
 import CalendarManagerClient from './CalendarManagerClient';
 import { Suspense } from 'react';
+import { getSheetData } from '../../lib/googleSheets';
 
+const SOI_SHEET_ID = '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
 const CALENDAR_API_URL = process.env.NEXT_PUBLIC_CALENDAR_API_URL || 'https://script.google.com/macros/s/AKfycbzajHQKzjp7rN9hVj6pSiPJkOP1An5wCrYKjU3mQCZgbyl5_G_ek21FEUabG87m4qJ9/exec';
 
 export const revalidate = 0; // Dynamic route since it's a manager
 
 export default async function CalendarManagerPage() {
   
-  // Fetch all Activities from the new S3 Calendar API
+  // 1. Fetch SOI data for birthdays
+  let soiData = [];
+  try {
+    soiData = await getSheetData(SOI_SHEET_ID, 'SOI');
+  } catch (error) {
+    console.error('Failed to fetch SOI data for Manager:', error);
+  }
+
+  // Parse birthdays from SOI
+  const birthdays = soiData.map(cadet => {
+    const dobString = String(cadet['BIRTHDATE '] || cadet['BIRTHDATE'] || '');
+    let birthMonth = null;
+    let birthDay = null;
+
+    if (dobString.includes('Date(')) {
+      const match = dobString.match(/Date\((\d+),(\d+),(\d+)\)/);
+      if (match) {
+        birthMonth = parseInt(match[2], 10); 
+        birthDay = parseInt(match[3], 10);
+      }
+    }
+
+    const firstName = String(cadet['FIRST NAME '] || cadet['FIRST NAME'] || '').trim();
+    const lastName = String(cadet['SURNAME '] || cadet['SURNAME'] || '').trim();
+    const className = String(cadet['CLASS '] || cadet['CLASS'] || '').trim();
+    
+    return {
+      type: 'BIRTHDAY',
+      name: `${firstName} ${lastName}`,
+      lastName: lastName || firstName,
+      className: className,
+      birthMonth,
+      birthDay
+    };
+  }).filter(b => b.birthMonth !== null && b.birthDay !== null);
+
+  // 2. Fetch all Activities from the new S3 Calendar API
   let activities = [];
   if (CALENDAR_API_URL && CALENDAR_API_URL !== 'YOUR_SCRIPT_URL_HERE') {
     try {
@@ -57,7 +95,7 @@ export default async function CalendarManagerPage() {
       </div>
 
       <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Loading Manager...</div>}>
-        <CalendarManagerClient initialActivities={activities} apiUrl={CALENDAR_API_URL} />
+        <CalendarManagerClient initialActivities={activities} birthdays={birthdays} apiUrl={CALENDAR_API_URL} />
       </Suspense>
     </div>
   );

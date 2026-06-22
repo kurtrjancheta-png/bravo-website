@@ -720,9 +720,33 @@ tr:last-child td {
 
 .pft-charts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.pft-charts-grid.single-chart {
+  grid-template-columns: 1fr;
+  max-width: 500px;
+  margin: 0 auto 1.5rem auto;
+}
+
+@media (max-width: 1024px) {
+  .pft-charts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .pft-charts-grid > *:nth-child(3):last-child {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .pft-charts-grid {
+    grid-template-columns: 1fr;
+  }
+  .pft-charts-grid > *:nth-child(3):last-child {
+    grid-column: span 1;
+  }
 }
 
 .pft-chart-card {
@@ -753,7 +777,7 @@ tr:last-child td {
 .pft-chart-body {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.25rem;
 }
 
 .pft-pie-svg {
@@ -767,12 +791,14 @@ tr:last-child td {
   flex-direction: column;
   gap: 0.6rem;
   flex: 1;
+  min-width: 0;
 }
 
 .pft-legend-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  min-width: 0;
 }
 
 .pft-legend-dot {
@@ -787,6 +813,9 @@ tr:last-child td {
   font-weight: 600;
   color: var(--text-primary);
   flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pft-legend-value {
@@ -794,6 +823,7 @@ tr:last-child td {
   font-weight: 700;
   color: var(--text-secondary);
   text-align: right;
+  white-space: nowrap;
 }
 
 /* --- PIE CHART HOVER & CLICK EFFECTS --- */

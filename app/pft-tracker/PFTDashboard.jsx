@@ -40,9 +40,9 @@ function PieChart({ data, title, onSegmentClick }) {
 
   if (total === 0) {
     return (
-      <div className="pft-chart-card">
+      <div className="pft-chart-card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         <h3 className="pft-chart-title">{title}</h3>
-        <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-secondary)' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem 1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
           No data available
         </div>
       </div>
@@ -99,9 +99,9 @@ function PieChart({ data, title, onSegmentClick }) {
   });
 
   return (
-    <div className="pft-chart-card">
+    <div className="pft-chart-card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <h3 className="pft-chart-title">{title}</h3>
-      <div className="pft-chart-body">
+      <div className="pft-chart-body" style={{ flex: 1 }}>
         <svg viewBox="0 0 200 200" className="pft-pie-svg">
           {arcs.map((arc) => (
             <path 
@@ -730,7 +730,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
       </div>
 
       {/* Charts Grid */}
-      <div className="pft-charts-grid">
+      <div className={`pft-charts-grid ${selectedPFT !== 'all' ? 'single-chart' : ''}`}>
         {selectedPFT === 'all' ? (
           <>
             <PieChart data={mockData[selectedClass]} title="Mock PFT" onSegmentClick={handleSegmentClick} />
