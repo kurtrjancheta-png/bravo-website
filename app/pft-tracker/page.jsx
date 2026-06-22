@@ -6,8 +6,8 @@ const PFT_SHEET_ID = process.env.PFT_SHEET_ID || '1YfwRNbWer8QDtqSyw7A3jxHAOrWSl
 
 // Tab names in the Google Sheet for each PFT type
 const MOCK_PFT_TAB = process.env.MOCK_PFT_TAB || 'MOCK PFT';
-const PFT1_TAB = process.env.PFT1_TAB || 'PFT 1';
-const PFT2_TAB = process.env.PFT2_TAB || 'PFT 2';
+const PFT1_TAB = process.env.PFT1_TAB || 'PFT1';
+const PFT2_TAB = process.env.PFT2_TAB || 'PFT2';
 
 export const revalidate = 30;
 
