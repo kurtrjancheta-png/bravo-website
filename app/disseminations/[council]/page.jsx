@@ -1,4 +1,4 @@
-import { getSheetData } from '../../../lib/googleSheets';
+import { getSheetData, isExpired } from '../../../lib/googleSheets';
 import { Suspense } from 'react';
 import CouncilAdminForms from '../CouncilAdminForms';
 import ImageGallery from '../ImageGallery';
@@ -54,6 +54,10 @@ async function DisseminationCards({ councilId }) {
 
     if (type === 'TYPE' || urgency.startsWith('URGE') || !content) {
       return acc; // skip invalid rows
+    }
+    
+    if (isExpired(d)) {
+      return acc; // skip expired rows
     }
     // originalIndex is 0-based in the JS array, but in the sheet:
     // row 1 = header, row 2 = first data row → sheetRowIndex = originalIndex + 2

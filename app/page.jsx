@@ -1,4 +1,4 @@
-import { getSheetData } from '../lib/googleSheets';
+import { getSheetData, isExpired } from '../lib/googleSheets';
 import SlideshowClient from './SlideshowClient';
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID || '';
@@ -51,6 +51,11 @@ export default async function Home() {
     
     // Skip if it's the dropdown default placeholder or lacks actual content
     if (type === 'TYPE' || urgency.startsWith('URGE') || !content) {
+      return false;
+    }
+    
+    // Skip if expired
+    if (isExpired(d)) {
       return false;
     }
     return true;

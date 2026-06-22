@@ -1,4 +1,4 @@
-import { getSheetData } from '../../lib/googleSheets';
+import { getSheetData, isExpired } from '../../lib/googleSheets';
 import CalendarClient from './CalendarClient';
 import { Suspense } from 'react';
 
@@ -84,7 +84,7 @@ export default async function EventCalendarPage() {
 
   const activities = allDisseminations.filter(d => {
     const type = String(d['TYPE'] || '').trim().toUpperCase();
-    return type === 'ACTIVITY';
+    return type === 'ACTIVITY' && !isExpired(d);
   }).map(d => {
     let eventDateRaw = String(d['EVENT DATE'] || d['DATE ANNOUNCED'] || '');
     
