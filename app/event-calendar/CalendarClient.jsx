@@ -12,20 +12,29 @@ import {
   isSameMonth,
   isSameDay,
   addDays,
+  addWeeks,
+  subWeeks,
   isToday
 } from 'date-fns';
 import confetti from 'canvas-confetti';
 
 export default function CalendarClient({ birthdays, activities }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [viewMode, setViewMode] = useState('MONTH'); // 'MONTH' or 'WEEK'
   
   // Modal state for viewing a specific day's events
   const [selectedDate, setSelectedDate] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEventDetails, setSelectedEventDetails] = useState(null);
 
-  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
-  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+  const nextPeriod = () => {
+    if (viewMode === 'MONTH') setCurrentMonth(addMonths(currentMonth, 1));
+    else setCurrentMonth(addWeeks(currentMonth, 1));
+  };
+  const prevPeriod = () => {
+    if (viewMode === 'MONTH') setCurrentMonth(subMonths(currentMonth, 1));
+    else setCurrentMonth(subWeeks(currentMonth, 1));
+  };
   const goToToday = () => setCurrentMonth(new Date());
 
   // Collect events for a given day
@@ -77,18 +86,34 @@ export default function CalendarClient({ birthdays, activities }) {
 
   const renderHeader = () => {
     return (
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <h2 style={{ fontSize: '1.75rem', fontWeight: 'bold', color: 'var(--gold-primary)', margin: 0 }}>
-            {format(currentMonth, 'MMMM yyyy')}
+            {viewMode === 'MONTH' ? format(currentMonth, 'MMMM yyyy') : `Week of ${format(startOfWeek(currentMonth), 'MMM d, yyyy')}`}
           </h2>
           <button onClick={goToToday} style={{ padding: '0.4rem 1rem', backgroundColor: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', color: 'var(--text-primary)' }}>
             Today
           </button>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button onClick={prevMonth} style={{ padding: '0.5rem 1rem', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', color: 'var(--text-primary)' }}>&lt;</button>
-          <button onClick={nextMonth} style={{ padding: '0.5rem 1rem', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', color: 'var(--text-primary)' }}>&gt;</button>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <div style={{ display: 'flex', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '2px' }}>
+            <button 
+              onClick={() => setViewMode('MONTH')} 
+              style={{ padding: '0.4rem 1rem', backgroundColor: viewMode === 'MONTH' ? 'var(--gold-primary)' : 'transparent', color: viewMode === 'MONTH' ? '#000' : 'var(--text-primary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s' }}
+            >
+              Month
+            </button>
+            <button 
+              onClick={() => setViewMode('WEEK')} 
+              style={{ padding: '0.4rem 1rem', backgroundColor: viewMode === 'WEEK' ? 'var(--gold-primary)' : 'transparent', color: viewMode === 'WEEK' ? '#000' : 'var(--text-primary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s' }}
+            >
+              Week
+            </button>
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button onClick={prevPeriod} style={{ padding: '0.5rem 1rem', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', color: 'var(--text-primary)' }}>&lt;</button>
+            <button onClick={nextPeriod} style={{ padding: '0.5rem 1rem', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', color: 'var(--text-primary)' }}>&gt;</button>
+          </div>
         </div>
       </div>
     );
@@ -109,10 +134,18 @@ export default function CalendarClient({ birthdays, activities }) {
   };
 
   const renderCells = () => {
-    const monthStart = startOfMonth(currentMonth);
-    const monthEnd = endOfMonth(monthStart);
-    const startDate = startOfWeek(monthStart);
-    const endDate = endOfWeek(monthEnd);
+    let startDate, endDate, monthStart;
+
+    if (viewMode === 'MONTH') {
+      monthStart = startOfMonth(currentMonth);
+      const monthEnd = endOfMonth(monthStart);
+      startDate = startOfWeek(monthStart);
+      endDate = endOfWeek(monthEnd);
+    } else {
+      startDate = startOfWeek(currentMonth);
+      endDate = endOfWeek(currentMonth);
+      monthStart = startDate; // to avoid graying out days in week view
+    }
 
     const rows = [];
     let days = [];
@@ -125,7 +158,7 @@ export default function CalendarClient({ birthdays, activities }) {
         const cloneDay = day;
         
         const { birthdays: dayBDays, activities: dayActs } = getEventsForDay(day);
-        const isCurrentMonth = isSameMonth(day, monthStart);
+        const isCurrentMonth = viewMode === 'WEEK' ? true : isSameMonth(day, monthStart);
         const today = isToday(day);
 
         // Styling for cell
@@ -141,7 +174,7 @@ export default function CalendarClient({ birthdays, activities }) {
             key={day}
             onClick={() => onDateClick(cloneDay)}
             style={{
-              minHeight: '120px',
+              minHeight: viewMode === 'WEEK' ? '600px' : '120px',
               borderRight: '1px solid var(--border-color)',
               borderBottom: '1px solid var(--border-color)',
               padding: '0.25rem',
