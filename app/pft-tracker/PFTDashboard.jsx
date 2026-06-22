@@ -240,26 +240,25 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
 
   // Individual Cadet Modal State
   const [selectedCadet, setSelectedCadet] = useState(null);
-
   const handleCadetClick = (cadetName) => {
     try {
       const getCadetRecord = (pftData) => {
-      if (!pftData) return null;
-      for (const cls of ['1cl', '2cl', '3cl']) {
-        if (!pftData[cls]) continue;
-        const allCadets = [
-          ...(pftData[cls].passed || []),
-          ...(pftData[cls].failed || []),
-          ...(pftData[cls].smc || []),
-          ...(pftData[cls].fad || [])
-        ];
-        const cadet = allCadets.find(c => c.name === cadetName);
-        if (cadet) return cadet;
-      }
-      return null;
-    };
-    
-    try {
+        if (!pftData) return null;
+        for (const cls of ['1cl', '2cl', '3cl']) {
+          if (!pftData[cls]) continue;
+          
+          const allCadets = [
+            ...(pftData[cls].passed || []),
+            ...(pftData[cls].failed || []),
+            ...(pftData[cls].smc || []),
+            ...(pftData[cls].fad || [])
+          ];
+          const cadet = allCadets.find(c => c.name === cadetName);
+          if (cadet) return cadet;
+        }
+        return null;
+      };
+      
       setSelectedCadet({
         name: cadetName,
         mock: getCadetRecord(mockData),
