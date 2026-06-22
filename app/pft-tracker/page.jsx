@@ -26,42 +26,55 @@ function parsePFTData(rows) {
     '3cl': createEmptyData()
   };
 
-  rows.forEach((row, i) => {
-    let cadetClass = null;
-    
-    // 1CL: Rows 2-35 (index 0-33)
-    if (i >= 0 && i <= 33) cadetClass = '1cl';
-    // 2CL: Rows 41-80 (index 39-78)
-    else if (i >= 39 && i <= 78) cadetClass = '2cl';
-    // 3CL: Rows 87-126 (index 85-124)
-    else if (i >= 85 && i <= 124) cadetClass = '3cl';
+  let currentClass = null;
+  let nameKey = null;
+  let remarksKey = null;
 
-    if (!cadetClass) return; // Skip invalid rows
+  // Dynamically find the keys for Name and Remarks
+  for (let r of rows) {
+    for (let k of Object.keys(r)) {
+      const val = typeof r[k] === 'string' ? r[k].trim().toUpperCase() : '';
+      if (val === 'NAME' || val.includes('1CL')) nameKey = k;
+      if (val === 'REMARKS') remarksKey = k;
+    }
+    if (nameKey && remarksKey) break;
+  }
 
-    // Find remarks and name columns
-    const remarksKey = Object.keys(row).find(k => k.toLowerCase().includes('remarks'));
-    const nameKey = Object.keys(row).find(k => k.toLowerCase().includes('name') || k.includes('1CL'));
-    
-    if (!remarksKey) return;
+  // Fallback if not found
+  if (!remarksKey) {
+    const allKeys = rows.length > 0 ? Object.keys(rows[0]) : [];
+    if (allKeys.length >= 11) {
+      nameKey = allKeys[0];
+      remarksKey = allKeys[10];
+    }
+  }
+
+  rows.forEach((row) => {
+    // Check if this row is a class header
+    let rowValues = Object.values(row).map(v => typeof v === 'string' ? v.trim().toUpperCase() : '');
+    if (rowValues.includes('1CL')) { currentClass = '1cl'; return; }
+    if (rowValues.includes('2CL')) { currentClass = '2cl'; return; }
+    if (rowValues.includes('3CL')) { currentClass = '3cl'; return; }
+
+    if (!currentClass || !remarksKey || !nameKey) return;
 
     const val = (typeof row[remarksKey] === 'string' ? row[remarksKey] : '').trim().toUpperCase();
     if (!val || val === 'REMARKS') return;
 
     const name = nameKey ? (typeof row[nameKey] === 'string' ? row[nameKey] : '').trim() : 'Unknown Cadet';
-
     const cadet = { name };
 
     if (val.includes('PASSED') || val === 'P') {
-      data[cadetClass].passed.push(cadet);
+      data[currentClass].passed.push(cadet);
       data['all'].passed.push(cadet);
     } else if (val.includes('FAILED') || val === 'F') {
-      data[cadetClass].failed.push(cadet);
+      data[currentClass].failed.push(cadet);
       data['all'].failed.push(cadet);
     } else if (val.includes('SMC')) {
-      data[cadetClass].smc.push(cadet);
+      data[currentClass].smc.push(cadet);
       data['all'].smc.push(cadet);
     } else if (val.includes('FAD') || val.includes('GUARD') || val.includes('SIQ')) {
-      data[cadetClass].fad.push(cadet);
+      data[currentClass].fad.push(cadet);
       data['all'].fad.push(cadet);
     }
   });
