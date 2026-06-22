@@ -1,6 +1,16 @@
 'use client';
 
 import { useState } from 'react';
+import { 
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer 
+} from 'recharts';
 
 const COLORS = {
   passed:  '#1a7a3a',
@@ -126,12 +136,100 @@ function PieChart({ data, title, onSegmentClick }) {
   );
 }
 
+// Calculate detailed insights from PFT data
+function getPFTInsights(pftData, classKey) {
+  if (!pftData || !pftData[classKey]) {
+    return { totalActive: 0 };
+  }
+  
+  const cData = pftData[classKey];
+  const passedList = cData.passed || [];
+  const failedList = cData.failed || [];
+  const smcList = cData.smc || [];
+  
+  const activeCadets = [...passedList, ...failedList, ...smcList];
+  const totalActive = activeCadets.length;
+  
+  if (totalActive === 0) {
+    return { totalActive: 0 };
+  }
+  
+  const overallPassRate = (passedList.length / totalActive) * 100;
+  
+  // Gender breakdowns
+  const males = activeCadets.filter(c => c.gender === 'M');
+  const females = activeCadets.filter(c => c.gender === 'F');
+  
+  const malePassed = males.filter(c => c.remarks.includes('PASSED') || c.remarks === 'P');
+  const femalePassed = females.filter(c => c.remarks.includes('PASSED') || c.remarks === 'P');
+  
+  const malePassRate = males.length > 0 ? (malePassed.length / males.length) * 100 : null;
+  const femalePassRate = females.length > 0 ? (femalePassed.length / females.length) * 100 : null;
+  
+  // Event breakdowns (pass means score >= 7.0)
+  const pushupsPassed = activeCadets.filter(c => c.scores && c.scores.pushups >= 7.0);
+  const situpsPassed = activeCadets.filter(c => c.scores && c.scores.situps >= 7.0);
+  const pullupsPassed = activeCadets.filter(c => c.scores && c.scores.pullups >= 7.0);
+  const runPassed = activeCadets.filter(c => c.scores && c.scores.run >= 7.0);
+  
+  const pushupsPassRate = (pushupsPassed.length / totalActive) * 100;
+  const situpsPassRate = (situpsPassed.length / totalActive) * 100;
+  const pullupsPassRate = (pullupsPassed.length / totalActive) * 100;
+  const runPassRate = (runPassed.length / totalActive) * 100;
+  
+  // Class breakdown (only relevant if classKey === 'all')
+  const classBreakdown = {};
+  ['1cl', '2cl', '3cl'].forEach(ck => {
+    const clsActive = [...(pftData[ck]?.passed || []), ...(pftData[ck]?.failed || []), ...(pftData[ck]?.smc || [])];
+    const clsPassed = pftData[ck]?.passed || [];
+    classBreakdown[ck] = {
+      total: clsActive.length,
+      passRate: clsActive.length > 0 ? (clsPassed.length / clsActive.length) * 100 : null
+    };
+  });
+  
+  // Actionable plans selection based on the lowest pass rate event
+  const events = [
+    { name: 'Push-ups', rate: pushupsPassRate, key: 'pushups' },
+    { name: 'Sit-ups', rate: situpsPassRate, key: 'situps' },
+    { name: 'Pull-ups', rate: pullupsPassRate, key: 'pullups' },
+    { name: '3.2KM Run', rate: runPassRate, key: 'run' }
+  ];
+  
+  // Sort events by pass rate to find the lowest
+  const sortedEvents = [...events].sort((a, b) => a.rate - b.rate);
+  const weakestEvent = sortedEvents[0];
+  
+  return {
+    totalActive,
+    passedCount: passedList.length,
+    failedCount: failedList.length,
+    smcCount: smcList.length,
+    overallPassRate,
+    malesCount: males.length,
+    femalesCount: females.length,
+    malePassRate,
+    femalePassRate,
+    pushupsPassRate,
+    situpsPassRate,
+    pullupsPassRate,
+    runPassRate,
+    classBreakdown,
+    weakestEvent
+  };
+}
+
 export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
   const [selectedPFT, setSelectedPFT] = useState('all');
   const [selectedClass, setSelectedClass] = useState('all');
+  const [activeList, setActiveList] = useState(null);
   
-  // State for drill-down list
-  const [activeList, setActiveList] = useState(null); // { statusKey, cadets, pftTitle }
+  // Insight Modal State
+  const [showInsightModal, setShowInsightModal] = useState(false);
+  const [insightPftTab, setInsightPftTab] = useState(
+    pft2Data && [...pft2Data.all.passed, ...pft2Data.all.failed, ...pft2Data.all.smc].length > 0 ? 'pft2' :
+    pft1Data && [...pft1Data.all.passed, ...pft1Data.all.failed, ...pft1Data.all.smc].length > 0 ? 'pft1' : 'mock'
+  );
 
   const pftTypes = {
     mock: { label: 'Mock PFT', data: mockData },
@@ -141,21 +239,123 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
 
   const handleSegmentClick = (statusKey, cadets, pftTitle) => {
     setActiveList({ statusKey, cadets, pftTitle });
-    // Scroll smoothly to the list container if it exists
     setTimeout(() => {
       document.getElementById('cadet-list-view')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
   };
 
-  // Helper to calculate total from categorized array data
   const getTotal = (dataObj) => {
     return dataObj.passed.length + dataObj.failed.length + dataObj.smc.length + dataObj.fad.length;
   };
 
+  // Helper to calculate passing rate for a specific class or all
+  const getPassRateForPFT = (pftData, classKey) => {
+    if (!pftData) return null;
+    const cData = pftData[classKey];
+    if (!cData) return null;
+    const passed = cData.passed.length;
+    const failed = cData.failed.length;
+    const smc = cData.smc.length;
+    const total = passed + failed + smc;
+    return total > 0 ? parseFloat(((passed / total) * 100).toFixed(1)) : null;
+  };
+
+  // Construct chart data for the Line Chart progress tracking
+  const progressChartData = [
+    {
+      name: 'Mock PFT',
+      'Overall': getPassRateForPFT(mockData, 'all'),
+      '1CL': getPassRateForPFT(mockData, '1cl'),
+      '2CL': getPassRateForPFT(mockData, '2cl'),
+      '3CL': getPassRateForPFT(mockData, '3cl'),
+    },
+    {
+      name: 'PFT 1',
+      'Overall': getPassRateForPFT(pft1Data, 'all'),
+      '1CL': getPassRateForPFT(pft1Data, '1cl'),
+      '2CL': getPassRateForPFT(pft1Data, '2cl'),
+      '3CL': getPassRateForPFT(pft1Data, '3cl'),
+    },
+    {
+      name: 'PFT 2',
+      'Overall': getPassRateForPFT(pft2Data, 'all'),
+      '1CL': getPassRateForPFT(pft2Data, '1cl'),
+      '2CL': getPassRateForPFT(pft2Data, '2cl'),
+      '3CL': getPassRateForPFT(pft2Data, '3cl'),
+    }
+  ].filter(item => item.Overall !== null);
+
+  // Line styling highlighting based on selectedClass dropdown filter
+  const isLineActive = (classKey) => {
+    if (selectedClass === 'all') return true;
+    return selectedClass.toUpperCase() === classKey.toUpperCase() || classKey === 'Overall';
+  };
+
+  // Get active insights for the modal
+  const activeInsights = getPFTInsights(pftTypes[insightPftTab].data, selectedClass);
+
+  // Recommendations text based on weakest event
+  const getRemediationRecommendation = (eventKey) => {
+    switch (eventKey) {
+      case 'pushups':
+        return {
+          title: "Push-ups Improvement Strategy",
+          text: "The lowest scoring category is Push-ups. Upper body endurance is critical for overall scores.",
+          tips: [
+            "Conduct structured 4-week push-up pyramid progressions during morning PT.",
+            "Establish strict form correction workshops to minimize locked-out forearm fatigue.",
+            "Implement eccentric push-ups (slow 3-second descents) to target dynamic stability."
+          ]
+        };
+      case 'situps':
+        return {
+          title: "Sit-ups Improvement Strategy",
+          text: "The lowest scoring category is Sit-ups. Core endurance is the weakest link in cadet scores.",
+          tips: [
+            "Incorporate front-plank and side-plank series into regular fitness routines.",
+            "Perform progressive abdominal flutter kicks and leg raises twice weekly.",
+            "Train cadets in pairs to ensure heels remain anchored without lower-back strain."
+          ]
+        };
+      case 'pullups':
+        return {
+          title: "Pull-ups / Flexed-Arm Hang Strategy",
+          text: "The lowest scoring category is Pull-ups. Grip strength and lats recruitment need attention.",
+          tips: [
+            "Introduce daily dead hangs (30 to 60 seconds) to build forearm and grip endurance.",
+            "Integrate pull-up negatives (jumping to the top, then lowering over 5 seconds).",
+            "Provide assisted resistance bands at gym bars to aid cadets struggling with full pull-ups."
+          ]
+        };
+      case 'run':
+        return {
+          title: "3.2 KM Run Pacing & Cardio Strategy",
+          text: "The lowest scoring category is the 3.2 KM Run. Cardiovascular capacity is the primary constraint.",
+          tips: [
+            "Perform aerobic interval runs (400m and 800m repeats) at target passing speeds.",
+            "Conduct a weekly 5 KM slow recovery run to increase baseline aerobic endurance.",
+            "Instruct cadets on pacing strategies, focusing on split times rather than sprinting early."
+          ]
+        };
+      default:
+        return {
+          title: "General Performance Strategy",
+          text: "Focus on maintaining baseline physical conditioning across all test categories.",
+          tips: [
+            "Schedule balanced physical training sessions covering both strength and cardio.",
+            "Monitor hydration levels, sleep schedules, and warm-up habits prior to test events.",
+            "Perform regular mock testing to build confidence and track personal fitness scores."
+          ]
+        };
+    }
+  };
+
+  const remediation = activeInsights.weakestEvent ? getRemediationRecommendation(activeInsights.weakestEvent.key) : getRemediationRecommendation('general');
+
   return (
     <div>
-      {/* Dropdown Selectors */}
-      <div className="pft-controls">
+      {/* Controls: Dropdowns + Generate Insights Button */}
+      <div className="pft-controls" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <label htmlFor="pft-select" className="pft-select-label">PFT Type:</label>
           <select
@@ -171,7 +371,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
           </select>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: 'auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <label htmlFor="class-select" className="pft-select-label">Class:</label>
           <select
             id="class-select"
@@ -185,7 +385,90 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
             <option value="3cl">3rd Class (3CL)</option>
           </select>
         </div>
+
+        <button 
+          onClick={() => setShowInsightModal(true)}
+          className="pft-insight-btn"
+          style={{
+            marginLeft: 'auto',
+            padding: '0.5rem 1.25rem',
+            background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            boxShadow: '0 2px 5px rgba(217, 119, 6, 0.3)',
+            transition: 'all 0.2s'
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          Generate Insights
+        </button>
       </div>
+
+      {/* Progress Line Chart Card */}
+      {progressChartData.length > 0 && (
+        <div className="pft-chart-card" style={{ marginBottom: '2rem' }}>
+          <h3 className="pft-chart-title">PFT Progress Tracking</h3>
+          <div style={{ width: '100%', height: 320, marginTop: '1rem' }}>
+            <ResponsiveContainer>
+              <LineChart data={progressChartData} margin={{ top: 15, right: 30, left: -10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+                <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }} />
+                <YAxis stroke="var(--text-secondary)" unit="%" domain={[0, 100]} tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }} />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'var(--text-primary)' }} />
+                <Legend wrapperStyle={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', paddingTop: 10 }} />
+                <Line 
+                  type="monotone" 
+                  dataKey="Overall" 
+                  stroke="#d97706" 
+                  strokeWidth={selectedClass === 'all' ? 4 : 2} 
+                  strokeOpacity={isLineActive('Overall') ? 1.0 : 0.25}
+                  activeDot={{ r: 8 }} 
+                  dot={{ r: 5 }} 
+                  name="Overall Company" 
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="1CL" 
+                  stroke="#3b82f6" 
+                  strokeWidth={selectedClass === '1cl' ? 4 : 2} 
+                  strokeOpacity={isLineActive('1cl') ? 1.0 : 0.25}
+                  dot={{ r: 4 }} 
+                  name="1CL" 
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="2CL" 
+                  stroke="#10b981" 
+                  strokeWidth={selectedClass === '2cl' ? 4 : 2} 
+                  strokeOpacity={isLineActive('2cl') ? 1.0 : 0.25}
+                  dot={{ r: 4 }} 
+                  name="2CL" 
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="3CL" 
+                  stroke="#8b5cf6" 
+                  strokeWidth={selectedClass === '3cl' ? 4 : 2} 
+                  strokeOpacity={isLineActive('3cl') ? 1.0 : 0.25}
+                  dot={{ r: 4 }} 
+                  name="3CL" 
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
 
       {/* Charts Grid */}
       <div className="pft-charts-grid">
@@ -260,6 +543,169 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
           <button className="cadet-list-close" onClick={() => setActiveList(null)}>
             Close List
           </button>
+        </div>
+      )}
+
+      {/* Generate Insights Modal */}
+      {showInsightModal && (
+        <div className="pft-modal-overlay" onClick={() => setShowInsightModal(false)}>
+          <div className="pft-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="pft-modal-header">
+              <h2 className="pft-modal-title">PFT Cohort Insights ({selectedClass === 'all' ? 'All Classes' : selectedClass.toUpperCase()})</h2>
+              <button className="pft-modal-close-icon" onClick={() => setShowInsightModal(false)}>
+                &times;
+              </button>
+            </div>
+            
+            <div className="pft-modal-body">
+              {/* PFT Tab Selector in Modal */}
+              <div className="pft-modal-tabs">
+                <button 
+                  className={`pft-modal-tab-btn ${insightPftTab === 'mock' ? 'active' : ''}`}
+                  onClick={() => setInsightPftTab('mock')}
+                >
+                  Mock PFT
+                </button>
+                <button 
+                  className={`pft-modal-tab-btn ${insightPftTab === 'pft1' ? 'active' : ''}`}
+                  onClick={() => setInsightPftTab('pft1')}
+                >
+                  PFT 1
+                </button>
+                <button 
+                  className={`pft-modal-tab-btn ${insightPftTab === 'pft2' ? 'active' : ''}`}
+                  onClick={() => setInsightPftTab('pft2')}
+                >
+                  PFT 2
+                </button>
+              </div>
+
+              {activeInsights.totalActive === 0 ? (
+                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+                  No active participant data available for this PFT type or Class.
+                </div>
+              ) : (
+                <div>
+                  {/* Summary Stats Grid */}
+                  <div className="pft-insight-grid">
+                    <div className="pft-insight-card">
+                      <span className="pft-insight-label">Overall Pass Rate</span>
+                      <span className="pft-insight-val" style={{ color: '#1a7a3a' }}>
+                        {activeInsights.overallPassRate.toFixed(1)}%
+                      </span>
+                      <span className="pft-insight-desc">
+                        {activeInsights.passedCount} out of {activeInsights.totalActive} active cadets passed
+                      </span>
+                    </div>
+
+                    <div className="pft-insight-card">
+                      <span className="pft-insight-label">Gender Passing Rates</span>
+                      <span className="pft-insight-val" style={{ fontSize: '1.5rem', marginTop: '0.25rem' }}>
+                        M: {activeInsights.malePassRate !== null ? `${activeInsights.malePassRate.toFixed(1)}%` : 'N/A'}
+                      </span>
+                      <span className="pft-insight-val" style={{ fontSize: '1.5rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.4rem', marginTop: '0.4rem' }}>
+                        F: {activeInsights.femalePassRate !== null ? `${activeInsights.femalePassRate.toFixed(1)}%` : 'N/A'}
+                      </span>
+                      <span className="pft-insight-desc" style={{ marginTop: '0.5rem' }}>
+                        Pool: {activeInsights.malesCount} males, {activeInsights.femalesCount} females
+                      </span>
+                    </div>
+
+                    <div className="pft-insight-card">
+                      <span className="pft-insight-label">Active Cohort Split</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '0.2rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                          <span style={{ fontWeight: 600 }}>PASSED:</span>
+                          <span style={{ fontWeight: 700, color: '#1a7a3a' }}>{activeInsights.passedCount}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                          <span style={{ fontWeight: 600 }}>FAILED:</span>
+                          <span style={{ fontWeight: 700, color: '#c0392b' }}>{activeInsights.failedCount}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                          <span style={{ fontWeight: 600 }}>SMC:</span>
+                          <span style={{ fontWeight: 700, color: '#374151' }}>{activeInsights.smcCount}</span>
+                        </div>
+                      </div>
+                      <span className="pft-insight-desc" style={{ marginTop: 'auto' }}>
+                        Excludes FAD/excused cadets
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Class breakdown detail (only if showing all classes) */}
+                  {selectedClass === 'all' && (
+                    <div style={{ marginBottom: '2rem' }}>
+                      <h4 style={{ fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-secondary)', marginBottom: '0.75rem', fontWeight: 700 }}>
+                        Class Level Passing Rates
+                      </h4>
+                      <div className="pft-insight-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                        {['1cl', '2cl', '3cl'].map(ck => {
+                          const data = activeInsights.classBreakdown[ck];
+                          return (
+                            <div key={ck} className="pft-insight-card" style={{ padding: '1rem', alignItems: 'center' }}>
+                              <span className="pft-insight-label">{ck.toUpperCase()}</span>
+                              <span className="pft-insight-val" style={{ fontSize: '1.6rem', color: data.passRate !== null && data.passRate >= 70 ? '#1a7a3a' : '#c0392b' }}>
+                                {data.passRate !== null ? `${data.passRate.toFixed(1)}%` : 'N/A'}
+                              </span>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                                {data.total} active cadets
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Event passing rates */}
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <h4 style={{ fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-secondary)', marginBottom: '0.75rem', fontWeight: 700 }}>
+                      Event-by-Event Pass Rates (Score &ge; 7.0)
+                    </h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem' }}>
+                      {[
+                        { label: 'Pushups', val: activeInsights.pushupsPassRate },
+                        { label: 'Situps', val: activeInsights.situpsPassRate },
+                        { label: 'Pullups', val: activeInsights.pullupsPassRate },
+                        { label: '3.2KM Run', val: activeInsights.runPassRate },
+                      ].map(ev => (
+                        <div key={ev.label} className="pft-insight-card" style={{ padding: '1rem', textAlign: 'center' }}>
+                          <span className="pft-insight-label" style={{ fontSize: '0.7rem' }}>{ev.label}</span>
+                          <span className="pft-insight-val" style={{ fontSize: '1.5rem', color: ev.val >= 70 ? '#1a7a3a' : '#c0392b', margin: '0.2rem 0' }}>
+                            {ev.val.toFixed(1)}%
+                          </span>
+                          <div style={{ height: '4px', width: '100%', background: 'var(--border-color)', borderRadius: '2px', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${ev.val}%`, background: ev.val >= 70 ? '#1a7a3a' : '#c0392b' }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Actionable remediation plan */}
+                  <div className="pft-remediation-box">
+                    <div className="pft-remediation-title">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                      </svg>
+                      {remediation.title}
+                    </div>
+                    <p className="pft-remediation-text">
+                      {remediation.text}
+                    </p>
+                    <ul className="pft-remediation-list">
+                      {remediation.tips.map((tip, i) => (
+                        <li key={i}>{tip}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
