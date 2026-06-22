@@ -38,6 +38,11 @@ export default function CalendarManagerClient({ initialActivities, apiUrl }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null); // null means new event
 
+  // Upload states
+  const [isUploading, setIsUploading] = useState(false);
+  const [isLaunching, setIsLaunching] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+
   const [formData, setFormData] = useState({
     title: '',
     date: '',
@@ -190,6 +195,120 @@ export default function CalendarManagerClient({ initialActivities, apiUrl }) {
     }
   };
 
+  const parseCSV = (text) => {
+    const rows = [];
+    let currentRow = [];
+    let currentCell = '';
+    let inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      const nextChar = text[i+1];
+      if (inQuotes) {
+        if (char === '"') {
+          if (nextChar === '"') { currentCell += '"'; i++; }
+          else { inQuotes = false; }
+        } else {
+          currentCell += char;
+        }
+      } else {
+        if (char === '"') { inQuotes = true; }
+        else if (char === ',') { currentRow.push(currentCell.trim()); currentCell = ''; }
+        else if (char === '\n' || char === '\r') {
+          currentRow.push(currentCell.trim());
+          if (currentRow.some(c => c !== '')) rows.push(currentRow);
+          currentRow = []; currentCell = '';
+          if (char === '\r' && nextChar === '\n') i++;
+        } else {
+          currentCell += char;
+        }
+      }
+    }
+    if (currentCell || currentRow.length > 0) {
+      currentRow.push(currentCell.trim());
+      if (currentRow.some(c => c !== '')) rows.push(currentRow);
+    }
+    return rows;
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setIsUploading(true);
+    setIsLaunching(false);
+    
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target.result;
+        const rows = parseCSV(text);
+        if (rows.length < 2) throw new Error("CSV must contain a header and at least one data row.");
+        
+        const headers = rows[0].map(h => h.toLowerCase().trim());
+        const expectedHeaders = ['title', 'date', 'enddate', 'council', 'description', 'color', 'urgency'];
+        const headerMap = {};
+        expectedHeaders.forEach(eh => {
+          const idx = headers.findIndex(h => h === eh || h === eh.replace('date', ' date'));
+          if (idx !== -1) headerMap[eh] = idx;
+        });
+
+        if (headerMap['title'] === undefined || headerMap['date'] === undefined) {
+          throw new Error("CSV must have 'Title' and 'Date' columns.");
+        }
+
+        const eventsToUpload = [];
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          let d = row[headerMap['date']] || '';
+          let ed = headerMap['enddate'] !== undefined ? row[headerMap['enddate']] : '';
+          
+          try { if (d) d = new Date(d).toISOString(); } catch(e){}
+          try { if (ed) ed = new Date(ed).toISOString(); } catch(e){}
+
+          eventsToUpload.push({
+            title: row[headerMap['title']] || '',
+            date: d,
+            endDate: ed,
+            council: headerMap['council'] !== undefined ? row[headerMap['council']] : '',
+            description: headerMap['description'] !== undefined ? row[headerMap['description']] : '',
+            color: headerMap['color'] !== undefined ? row[headerMap['color']] : '#3b82f6',
+            urgency: headerMap['urgency'] !== undefined ? row[headerMap['urgency']] : 'LIGHT'
+          });
+        }
+
+        if (eventsToUpload.length > 0) {
+          const res = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'massUpload', events: eventsToUpload })
+          });
+          const data = await res.json();
+          if (!data.success) throw new Error(data.error || "Unknown upload error.");
+          
+          // Successful, trigger launch
+          setIsLaunching(true);
+          setTimeout(() => {
+            setIsLaunching(false);
+            setIsUploading(false);
+            setShowSuccessToast(true);
+            setTimeout(() => {
+              setShowSuccessToast(false);
+              window.location.reload(); // Reload to fetch fresh data
+            }, 3000);
+          }, 800);
+        } else {
+          setIsUploading(false);
+          alert("No valid events found to upload.");
+        }
+      } catch (err) {
+        setIsUploading(false);
+        alert(`Upload Failed: ${err.message}`);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = null; // reset input
+  };
+
   const renderHeader = () => {
     return (
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
@@ -200,6 +319,10 @@ export default function CalendarManagerClient({ initialActivities, apiUrl }) {
           <button onClick={goToToday} style={{ padding: '0.4rem 1rem', backgroundColor: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', color: 'var(--text-primary)' }}>
             Today
           </button>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 1rem', backgroundColor: 'rgba(212,175,55,0.1)', border: '1px solid var(--gold-primary)', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', color: 'var(--gold-primary)', transition: 'background-color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(212,175,55,0.2)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(212,175,55,0.1)'}>
+            <span>📤</span> Mass CSV Upload
+            <input type="file" accept=".csv" onChange={handleFileUpload} style={{ display: 'none' }} />
+          </label>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button onClick={prevMonth} style={{ padding: '0.5rem 1rem', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', color: 'var(--text-primary)' }}>&lt;</button>
@@ -472,6 +595,72 @@ export default function CalendarManagerClient({ initialActivities, apiUrl }) {
 
   return (
     <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', backgroundColor: 'var(--bg-secondary)', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-color)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
+      {showSuccessToast && (
+        <div style={{
+          position: 'fixed', top: '40px', left: '50%', transform: 'translateX(-50%)',
+          background: '#10b981', color: '#fff', padding: '12px 24px', borderRadius: '100px',
+          fontWeight: 800, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '10px',
+          boxShadow: '0 10px 25px rgba(16, 185, 129, 0.4)', zIndex: 10000,
+          animation: 'slide-down 0.3s ease-out forwards'
+        }}>
+          <span>✅</span> CALENDAR UPDATED SUCCESSFULLY
+        </div>
+      )}
+
+      {isUploading && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)',
+          zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          color: '#fff'
+        }}>
+          <style dangerouslySetInnerHTML={{__html: `
+        @keyframes slide-down {
+          from { transform: translate(-50%, -20px); opacity: 0; }
+          to { transform: translate(-50%, 0); opacity: 1; }
+        }
+        @keyframes rocketShake {
+              0% { transform: translate(0, 0) rotate(0deg); }
+              25% { transform: translate(-2px, 2px) rotate(-2deg); }
+              50% { transform: translate(2px, -2px) rotate(2deg); }
+              75% { transform: translate(-2px, -2px) rotate(-1deg); }
+              100% { transform: translate(0, 0) rotate(0deg); }
+            }
+            @keyframes smokeParticles {
+              0% { transform: translateY(0) scale(1); opacity: 0.8; }
+              100% { transform: translateY(100px) scale(3); opacity: 0; }
+            }
+            @keyframes rocketBlastOff {
+              0% { transform: translateY(0) scale(1); }
+              15% { transform: translateY(20px) scale(0.9); }
+              100% { transform: translateY(-1500px) scale(0.5); opacity: 0; }
+            }
+          `}} />
+          <div style={{ position: 'relative', marginBottom: '3rem', display: 'flex', justifyContent: 'center' }}>
+            <div style={{
+              fontSize: '8rem',
+              animation: isLaunching ? 'rocketBlastOff 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards' : 'rocketShake 0.1s infinite',
+              filter: isLaunching ? 'drop-shadow(0 50px 40px rgba(239, 68, 68, 0.9))' : 'drop-shadow(0 30px 25px rgba(239, 68, 68, 0.6))',
+              position: 'relative',
+              zIndex: 2,
+              display: 'inline-block'
+            }}>
+              <div style={{ transform: 'rotate(-45deg)' }}>🚀</div>
+            </div>
+            {!isLaunching && (
+              <>
+                <div style={{ position: 'absolute', bottom: '-20px', left: '50%', transform: 'translateX(-50%)', width: '20px', height: '20px', background: '#cbd5e1', borderRadius: '50%', animation: 'smokeParticles 0.8s infinite ease-out', zIndex: 1 }}></div>
+                <div style={{ position: 'absolute', bottom: '-10px', left: '30%', transform: 'translateX(-50%)', width: '15px', height: '15px', background: '#94a3b8', borderRadius: '50%', animation: 'smokeParticles 0.9s infinite ease-out 0.2s', zIndex: 1 }}></div>
+                <div style={{ position: 'absolute', bottom: '-15px', left: '70%', transform: 'translateX(-50%)', width: '25px', height: '25px', background: '#e2e8f0', borderRadius: '50%', animation: 'smokeParticles 1s infinite ease-out 0.4s', zIndex: 1 }}></div>
+              </>
+            )}
+          </div>
+          <h2 style={{ margin: 0, fontWeight: 900, letterSpacing: '0.15em', fontSize: '2rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>UPLOADING...</h2>
+          <p style={{ color: '#94a3b8', fontStyle: 'italic', marginTop: '1rem', marginBottom: '0.2rem', fontSize: '1.1rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>Parsing calendar activities.</p>
+          <p style={{ color: '#64748b', fontStyle: 'italic', margin: 0, fontSize: '0.9rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>Please stand by while I establish a secure uplink...</p>
+        </div>
+      )}
+
       {renderHeader()}
       {renderDays()}
       {renderCells()}
