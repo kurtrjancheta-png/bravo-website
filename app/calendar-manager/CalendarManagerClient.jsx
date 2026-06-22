@@ -160,9 +160,21 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
     setIsUploading(true);
     setIsLaunching(false);
 
+    let activeChanges = [...pendingChanges];
+    let localToRealIdMap = {};
+
     try {
-      // Process sequentially to handle local IDs properly (though parallel is possible)
-      for (const change of pendingChanges) {
+      while (activeChanges.length > 0) {
+        const change = { ...activeChanges[0] };
+
+        // 1. Map local IDs to server IDs for pending updates and deletions
+        if (change.event && change.event.id && localToRealIdMap[change.event.id]) {
+          change.event = { ...change.event, id: localToRealIdMap[change.event.id] };
+        }
+        if (change.eventId && localToRealIdMap[change.eventId]) {
+          change.eventId = localToRealIdMap[change.eventId];
+        }
+
         let payload = {};
         if (change.type === 'CREATE') {
           // Remove local ID so backend generates one
@@ -171,8 +183,12 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
         } else if (change.type === 'UPDATE') {
           payload = { action: 'updateEvent', event: change.event };
         } else if (change.type === 'DELETE') {
-          // If it was created and deleted before sync, ignore it (local IDs won't exist on backend)
-          if (String(change.eventId).startsWith('local-')) continue; 
+          // If it was created and deleted in the same unsaved batch before sync, skip it
+          if (String(change.eventId).startsWith('local-')) {
+            activeChanges.shift();
+            setPendingChanges([...activeChanges]);
+            continue;
+          }
           payload = { action: 'deleteEvent', id: change.eventId };
         }
 
@@ -181,23 +197,36 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload)
         });
+        
+        if (!res.ok) {
+          throw new Error(`HTTP Error ${res.status}`);
+        }
+        
         const data = await res.json();
         if (!data.success) {
           console.error("Failed change:", change, data.error);
           throw new Error(data.error || "Error syncing change");
         }
+
+        // If this was a CREATE change, record the server-generated ID mapping
+        if (change.type === 'CREATE' && data.id) {
+          localToRealIdMap[change.event.id] = data.id;
+        }
+
+        // Successfully processed this change, remove it from the active queue and update state
+        activeChanges.shift();
+        setPendingChanges([...activeChanges]);
       }
 
-      // Successful, trigger launch
+      // Successful, trigger launch animation
       setIsLaunching(true);
       setTimeout(() => {
         setIsLaunching(false);
         setIsUploading(false);
         setShowSuccessToast(true);
-        setPendingChanges([]);
         setTimeout(() => {
           setShowSuccessToast(false);
-          // Optional: Re-fetch or reload to get real IDs for created events
+          // Reload to fetch the synced database state
           window.location.reload();
         }, 3000);
       }, 800);
@@ -761,7 +790,7 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
       )}
 
       {/* Floating Action Button for Upload */}
-      {pendingChanges.length > 0 && !isUploading && (
+      {pendingChanges.length > 0 && !isUploading && !isModalOpen && (
         <div style={{
           position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)',
           backgroundColor: '#1f2937', color: '#fff', padding: '1rem 2rem', borderRadius: '999px',

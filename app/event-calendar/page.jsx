@@ -60,7 +60,9 @@ export default async function EventCalendarPage() {
       if (res.ok) {
         const data = await res.json();
         // The API returns [{ ID, Title, Date, EndDate, Council, Description, Color, Urgency }]
-        activities = data.map(d => {
+        activities = data
+          .filter(d => d.ID && d.ID !== 'ID')
+          .map(d => {
           let eventDateRaw = d.Date || '';
           
           return {

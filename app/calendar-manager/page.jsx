@@ -52,16 +52,18 @@ export default async function CalendarManagerPage() {
       const res = await fetch(CALENDAR_API_URL, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
-        activities = data.map(d => ({
-          id: d.ID,
-          title: d.Title,
-          council: d.Council,
-          description: d.Description,
-          urgency: d.Urgency || 'LIGHT',
-          color: d.Color || '#3b82f6',
-          date: d.Date || '',
-          endDate: d.EndDate || ''
-        }));
+        activities = data
+          .filter(d => d.ID && d.ID !== 'ID')
+          .map(d => ({
+            id: d.ID,
+            title: d.Title,
+            council: d.Council,
+            description: d.Description,
+            urgency: d.Urgency || 'LIGHT',
+            color: d.Color || '#3b82f6',
+            date: d.Date || '',
+            endDate: d.EndDate || ''
+          }));
       }
     } catch (e) {
       console.error('Failed to fetch calendar API for Manager:', e);
