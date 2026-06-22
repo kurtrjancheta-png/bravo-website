@@ -285,6 +285,33 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
     }
   ].filter(item => item.Overall !== null);
 
+  // Calculate dynamic Y-axis domain based on the min/max values in data to highlight small variations
+  const getYDomain = () => {
+    if (progressChartData.length === 0) return [0, 100];
+    
+    let minVal = 100;
+    let maxVal = 0;
+    
+    progressChartData.forEach(item => {
+      ['Overall', '1CL', '2CL', '3CL'].forEach(key => {
+        const val = item[key];
+        if (val !== null && val !== undefined) {
+          if (val < minVal) minVal = val;
+          if (val > maxVal) maxVal = val;
+        }
+      });
+    });
+    
+    // Add margin (e.g., 5% padding) and round to nearest 10
+    const roundedMin = Math.max(0, Math.floor((minVal - 5) / 10) * 10);
+    const roundedMax = Math.min(100, Math.ceil((maxVal + 5) / 10) * 10);
+    
+    if (roundedMin >= roundedMax) return [0, 100];
+    return [roundedMin, roundedMax];
+  };
+
+  const yDomain = getYDomain();
+
   // Line styling highlighting based on selectedClass dropdown filter
   const isLineActive = (classKey) => {
     if (selectedClass === 'all') return true;
@@ -424,7 +451,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
               <LineChart data={progressChartData} margin={{ top: 15, right: 30, left: -10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                 <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }} />
-                <YAxis stroke="var(--text-secondary)" unit="%" domain={[0, 100]} tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }} />
+                <YAxis stroke="var(--text-secondary)" unit="%" domain={yDomain} tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }} />
                 <Tooltip contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'var(--text-primary)' }} />
                 <Legend wrapperStyle={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', paddingTop: 10 }} />
                 <Line 
