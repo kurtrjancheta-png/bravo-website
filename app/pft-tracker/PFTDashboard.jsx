@@ -4,12 +4,16 @@ import { useState } from 'react';
 import { 
   LineChart, 
   Line, 
+  BarChart,
+  Bar,
   XAxis, 
   YAxis, 
   CartesianGrid, 
   Tooltip, 
   Legend, 
-  ResponsiveContainer 
+  ResponsiveContainer,
+  ReferenceLine,
+  ReferenceArea
 } from 'recharts';
 
 const COLORS = {
@@ -312,10 +316,110 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
 
   const yDomain = getYDomain();
 
+  // Helper to calculate averages of a PFT score component
+  const getEventAverage = (pftKey, classKey, eventKey) => {
+    let datasets = [];
+    if (pftKey === 'all') {
+      datasets = [mockData, pft1Data, pft2Data].filter(d => d !== null);
+    } else {
+      datasets = [pftTypes[pftKey]?.data].filter(d => d !== null && d !== undefined);
+    }
+
+    let allScores = [];
+    datasets.forEach(data => {
+      const cData = data[classKey];
+      if (cData) {
+        const active = [...cData.passed, ...cData.failed, ...cData.smc];
+        active.forEach(c => {
+          const val = c.scores?.[eventKey];
+          if (val !== undefined && val !== null) {
+            allScores.push(val);
+          }
+        });
+      }
+    });
+
+    if (allScores.length === 0) return 0;
+    const sum = allScores.reduce((a, b) => a + b, 0);
+    return parseFloat((sum / allScores.length).toFixed(2));
+  };
+
+  // Construct BarChart data for event point averages
+  const averageGradesData = [
+    {
+      event: 'Push-ups',
+      'Overall': getEventAverage(selectedPFT, 'all', 'pushups'),
+      '1CL': getEventAverage(selectedPFT, '1cl', 'pushups'),
+      '2CL': getEventAverage(selectedPFT, '2cl', 'pushups'),
+      '3CL': getEventAverage(selectedPFT, '3cl', 'pushups'),
+    },
+    {
+      event: 'Sit-ups',
+      'Overall': getEventAverage(selectedPFT, 'all', 'situps'),
+      '1CL': getEventAverage(selectedPFT, '1cl', 'situps'),
+      '2CL': getEventAverage(selectedPFT, '2cl', 'situps'),
+      '3CL': getEventAverage(selectedPFT, '3cl', 'situps'),
+    },
+    {
+      event: 'Pull-ups',
+      'Overall': getEventAverage(selectedPFT, 'all', 'pullups'),
+      '1CL': getEventAverage(selectedPFT, '1cl', 'pullups'),
+      '2CL': getEventAverage(selectedPFT, '2cl', 'pullups'),
+      '3CL': getEventAverage(selectedPFT, '3cl', 'pullups'),
+    },
+    {
+      event: '3.2KM Run',
+      'Overall': getEventAverage(selectedPFT, 'all', 'run'),
+      '1CL': getEventAverage(selectedPFT, '1cl', 'run'),
+      '2CL': getEventAverage(selectedPFT, '2cl', 'run'),
+      '3CL': getEventAverage(selectedPFT, '3cl', 'run'),
+    }
+  ];
+
+  // Dynamic Y-axis scale for Grades BarChart
+  const getGradeYDomain = () => {
+    let minVal = 10;
+    let maxVal = 0;
+    averageGradesData.forEach(item => {
+      ['Overall', '1CL', '2CL', '3CL'].forEach(key => {
+        const val = item[key];
+        if (val !== null && val !== undefined && val > 0) {
+          if (val < minVal) minVal = val;
+          if (val > maxVal) maxVal = val;
+        }
+      });
+    });
+    
+    // Margin of 0.5 points and round to nearest 0.5
+    const paddedMin = Math.max(0, Math.floor((minVal - 0.5) * 2) / 2);
+    const paddedMax = Math.min(10.0, Math.ceil((maxVal + 0.5) * 2) / 2);
+    
+    // Force lower bound to be at most 6.5 to guarantee the 7.0 Passing Reference Line is always visible
+    const forcedMin = Math.min(6.5, paddedMin);
+    
+    if (forcedMin >= paddedMax) return [0, 10.0];
+    return [forcedMin, paddedMax];
+  };
+
+  const gradeYDomain = getGradeYDomain();
+
+  const getAverageChartTitle = () => {
+    if (selectedPFT === 'all') {
+      return 'Average Event Grades (All PFTs)';
+    }
+    return `Average Event Grades (${pftTypes[selectedPFT].label})`;
+  };
+
   // Line styling highlighting based on selectedClass dropdown filter
   const isLineActive = (classKey) => {
     if (selectedClass === 'all') return true;
     return selectedClass.toUpperCase() === classKey.toUpperCase() || classKey === 'Overall';
+  };
+
+  // Bar opacity styling based on selectedClass dropdown filter
+  const isBarActive = (classKey) => {
+    if (selectedClass === 'all') return true;
+    return selectedClass.toLowerCase() === classKey.toLowerCase() || classKey === 'Overall';
   };
 
   // Get active insights for the modal
@@ -442,60 +546,136 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
         </button>
       </div>
 
-      {/* Progress Line Chart Card */}
-      {progressChartData.length > 0 && (
-        <div className="pft-chart-card" style={{ marginBottom: '2rem' }}>
-          <h3 className="pft-chart-title">PFT Progress Tracking</h3>
-          <div style={{ width: '100%', height: 320, marginTop: '1rem' }}>
+      {/* Two-Column Grid for Line Chart and Bar Chart */}
+      <div className="pft-top-grid">
+        {/* Progress Line Chart Card */}
+        {progressChartData.length > 0 && (
+          <div className="pft-chart-card">
+            <div className="chart-header-container">
+              <h3 className="pft-chart-title">PFT Progress Tracking</h3>
+              <div className="info-tooltip-container">
+                <div className="info-icon">i</div>
+                <div className="tooltip-text">
+                  <strong>Passing Rate Progress</strong><br/>
+                  Tracks the percentage of active cadets who passed the PFT over time (Mock PFT &rarr; PFT 1 &rarr; PFT 2).<br/><br/>
+                  * Excused cadets (FAD/GUARD/SIQ) are excluded.<br/>
+                  * Active pool includes PASSED, FAILED, and SMC.
+                </div>
+              </div>
+            </div>
+            <div style={{ width: '100%', height: 280, marginTop: '0.5rem' }}>
+              <ResponsiveContainer>
+                <LineChart data={progressChartData} margin={{ top: 15, right: 30, left: -20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+                  <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 500 }} />
+                  <YAxis stroke="var(--text-secondary)" unit="%" domain={yDomain} tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 500 }} />
+                  <Tooltip contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'var(--text-primary)' }} />
+                  <Legend wrapperStyle={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)', paddingTop: 10 }} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="Overall" 
+                    stroke="#d97706" 
+                    strokeWidth={selectedClass === 'all' ? 4 : 2} 
+                    strokeOpacity={isLineActive('Overall') ? 1.0 : 0.25}
+                    activeDot={{ r: 7 }} 
+                    dot={{ r: 4 }} 
+                    name="Overall" 
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="1CL" 
+                    stroke="#3b82f6" 
+                    strokeWidth={selectedClass === '1cl' ? 4 : 2} 
+                    strokeOpacity={isLineActive('1cl') ? 1.0 : 0.25}
+                    dot={{ r: 3 }} 
+                    name="1CL" 
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="2CL" 
+                    stroke="#10b981" 
+                    strokeWidth={selectedClass === '2cl' ? 4 : 2} 
+                    strokeOpacity={isLineActive('2cl') ? 1.0 : 0.25}
+                    dot={{ r: 3 }} 
+                    name="2CL" 
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="3CL" 
+                    stroke="#8b5cf6" 
+                    strokeWidth={selectedClass === '3cl' ? 4 : 2} 
+                    strokeOpacity={isLineActive('3cl') ? 1.0 : 0.25}
+                    dot={{ r: 3 }} 
+                    name="3CL" 
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        {/* Average Event Grades Bar Chart Card */}
+        <div className="pft-chart-card">
+          <div className="chart-header-container">
+            <h3 className="pft-chart-title">{getAverageChartTitle()}</h3>
+            <div className="info-tooltip-container">
+              <div className="info-icon">i</div>
+              <div className="tooltip-text">
+                <strong>Average Event Grades</strong><br/>
+                Displays average points (0.0 to 10.0) scored by each class in the 4 events.<br/><br/>
+                * Passing standard: <strong>7.00</strong><br/>
+                * Sweet spot target: <strong>8.00 - 8.50</strong><br/>
+                * Maximum grade: <strong>10.00</strong>
+              </div>
+            </div>
+          </div>
+          <div style={{ width: '100%', height: 280, marginTop: '0.5rem' }}>
             <ResponsiveContainer>
-              <LineChart data={progressChartData} margin={{ top: 15, right: 30, left: -10, bottom: 5 }}>
+              <BarChart data={averageGradesData} margin={{ top: 15, right: 30, left: -20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
-                <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }} />
-                <YAxis stroke="var(--text-secondary)" unit="%" domain={yDomain} tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }} />
+                <XAxis dataKey="event" stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 500 }} />
+                <YAxis stroke="var(--text-secondary)" domain={gradeYDomain} tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 500 }} />
                 <Tooltip contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'var(--text-primary)' }} />
-                <Legend wrapperStyle={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', paddingTop: 10 }} />
-                <Line 
-                  type="monotone" 
+                <Legend wrapperStyle={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)', paddingTop: 10 }} />
+                
+                {/* Reference Area for sweet spot 8.0 - 8.5 */}
+                <ReferenceArea y1={8.0} y2={8.5} fill="#10b981" fillOpacity={0.12} />
+                {/* Reference Line for passing threshold 7.0 */}
+                <ReferenceLine y={7.0} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1.5} label={{ value: 'Pass: 7.0', fill: '#ef4444', fontSize: 9, position: 'top', fontWeight: 600 }} />
+
+                <Bar 
                   dataKey="Overall" 
-                  stroke="#d97706" 
-                  strokeWidth={selectedClass === 'all' ? 4 : 2} 
-                  strokeOpacity={isLineActive('Overall') ? 1.0 : 0.25}
-                  activeDot={{ r: 8 }} 
-                  dot={{ r: 5 }} 
-                  name="Overall Company" 
+                  fill="#d97706" 
+                  fillOpacity={isBarActive('Overall') ? 1.0 : 0.25} 
+                  radius={[3, 3, 0, 0]} 
+                  name="Overall" 
                 />
-                <Line 
-                  type="monotone" 
+                <Bar 
                   dataKey="1CL" 
-                  stroke="#3b82f6" 
-                  strokeWidth={selectedClass === '1cl' ? 4 : 2} 
-                  strokeOpacity={isLineActive('1cl') ? 1.0 : 0.25}
-                  dot={{ r: 4 }} 
+                  fill="#3b82f6" 
+                  fillOpacity={isBarActive('1cl') ? 1.0 : 0.25} 
+                  radius={[3, 3, 0, 0]} 
                   name="1CL" 
                 />
-                <Line 
-                  type="monotone" 
+                <Bar 
                   dataKey="2CL" 
-                  stroke="#10b981" 
-                  strokeWidth={selectedClass === '2cl' ? 4 : 2} 
-                  strokeOpacity={isLineActive('2cl') ? 1.0 : 0.25}
-                  dot={{ r: 4 }} 
+                  fill="#10b981" 
+                  fillOpacity={isBarActive('2cl') ? 1.0 : 0.25} 
+                  radius={[3, 3, 0, 0]} 
                   name="2CL" 
                 />
-                <Line 
-                  type="monotone" 
+                <Bar 
                   dataKey="3CL" 
-                  stroke="#8b5cf6" 
-                  strokeWidth={selectedClass === '3cl' ? 4 : 2} 
-                  strokeOpacity={isLineActive('3cl') ? 1.0 : 0.25}
-                  dot={{ r: 4 }} 
+                  fill="#8b5cf6" 
+                  fillOpacity={isBarActive('3cl') ? 1.0 : 0.25} 
+                  radius={[3, 3, 0, 0]} 
                   name="3CL" 
                 />
-              </LineChart>
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Charts Grid */}
       <div className="pft-charts-grid">
@@ -640,7 +820,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
 
                     <div className="pft-insight-card">
                       <span className="pft-insight-label">Active Cohort Split</span>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '0.2rem' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '0.2' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
                           <span style={{ fontWeight: 600 }}>PASSED:</span>
                           <span style={{ fontWeight: 700, color: '#1a7a3a' }}>{activeInsights.passedCount}</span>
