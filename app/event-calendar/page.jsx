@@ -3,7 +3,7 @@ import CalendarClient from './CalendarClient';
 import { Suspense } from 'react';
 
 const SOI_SHEET_ID = '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
-const CALENDAR_API_URL = process.env.NEXT_PUBLIC_CALENDAR_API_URL || 'YOUR_SCRIPT_URL_HERE';
+const CALENDAR_API_URL = process.env.NEXT_PUBLIC_CALENDAR_API_URL || 'https://script.google.com/macros/s/AKfycbzajHQKzjp7rN9hVj6pSiPJkOP1An5wCrYKjU3mQCZgbyl5_G_ek21FEUabG87m4qJ9/exec';
 
 export const revalidate = 30; // 30 sec caching
 

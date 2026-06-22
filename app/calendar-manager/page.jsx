@@ -1,7 +1,7 @@
 import CalendarManagerClient from './CalendarManagerClient';
 import { Suspense } from 'react';
 
-const CALENDAR_API_URL = process.env.NEXT_PUBLIC_CALENDAR_API_URL || 'YOUR_SCRIPT_URL_HERE';
+const CALENDAR_API_URL = process.env.NEXT_PUBLIC_CALENDAR_API_URL || 'https://script.google.com/macros/s/AKfycbzajHQKzjp7rN9hVj6pSiPJkOP1An5wCrYKjU3mQCZgbyl5_G_ek21FEUabG87m4qJ9/exec';
 
 export const revalidate = 0; // Dynamic route since it's a manager
 
