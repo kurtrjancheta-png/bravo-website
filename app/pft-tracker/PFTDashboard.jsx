@@ -1127,53 +1127,147 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                 </div>
               </div>
 
-              {/* Individual Insight Generator */}
+              {/* Enhanced Individual Insight Generator */}
               {(() => {
-                const getEvtAvg = (evtKey) => {
-                  const scores = [
-                    selectedCadet.mock?.scores?.[evtKey],
-                    selectedCadet.pft1?.scores?.[evtKey],
-                    selectedCadet.pft2?.scores?.[evtKey]
-                  ].filter(v => v !== undefined && v !== null && v > 0);
-                  if (scores.length === 0) return 100;
-                  return scores.reduce((a, b) => a + b, 0) / scores.length;
+                const extractScores = (evtKey) => {
+                  return {
+                    mock: selectedCadet.mock?.scores?.[evtKey],
+                    pft1: selectedCadet.pft1?.scores?.[evtKey],
+                    pft2: selectedCadet.pft2?.scores?.[evtKey]
+                  };
                 };
 
-                const averages = [
-                  { key: 'pushups', name: 'Push-ups', val: getEvtAvg('pushups') },
-                  { key: 'situps', name: 'Sit-ups', val: getEvtAvg('situps') },
-                  { key: 'pullups', name: 'Pull-ups', val: getEvtAvg('pullups') },
-                  { key: 'run', name: '3.2KM Run', val: getEvtAvg('run') }
-                ].filter(a => a.val !== 100).sort((a, b) => a.val - b.val);
+                const analyzeEvent = (evtKey, name) => {
+                  const s = extractScores(evtKey);
+                  const valid = [s.mock, s.pft1, s.pft2].filter(v => typeof v === 'number' && v > 0);
+                  if (valid.length === 0) return { key: evtKey, name, avg: 0, latest: 0, trend: 'No Data' };
+                  
+                  const avg = valid.reduce((a, b) => a + b, 0) / valid.length;
+                  const latest = valid[valid.length - 1];
+                  const first = valid[0];
+                  
+                  let trend = 'Maintained';
+                  if (valid.length > 1) {
+                    if (latest > first + 0.2) trend = 'Improving';
+                    else if (latest < first - 0.2) trend = 'Declining';
+                  }
 
-                if (averages.length === 0) {
-                  return <div style={{ color: 'var(--text-secondary)', textAlign: 'center' }}>No performance data to analyze.</div>;
+                  return { key: evtKey, name, avg, latest, trend };
+                };
+
+                const events = [
+                  analyzeEvent('pushups', 'Push-ups'),
+                  analyzeEvent('situps', 'Sit-ups'),
+                  analyzeEvent('pullups', 'Pull-ups'),
+                  analyzeEvent('run', '3.2KM Run')
+                ].filter(e => e.latest > 0);
+
+                if (events.length === 0) {
+                  return <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem' }}>No performance data to analyze yet.</div>;
                 }
 
-                const weakest = averages[0];
-                const cRemediation = getRemediationRecommendation(weakest.key);
+                // Overall rating based on latest average
+                const grandLatestAvg = events.reduce((acc, ev) => acc + ev.latest, 0) / events.length;
+                let rating = 'Needs Strict Training';
+                let ratingColor = '#ef4444'; // red
+                
+                if (grandLatestAvg >= 8.5) {
+                  rating = 'Excellent';
+                  ratingColor = '#10b981'; // green
+                } else if (grandLatestAvg >= 8.0) {
+                  rating = 'Satisfactory';
+                  ratingColor = '#3b82f6'; // blue
+                } else if (grandLatestAvg >= 7.0) {
+                  rating = 'Needs Improvement';
+                  ratingColor = '#f59e0b'; // yellow/orange
+                }
+
+                const strengths = events.filter(e => e.latest >= 8.0).sort((a, b) => b.latest - a.latest);
+                const weaknesses = events.filter(e => e.latest < 8.0).sort((a, b) => a.latest - b.latest);
+
+                const getAdvice = (evtKey, isStrength) => {
+                  if (isStrength) {
+                    switch(evtKey) {
+                      case 'pushups': return "Maintain chest endurance with periodic high-volume sets. Avoid overtraining to protect joints.";
+                      case 'situps': return "Core endurance is solid. Integrate weighted ab exercises (planks, Russian twists) to maintain power.";
+                      case 'pullups': return "Excellent lat and grip strength. Use weighted pull-ups occasionally to maintain peak force output.";
+                      case 'run': return "Cardio base is strong. Stick to the 80/20 rule (80% easy, 20% interval) to sustain VO2 max without burnout.";
+                      default: return "Maintain current training regimen.";
+                    }
+                  } else {
+                    switch(evtKey) {
+                      case 'pushups': return "Requires progressive overload. Use timed sets (e.g., max reps in 1 min) and mix in diamond/wide-grip variations.";
+                      case 'situps': return "Pacing is likely an issue. Practice 30-second sprint sets and strengthen hip flexors with leg raises.";
+                      case 'pullups': return "Focus on grip and lat recruitment. Implement daily dead hangs (30-60s) and slow eccentric (negative) pull-ups.";
+                      case 'run': return "Aerobic capacity needs work. Incorporate 400m/800m intervals once a week to build speed and anaerobic threshold.";
+                      default: return "Requires focused remediation training.";
+                    }
+                  }
+                };
 
                 return (
-                  <div className="pft-remediation-box">
-                    <div className="pft-remediation-title">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                        <line x1="12" y1="9" x2="12" y2="13"></line>
-                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                      </svg>
-                      Personalized Insight: {cRemediation.title}
+                  <div className="pft-insight-container" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div className="pft-insight-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', padding: '1rem', borderRadius: '8px', borderLeft: `4px solid ${ratingColor}` }}>
+                      <div>
+                        <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Overall Rating</div>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: ratingColor }}>{rating} ({grandLatestAvg.toFixed(2)})</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Progression</div>
+                        <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                          <span style={{ color: '#10b981' }}>{events.filter(e => e.trend === 'Improving').length} Improving</span>
+                          <span style={{ margin: '0 0.5rem', color: 'var(--border-color)' }}>|</span>
+                          <span style={{ color: '#ef4444' }}>{events.filter(e => e.trend === 'Declining').length} Declining</span>
+                        </div>
+                      </div>
                     </div>
-                    <p className="pft-remediation-text" style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
-                      Based on {selectedCadet.name}'s data, {weakest.name} is the weakest event with an average score of {weakest.val.toFixed(2)}.
-                    </p>
-                    <p className="pft-remediation-text">
-                      {cRemediation.text}
-                    </p>
-                    <ul className="pft-remediation-list">
-                      {cRemediation.tips.map((tip, i) => (
-                        <li key={i}>{tip}</li>
-                      ))}
-                    </ul>
+
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: strengths.length > 0 && weaknesses.length > 0 ? '1fr 1fr' : '1fr', 
+                      gap: '1rem',
+                      alignItems: 'start'
+                    }}>
+                      {weaknesses.length > 0 && (
+                        <div className="pft-remediation-box" style={{ margin: 0, borderColor: 'rgba(239, 68, 68, 0.3)', backgroundColor: 'rgba(239, 68, 68, 0.05)' }}>
+                          <div className="pft-remediation-title" style={{ color: '#ef4444' }}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                            Priority Focus Areas
+                          </div>
+                          <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            {weaknesses.map(w => (
+                              <div key={w.key} style={{ paddingBottom: '0.75rem', borderBottom: '1px dashed var(--border-color)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600, marginBottom: '0.35rem' }}>
+                                  <span>{w.name} ({w.latest.toFixed(2)})</span>
+                                  <span style={{ fontSize: '0.85em', color: w.trend === 'Improving' ? '#10b981' : w.trend === 'Declining' ? '#ef4444' : 'var(--text-secondary)' }}>{w.trend}</span>
+                                </div>
+                                <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{getAdvice(w.key, false)}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {strengths.length > 0 && (
+                        <div className="pft-remediation-box" style={{ margin: 0, borderColor: 'rgba(16, 185, 129, 0.3)', backgroundColor: 'rgba(16, 185, 129, 0.05)' }}>
+                          <div className="pft-remediation-title" style={{ color: '#10b981' }}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            Strengths & Maintenance
+                          </div>
+                          <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            {strengths.map(s => (
+                              <div key={s.key} style={{ paddingBottom: '0.75rem', borderBottom: '1px dashed var(--border-color)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600, marginBottom: '0.35rem' }}>
+                                  <span>{s.name} ({s.latest.toFixed(2)})</span>
+                                  <span style={{ fontSize: '0.85em', color: s.trend === 'Declining' ? '#ef4444' : '#10b981' }}>{s.trend}</span>
+                                </div>
+                                <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{getAdvice(s.key, true)}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 );
               })()}
