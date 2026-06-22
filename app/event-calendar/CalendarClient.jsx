@@ -22,6 +22,7 @@ export default function CalendarClient({ birthdays, activities }) {
   // Modal state for viewing a specific day's events
   const [selectedDate, setSelectedDate] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedEventDetails, setSelectedEventDetails] = useState(null);
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -207,6 +208,65 @@ export default function CalendarClient({ birthdays, activities }) {
     const { birthdays: selectedBdays, activities: selectedActs } = getEventsForDay(selectedDate);
     const hasEvents = selectedBdays.length > 0 || selectedActs.length > 0;
 
+    if (selectedEventDetails) {
+      const a = selectedEventDetails;
+      return (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', zIndex: 50,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
+        }}>
+          <div style={{
+            backgroundColor: 'var(--bg-secondary)', borderRadius: '12px', padding: '2rem',
+            width: '100%', maxWidth: '500px', maxHeight: '80vh', overflowY: 'auto',
+            border: '1px solid var(--border-color)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+              <button onClick={() => setSelectedEventDetails(null)} style={{ background: 'transparent', border: 'none', color: 'var(--gold-primary)', fontSize: '1rem', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                &larr; Back
+              </button>
+              <button onClick={() => { setIsModalOpen(false); setSelectedEventDetails(null); }} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                  <div style={{ width: '16px', height: '16px', borderRadius: '50%', backgroundColor: a.color || '#3b82f6' }}></div>
+                  <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>{a.title || a.content || 'Untitled Event'}</h2>
+                </div>
+                <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', paddingLeft: '1.75rem' }}>
+                  {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+                  {a.endDateRaw && a.endDateRaw !== a.dateRaw && ` - ${format(new Date(a.endDateRaw), 'EEEE, MMMM d, yyyy')}`}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {a.council && (
+                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#bfdbfe', backgroundColor: 'rgba(30,58,138,0.6)', padding: '0.35rem 0.75rem', borderRadius: '6px', textTransform: 'uppercase' }}>
+                    {a.council}
+                  </span>
+                )}
+                {a.urgency && (
+                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', padding: '0.35rem 0.75rem', borderRadius: '6px', backgroundColor: a.urgency === 'EMERGENCY' || a.urgency === 'FOR IMMEDIATE COMPLIANCE' ? 'rgba(248, 113, 113, 0.2)' : 'rgba(59, 130, 246, 0.2)', color: a.urgency === 'EMERGENCY' || a.urgency === 'FOR IMMEDIATE COMPLIANCE' ? '#fca5a5' : '#93c5fd', border: `1px solid ${a.urgency === 'EMERGENCY' || a.urgency === 'FOR IMMEDIATE COMPLIANCE' ? '#f87171' : '#60a5fa'}`, textTransform: 'uppercase' }}>
+                    {a.urgency}
+                  </span>
+                )}
+              </div>
+
+              {a.content && a.content !== a.title && (
+                <div style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '1rem' }}>
+                  <h4 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.5rem 0' }}>Description</h4>
+                  <p style={{ color: 'var(--text-primary)', fontSize: '1rem', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>
+                    {a.content}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div style={{
         position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -241,12 +301,18 @@ export default function CalendarClient({ birthdays, activities }) {
                 </div>
               ))}
               {selectedActs.map((a, i) => (
-                <div key={`act-${i}`} style={{ padding: '0.75rem', backgroundColor: 'rgba(255,255,255,0.05)', borderLeft: `4px solid ${a.color || '#3b82f6'}`, borderRadius: '4px' }}>
+                <div 
+                  key={`act-${i}`} 
+                  onClick={() => setSelectedEventDetails(a)}
+                  style={{ padding: '0.75rem', backgroundColor: 'rgba(255,255,255,0.05)', borderLeft: `4px solid ${a.color || '#3b82f6'}`, borderRadius: '4px', cursor: 'pointer', transition: 'background-color 0.2s' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'}
+                >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
                     <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{a.title || a.content || 'Untitled Event'}</div>
                     {a.council && <span style={{ fontSize: '0.7rem', backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '10px' }}>{a.council}</span>}
                   </div>
-                  {a.content && a.content !== a.title && <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0.5rem 0 0 0', whiteSpace: 'pre-wrap' }}>{a.content}</p>}
+                  {a.content && a.content !== a.title && <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0.5rem 0 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.content}</p>}
                 </div>
               ))}
             </div>
