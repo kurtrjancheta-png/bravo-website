@@ -142,7 +142,7 @@ export default function CalendarManagerClient({ initialActivities, apiUrl }) {
     try {
       const res = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action, event: payloadEvent })
       });
       const data = await res.json();
@@ -172,7 +172,7 @@ export default function CalendarManagerClient({ initialActivities, apiUrl }) {
     try {
       const res = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'deleteEvent', id: editingEvent.id })
       });
       const data = await res.json();
