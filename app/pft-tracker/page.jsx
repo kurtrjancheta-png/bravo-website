@@ -95,11 +95,8 @@ export default async function PFTTracker() {
     ]);
 
     mockData = parsePFTData(mockRows);
-    
-    // Per user request, PFT 1 and PFT 2 do not have recorded scores yet, 
-    // so we parse them as empty arrays to ignore template data.
-    pft1Data = parsePFTData([]);
-    pft2Data = parsePFTData([]);
+    pft1Data = parsePFTData(pft1Rows);
+    pft2Data = parsePFTData(pft2Rows);
   }
 
   return (
