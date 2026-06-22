@@ -3,24 +3,7 @@ import CalendarClient from './CalendarClient';
 import { Suspense } from 'react';
 
 const SOI_SHEET_ID = '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
-const DISSEMINATION_SHEET_ID = '1YeaoloRz4REe_iVomGfFI9WugalrDFsHiz04eOcD0a8';
-
-const COUNCILS = [
-  { id: 'TACO', name: "Tac O's Corner" },
-  { id: 'S1', name: 'S1 Personnel' },
-  { id: 'S2', name: 'S2 Security' },
-  { id: 'S3', name: 'S3 Operations' },
-  { id: 'S4', name: 'S4 Logistics' },
-  { id: 'S5', name: 'S5 Plans & Programs' },
-  { id: 'S6', name: 'S6 Signal' },
-  { id: 'S7', name: 'S7 Civil-Military' },
-  { id: 'S8', name: 'S8 Education & Training' },
-  { id: 'S10', name: 'S10 Finance' },
-  { id: 'ATHLETIC', name: 'Athletic Council' },
-  { id: 'GAD', name: 'GAD' },
-  { id: 'HONOR COMM', name: 'Honor Committee' },
-  { id: 'CCPB', name: 'CCPB' }
-];
+const CALENDAR_API_URL = process.env.NEXT_PUBLIC_CALENDAR_API_URL || 'YOUR_SCRIPT_URL_HERE';
 
 export const revalidate = 30; // 30 sec caching
 
@@ -69,45 +52,34 @@ export default async function EventCalendarPage() {
     };
   }).filter(b => b.birthMonth !== null && b.birthDay !== null);
 
-  // 2. Fetch all Disseminations for Activities
-  const disseminationPromises = COUNCILS.map(async (council) => {
+  // 2. Fetch all Activities from the new S3 Calendar API
+  let activities = [];
+  if (CALENDAR_API_URL && CALENDAR_API_URL !== 'YOUR_SCRIPT_URL_HERE') {
     try {
-      const data = await getSheetData(DISSEMINATION_SHEET_ID, council.id);
-      return data.map(row => ({ ...row, council: council.name }));
-    } catch (e) {
-      return [];
-    }
-  });
-
-  const results = await Promise.all(disseminationPromises);
-  const allDisseminations = results.flat();
-
-  const activities = allDisseminations.filter(d => {
-    const type = String(d['TYPE'] || '').trim().toUpperCase();
-    return type === 'ACTIVITY' && !isExpired(d);
-  }).map(d => {
-    let eventDateRaw = String(d['EVENT DATE'] || d['DATE ANNOUNCED'] || '');
-    
-    if (eventDateRaw.includes('Date(')) {
-      const match = eventDateRaw.match(/Date\((\d+),(\d+),(\d+)\)/);
-      if (match) {
-        const year = parseInt(match[1], 10);
-        const month = parseInt(match[2], 10); // 0-indexed
-        const day = parseInt(match[3], 10);
-        // Convert to a valid string that new Date() can parse safely
-        const dateObj = new Date(year, month, day);
-        eventDateRaw = dateObj.toISOString();
+      const res = await fetch(CALENDAR_API_URL, { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        // The API returns [{ ID, Title, Date, EndDate, Council, Description, Color, Urgency }]
+        activities = data.map(d => {
+          let eventDateRaw = d.Date || '';
+          
+          return {
+            id: d.ID,
+            type: 'ACTIVITY',
+            title: d.Title,
+            council: d.Council,
+            content: d.Description || d.Title || 'Untitled Activity',
+            urgency: d.Urgency || 'LIGHT',
+            color: d.Color || '#3b82f6',
+            dateRaw: eventDateRaw,
+            endDateRaw: d.EndDate || ''
+          };
+        });
       }
+    } catch (e) {
+      console.error('Failed to fetch calendar API:', e);
     }
-
-    return {
-      type: 'ACTIVITY',
-      council: d.council,
-      content: d['CONTENT'] || 'Untitled Activity',
-      urgency: String(d['URGENCY'] || 'LIGHT').toUpperCase().trim(),
-      dateRaw: eventDateRaw
-    };
-  });
+  }
 
   return (
     <div className="dashboard-container" style={{ padding: '2rem' }}>
