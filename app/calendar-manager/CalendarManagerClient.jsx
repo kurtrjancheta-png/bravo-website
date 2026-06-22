@@ -1,41 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
-  format,
-  addMonths,
-  subMonths,
-  startOfMonth,
-  endOfMonth,
-  startOfWeek,
-  endOfWeek,
-  isSameMonth,
-  isSameDay,
-  addDays,
-  isToday,
-  parseISO
+  format, addMonths, subMonths, startOfMonth, endOfMonth,
+  startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, isToday, parseISO,
+  differenceInDays, isBefore, isAfter, max, min
 } from 'date-fns';
 
-const COUNCILS = ['TACO', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S10', 'ATHLETIC', 'GAD', 'HONOR COMM', 'CCPB'];
-const COLORS = [
-  { label: 'Blue', value: '#3b82f6' },
-  { label: 'Red', value: '#ef4444' },
-  { label: 'Green', value: '#22c55e' },
-  { label: 'Yellow', value: '#f59e0b' },
-  { label: 'Purple', value: '#a855f7' },
-  { label: 'Pink', value: '#ec4899' },
-  { label: 'Teal', value: '#14b8a6' },
-  { label: 'Gold', value: '#d4af37' },
-  { label: 'Dark Gray', value: '#4b5563' }
-];
-
-export default function CalendarManagerClient({ initialActivities, apiUrl }) {
+export default function CalendarManagerClient({ initialActivities = [], birthdays = [], apiUrl }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [activities, setActivities] = useState(initialActivities || []);
   
+  // Local state for activities, incorporating pending changes
+  const [activities, setActivities] = useState(initialActivities);
+  const [pendingChanges, setPendingChanges] = useState([]);
+
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null); // null means new event
 
   // Upload states
@@ -47,8 +27,11 @@ export default function CalendarManagerClient({ initialActivities, apiUrl }) {
     title: '',
     date: '',
     endDate: '',
-    council: 'S3',
+    council: '',
     description: '',
+    location: '', // new
+    photos: '',   // new
+    files: '',    // new
     color: '#3b82f6',
     urgency: 'LIGHT'
   });
@@ -57,256 +40,236 @@ export default function CalendarManagerClient({ initialActivities, apiUrl }) {
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
   const goToToday = () => setCurrentMonth(new Date());
 
+  const addPendingChange = (change) => {
+    setPendingChanges(prev => [...prev, change]);
+    
+    // Apply optimistically
+    if (change.type === 'CREATE') {
+      setActivities(prev => [...prev, change.event]);
+    } else if (change.type === 'UPDATE') {
+      setActivities(prev => prev.map(a => a.id === change.event.id ? change.event : a));
+    } else if (change.type === 'DELETE') {
+      setActivities(prev => prev.filter(a => a.id !== change.eventId));
+    }
+  };
+
   const getEventsForDay = (day) => {
-    return activities.filter(a => {
+    const dayBirthdays = birthdays.filter(b => b.birthMonth === day.getMonth() && b.birthDay === day.getDate());
+    
+    const dayActivities = activities.filter(a => {
       if (!a.date) return false;
       try {
-        const actDate = new Date(a.date);
-        if (isNaN(actDate)) return false;
-        return actDate.getMonth() === day.getMonth() && 
-               actDate.getDate() === day.getDate() && 
-               actDate.getFullYear() === day.getFullYear();
+        const start = new Date(a.date);
+        // Normalize time to start of day for comparison
+        const normStart = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+        const normDay = new Date(day.getFullYear(), day.getMonth(), day.getDate());
+        
+        let normEnd = normStart;
+        if (a.endDate) {
+          const end = new Date(a.endDate);
+          normEnd = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+        }
+        
+        return normDay >= normStart && normDay <= normEnd;
       } catch (e) {
         return false;
       }
     });
+
+    return { birthdays: dayBirthdays, activities: dayActivities };
   };
 
-  const openNewEventModal = (day) => {
+  const handleDayClick = (day) => {
     setEditingEvent(null);
     setFormData({
       title: '',
-      date: format(day, 'yyyy-MM-dd'),
-      endDate: '',
-      council: 'S3',
+      date: format(day, "yyyy-MM-dd'T'12:00"),
+      endDate: format(day, "yyyy-MM-dd'T'13:00"),
+      council: '',
       description: '',
+      location: '',
+      photos: '',
+      files: '',
       color: '#3b82f6',
       urgency: 'LIGHT'
     });
     setIsModalOpen(true);
   };
 
-  const openEditEventModal = (event, e) => {
-    e.stopPropagation(); // prevent triggering day click
-    setEditingEvent(event);
-    
-    // Parse date safely
-    let formattedDate = '';
-    try {
-      if (event.date) {
-        const d = new Date(event.date);
-        if (!isNaN(d)) formattedDate = format(d, 'yyyy-MM-dd');
-      }
-    } catch(err) {}
-
-    let formattedEndDate = '';
-    try {
-      if (event.endDate) {
-        const d = new Date(event.endDate);
-        if (!isNaN(d)) formattedEndDate = format(d, 'yyyy-MM-dd');
-      }
-    } catch(err) {}
-
+  const handleEventClick = (e, act) => {
+    e.stopPropagation();
+    setEditingEvent(act);
     setFormData({
-      title: event.title || '',
-      date: formattedDate,
-      endDate: formattedEndDate,
-      council: event.council || 'S3',
-      description: event.description || '',
-      color: event.color || '#3b82f6',
-      urgency: event.urgency || 'LIGHT'
+      title: act.title || '',
+      date: act.date ? new Date(act.date).toISOString().slice(0, 16) : '',
+      endDate: act.endDate ? new Date(act.endDate).toISOString().slice(0, 16) : '',
+      council: act.council || '',
+      description: act.description || '',
+      location: act.location || '',
+      photos: act.photos || '',
+      files: act.files || '',
+      color: act.color || '#3b82f6',
+      urgency: act.urgency || 'LIGHT'
     });
     setIsModalOpen(true);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSaveEvent = (e) => {
     e.preventDefault();
-    if (!apiUrl || apiUrl === 'YOUR_SCRIPT_URL_HERE') {
-      alert("API URL not configured! Cannot save.");
+    if (!formData.title || !formData.date) {
+      alert("Title and Date are required.");
       return;
     }
 
-    setIsSubmitting(true);
-    
-    // Format dates to ISO if possible
-    let isoDate = formData.date;
-    try { if (formData.date) isoDate = new Date(formData.date).toISOString(); } catch(err) {}
-    
-    let isoEndDate = formData.endDate;
-    try { if (formData.endDate) isoEndDate = new Date(formData.endDate).toISOString(); } catch(err) {}
+    // Ensure dates are parsed to standard ISO format strings
+    let d = formData.date;
+    let ed = formData.endDate;
+    try { d = new Date(formData.date).toISOString(); } catch(err){}
+    if (ed) {
+      try { ed = new Date(formData.endDate).toISOString(); } catch(err){}
+    }
 
-    const payloadEvent = {
-      ...formData,
-      date: isoDate,
-      endDate: isoEndDate
-    };
+    if (editingEvent) {
+      const updatedEvent = { ...editingEvent, ...formData, date: d, endDate: ed };
+      addPendingChange({ type: 'UPDATE', event: updatedEvent });
+    } else {
+      const newEvent = { 
+        id: `local-${Date.now()}`, // Temporary ID
+        ...formData, 
+        date: d, 
+        endDate: ed 
+      };
+      addPendingChange({ type: 'CREATE', event: newEvent });
+    }
 
-    const action = editingEvent ? 'updateEvent' : 'createEvent';
-    if (editingEvent) payloadEvent.id = editingEvent.id;
+    setIsModalOpen(false);
+  };
 
-    try {
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action, event: payloadEvent })
-      });
-      const data = await res.json();
-      
-      if (data.success) {
-        if (editingEvent) {
-          setActivities(activities.map(a => a.id === editingEvent.id ? { ...a, ...payloadEvent } : a));
-        } else {
-          setActivities([...activities, { ...payloadEvent, id: data.id }]);
-        }
-        setIsModalOpen(false);
-      } else {
-        alert("Error saving event: " + data.error);
-      }
-    } catch (err) {
-      alert("Network error. Could not save event.");
-    } finally {
-      setIsSubmitting(false);
+  const handleDeleteEvent = () => {
+    if (!editingEvent) return;
+    if (window.confirm("Are you sure you want to delete this event?")) {
+      addPendingChange({ type: 'DELETE', eventId: editingEvent.id });
+      setIsModalOpen(false);
     }
   };
 
-  const handleDelete = async () => {
-    if (!editingEvent || !apiUrl || apiUrl === 'YOUR_SCRIPT_URL_HERE') return;
-    if (!confirm("Are you sure you want to delete this event?")) return;
-
-    setIsSubmitting(true);
-    try {
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'deleteEvent', id: editingEvent.id })
-      });
-      const data = await res.json();
-      
-      if (data.success) {
-        setActivities(activities.filter(a => a.id !== editingEvent.id));
-        setIsModalOpen(false);
-      } else {
-        alert("Error deleting event: " + data.error);
-      }
-    } catch (err) {
-      alert("Network error.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const parseCSV = (text) => {
-    const rows = [];
-    let currentRow = [];
-    let currentCell = '';
-    let inQuotes = false;
-    for (let i = 0; i < text.length; i++) {
-      const char = text[i];
-      const nextChar = text[i+1];
-      if (inQuotes) {
-        if (char === '"') {
-          if (nextChar === '"') { currentCell += '"'; i++; }
-          else { inQuotes = false; }
-        } else {
-          currentCell += char;
-        }
-      } else {
-        if (char === '"') { inQuotes = true; }
-        else if (char === ',') { currentRow.push(currentCell.trim()); currentCell = ''; }
-        else if (char === '\n' || char === '\r') {
-          currentRow.push(currentCell.trim());
-          if (currentRow.some(c => c !== '')) rows.push(currentRow);
-          currentRow = []; currentCell = '';
-          if (char === '\r' && nextChar === '\n') i++;
-        } else {
-          currentCell += char;
-        }
-      }
-    }
-    if (currentCell || currentRow.length > 0) {
-      currentRow.push(currentCell.trim());
-      if (currentRow.some(c => c !== '')) rows.push(currentRow);
-    }
-    return rows;
-  };
-
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const handleUploadChanges = async () => {
+    if (pendingChanges.length === 0) return;
     
     setIsUploading(true);
     setIsLaunching(false);
-    
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      try {
-        const text = event.target.result;
-        const rows = parseCSV(text);
-        if (rows.length < 2) throw new Error("CSV must contain a header and at least one data row.");
-        
-        const headers = rows[0].map(h => h.toLowerCase().trim());
-        const expectedHeaders = ['title', 'date', 'enddate', 'council', 'description', 'color', 'urgency'];
-        const headerMap = {};
-        expectedHeaders.forEach(eh => {
-          const idx = headers.findIndex(h => h === eh || h === eh.replace('date', ' date'));
-          if (idx !== -1) headerMap[eh] = idx;
+
+    try {
+      // Process sequentially to handle local IDs properly (though parallel is possible)
+      for (const change of pendingChanges) {
+        let payload = {};
+        if (change.type === 'CREATE') {
+          // Remove local ID so backend generates one
+          const { id, ...eventData } = change.event;
+          payload = { action: 'createEvent', event: eventData };
+        } else if (change.type === 'UPDATE') {
+          payload = { action: 'updateEvent', event: change.event };
+        } else if (change.type === 'DELETE') {
+          // If it was created and deleted before sync, ignore it (local IDs won't exist on backend)
+          if (String(change.eventId).startsWith('local-')) continue; 
+          payload = { action: 'deleteEvent', id: change.eventId };
+        }
+
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
         });
-
-        if (headerMap['title'] === undefined || headerMap['date'] === undefined) {
-          throw new Error("CSV must have 'Title' and 'Date' columns.");
+        const data = await res.json();
+        if (!data.success) {
+          console.error("Failed change:", change, data.error);
+          throw new Error(data.error || "Error syncing change");
         }
-
-        const eventsToUpload = [];
-        for (let i = 1; i < rows.length; i++) {
-          const row = rows[i];
-          let d = row[headerMap['date']] || '';
-          let ed = headerMap['enddate'] !== undefined ? row[headerMap['enddate']] : '';
-          
-          try { if (d) d = new Date(d).toISOString(); } catch(e){}
-          try { if (ed) ed = new Date(ed).toISOString(); } catch(e){}
-
-          eventsToUpload.push({
-            title: row[headerMap['title']] || '',
-            date: d,
-            endDate: ed,
-            council: headerMap['council'] !== undefined ? row[headerMap['council']] : '',
-            description: headerMap['description'] !== undefined ? row[headerMap['description']] : '',
-            color: headerMap['color'] !== undefined ? row[headerMap['color']] : '#3b82f6',
-            urgency: headerMap['urgency'] !== undefined ? row[headerMap['urgency']] : 'LIGHT'
-          });
-        }
-
-        if (eventsToUpload.length > 0) {
-          const res = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: 'massUpload', events: eventsToUpload })
-          });
-          const data = await res.json();
-          if (!data.success) throw new Error(data.error || "Unknown upload error.");
-          
-          // Successful, trigger launch
-          setIsLaunching(true);
-          setTimeout(() => {
-            setIsLaunching(false);
-            setIsUploading(false);
-            setShowSuccessToast(true);
-            setTimeout(() => {
-              setShowSuccessToast(false);
-              window.location.reload(); // Reload to fetch fresh data
-            }, 3000);
-          }, 800);
-        } else {
-          setIsUploading(false);
-          alert("No valid events found to upload.");
-        }
-      } catch (err) {
-        setIsUploading(false);
-        alert(`Upload Failed: ${err.message}`);
       }
-    };
-    reader.readAsText(file);
-    e.target.value = null; // reset input
+
+      // Successful, trigger launch
+      setIsLaunching(true);
+      setTimeout(() => {
+        setIsLaunching(false);
+        setIsUploading(false);
+        setShowSuccessToast(true);
+        setPendingChanges([]);
+        setTimeout(() => {
+          setShowSuccessToast(false);
+          // Optional: Re-fetch or reload to get real IDs for created events
+          window.location.reload();
+        }, 3000);
+      }, 800);
+
+    } catch (err) {
+      setIsUploading(false);
+      alert(`Upload Failed: ${err.message}`);
+    }
+  };
+
+  // Drag and Drop Handlers
+  const handleDragStart = (e, act, actionType) => {
+    e.stopPropagation();
+    e.dataTransfer.setData('text/plain', JSON.stringify({ eventId: act.id, actionType }));
+    // Optional: set drag image or effect
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    e.currentTarget.style.backgroundColor = 'rgba(212,175,55,0.2)'; // Highlight
+  };
+
+  const handleDragLeave = (e, originalBg) => {
+    e.currentTarget.style.backgroundColor = originalBg;
+  };
+
+  const handleDrop = (e, dropDate, originalBg) => {
+    e.preventDefault();
+    e.currentTarget.style.backgroundColor = originalBg;
+    
+    try {
+      const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+      const { eventId, actionType } = data;
+      const act = activities.find(a => a.id === eventId);
+      if (!act) return;
+
+      let newDate = act.date ? new Date(act.date) : new Date();
+      let newEndDate = act.endDate ? new Date(act.endDate) : newDate;
+
+      // Keep the time of day, just change the date
+      if (actionType === 'move') {
+        const diff = differenceInDays(dropDate, new Date(newDate.getFullYear(), newDate.getMonth(), newDate.getDate()));
+        newDate = addDays(newDate, diff);
+        newEndDate = addDays(newEndDate, diff);
+      } else if (actionType === 'resizeStart') {
+        // Must be before or equal to end date
+        const droppedAtEnd = new Date(dropDate.getFullYear(), dropDate.getMonth(), dropDate.getDate());
+        const endDay = new Date(newEndDate.getFullYear(), newEndDate.getMonth(), newEndDate.getDate());
+        if (isAfter(droppedAtEnd, endDay)) return; // Invalid
+        
+        newDate = new Date(dropDate.getFullYear(), dropDate.getMonth(), dropDate.getDate(), newDate.getHours(), newDate.getMinutes());
+      } else if (actionType === 'resizeEnd') {
+        // Must be after or equal to start date
+        const droppedAtStart = new Date(dropDate.getFullYear(), dropDate.getMonth(), dropDate.getDate());
+        const startDay = new Date(newDate.getFullYear(), newDate.getMonth(), newDate.getDate());
+        if (isBefore(droppedAtStart, startDay)) return; // Invalid
+        
+        newEndDate = new Date(dropDate.getFullYear(), dropDate.getMonth(), dropDate.getDate(), newEndDate.getHours(), newEndDate.getMinutes());
+      }
+
+      const updatedEvent = {
+        ...act,
+        date: newDate.toISOString(),
+        endDate: newEndDate.toISOString()
+      };
+
+      addPendingChange({ type: 'UPDATE', event: updatedEvent });
+
+    } catch (err) {
+      console.error("Drop error", err);
+    }
   };
 
   const renderHeader = () => {
@@ -319,10 +282,6 @@ export default function CalendarManagerClient({ initialActivities, apiUrl }) {
           <button onClick={goToToday} style={{ padding: '0.4rem 1rem', backgroundColor: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', color: 'var(--text-primary)' }}>
             Today
           </button>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 1rem', backgroundColor: 'rgba(212,175,55,0.1)', border: '1px solid var(--gold-primary)', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', color: 'var(--gold-primary)', transition: 'background-color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(212,175,55,0.2)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(212,175,55,0.1)'}>
-            <span>📤</span> Mass CSV Upload
-            <input type="file" accept=".csv" onChange={handleFileUpload} style={{ display: 'none' }} />
-          </label>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button onClick={prevMonth} style={{ padding: '0.5rem 1rem', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', color: 'var(--text-primary)' }}>&lt;</button>
@@ -362,19 +321,24 @@ export default function CalendarManagerClient({ initialActivities, apiUrl }) {
         formattedDate = format(day, 'd');
         const cloneDay = day;
         
-        const dayActs = getEventsForDay(day);
+        const { birthdays: dayBDays, activities: dayActs } = getEventsForDay(day);
         const isCurrentMonth = isSameMonth(day, monthStart);
         const today = isToday(day);
 
         let bgColor = isCurrentMonth ? 'var(--bg-primary)' : 'rgba(0,0,0,0.1)';
         let dateColor = isCurrentMonth ? 'var(--text-primary)' : 'var(--text-secondary)';
         
-        if (today) bgColor = 'rgba(212,175,55,0.05)';
+        if (today) {
+          bgColor = 'rgba(212,175,55,0.05)';
+        }
 
         days.push(
           <div
             key={day}
-            onClick={() => openNewEventModal(cloneDay)}
+            onClick={() => handleDayClick(cloneDay)}
+            onDragOver={handleDragOver}
+            onDragLeave={(e) => handleDragLeave(e, bgColor)}
+            onDrop={(e) => handleDrop(e, cloneDay, bgColor)}
             style={{
               minHeight: '120px',
               borderRight: '1px solid var(--border-color)',
@@ -389,7 +353,6 @@ export default function CalendarManagerClient({ initialActivities, apiUrl }) {
             }}
             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(212,175,55,0.1)'; }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = bgColor; }}
-            title="Click to add event"
           >
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.25rem' }}>
               <span style={{ 
@@ -408,28 +371,86 @@ export default function CalendarManagerClient({ initialActivities, apiUrl }) {
               </span>
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flexGrow: 1, overflowY: 'auto' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flexGrow: 1, overflowY: 'auto' }}>
+              {/* Birthdays (Read-Only) */}
+              {dayBDays.map((b, idx) => (
+                <div key={`bday-${idx}`} style={{ 
+                  backgroundColor: 'rgba(236,72,153,0.8)', color: 'white', padding: '2px 4px', 
+                  borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', 
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                  cursor: 'default'
+                }} onClick={(e) => e.stopPropagation()}>
+                  🎂 {b.lastName}
+                </div>
+              ))}
+              
+              {/* Activities (Draggable & Editable) */}
               {dayActs.map((act, idx) => {
                 const color = act.color || '#3b82f6';
+                
+                // Determine if this is a multi-day event and if it's the start/end segment
+                const actStart = new Date(act.date);
+                const actStartNorm = new Date(actStart.getFullYear(), actStart.getMonth(), actStart.getDate());
+                const actEnd = act.endDate ? new Date(act.endDate) : actStart;
+                const actEndNorm = new Date(actEnd.getFullYear(), actEnd.getMonth(), actEnd.getDate());
+                const dayNorm = new Date(cloneDay.getFullYear(), cloneDay.getMonth(), cloneDay.getDate());
+                
+                const isStart = actStartNorm.getTime() === dayNorm.getTime();
+                const isEnd = actEndNorm.getTime() === dayNorm.getTime();
+                const isMultiDay = actStartNorm.getTime() !== actEndNorm.getTime();
+
                 return (
                   <div 
-                    key={`act-${idx}`} 
-                    onClick={(e) => openEditEventModal(act, e)}
+                    key={`act-${act.id || idx}`}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, act, 'move')}
+                    onClick={(e) => handleEventClick(e, act)}
                     style={{ 
                       backgroundColor: color, 
                       color: 'white', 
                       padding: '2px 4px', 
-                      borderRadius: '4px', 
+                      borderRadius: isMultiDay ? (isStart ? '4px 0 0 4px' : (isEnd ? '0 4px 4px 0' : '0')) : '4px',
                       fontSize: '0.7rem', 
                       fontWeight: 'bold', 
                       whiteSpace: 'nowrap', 
                       overflow: 'hidden', 
                       textOverflow: 'ellipsis',
-                      cursor: 'pointer'
+                      cursor: 'grab',
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      opacity: 0.9,
+                      border: '1px solid rgba(255,255,255,0.2)'
                     }}
-                    title="Click to edit event"
+                    onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
+                    onMouseLeave={(e) => e.currentTarget.style.opacity = 0.9}
                   >
-                    {act.title || 'Untitled Event'}
+                    {/* Left Resize Handle */}
+                    {isStart && (
+                       <div 
+                         draggable
+                         onDragStart={(e) => handleDragStart(e, act, 'resizeStart')}
+                         onClick={(e) => e.stopPropagation()}
+                         style={{ cursor: 'ew-resize', width: '6px', height: '100%', background: 'rgba(255,255,255,0.4)', borderRadius: '2px' }}
+                         title="Drag to adjust start date"
+                       />
+                    )}
+                    
+                    <span style={{ padding: '0 4px', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {(isStart || day.getDay() === 0) ? (act.title || act.description || 'Untitled') : '\u00A0'}
+                    </span>
+
+                    {/* Right Resize Handle */}
+                    {isEnd && (
+                       <div 
+                         draggable
+                         onDragStart={(e) => handleDragStart(e, act, 'resizeEnd')}
+                         onClick={(e) => e.stopPropagation()}
+                         style={{ cursor: 'ew-resize', width: '6px', height: '100%', background: 'rgba(255,255,255,0.4)', borderRadius: '2px' }}
+                         title="Drag to adjust end date"
+                       />
+                    )}
                   </div>
                 );
               })}
@@ -454,139 +475,148 @@ export default function CalendarManagerClient({ initialActivities, apiUrl }) {
     return (
       <div style={{
         position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', zIndex: 50,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
+        backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', zIndex: 500,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem',
+        animation: 'fade-in 0.2s ease-out'
       }}>
         <div style={{
-          backgroundColor: 'var(--bg-secondary)', borderRadius: '12px', padding: '2rem',
-          width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto',
-          border: '1px solid var(--border-color)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)'
+          backgroundColor: 'var(--bg-secondary)', borderRadius: '20px', padding: '2rem',
+          width: '100%', maxWidth: '550px', maxHeight: '90vh', overflowY: 'auto',
+          border: '1px solid var(--border-color)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+          animation: 'scale-up 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--gold-primary)', margin: 0 }}>
-              {editingEvent ? 'Edit Event' : 'New Event'}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-primary)', margin: 0 }}>
+              {editingEvent ? 'Edit Activity' : 'New Activity'}
             </h3>
             <button onClick={() => setIsModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
           </div>
           
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Title *</label>
+          <form onSubmit={handleSaveEvent} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Title</label>
               <input 
-                type="text" 
-                required
-                value={formData.title}
-                onChange={e => setFormData({...formData, title: e.target.value})}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '1rem' }}
-                placeholder="Event Title"
+                type="text" required
+                value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})}
+                style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
               />
             </div>
-            
+
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Start Date *</label>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Start Date</label>
                 <input 
-                  type="date" 
-                  required
-                  value={formData.date}
-                  onChange={e => setFormData({...formData, date: e.target.value})}
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '1rem' }}
+                  type="datetime-local" required
+                  value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})}
+                  style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
                 />
               </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>End Date (Optional)</label>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>End Date</label>
                 <input 
-                  type="date" 
-                  value={formData.endDate}
-                  onChange={e => setFormData({...formData, endDate: e.target.value})}
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '1rem' }}
+                  type="datetime-local" 
+                  value={formData.endDate} onChange={e => setFormData({...formData, endDate: e.target.value})}
+                  style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
                 />
               </div>
             </div>
 
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Council</label>
-                <select 
-                  value={formData.council}
-                  onChange={e => setFormData({...formData, council: e.target.value})}
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '1rem' }}
-                >
-                  {COUNCILS.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Council/Team</label>
+                <input 
+                  type="text" 
+                  value={formData.council} onChange={e => setFormData({...formData, council: e.target.value})}
+                  style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
+                />
               </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Urgency</label>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Urgency</label>
                 <select 
-                  value={formData.urgency}
-                  onChange={e => setFormData({...formData, urgency: e.target.value})}
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '1rem' }}
+                  value={formData.urgency} onChange={e => setFormData({...formData, urgency: e.target.value})}
+                  style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
                 >
                   <option value="LIGHT">Light</option>
-                  <option value="MODERATE">Moderate</option>
+                  <option value="NORMAL">Normal</option>
+                  <option value="URGENT">Urgent</option>
                   <option value="EMERGENCY">Emergency</option>
-                  <option value="FOR IMMEDIATE COMPLIANCE">Immediate Compliance</option>
                 </select>
               </div>
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Event Color</label>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                {COLORS.map(c => (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Location (Optional)</label>
+              <input 
+                type="text" placeholder="Where will this take place?"
+                value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})}
+                style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Photos URL (Optional)</label>
+                <input 
+                  type="url" placeholder="https://..."
+                  value={formData.photos} onChange={e => setFormData({...formData, photos: e.target.value})}
+                  style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
+                />
+              </div>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Files/Drive Link (Optional)</label>
+                <input 
+                  type="url" placeholder="https://..."
+                  value={formData.files} onChange={e => setFormData({...formData, files: e.target.value})}
+                  style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Color Label</label>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                {['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6b7280'].map(color => (
                   <div 
-                    key={c.value}
-                    onClick={() => setFormData({...formData, color: c.value})}
-                    style={{
-                      width: '32px', height: '32px', borderRadius: '50%', backgroundColor: c.value,
-                      cursor: 'pointer', border: formData.color === c.value ? '3px solid white' : '2px solid transparent',
-                      boxShadow: formData.color === c.value ? `0 0 0 2px ${c.value}` : 'none'
+                    key={color}
+                    onClick={() => setFormData({...formData, color})}
+                    style={{ 
+                      width: '32px', height: '32px', borderRadius: '50%', backgroundColor: color, cursor: 'pointer',
+                      border: formData.color === color ? '3px solid #fff' : '3px solid transparent',
+                      boxShadow: formData.color === color ? `0 0 0 2px ${color}` : 'none',
+                      transition: 'all 0.2s'
                     }}
-                    title={c.label}
                   />
                 ))}
               </div>
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Description / Details</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Description / Remarks</label>
               <textarea 
-                rows={4}
-                value={formData.description}
-                onChange={e => setFormData({...formData, description: e.target.value})}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '1rem', resize: 'vertical' }}
-                placeholder="Event details..."
+                rows="4"
+                value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
+                style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none', resize: 'vertical' }}
               />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
               {editingEvent ? (
-                <button 
-                  type="button" 
-                  onClick={handleDelete}
-                  disabled={isSubmitting}
-                  style={{ padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', backgroundColor: '#ef4444', color: 'white', fontWeight: 'bold', cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.7 : 1 }}
-                >
-                  Delete Event
+                <button type="button" onClick={handleDeleteEvent} style={{ padding: '0.75rem 1.5rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
+                  Delete
                 </button>
               ) : <div></div>}
+              
               <div style={{ display: 'flex', gap: '1rem' }}>
-                <button 
-                  type="button" 
-                  onClick={() => setIsModalOpen(false)}
-                  style={{ padding: '0.75rem 1.5rem', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'transparent', color: 'var(--text-primary)', fontWeight: 'bold', cursor: 'pointer' }}
-                >
+                <button type="button" onClick={() => setIsModalOpen(false)} style={{ padding: '0.75rem 1.5rem', backgroundColor: 'transparent', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
                   Cancel
                 </button>
-                <button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                  style={{ padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', backgroundColor: 'var(--gold-primary)', color: 'black', fontWeight: 'bold', cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.7 : 1 }}
-                >
-                  {isSubmitting ? 'Saving...' : 'Save Event'}
+                <button type="submit" style={{ padding: '0.75rem 2rem', backgroundColor: 'var(--gold-primary)', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3)' }}>
+                  Save
                 </button>
               </div>
             </div>
+
           </form>
         </div>
       </div>
@@ -594,7 +624,8 @@ export default function CalendarManagerClient({ initialActivities, apiUrl }) {
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', backgroundColor: 'var(--bg-secondary)', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-color)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
+    <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', backgroundColor: 'var(--bg-secondary)', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-color)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)', position: 'relative' }}>
+      
       {showSuccessToast && (
         <div style={{
           position: 'fixed', top: '40px', left: '50%', transform: 'translateX(-50%)',
@@ -655,9 +686,30 @@ export default function CalendarManagerClient({ initialActivities, apiUrl }) {
               </>
             )}
           </div>
-          <h2 style={{ margin: 0, fontWeight: 900, letterSpacing: '0.15em', fontSize: '2rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>UPLOADING...</h2>
-          <p style={{ color: '#94a3b8', fontStyle: 'italic', marginTop: '1rem', marginBottom: '0.2rem', fontSize: '1.1rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>Parsing calendar activities.</p>
-          <p style={{ color: '#64748b', fontStyle: 'italic', margin: 0, fontSize: '0.9rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>Please stand by while I establish a secure uplink...</p>
+          <h2 style={{ margin: 0, fontWeight: 900, letterSpacing: '0.15em', fontSize: '2rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>UPLOADING CHANGES...</h2>
+          <p style={{ color: '#94a3b8', fontStyle: 'italic', marginTop: '1rem', marginBottom: '0.2rem', fontSize: '1.1rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>Syncing {pendingChanges.length} local edits with the mainframe.</p>
+        </div>
+      )}
+
+      {/* Floating Action Button for Upload */}
+      {pendingChanges.length > 0 && !isUploading && (
+        <div style={{
+          position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)',
+          backgroundColor: '#1f2937', color: '#fff', padding: '1rem 2rem', borderRadius: '999px',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', gap: '1rem',
+          zIndex: 1000, animation: 'slide-down 0.3s ease-out'
+        }}>
+          <div style={{ fontWeight: 800 }}>{pendingChanges.length} UNSAVED CHANGES</div>
+          <button 
+            onClick={handleUploadChanges}
+            style={{ 
+              backgroundColor: 'var(--gold-primary)', color: '#000', border: 'none', 
+              padding: '0.5rem 1.5rem', borderRadius: '999px', fontWeight: 900, 
+              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem'
+            }}
+          >
+            <span>🚀</span> UPLOAD TO DATABASE
+          </button>
         </div>
       )}
 
