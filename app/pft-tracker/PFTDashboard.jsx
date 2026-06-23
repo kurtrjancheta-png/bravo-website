@@ -761,7 +761,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   {selectedClass !== 'all' && (
                     <>
                       <Area 
-                        type="monotone" 
+                        type="linear" 
                         dataKey="aboveRange" 
                         fill="#10b981" 
                         fillOpacity={0.2} 
@@ -771,7 +771,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                         tooltipType="none"
                       />
                       <Area 
-                        type="monotone" 
+                        type="linear" 
                         dataKey="belowRange" 
                         fill="#ef4444" 
                         fillOpacity={0.15} 
@@ -784,7 +784,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   )}
 
                   <Line 
-                    type="monotone" 
+                    type="linear" 
                     dataKey="Overall" 
                     stroke="#FFD700" 
                     strokeWidth={selectedClass === 'all' ? 4 : 2} 
@@ -796,7 +796,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   />
                   { (selectedClass === 'all' || selectedClass === '1cl') && (
                     <Line 
-                      type="monotone" 
+                      type="linear" 
                       dataKey="1CL" 
                       stroke="#3b82f6" 
                       strokeWidth={selectedClass === '1cl' ? 4 : 2} 
@@ -807,7 +807,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   )}
                   { (selectedClass === 'all' || selectedClass === '2cl') && (
                     <Line 
-                      type="monotone" 
+                      type="linear" 
                       dataKey="2CL" 
                       stroke="#ef4444" 
                       strokeWidth={selectedClass === '2cl' ? 4 : 2} 
@@ -818,7 +818,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   )}
                   { (selectedClass === 'all' || selectedClass === '3cl') && (
                     <Line 
-                      type="monotone" 
+                      type="linear" 
                       dataKey="3CL" 
                       stroke="#FFFF00" 
                       strokeWidth={selectedClass === '3cl' ? 4 : 2} 
