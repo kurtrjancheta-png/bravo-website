@@ -419,17 +419,9 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
     else if (selectedClass === '2cl') activeClassVal = c2;
     else if (selectedClass === '3cl') activeClassVal = c3;
 
-    let aboveRange = null;
-    let belowRange = null;
-    
+    let diffRange = null;
     if (activeClassVal !== null && overall !== null) {
-      if (activeClassVal >= overall) {
-        aboveRange = [overall, activeClassVal];
-        belowRange = [overall, overall]; // flat line to maintain continuity if interpolation requires it
-      } else {
-        belowRange = [activeClassVal, overall];
-        aboveRange = [overall, overall]; // flat line
-      }
+      diffRange = [overall, activeClassVal];
     }
 
     return {
@@ -438,8 +430,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
       '1CL': c1,
       '2CL': c2,
       '3CL': c3,
-      aboveRange,
-      belowRange
+      diffRange
     };
   });
 
@@ -549,6 +540,51 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
   };
 
   const remediation = activeInsights.weakestEvent ? getRemediationRecommendation(activeInsights.weakestEvent.key) : getRemediationRecommendation('general');
+
+  // Calculate precise horizontal gradient stops to color the difference area
+  const getGradientStops = () => {
+    if (selectedClass === 'all' || averageGradesData.length === 0) return null;
+    
+    const stops = [];
+    const classKey = selectedClass.toUpperCase();
+    
+    // Safety check
+    if (averageGradesData[0][classKey] === undefined || averageGradesData[0]['Overall'] === undefined) return null;
+
+    let currentIsAbove = averageGradesData[0][classKey] >= averageGradesData[0]['Overall'];
+    stops.push(<stop key="start" offset="0%" stopColor={currentIsAbove ? "#10b981" : "#ef4444"} stopOpacity={0.2} />);
+
+    for (let i = 0; i < averageGradesData.length - 1; i++) {
+      const d1 = averageGradesData[i];
+      const d2 = averageGradesData[i + 1];
+      
+      const val1 = d1[classKey];
+      const ov1 = d1['Overall'];
+      const val2 = d2[classKey];
+      const ov2 = d2['Overall'];
+      
+      if (val1 === null || ov1 === null || val2 === null || ov2 === null) continue;
+
+      const diff1 = val1 - ov1;
+      const diff2 = val2 - ov2;
+
+      // If they cross paths
+      if ((diff1 > 0 && diff2 < 0) || (diff1 < 0 && diff2 > 0)) {
+        // Calculate exact horizontal percentage of intersection
+        const t = Math.abs(diff1) / (Math.abs(diff1) + Math.abs(diff2));
+        const offsetPercent = ((i + t) / (averageGradesData.length - 1)) * 100;
+        
+        // Add double stop for sharp color transition
+        stops.push(<stop key={`stop1-${i}`} offset={`${offsetPercent}%`} stopColor={diff1 >= 0 ? "#10b981" : "#ef4444"} stopOpacity={0.2} />);
+        stops.push(<stop key={`stop2-${i}`} offset={`${offsetPercent}%`} stopColor={diff2 >= 0 ? "#10b981" : "#ef4444"} stopOpacity={0.2} />);
+        
+        currentIsAbove = diff2 >= 0;
+      }
+    }
+    
+    stops.push(<stop key="end" offset="100%" stopColor={currentIsAbove ? "#10b981" : "#ef4444"} stopOpacity={0.2} />);
+    return stops;
+  };
 
   return (
     <div>
@@ -744,6 +780,11 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   <YAxis stroke="var(--text-secondary)" domain={gradeYDomain} tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }} />
                   <Tooltip itemSorter={(item) => -item.value} contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'var(--text-primary)' }} />
                   <Legend wrapperStyle={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', paddingTop: 10 }} />
+                  <defs>
+                    <linearGradient id="splitColor" x1="0" y1="0" x2="1" y2="0">
+                      {getGradientStops()}
+                    </linearGradient>
+                  </defs>
                   
                   {/* Reference Area for sweet spot 8.0 - 8.5 */}
                   {selectedClass === 'all' ? (
@@ -759,32 +800,19 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
 
                   {/* Soft green/red Area for difference region */}
                   {selectedClass !== 'all' && (
-                    <>
-                      <Area 
-                        type="linear" 
-                        dataKey="aboveRange" 
-                        fill="#10b981" 
-                        fillOpacity={0.2} 
-                        stroke="none" 
-                        isAnimationActive={false}
-                        activeDot={false}
-                        tooltipType="none"
-                      />
-                      <Area 
-                        type="linear" 
-                        dataKey="belowRange" 
-                        fill="#ef4444" 
-                        fillOpacity={0.15} 
-                        stroke="none" 
-                        isAnimationActive={false}
-                        activeDot={false}
-                        tooltipType="none"
-                      />
-                    </>
+                    <Area 
+                      type="monotone" 
+                      dataKey="diffRange" 
+                      fill="url(#splitColor)" 
+                      stroke="none" 
+                      isAnimationActive={false}
+                      activeDot={false}
+                      tooltipType="none"
+                    />
                   )}
 
                   <Line 
-                    type="linear" 
+                    type="monotone" 
                     dataKey="Overall" 
                     stroke="#FFD700" 
                     strokeWidth={selectedClass === 'all' ? 4 : 2} 
@@ -796,7 +824,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   />
                   { (selectedClass === 'all' || selectedClass === '1cl') && (
                     <Line 
-                      type="linear" 
+                      type="monotone" 
                       dataKey="1CL" 
                       stroke="#3b82f6" 
                       strokeWidth={selectedClass === '1cl' ? 4 : 2} 
@@ -807,7 +835,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   )}
                   { (selectedClass === 'all' || selectedClass === '2cl') && (
                     <Line 
-                      type="linear" 
+                      type="monotone" 
                       dataKey="2CL" 
                       stroke="#ef4444" 
                       strokeWidth={selectedClass === '2cl' ? 4 : 2} 
@@ -818,7 +846,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   )}
                   { (selectedClass === 'all' || selectedClass === '3cl') && (
                     <Line 
-                      type="linear" 
+                      type="monotone" 
                       dataKey="3CL" 
                       stroke="#FFFF00" 
                       strokeWidth={selectedClass === '3cl' ? 4 : 2} 
