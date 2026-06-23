@@ -324,26 +324,26 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
   const progressChartData = [
     {
       name: 'Mock PFT',
-      'Overall': getPassRateForPFT(mockData, 'all'),
+      'Company Average': getPassRateForPFT(mockData, 'all'),
       '1CL': getPassRateForPFT(mockData, '1cl'),
       '2CL': getPassRateForPFT(mockData, '2cl'),
       '3CL': getPassRateForPFT(mockData, '3cl'),
     },
     {
       name: 'PFT 1',
-      'Overall': getPassRateForPFT(pft1Data, 'all'),
+      'Company Average': getPassRateForPFT(pft1Data, 'all'),
       '1CL': getPassRateForPFT(pft1Data, '1cl'),
       '2CL': getPassRateForPFT(pft1Data, '2cl'),
       '3CL': getPassRateForPFT(pft1Data, '3cl'),
     },
     {
       name: 'PFT 2',
-      'Overall': getPassRateForPFT(pft2Data, 'all'),
+      'Company Average': getPassRateForPFT(pft2Data, 'all'),
       '1CL': getPassRateForPFT(pft2Data, '1cl'),
       '2CL': getPassRateForPFT(pft2Data, '2cl'),
       '3CL': getPassRateForPFT(pft2Data, '3cl'),
     }
-  ].filter(item => item.Overall !== null);
+  ].filter(item => item['Company Average'] !== null);
 
   // Calculate dynamic Y-axis domain based on the min/max values in data to highlight small variations
   const getYDomain = () => {
@@ -353,7 +353,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
     let maxVal = 0;
     
     progressChartData.forEach(item => {
-      ['Overall', '1CL', '2CL', '3CL'].forEach(key => {
+      ['Company Average', '1CL', '2CL', '3CL'].forEach(key => {
         const val = item[key];
         if (val !== null && val !== undefined) {
           if (val < minVal) minVal = val;
@@ -426,7 +426,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
 
     return {
       event: evt.event,
-      'Overall': overall,
+      'Company Average': overall,
       '1CL': c1,
       '2CL': c2,
       '3CL': c3,
@@ -439,7 +439,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
     let minVal = 10;
     let maxVal = 0;
     averageGradesData.forEach(item => {
-      ['Overall', '1CL', '2CL', '3CL'].forEach(key => {
+      ['Company Average', '1CL', '2CL', '3CL'].forEach(key => {
         const val = item[key];
         if (val !== null && val !== undefined && val > 0) {
           if (val < minVal) minVal = val;
@@ -468,16 +468,16 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
     return `Average Event Grades (${pftTypes[selectedPFT].label})`;
   };
 
-  // Line styling highlighting based on selectedClass dropdown filter
-  const isLineActive = (classKey) => {
-    if (selectedClass === 'all') return true;
-    return selectedClass.toUpperCase() === classKey.toUpperCase() || classKey === 'Overall';
-  };
-
   // Bar opacity styling based on selectedClass dropdown filter
   const isBarActive = (classKey) => {
     if (selectedClass === 'all') return true;
-    return selectedClass.toLowerCase() === classKey.toLowerCase() || classKey === 'Overall';
+    return selectedClass.toUpperCase() === classKey.toUpperCase() || classKey === 'Company Average';
+  };
+
+  // Line styling highlighting based on selectedClass dropdown filter
+  const isLineActive = (classKey) => {
+    if (selectedClass === 'all') return true;
+    return selectedClass.toLowerCase() === classKey.toLowerCase() || classKey === 'Company Average';
   };
 
   // Get active insights for the modal
@@ -549,9 +549,9 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
     const classKey = selectedClass.toUpperCase();
     
     // Safety check
-    if (averageGradesData[0][classKey] === undefined || averageGradesData[0]['Overall'] === undefined) return null;
+    if (averageGradesData[0][classKey] === undefined || averageGradesData[0]['Company Average'] === undefined) return null;
 
-    let currentIsAbove = averageGradesData[0][classKey] >= averageGradesData[0]['Overall'];
+    let currentIsAbove = averageGradesData[0][classKey] >= averageGradesData[0]['Company Average'];
     stops.push(<stop key="start" offset="0%" stopColor={currentIsAbove ? "#10b981" : "#ef4444"} stopOpacity={0.2} />);
 
     for (let i = 0; i < averageGradesData.length - 1; i++) {
@@ -559,9 +559,9 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
       const d2 = averageGradesData[i + 1];
       
       const val1 = d1[classKey];
-      const ov1 = d1['Overall'];
+      const ov1 = d1['Company Average'];
       const val2 = d2[classKey];
-      const ov2 = d2['Overall'];
+      const ov2 = d2['Company Average'];
       
       if (val1 === null || ov1 === null || val2 === null || ov2 === null) continue;
 
@@ -723,12 +723,12 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                     <Tooltip itemSorter={(item) => -item.value} contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'var(--text-primary)' }} />
                     <Legend wrapperStyle={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', paddingTop: 10 }} />
                     <Bar 
-                      dataKey="Overall" 
+                      dataKey="Company Average" 
                       fill="#FFD700" 
-                      fillOpacity={isBarActive('Overall') ? 1.0 : 0.25} 
+                      fillOpacity={isBarActive('Company Average') ? 1.0 : 0.25} 
                       radius={[4, 4, 0, 0]} 
-                      name="Overall" 
-                      style={{ filter: isBarActive('Overall') ? 'drop-shadow(0px 0px 8px rgba(255,215,0,0.8))' : 'none' }}
+                      name="Company Average" 
+                      style={{ filter: isBarActive('Company Average') ? 'drop-shadow(0px 0px 8px rgba(255,215,0,0.8))' : 'none' }}
                     />
                     <Bar 
                       dataKey="1CL" 
@@ -813,14 +813,14 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
 
                   <Line 
                     type="monotone" 
-                    dataKey="Overall" 
+                    dataKey="Company Average" 
                     stroke="#FFD700" 
                     strokeWidth={selectedClass === 'all' ? 4 : 2} 
-                    strokeOpacity={isLineActive('Overall') ? 1.0 : 0.25}
+                    strokeOpacity={isLineActive('Company Average') ? 1.0 : 0.25}
                     activeDot={{ r: 8, fill: '#FFD700', stroke: '#fff' }} 
                     dot={{ r: 5, fill: '#FFD700' }} 
-                    name="Overall" 
-                    style={{ filter: isLineActive('Overall') ? 'drop-shadow(0px 0px 8px rgba(255,215,0,0.8))' : 'none' }}
+                    name="Company Average" 
+                    style={{ filter: isLineActive('Company Average') ? 'drop-shadow(0px 0px 8px rgba(255,215,0,0.8))' : 'none' }}
                   />
                   { (selectedClass === 'all' || selectedClass === '1cl') && (
                     <Line 
@@ -1175,28 +1175,28 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                           'Mock PFT': selectedCadet.mock?.scores?.pushups, 
                           'PFT 1': selectedCadet.pft1?.scores?.pushups, 
                           'PFT 2': selectedCadet.pft2?.scores?.pushups,
-                          'Overall': [selectedCadet.mock?.scores?.pushups, selectedCadet.pft1?.scores?.pushups, selectedCadet.pft2?.scores?.pushups].filter(v => v !== undefined && v !== null).reduce((a, b, _, arr) => a + b / arr.length, 0)
+                          'Personal Average': [selectedCadet.mock?.scores?.pushups, selectedCadet.pft1?.scores?.pushups, selectedCadet.pft2?.scores?.pushups].filter(v => v !== undefined && v !== null).reduce((a, b, _, arr) => a + b / arr.length, 0)
                         },
                         { 
                           event: 'Sit-ups', 
                           'Mock PFT': selectedCadet.mock?.scores?.situps, 
                           'PFT 1': selectedCadet.pft1?.scores?.situps, 
                           'PFT 2': selectedCadet.pft2?.scores?.situps,
-                          'Overall': [selectedCadet.mock?.scores?.situps, selectedCadet.pft1?.scores?.situps, selectedCadet.pft2?.scores?.situps].filter(v => v !== undefined && v !== null).reduce((a, b, _, arr) => a + b / arr.length, 0)
+                          'Personal Average': [selectedCadet.mock?.scores?.situps, selectedCadet.pft1?.scores?.situps, selectedCadet.pft2?.scores?.situps].filter(v => v !== undefined && v !== null).reduce((a, b, _, arr) => a + b / arr.length, 0)
                         },
                         { 
                           event: 'Pull-ups', 
                           'Mock PFT': selectedCadet.mock?.scores?.pullups, 
                           'PFT 1': selectedCadet.pft1?.scores?.pullups, 
                           'PFT 2': selectedCadet.pft2?.scores?.pullups,
-                          'Overall': [selectedCadet.mock?.scores?.pullups, selectedCadet.pft1?.scores?.pullups, selectedCadet.pft2?.scores?.pullups].filter(v => v !== undefined && v !== null).reduce((a, b, _, arr) => a + b / arr.length, 0)
+                          'Personal Average': [selectedCadet.mock?.scores?.pullups, selectedCadet.pft1?.scores?.pullups, selectedCadet.pft2?.scores?.pullups].filter(v => v !== undefined && v !== null).reduce((a, b, _, arr) => a + b / arr.length, 0)
                         },
                         { 
                           event: '3.2KM Run', 
                           'Mock PFT': selectedCadet.mock?.scores?.run, 
                           'PFT 1': selectedCadet.pft1?.scores?.run, 
                           'PFT 2': selectedCadet.pft2?.scores?.run,
-                          'Overall': [selectedCadet.mock?.scores?.run, selectedCadet.pft1?.scores?.run, selectedCadet.pft2?.scores?.run].filter(v => v !== undefined && v !== null).reduce((a, b, _, arr) => a + b / arr.length, 0)
+                          'Personal Average': [selectedCadet.mock?.scores?.run, selectedCadet.pft1?.scores?.run, selectedCadet.pft2?.scores?.run].filter(v => v !== undefined && v !== null).reduce((a, b, _, arr) => a + b / arr.length, 0)
                         }
                       ]} 
                       margin={{ top: 5, right: 30, left: -20, bottom: 5 }}
@@ -1213,7 +1213,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                       <Line type="monotone" dataKey="Mock PFT" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} connectNulls />
                       <Line type="monotone" dataKey="PFT 1" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} connectNulls />
                       <Line type="monotone" dataKey="PFT 2" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} connectNulls />
-                      <Line type="monotone" dataKey="Overall" stroke="#d97706" strokeWidth={3} strokeDasharray="5 5" activeDot={{ r: 8 }} connectNulls />
+                      <Line type="monotone" dataKey="Personal Average" stroke="#d97706" strokeWidth={3} strokeDasharray="5 5" activeDot={{ r: 8 }} connectNulls />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
