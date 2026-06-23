@@ -1203,7 +1203,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
 
                 const analyzeEvent = (evtKey, name) => {
                   const s = extractScores(evtKey);
-                  const valid = [s.mock, s.pft1, s.pft2].filter(v => typeof v === 'number' && v > 0);
+                  const valid = [s.mock, s.pft1, s.pft2].filter(v => v !== undefined && v !== null);
                   if (valid.length === 0) return { key: evtKey, name, avg: 0, latest: 0, previous: null, trend: 'No Data' };
                   
                   const avg = valid.reduce((a, b) => a + b, 0) / valid.length;
@@ -1224,7 +1224,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   analyzeEvent('situps', 'Sit-ups'),
                   analyzeEvent('pullups', 'Pull-ups'),
                   analyzeEvent('run', '3.2KM Run')
-                ].filter(e => e.latest > 0);
+                ].filter(e => e.trend !== 'No Data');
 
                 if (events.length === 0) {
                   return <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem' }}>No performance data to analyze yet.</div>;
