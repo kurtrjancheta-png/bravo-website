@@ -710,7 +710,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                     />
                     <Bar 
                       dataKey="3CL" 
-                      fill="#FFD100" 
+                      fill="#FFFF00" 
                       fillOpacity={isBarActive('3cl') ? 1.0 : 0.25} 
                       radius={[4, 4, 0, 0]} 
                       name="3CL" 
@@ -820,7 +820,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                     <Line 
                       type="monotone" 
                       dataKey="3CL" 
-                      stroke="#FFD100" 
+                      stroke="#FFFF00" 
                       strokeWidth={selectedClass === '3cl' ? 4 : 2} 
                       strokeOpacity={isLineActive('3cl') ? 1.0 : 0.25}
                       dot={{ r: 4 }} 
@@ -1078,7 +1078,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                           <div key={ck} className="pft-remediation-box" style={{ marginTop: 0 }}>
                             <div className="pft-remediation-title">
                               <span style={{ 
-                                backgroundColor: ck === '1cl' ? '#3b82f6' : ck === '2cl' ? '#ef4444' : '#FFD100', 
+                                backgroundColor: ck === '1cl' ? '#3b82f6' : ck === '2cl' ? '#ef4444' : '#FFFF00', 
                                 color: ck === '3cl' ? '#000' : '#fff',
                                 padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', marginRight: '0.75rem', fontWeight: 800
                               }}>{ck.toUpperCase()}</span>
