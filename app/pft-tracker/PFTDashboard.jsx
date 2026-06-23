@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { 
+  ComposedChart,
+  Area,
   LineChart, 
   Line, 
   BarChart,
@@ -402,35 +404,44 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
 
   // Construct BarChart data for event point averages
   const averageGradesData = [
-    {
-      event: 'Push-ups',
-      'Overall': getEventAverage(selectedPFT, 'all', 'pushups'),
-      '1CL': getEventAverage(selectedPFT, '1cl', 'pushups'),
-      '2CL': getEventAverage(selectedPFT, '2cl', 'pushups'),
-      '3CL': getEventAverage(selectedPFT, '3cl', 'pushups'),
-    },
-    {
-      event: 'Sit-ups',
-      'Overall': getEventAverage(selectedPFT, 'all', 'situps'),
-      '1CL': getEventAverage(selectedPFT, '1cl', 'situps'),
-      '2CL': getEventAverage(selectedPFT, '2cl', 'situps'),
-      '3CL': getEventAverage(selectedPFT, '3cl', 'situps'),
-    },
-    {
-      event: 'Pullups/Flexarm', // Displays Pullups/Flexarm as requested
-      'Overall': getEventAverage(selectedPFT, 'all', 'pullups'),
-      '1CL': getEventAverage(selectedPFT, '1cl', 'pullups'),
-      '2CL': getEventAverage(selectedPFT, '2cl', 'pullups'),
-      '3CL': getEventAverage(selectedPFT, '3cl', 'pullups'),
-    },
-    {
-      event: '3.2KM Run',
-      'Overall': getEventAverage(selectedPFT, 'all', 'run'),
-      '1CL': getEventAverage(selectedPFT, '1cl', 'run'),
-      '2CL': getEventAverage(selectedPFT, '2cl', 'run'),
-      '3CL': getEventAverage(selectedPFT, '3cl', 'run'),
+    { event: 'Push-ups', key: 'pushups' },
+    { event: 'Sit-ups', key: 'situps' },
+    { event: 'Pullups/Flexarm', key: 'pullups' }, // Displays Pullups/Flexarm as requested
+    { event: '3.2KM Run', key: 'run' }
+  ].map(evt => {
+    const overall = getEventAverage(selectedPFT, 'all', evt.key);
+    const c1 = getEventAverage(selectedPFT, '1cl', evt.key);
+    const c2 = getEventAverage(selectedPFT, '2cl', evt.key);
+    const c3 = getEventAverage(selectedPFT, '3cl', evt.key);
+    
+    let activeClassVal = null;
+    if (selectedClass === '1cl') activeClassVal = c1;
+    else if (selectedClass === '2cl') activeClassVal = c2;
+    else if (selectedClass === '3cl') activeClassVal = c3;
+
+    let aboveRange = null;
+    let belowRange = null;
+    
+    if (activeClassVal !== null && overall !== null) {
+      if (activeClassVal >= overall) {
+        aboveRange = [overall, activeClassVal];
+        belowRange = [overall, overall]; // flat line to maintain continuity if interpolation requires it
+      } else {
+        belowRange = [activeClassVal, overall];
+        aboveRange = [overall, overall]; // flat line
+      }
     }
-  ];
+
+    return {
+      event: evt.event,
+      'Overall': overall,
+      '1CL': c1,
+      '2CL': c2,
+      '3CL': c3,
+      aboveRange,
+      belowRange
+    };
+  });
 
   // Dynamic Y-axis scale for Grades LineChart (zoomed in to accentuate variance)
   const getGradeYDomain = () => {
@@ -727,7 +738,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
             </div>
             <div style={{ width: '100%', height: 350, marginTop: '0.5rem' }}>
               <ResponsiveContainer>
-                <LineChart data={averageGradesData} margin={{ top: 15, right: 30, left: -20, bottom: 5 }}>
+                <ComposedChart data={averageGradesData} margin={{ top: 15, right: 30, left: -20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                   <XAxis dataKey="event" stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }} />
                   <YAxis stroke="var(--text-secondary)" domain={gradeYDomain} tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }} />
@@ -738,6 +749,32 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   <ReferenceArea y1={8.0} y2={8.5} fill="#10b981" fillOpacity={0.12} />
                   {/* Reference Line for passing threshold 7.0 */}
                   <ReferenceLine y={7.0} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1.5} label={{ value: 'Pass: 7.0', fill: '#ef4444', fontSize: 10, position: 'top', fontWeight: 600 }} />
+
+                  {/* Soft green/red Area for difference region */}
+                  {selectedClass !== 'all' && (
+                    <>
+                      <Area 
+                        type="monotone" 
+                        dataKey="aboveRange" 
+                        fill="#10b981" 
+                        fillOpacity={0.2} 
+                        stroke="none" 
+                        isAnimationActive={false}
+                        activeDot={false}
+                        tooltipType="none"
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="belowRange" 
+                        fill="#ef4444" 
+                        fillOpacity={0.15} 
+                        stroke="none" 
+                        isAnimationActive={false}
+                        activeDot={false}
+                        tooltipType="none"
+                      />
+                    </>
+                  )}
 
                   <Line 
                     type="monotone" 
@@ -777,7 +814,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                     dot={{ r: 4 }} 
                     name="3CL" 
                   />
-                </LineChart>
+                </ComposedChart>
               </ResponsiveContainer>
             </div>
           </div>
