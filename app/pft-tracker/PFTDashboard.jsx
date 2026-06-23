@@ -688,11 +688,11 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                     <Legend wrapperStyle={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', paddingTop: 10 }} />
                     <Bar 
                       dataKey="Overall" 
-                      fill="#D4AF37" 
+                      fill="#A67C00" 
                       fillOpacity={isBarActive('Overall') ? 1.0 : 0.25} 
                       radius={[4, 4, 0, 0]} 
                       name="Overall" 
-                      style={{ filter: isBarActive('Overall') ? 'drop-shadow(0px 0px 8px rgba(212,175,55,0.8))' : 'none' }}
+                      style={{ filter: isBarActive('Overall') ? 'drop-shadow(0px 0px 8px rgba(166,124,0,0.8))' : 'none' }}
                     />
                     <Bar 
                       dataKey="1CL" 
@@ -710,7 +710,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                     />
                     <Bar 
                       dataKey="3CL" 
-                      fill="#eab308" 
+                      fill="#FFD100" 
                       fillOpacity={isBarActive('3cl') ? 1.0 : 0.25} 
                       radius={[4, 4, 0, 0]} 
                       name="3CL" 
@@ -779,13 +779,13 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   <Line 
                     type="monotone" 
                     dataKey="Overall" 
-                    stroke="#D4AF37" 
+                    stroke="#A67C00" 
                     strokeWidth={selectedClass === 'all' ? 4 : 2} 
                     strokeOpacity={isLineActive('Overall') ? 1.0 : 0.25}
-                    activeDot={{ r: 8, fill: '#D4AF37', stroke: '#fff' }} 
-                    dot={{ r: 5, fill: '#D4AF37' }} 
+                    activeDot={{ r: 8, fill: '#A67C00', stroke: '#fff' }} 
+                    dot={{ r: 5, fill: '#A67C00' }} 
                     name="Overall" 
-                    style={{ filter: isLineActive('Overall') ? 'drop-shadow(0px 0px 8px rgba(212,175,55,0.8))' : 'none' }}
+                    style={{ filter: isLineActive('Overall') ? 'drop-shadow(0px 0px 8px rgba(166,124,0,0.8))' : 'none' }}
                   />
                   <Line 
                     type="monotone" 
@@ -808,7 +808,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   <Line 
                     type="monotone" 
                     dataKey="3CL" 
-                    stroke="#eab308" 
+                    stroke="#FFD100" 
                     strokeWidth={selectedClass === '3cl' ? 4 : 2} 
                     strokeOpacity={isLineActive('3cl') ? 1.0 : 0.25}
                     dot={{ r: 4 }} 
@@ -1065,7 +1065,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                           <div key={ck} className="pft-remediation-box" style={{ marginTop: 0 }}>
                             <div className="pft-remediation-title">
                               <span style={{ 
-                                backgroundColor: ck === '1cl' ? '#3b82f6' : ck === '2cl' ? '#ef4444' : '#eab308', 
+                                backgroundColor: ck === '1cl' ? '#3b82f6' : ck === '2cl' ? '#ef4444' : '#FFD100', 
                                 color: ck === '3cl' ? '#000' : '#fff',
                                 padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', marginRight: '0.75rem', fontWeight: 800
                               }}>{ck.toUpperCase()}</span>
