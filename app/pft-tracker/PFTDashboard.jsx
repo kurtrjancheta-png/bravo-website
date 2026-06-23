@@ -746,7 +746,14 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   <Legend wrapperStyle={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', paddingTop: 10 }} />
                   
                   {/* Reference Area for sweet spot 8.0 - 8.5 */}
-                  <ReferenceArea y1={8.0} y2={8.5} fill="#10b981" fillOpacity={0.12} />
+                  {selectedClass === 'all' ? (
+                    <ReferenceArea y1={8.0} y2={8.5} fill="#10b981" fillOpacity={0.12} />
+                  ) : (
+                    <>
+                      <ReferenceLine y={8.0} stroke="#A67C00" strokeOpacity={0.5} strokeDasharray="4 4" />
+                      <ReferenceLine y={8.5} stroke="#A67C00" strokeOpacity={0.5} strokeDasharray="4 4" />
+                    </>
+                  )}
                   {/* Reference Line for passing threshold 7.0 */}
                   <ReferenceLine y={7.0} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1.5} label={{ value: 'Pass: 7.0', fill: '#ef4444', fontSize: 10, position: 'top', fontWeight: 600 }} />
 
@@ -787,33 +794,39 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                     name="Overall" 
                     style={{ filter: isLineActive('Overall') ? 'drop-shadow(0px 0px 8px rgba(166,124,0,0.8))' : 'none' }}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="1CL" 
-                    stroke="#3b82f6" 
-                    strokeWidth={selectedClass === '1cl' ? 4 : 2} 
-                    strokeOpacity={isLineActive('1cl') ? 1.0 : 0.25}
-                    dot={{ r: 4 }} 
-                    name="1CL" 
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="2CL" 
-                    stroke="#ef4444" 
-                    strokeWidth={selectedClass === '2cl' ? 4 : 2} 
-                    strokeOpacity={isLineActive('2cl') ? 1.0 : 0.25}
-                    dot={{ r: 4 }} 
-                    name="2CL" 
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="3CL" 
-                    stroke="#FFD100" 
-                    strokeWidth={selectedClass === '3cl' ? 4 : 2} 
-                    strokeOpacity={isLineActive('3cl') ? 1.0 : 0.25}
-                    dot={{ r: 4 }} 
-                    name="3CL" 
-                  />
+                  { (selectedClass === 'all' || selectedClass === '1cl') && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="1CL" 
+                      stroke="#3b82f6" 
+                      strokeWidth={selectedClass === '1cl' ? 4 : 2} 
+                      strokeOpacity={isLineActive('1cl') ? 1.0 : 0.25}
+                      dot={{ r: 4 }} 
+                      name="1CL" 
+                    />
+                  )}
+                  { (selectedClass === 'all' || selectedClass === '2cl') && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="2CL" 
+                      stroke="#ef4444" 
+                      strokeWidth={selectedClass === '2cl' ? 4 : 2} 
+                      strokeOpacity={isLineActive('2cl') ? 1.0 : 0.25}
+                      dot={{ r: 4 }} 
+                      name="2CL" 
+                    />
+                  )}
+                  { (selectedClass === 'all' || selectedClass === '3cl') && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="3CL" 
+                      stroke="#FFD100" 
+                      strokeWidth={selectedClass === '3cl' ? 4 : 2} 
+                      strokeOpacity={isLineActive('3cl') ? 1.0 : 0.25}
+                      dot={{ r: 4 }} 
+                      name="3CL" 
+                    />
+                  )}
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
