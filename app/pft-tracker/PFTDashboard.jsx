@@ -186,9 +186,27 @@ function getPFTInsights(pftData, classKey) {
   ['1cl', '2cl', '3cl'].forEach(ck => {
     const clsActive = [...(pftData[ck]?.passed || []), ...(pftData[ck]?.failed || []), ...(pftData[ck]?.smc || [])];
     const clsPassed = pftData[ck]?.passed || [];
+    
+    let classWeakestEvent = null;
+    if (clsActive.length > 0) {
+      const clsPushupsPassRate = (clsActive.filter(c => c.scores && c.scores.pushups >= 7.0).length / clsActive.length) * 100;
+      const clsSitupsPassRate = (clsActive.filter(c => c.scores && c.scores.situps >= 7.0).length / clsActive.length) * 100;
+      const clsPullupsPassRate = (clsActive.filter(c => c.scores && c.scores.pullups >= 7.0).length / clsActive.length) * 100;
+      const clsRunPassRate = (clsActive.filter(c => c.scores && c.scores.run >= 7.0).length / clsActive.length) * 100;
+      
+      const clsEvents = [
+        { name: 'Push-ups', rate: clsPushupsPassRate, key: 'pushups' },
+        { name: 'Sit-ups', rate: clsSitupsPassRate, key: 'situps' },
+        { name: 'Pull-ups', rate: clsPullupsPassRate, key: 'pullups' },
+        { name: '3.2KM Run', rate: clsRunPassRate, key: 'run' }
+      ].sort((a, b) => a.rate - b.rate);
+      classWeakestEvent = clsEvents[0];
+    }
+
     classBreakdown[ck] = {
       total: clsActive.length,
-      passRate: clsActive.length > 0 ? (clsPassed.length / clsActive.length) * 100 : null
+      passRate: clsActive.length > 0 ? (clsPassed.length / clsActive.length) * 100 : null,
+      weakestEvent: classWeakestEvent
     };
   });
   
@@ -655,14 +673,15 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                     <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }} />
                     <YAxis stroke="var(--text-secondary)" unit="%" domain={yDomain} tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }} />
-                    <Tooltip contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'var(--text-primary)' }} />
+                    <Tooltip itemSorter={(item) => -item.value} contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'var(--text-primary)' }} />
                     <Legend wrapperStyle={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', paddingTop: 10 }} />
                     <Bar 
                       dataKey="Overall" 
-                      fill="#d97706" 
+                      fill="#D4AF37" 
                       fillOpacity={isBarActive('Overall') ? 1.0 : 0.25} 
                       radius={[4, 4, 0, 0]} 
                       name="Overall" 
+                      style={{ filter: isBarActive('Overall') ? 'drop-shadow(0px 0px 8px rgba(212,175,55,0.8))' : 'none' }}
                     />
                     <Bar 
                       dataKey="1CL" 
@@ -673,14 +692,14 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                     />
                     <Bar 
                       dataKey="2CL" 
-                      fill="#10b981" 
+                      fill="#ef4444" 
                       fillOpacity={isBarActive('2cl') ? 1.0 : 0.25} 
                       radius={[4, 4, 0, 0]} 
                       name="2CL" 
                     />
                     <Bar 
                       dataKey="3CL" 
-                      fill="#8b5cf6" 
+                      fill="#eab308" 
                       fillOpacity={isBarActive('3cl') ? 1.0 : 0.25} 
                       radius={[4, 4, 0, 0]} 
                       name="3CL" 
@@ -712,7 +731,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                   <XAxis dataKey="event" stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }} />
                   <YAxis stroke="var(--text-secondary)" domain={gradeYDomain} tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }} />
-                  <Tooltip contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'var(--text-primary)' }} />
+                  <Tooltip itemSorter={(item) => -item.value} contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'var(--text-primary)' }} />
                   <Legend wrapperStyle={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', paddingTop: 10 }} />
                   
                   {/* Reference Area for sweet spot 8.0 - 8.5 */}
@@ -723,12 +742,13 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   <Line 
                     type="monotone" 
                     dataKey="Overall" 
-                    stroke="#d97706" 
+                    stroke="#D4AF37" 
                     strokeWidth={selectedClass === 'all' ? 4 : 2} 
                     strokeOpacity={isLineActive('Overall') ? 1.0 : 0.25}
-                    activeDot={{ r: 8 }} 
-                    dot={{ r: 5 }} 
+                    activeDot={{ r: 8, fill: '#D4AF37', stroke: '#fff' }} 
+                    dot={{ r: 5, fill: '#D4AF37' }} 
                     name="Overall" 
+                    style={{ filter: isLineActive('Overall') ? 'drop-shadow(0px 0px 8px rgba(212,175,55,0.8))' : 'none' }}
                   />
                   <Line 
                     type="monotone" 
@@ -742,7 +762,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   <Line 
                     type="monotone" 
                     dataKey="2CL" 
-                    stroke="#10b981" 
+                    stroke="#ef4444" 
                     strokeWidth={selectedClass === '2cl' ? 4 : 2} 
                     strokeOpacity={isLineActive('2cl') ? 1.0 : 0.25}
                     dot={{ r: 4 }} 
@@ -751,7 +771,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   <Line 
                     type="monotone" 
                     dataKey="3CL" 
-                    stroke="#8b5cf6" 
+                    stroke="#eab308" 
                     strokeWidth={selectedClass === '3cl' ? 4 : 2} 
                     strokeOpacity={isLineActive('3cl') ? 1.0 : 0.25}
                     dot={{ r: 4 }} 
@@ -997,24 +1017,55 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   </div>
 
                   {/* Actionable remediation plan */}
-                  <div className="pft-remediation-box">
-                    <div className="pft-remediation-title">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                        <line x1="12" y1="9" x2="12" y2="13"></line>
-                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                      </svg>
-                      {remediation.title}
+                  {selectedClass === 'all' ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem' }}>
+                      <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', fontWeight: 700, margin: 0 }}>Class-Specific Strategies</h3>
+                      {['1cl', '2cl', '3cl'].map(ck => {
+                        const cb = activeInsights.classBreakdown[ck];
+                        if (!cb || cb.total === 0 || !cb.weakestEvent) return null;
+                        const classRemediation = getRemediationRecommendation(cb.weakestEvent.key);
+                        return (
+                          <div key={ck} className="pft-remediation-box" style={{ marginTop: 0 }}>
+                            <div className="pft-remediation-title">
+                              <span style={{ 
+                                backgroundColor: ck === '1cl' ? '#3b82f6' : ck === '2cl' ? '#ef4444' : '#eab308', 
+                                color: ck === '3cl' ? '#000' : '#fff',
+                                padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', marginRight: '0.75rem', fontWeight: 800
+                              }}>{ck.toUpperCase()}</span>
+                              {classRemediation.title}
+                            </div>
+                            <p className="pft-remediation-text">
+                              {classRemediation.text}
+                            </p>
+                            <ul className="pft-remediation-list">
+                              {classRemediation.tips.map((tip, i) => (
+                                <li key={i}>{tip}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        );
+                      })}
                     </div>
-                    <p className="pft-remediation-text">
-                      {remediation.text}
-                    </p>
-                    <ul className="pft-remediation-list">
-                      {remediation.tips.map((tip, i) => (
-                        <li key={i}>{tip}</li>
-                      ))}
-                    </ul>
-                  </div>
+                  ) : (
+                    <div className="pft-remediation-box">
+                      <div className="pft-remediation-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                          <line x1="12" y1="9" x2="12" y2="13"></line>
+                          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        {remediation.title}
+                      </div>
+                      <p className="pft-remediation-text">
+                        {remediation.text}
+                      </p>
+                      <ul className="pft-remediation-list">
+                        {remediation.tips.map((tip, i) => (
+                          <li key={i}>{tip}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1075,7 +1126,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                       <XAxis dataKey="event" stroke="var(--text-secondary)" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
                       <YAxis stroke="var(--text-secondary)" domain={[0, 10]} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                      <Tooltip contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 8 }} />
+                      <Tooltip itemSorter={(item) => -item.value} contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 8 }} />
                       <Legend wrapperStyle={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', paddingTop: 10 }} />
                       
                       <ReferenceArea y1={8.0} y2={8.5} fill="#10b981" fillOpacity={0.12} />
@@ -1103,19 +1154,19 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                 const analyzeEvent = (evtKey, name) => {
                   const s = extractScores(evtKey);
                   const valid = [s.mock, s.pft1, s.pft2].filter(v => typeof v === 'number' && v > 0);
-                  if (valid.length === 0) return { key: evtKey, name, avg: 0, latest: 0, trend: 'No Data' };
+                  if (valid.length === 0) return { key: evtKey, name, avg: 0, latest: 0, previous: null, trend: 'No Data' };
                   
                   const avg = valid.reduce((a, b) => a + b, 0) / valid.length;
                   const latest = valid[valid.length - 1];
-                  const first = valid[0];
+                  const previous = valid.length > 1 ? valid[valid.length - 2] : null;
                   
                   let trend = 'Maintained';
-                  if (valid.length > 1) {
-                    if (latest > first + 0.2) trend = 'Improving';
-                    else if (latest < first - 0.2) trend = 'Declining';
+                  if (previous !== null) {
+                    if (latest > previous + 0.2) trend = 'Improving';
+                    else if (latest < previous - 0.2) trend = 'Declining';
                   }
 
-                  return { key: evtKey, name, avg, latest, trend };
+                  return { key: evtKey, name, avg, latest, previous, trend };
                 };
 
                 const events = [
@@ -1131,6 +1182,29 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
 
                 // Overall rating based on latest average
                 const grandLatestAvg = events.reduce((acc, ev) => acc + ev.latest, 0) / events.length;
+                const prevValidEvents = events.filter(ev => ev.previous !== null);
+                const grandPrevAvg = prevValidEvents.length > 0 
+                  ? prevValidEvents.reduce((acc, ev) => acc + ev.previous, 0) / prevValidEvents.length 
+                  : null;
+
+                let overallTrend = 'No Data';
+                let trendColor = 'var(--text-secondary)';
+                if (grandPrevAvg !== null) {
+                  if (grandLatestAvg > grandPrevAvg + 0.2) {
+                    overallTrend = 'Improved';
+                    trendColor = '#10b981'; // Green
+                  } else if (grandLatestAvg < grandPrevAvg - 0.2) {
+                    overallTrend = 'Declined';
+                    trendColor = '#ef4444'; // Red
+                  } else {
+                    overallTrend = 'Maintained';
+                    trendColor = '#3b82f6'; // Blue
+                  }
+                } else if (events.length > 0) {
+                   overallTrend = 'First PFT Recorded';
+                   trendColor = 'var(--text-primary)';
+                }
+
                 let rating = 'Needs Strict Training';
                 let ratingColor = '#ef4444'; // red
                 
@@ -1172,15 +1246,14 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   <div className="pft-insight-container" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <div className="pft-insight-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', padding: '1rem', borderRadius: '8px', borderLeft: `4px solid ${ratingColor}` }}>
                       <div>
-                        <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Overall Rating</div>
+                        <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Rating</div>
                         <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: ratingColor }}>{rating} ({grandLatestAvg.toFixed(2)})</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Progression</div>
-                        <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                          <span style={{ color: '#10b981' }}>{events.filter(e => e.trend === 'Improving').length} Improving</span>
-                          <span style={{ margin: '0 0.5rem', color: 'var(--border-color)' }}>|</span>
-                          <span style={{ color: '#ef4444' }}>{events.filter(e => e.trend === 'Declining').length} Declining</span>
+                        <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Performance Status</div>
+                        <div style={{ fontWeight: 600, color: trendColor }}>
+                          {overallTrend}
+                          {grandPrevAvg !== null && ` (from ${grandPrevAvg.toFixed(2)})`}
                         </div>
                       </div>
                     </div>
