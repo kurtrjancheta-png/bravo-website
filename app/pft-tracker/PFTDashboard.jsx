@@ -688,11 +688,11 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                     <Legend wrapperStyle={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', paddingTop: 10 }} />
                     <Bar 
                       dataKey="Overall" 
-                      fill="#A67C00" 
+                      fill="#FFD700" 
                       fillOpacity={isBarActive('Overall') ? 1.0 : 0.25} 
                       radius={[4, 4, 0, 0]} 
                       name="Overall" 
-                      style={{ filter: isBarActive('Overall') ? 'drop-shadow(0px 0px 8px rgba(166,124,0,0.8))' : 'none' }}
+                      style={{ filter: isBarActive('Overall') ? 'drop-shadow(0px 0px 8px rgba(255,215,0,0.8))' : 'none' }}
                     />
                     <Bar 
                       dataKey="1CL" 
@@ -750,8 +750,8 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                     <ReferenceArea y1={8.0} y2={8.5} fill="#10b981" fillOpacity={0.12} />
                   ) : (
                     <>
-                      <ReferenceLine y={8.0} stroke="#A67C00" strokeOpacity={0.5} strokeDasharray="4 4" />
-                      <ReferenceLine y={8.5} stroke="#A67C00" strokeOpacity={0.5} strokeDasharray="4 4" />
+                      <ReferenceLine y={8.0} stroke="#FFD700" strokeOpacity={0.5} strokeDasharray="4 4" />
+                      <ReferenceLine y={8.5} stroke="#FFD700" strokeOpacity={0.5} strokeDasharray="4 4" />
                     </>
                   )}
                   {/* Reference Line for passing threshold 7.0 */}
@@ -786,13 +786,13 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   <Line 
                     type="monotone" 
                     dataKey="Overall" 
-                    stroke="#A67C00" 
+                    stroke="#FFD700" 
                     strokeWidth={selectedClass === 'all' ? 4 : 2} 
                     strokeOpacity={isLineActive('Overall') ? 1.0 : 0.25}
-                    activeDot={{ r: 8, fill: '#A67C00', stroke: '#fff' }} 
-                    dot={{ r: 5, fill: '#A67C00' }} 
+                    activeDot={{ r: 8, fill: '#FFD700', stroke: '#fff' }} 
+                    dot={{ r: 5, fill: '#FFD700' }} 
                     name="Overall" 
-                    style={{ filter: isLineActive('Overall') ? 'drop-shadow(0px 0px 8px rgba(166,124,0,0.8))' : 'none' }}
+                    style={{ filter: isLineActive('Overall') ? 'drop-shadow(0px 0px 8px rgba(255,215,0,0.8))' : 'none' }}
                   />
                   { (selectedClass === 'all' || selectedClass === '1cl') && (
                     <Line 
