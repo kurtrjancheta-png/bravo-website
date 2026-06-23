@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ComposedChart,
   Area,
@@ -587,7 +588,11 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
   };
 
   return (
-    <div>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
       {/* Controls: Dropdowns + Generate Insights Button */}
       <div className="pft-controls" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -620,7 +625,9 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
           </select>
         </div>
 
-        <button 
+        <motion.button 
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => setShowInsightModal(true)}
           className="pft-insight-btn"
           style={{
@@ -637,7 +644,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
             alignItems: 'center',
             gap: '0.5rem',
             boxShadow: '0 2px 5px rgba(217, 119, 6, 0.3)',
-            transition: 'all 0.2s'
+            outline: 'none'
           }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -646,7 +653,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
             <line x1="6" y1="20" x2="6" y2="14"></line>
           </svg>
           Generate Insights
-        </button>
+        </motion.button>
       </div>
 
       {/* Chart View Toggle Switcher */}
@@ -659,7 +666,9 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
           padding: '2px',
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
         }}>
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setActiveChartTab('class')}
             style={{
               padding: '0.5rem 1.5rem',
@@ -670,13 +679,14 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
               fontWeight: 700,
               fontSize: '0.85rem',
               cursor: 'pointer',
-              transition: 'all 0.2s',
               outline: 'none'
             }}
           >
             Class PFT Data
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setActiveChartTab('event')}
             style={{
               padding: '0.5rem 1.5rem',
@@ -687,12 +697,11 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
               fontWeight: 700,
               fontSize: '0.85rem',
               cursor: 'pointer',
-              transition: 'all 0.2s',
               outline: 'none'
             }}
           >
             PFT Event Data
-          </button>
+          </motion.button>
         </div>
       </div>
 
@@ -911,20 +920,41 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
       </div>
 
       {/* Drill-down Cadet List View */}
-      {activeList && (
-        <div id="cadet-list-view" className="cadet-list-container">
-          <div className="cadet-list-header">
-            <h3>
-              {activeList.pftTitle} - <span style={{ color: COLORS[activeList.statusKey] }}>{LABELS[activeList.statusKey]}</span>
-            </h3>
-            <span className="cadet-list-badge">{activeList.cadets.length} Cadets</span>
-          </div>
-          
-          <div className="cadet-list-grid">
+      <AnimatePresence>
+        {activeList && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }} 
+            animate={{ opacity: 1, height: 'auto' }} 
+            exit={{ opacity: 0, height: 0 }}
+            id="cadet-list-view" 
+            className="cadet-list-container"
+          >
+            <div className="cadet-list-header">
+              <h3>
+                {activeList.pftTitle} - <span style={{ color: COLORS[activeList.statusKey] }}>{LABELS[activeList.statusKey]}</span>
+              </h3>
+              <span className="cadet-list-badge">{activeList.cadets.length} Cadets</span>
+            </div>
+            
+            <motion.div 
+              className="cadet-list-grid"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: { opacity: 0 },
+                visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
+              }}
+            >
             {activeList.cadets.length > 0 ? (
               activeList.cadets.map((cadet, idx) => (
-                <button 
+                <motion.button 
                   key={idx} 
+                  variants={{
+                    hidden: { opacity: 0, y: 10 },
+                    visible: { opacity: 1, y: 0 }
+                  }}
+                  whileHover={{ scale: 1.02, backgroundColor: "var(--bg-secondary)" }}
+                  whileTap={{ scale: 0.98 }}
                   className="cadet-list-item clickable" 
                   onClick={(e) => {
                     e.preventDefault();
@@ -932,7 +962,6 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   }}
                   style={{ 
                     cursor: 'pointer', 
-                    transition: 'all 0.2s',
                     textAlign: 'left',
                     width: '100%',
                     display: 'flex',
@@ -944,23 +973,45 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   }}
                 >
                   <span className="cadet-name">{cadet.name}</span>
-                </button>
+                </motion.button>
               ))
             ) : (
-              <div className="cadet-list-empty">No cadets in this category.</div>
+              <div style={{ color: 'var(--text-secondary)', fontStyle: 'italic', padding: '1rem' }}>
+                No cadets found in this category.
+              </div>
             )}
-          </div>
+            </motion.div>
           
-          <button className="cadet-list-close" onClick={() => setActiveList(null)}>
-            Close List
-          </button>
-        </div>
-      )}
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="cadet-list-close" 
+              onClick={() => setActiveList(null)}
+            >
+              Close List
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Generate Insights Modal */}
-      {showInsightModal && (
-        <div className="pft-modal-overlay" onClick={() => setShowInsightModal(false)}>
-          <div className="pft-modal-content" onClick={(e) => e.stopPropagation()}>
+      <AnimatePresence>
+        {showInsightModal && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="pft-modal-overlay" 
+            onClick={() => setShowInsightModal(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }} 
+              animate={{ scale: 1, y: 0 }} 
+              exit={{ scale: 0.9, y: 20 }} 
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="pft-modal-content" 
+              onClick={(e) => e.stopPropagation()}
+            >
             <div className="pft-modal-header">
               <h2 className="pft-modal-title">PFT Cohort Insights ({selectedClass === 'all' ? 'All Classes' : selectedClass.toUpperCase()})</h2>
               <button className="pft-modal-close-icon" onClick={() => setShowInsightModal(false)}>
@@ -971,24 +1022,30 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
             <div className="pft-modal-body">
               {/* PFT Tab Selector in Modal */}
               <div className="pft-modal-tabs">
-                <button 
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   className={`pft-modal-tab-btn ${insightPftTab === 'mock' ? 'active' : ''}`}
                   onClick={() => setInsightPftTab('mock')}
                 >
                   Mock PFT
-                </button>
-                <button 
+                </motion.button>
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   className={`pft-modal-tab-btn ${insightPftTab === 'pft1' ? 'active' : ''}`}
                   onClick={() => setInsightPftTab('pft1')}
                 >
                   PFT 1
-                </button>
-                <button 
+                </motion.button>
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   className={`pft-modal-tab-btn ${insightPftTab === 'pft2' ? 'active' : ''}`}
                   onClick={() => setInsightPftTab('pft2')}
                 >
                   PFT 2
-                </button>
+                </motion.button>
               </div>
 
               {activeInsights.totalActive === 0 ? (
@@ -998,8 +1055,22 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
               ) : (
                 <div>
                   {/* Summary Stats Grid */}
-                  <div className="pft-insight-grid">
-                    <div className="pft-insight-card">
+                  <motion.div 
+                    className="pft-insight-grid"
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+                    }}
+                  >
+                    <motion.div 
+                      className="pft-insight-card"
+                      variants={{
+                        hidden: { opacity: 0, y: 20 },
+                        visible: { opacity: 1, y: 0 }
+                      }}
+                    >
                       <span className="pft-insight-label">Overall Pass Rate</span>
                       <span className="pft-insight-val" style={{ color: '#1a7a3a' }}>
                         {activeInsights.overallPassRate.toFixed(1)}%
@@ -1007,9 +1078,15 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                       <span className="pft-insight-desc">
                         {activeInsights.passedCount} out of {activeInsights.totalActive} active cadets passed
                       </span>
-                    </div>
+                    </motion.div>
 
-                    <div className="pft-insight-card">
+                    <motion.div 
+                      className="pft-insight-card"
+                      variants={{
+                        hidden: { opacity: 0, y: 20 },
+                        visible: { opacity: 1, y: 0 }
+                      }}
+                    >
                       <span className="pft-insight-label">Gender Passing Rates</span>
                       <span className="pft-insight-val" style={{ fontSize: '1.5rem', marginTop: '0.25rem' }}>
                         M: {activeInsights.malePassRate !== null ? `${activeInsights.malePassRate.toFixed(1)}%` : 'N/A'}
@@ -1020,9 +1097,15 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                       <span className="pft-insight-desc" style={{ marginTop: '0.5rem' }}>
                         Pool: {activeInsights.malesCount} males, {activeInsights.femalesCount} females
                       </span>
-                    </div>
+                    </motion.div>
 
-                    <div className="pft-insight-card">
+                    <motion.div 
+                      className="pft-insight-card"
+                      variants={{
+                        hidden: { opacity: 0, y: 20 },
+                        visible: { opacity: 1, y: 0 }
+                      }}
+                    >
                       <span className="pft-insight-label">Active Cohort Split</span>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '0.2' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
@@ -1041,8 +1124,8 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                       <span className="pft-insight-desc" style={{ marginTop: 'auto' }}>
                         Excludes FAD/excused cadets
                       </span>
-                    </div>
-                  </div>
+                    </motion.div>
+                  </motion.div>
 
                   {/* Class breakdown detail (only if showing all classes) */}
                   {selectedClass === 'all' && (
@@ -1147,14 +1230,30 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                 </div>
               )}
             </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Individual Cadet Modal */}
-      {selectedCadet && (
-        <div className="pft-modal-overlay" onClick={() => setSelectedCadet(null)}>
-          <div className="pft-modal-content cadet-details-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px', width: '95%' }}>
+      <AnimatePresence>
+        {selectedCadet && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="pft-modal-overlay" 
+            onClick={() => setSelectedCadet(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }} 
+              animate={{ scale: 1, y: 0 }} 
+              exit={{ scale: 0.9, y: 20 }} 
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="pft-modal-content cadet-profile-modal" 
+              onClick={(e) => e.stopPropagation()} 
+              style={{ maxWidth: '800px', width: '95%' }}
+            >
             <div className="pft-modal-header">
               <h2 className="pft-modal-title">Cadet PFT Profile: {selectedCadet.name}</h2>
               <button className="pft-modal-close-icon" onClick={() => setSelectedCadet(null)}>
@@ -1388,7 +1487,9 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
 
               {/* Scorecard Toggle */}
               <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
-                <button 
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setShowScorecard(!showScorecard)}
                   style={{
                     background: 'var(--bg-secondary)',
@@ -1455,6 +1556,6 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
