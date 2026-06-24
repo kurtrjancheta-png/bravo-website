@@ -1,5 +1,7 @@
 import { getSheetData, isExpired } from '../lib/googleSheets';
 import SlideshowClient from './SlideshowClient';
+import TopPerformers from './TopPerformers';
+import { parsePFTData } from '../lib/pftParser';
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID || '';
 const DISSEMINATION_SHEET_ID = '1YeaoloRz4REe_iVomGfFI9WugalrDFsHiz04eOcD0a8';
@@ -24,11 +26,19 @@ const COUNCILS = [
   { id: 'CCPB', name: 'CCPB' }
 ];
 
+const PFT_SHEET_ID = process.env.PFT_SHEET_ID || '1YfwRNbWer8QDtqSyw7A3jxHAOrWSl6p6tW-7zI074yM';
+const PFT1_TAB = process.env.PFT1_TAB || 'PFT1';
+
 export const revalidate = 30;
 
 export default async function Home() {
   // Fetch old data
-  const trackers = await getSheetData(SHEET_ID, 'Trackers');
+  const [trackers, pft1Rows] = await Promise.all([
+    getSheetData(SHEET_ID, 'Trackers'),
+    getSheetData(PFT_SHEET_ID, PFT1_TAB)
+  ]);
+  
+  const { topPerformers } = parsePFTData(pft1Rows);
 
   // Fetch all dissemination sheets concurrently
   const disseminationPromises = COUNCILS.map(async (council) => {
@@ -148,6 +158,9 @@ export default async function Home() {
             <p>Please set the <code>GOOGLE_SHEET_ID</code> in Vercel to see your live data below.</p>
          </div>
       )}
+
+      {/* Top Performers Section */}
+      <TopPerformers topPerformers={topPerformers} />
 
       {/* Dissemination Flashcards */}
       <div className="section-header" style={{ marginTop: '2rem' }}>
