@@ -7,7 +7,7 @@ import RaiseConcernModal from '../RaiseConcernModal';
 import ViewConcernsAdmin from '../ViewConcernsAdmin';
 
 const SHEET_ID = '1YeaoloRz4REe_iVomGfFI9WugalrDFsHiz04eOcD0a8';
-const CONCERNS_APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_CONCERNS_APPS_SCRIPT_URL || 'YOUR_DEPLOYED_APPS_SCRIPT_URL';
+const CONCERNS_APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_CONCERNS_APPS_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbynZfRwktqV30Wf4Np3oRWAdeWu02JQkfN6zZNQnV2Vk9tEy_h-Dps9js5ZKXJbjvGcPg/exec';
 
 const councilData = {
   taco: { title: "Tac O's Corner", sheetTab: 'TACO', overview: "Official announcements and activities direct from the Tactical Officer." },
