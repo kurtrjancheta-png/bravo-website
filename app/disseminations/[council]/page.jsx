@@ -1,10 +1,9 @@
 import { getSheetData, isExpired } from '../../../lib/googleSheets';
 import { Suspense } from 'react';
 import CouncilAdminForms from '../CouncilAdminForms';
-import ImageGallery from '../ImageGallery';
-import DeleteDisseminationButton from '../DeleteDisseminationButton';
 import RaiseConcernModal from '../RaiseConcernModal';
 import ViewConcernsAdmin from '../ViewConcernsAdmin';
+import DisseminationList from '../DisseminationList';
 
 const SHEET_ID = '1YeaoloRz4REe_iVomGfFI9WugalrDFsHiz04eOcD0a8';
 const CONCERNS_APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_CONCERNS_APPS_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbynZfRwktqV30Wf4Np3oRWAdeWu02JQkfN6zZNQnV2Vk9tEy_h-Dps9js5ZKXJbjvGcPg/exec';
@@ -49,157 +48,30 @@ async function DisseminationCards({ councilId }) {
     console.error('Failed to fetch disseminations:', error);
   }
 
-  // Filter out empty rows but preserve the original sheet row index (1-based, +1 for header row)
-  const validCards = disseminations.reduce((acc, d, originalIndex) => {
+  const activeCards = [];
+  const archivedCards = [];
+
+  disseminations.forEach((d, originalIndex) => {
     const type = String(d['TYPE'] || '').trim().toUpperCase();
     const urgency = String(d['URGENCY'] || '').trim().toUpperCase();
     const content = String(d['CONTENT'] || '').trim();
 
     if (type === 'TYPE' || urgency.startsWith('URGE') || !content) {
-      return acc; // skip invalid rows
+      return; // skip invalid rows
     }
     
-    if (isExpired(d)) {
-      return acc; // skip expired rows
-    }
     // originalIndex is 0-based in the JS array, but in the sheet:
     // row 1 = header, row 2 = first data row → sheetRowIndex = originalIndex + 2
-    acc.push({ ...d, sheetRowIndex: originalIndex + 2 });
-    return acc;
-  }, []);
+    const cardData = { ...d, sheetRowIndex: originalIndex + 2 };
 
-  if (validCards.length === 0) {
-    return (
-      <div style={{ textAlign: 'center', padding: '3rem', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', color: 'var(--text-secondary)' }}>
-        No active disseminations at this time.
-      </div>
-    );
-  }
+    if (isExpired(d)) {
+      archivedCards.push(cardData);
+    } else {
+      activeCards.push(cardData);
+    }
+  });
 
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem', marginTop: '2rem' }}>
-      {validCards.map((card, i) => {
-        const urgency = String(card['URGENCY'] || '').trim().toUpperCase();
-        const style = urgencyStyles[urgency] || urgencyStyles['LIGHT'];
-        
-        let dateAnnounced = String(card['DATE ANNOUNCED'] || '');
-        if (dateAnnounced.includes('Date(')) {
-          const match = dateAnnounced.match(/Date\((\d+),(\d+),(\d+)\)/);
-          if (match) {
-            const dateObj = new Date(parseInt(match[1], 10), parseInt(match[2], 10), parseInt(match[3], 10));
-            dateAnnounced = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-          }
-        }
-        
-        let eventMonth = '';
-        let eventDay = '';
-        if (String(card['TYPE'] || '').trim().toUpperCase() === 'ACTIVITY' && card['EVENT DATE']) {
-          let eDate = String(card['EVENT DATE']);
-          if (eDate.includes('Date(')) {
-            const match = eDate.match(/Date\((\d+),(\d+),(\d+)\)/);
-            if (match) {
-              const d = new Date(parseInt(match[1], 10), parseInt(match[2], 10), parseInt(match[3], 10));
-              eventMonth = d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-              eventDay = d.getDate();
-            }
-          } else if (eDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            const parts = eDate.split('-');
-            const d = new Date(parts[0], parseInt(parts[1])-1, parts[2]);
-            eventMonth = d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-            eventDay = d.getDate();
-          } else {
-            try {
-              const d = new Date(eDate);
-              if (!isNaN(d.getTime())) {
-                eventMonth = d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-                eventDay = d.getDate();
-              } else {
-                const parts = eDate.split(' ');
-                if (parts.length >= 2) {
-                  eventMonth = parts[0].substring(0, 3).toUpperCase();
-                  eventDay = parts[1].replace(/[^0-9]/g, '');
-                }
-              }
-            } catch (e) {}
-          }
-        }
-
-        return (
-          <div key={i} style={{
-            position: 'relative',
-            background: 'var(--bg-secondary)',
-            border: `2px solid ${style.border}`,
-            borderTop: `12px solid ${style.border}`,
-            borderRadius: '12px',
-            padding: '1.5rem',
-            animation: style.animation,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1rem',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-          }}>
-            <DeleteDisseminationButton
-              sheetName={data.sheetTab}
-              rowIndex={card.sheetRowIndex}
-              borderColor={style.border}
-            />
-            <div style={{ display: 'flex', flexDirection: 'row', gap: '1.5rem', alignItems: 'flex-start' }}>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ fontWeight: 800, fontSize: '1rem', letterSpacing: '0.05em', color: style.border, textTransform: 'uppercase', marginBottom: '1rem' }}>
-                  {card['TYPE'] || 'ANNOUNCEMENT'}
-                </div>
-                
-                <div style={{ fontSize: '1.1rem', color: 'var(--text-primary)', lineHeight: 1.5, flex: 1, whiteSpace: 'pre-wrap' }}>
-                  {card['CONTENT'] || 'No content provided.'}
-                </div>
-                
-                {/* If the Google API parses the header as "Column 6", we should check both keys */}
-                {((card['ATTACHMENT'] && card['ATTACHMENT'].trim() !== '') || (card['Column 6'] && card['Column 6'].trim() !== '')) && (
-                  <div style={{ marginTop: '1rem' }}>
-                    <ImageGallery urls={(card['ATTACHMENT'] || card['Column 6']).split(',')} />
-                  </div>
-                )}
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem', flexShrink: 0 }}>
-                <div style={{ 
-                  background: style.bg, 
-                  color: style.color, 
-                  padding: '0.25rem 0.75rem', 
-                  borderRadius: '9999px', 
-                  fontSize: '0.75rem', 
-                  fontWeight: 800,
-                  textTransform: 'uppercase'
-                }}>
-                  {style.label}
-                </div>
-
-                {eventDay && (
-                  <div style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', 
-                    border: `3px solid ${style.border}`, borderRadius: '10px', overflow: 'hidden',
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)', backgroundColor: 'var(--bg-primary)',
-                    minWidth: '70px'
-                  }}>
-                    <div style={{ background: style.border, color: 'white', width: '100%', textAlign: 'center', fontSize: '0.9rem', fontWeight: '900', padding: '0.2rem 0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      {eventMonth}
-                    </div>
-                    <div style={{ fontSize: '2.2rem', fontWeight: '900', color: 'var(--text-primary)', padding: '0.2rem 0.4rem', lineHeight: '1' }}>
-                      {eventDay}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
-              <strong>Date Announced:</strong> {dateAnnounced || 'N/A'}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
+  return <DisseminationList activeCards={activeCards} archivedCards={archivedCards} sheetName={data.sheetTab} />;
 }
 
 export default function CouncilDisseminationPage({ params }) {
