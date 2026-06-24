@@ -6,7 +6,7 @@ export async function POST(req) {
     
     // The Apps Script Web App URL
     // We expect the user to set this in their environment, or replace this string.
-    const APPS_SCRIPT_URL = process.env.APPS_SCRIPT_URL_S1_SICK_CALL || "https://script.google.com/macros/s/AKfycbyem2MNUgB3bc_yrorVyv1BvUzpaGciV6u6Pb2UcTmzrcEltQfX_In0f3mWnouiCtY4/exec";
+    const APPS_SCRIPT_URL = process.env.APPS_SCRIPT_URL_S1_SICK_CALL || "https://script.google.com/macros/s/AKfycbz3ea8N3jkQl7OR_793R0_A5gOpf87kKF3gKjdPt_QoH1lzkHcW-fLfbqUZGa9lM2Eo/exec";
 
     if (APPS_SCRIPT_URL === "PASTE_YOUR_WEB_APP_URL_HERE") {
       console.warn("Google Apps Script URL is missing! Sick Call operation bypassed.");
