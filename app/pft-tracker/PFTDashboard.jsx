@@ -1349,7 +1349,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                 const events = [
                   analyzeEvent('pushups', 'Push-ups'),
                   analyzeEvent('situps', 'Sit-ups'),
-                  analyzeEvent('pullups', 'Pull-ups'),
+                  analyzeEvent('pullups', selectedCadet.gender === 'F' || selectedCadet.gender === 'Female' ? 'Flex Arm Hang' : 'Pull-ups'),
                   analyzeEvent('run', '3.2KM Run')
                 ].filter(e => e.trend !== 'No Data');
 
@@ -1524,8 +1524,8 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                       </tr>
                     </thead>
                     <tbody>
-                      {['Push-ups', 'Sit-ups', 'Pull-ups', '3.2KM Run', 'Average'].map(ev => {
-                        const keys = { 'Push-ups': 'pushups', 'Sit-ups': 'situps', 'Pull-ups': 'pullups', '3.2KM Run': 'run', 'Average': 'average' };
+                      {['Push-ups', 'Sit-ups', selectedCadet.gender === 'F' || selectedCadet.gender === 'Female' ? 'Flex Arm Hang' : 'Pull-ups', '3.2KM Run', 'Average'].map(ev => {
+                        const keys = { 'Push-ups': 'pushups', 'Sit-ups': 'situps', 'Pull-ups': 'pullups', 'Flex Arm Hang': 'pullups', '3.2KM Run': 'run', 'Average': 'average' };
                         const k = keys[ev];
                         return (
                           <tr key={ev}>
