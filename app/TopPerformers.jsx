@@ -111,7 +111,8 @@ export default function TopPerformers({ topPerformers }) {
         <div style={{ display: 'flex', flexWrap: 'wrap', margin: '-0.5rem' }}>
           {renderEvent('Push-Ups', data.pushups, '💪', 'reps')}
           {renderEvent('Sit-Ups', data.situps, '💪', 'reps')}
-          {renderEvent('Pull-Ups', data.pullups, '💪', 'reps')}
+          {renderEvent('Pull-Ups (M)', data.pullups, '💪', 'reps')}
+          {renderEvent('Flexed-Arm Hang (F)', data.flexarm, '⏱️', 'secs')}
           {renderEvent('3.2KM Run', data.run, '🏃', '', true)}
         </div>
       </div>
