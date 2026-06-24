@@ -29,10 +29,10 @@ export default async function SickCallTrackerPage() {
   // Let's assume row index starts at 2 (1 is header). But we will map it accurately.
   // Actually, getSheetData maps the rows to objects and skips the header.
   // So sickCallData[0] is row 2, sickCallData[1] is row 3, etc.
-  const mappedSickCalls = sickCallData.map((row, index) => {
+  const mappedSickCalls = sickCallData.map((row) => {
     return {
       ...row,
-      sheetRowIndex: index + 2 // Google Sheets rows are 1-indexed, +1 for header
+      sheetRowIndex: row._sheetRowIndex
     };
   });
 

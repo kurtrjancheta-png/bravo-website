@@ -61,8 +61,8 @@ async function DisseminationCards({ councilId }) {
     }
     
     // originalIndex is 0-based in the JS array, but in the sheet:
-    // row 1 = header, row 2 = first data row → sheetRowIndex = originalIndex + 2
-    const cardData = { ...d, sheetRowIndex: originalIndex + 2 };
+    // _sheetRowIndex holds the exact physical row calculated by googleSheets.js
+    const cardData = { ...d, sheetRowIndex: d._sheetRowIndex };
 
     if (isExpired(d)) {
       archivedCards.push(cardData);
