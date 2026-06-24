@@ -59,10 +59,16 @@ export default function TopPerformers({ topPerformers }) {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {data.cadets.map((c, i) => {
-            const pic = getCadetImageUrl(c.surname || c.name, '', c.name) || '/default-avatar.png';
+            const pic = getCadetImageUrl(c.surname || c.name, '', c.name, c.class);
             return (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: '#fff', padding: '0.5rem', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-                <img src={pic} alt={c.name} style={{ width: '45px', height: '45px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #cbd5e1' }} />
+                {pic ? (
+                  <img src={pic} alt={c.name} style={{ width: '45px', height: '45px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #cbd5e1' }} />
+                ) : (
+                  <div style={{ width: '45px', height: '45px', borderRadius: '50%', border: '2px solid #cbd5e1', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
+                    🧑‍✈️
+                  </div>
+                )}
                 <span style={{ fontWeight: '600', fontSize: '1rem', color: '#1e293b' }}>{c.name}</span>
               </div>
             );
@@ -94,10 +100,16 @@ export default function TopPerformers({ topPerformers }) {
             
             <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
               {data.average.cadets.map((c, i) => {
-                const pic = getCadetImageUrl(c.surname || c.name, '', c.name) || '/default-avatar.png';
+                const pic = getCadetImageUrl(c.surname || c.name, '', c.name, c.class);
                 return (
                   <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', background: '#fff', padding: '1.5rem', borderRadius: '16px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)' }}>
-                    <img src={pic} alt={c.name} style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', border: '4px solid #fbbf24', padding: '2px', background: '#fff' }} />
+                    {pic ? (
+                      <img src={pic} alt={c.name} style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', border: '4px solid #fbbf24', padding: '2px', background: '#fff' }} />
+                    ) : (
+                      <div style={{ width: '100px', height: '100px', borderRadius: '50%', border: '4px solid #fbbf24', padding: '2px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem' }}>
+                        🧑‍✈️
+                      </div>
+                    )}
                     <span style={{ fontWeight: '800', fontSize: '1.25rem', color: '#1e293b' }}>{c.name}</span>
                   </div>
                 );
