@@ -35,11 +35,10 @@ export default function TopPerformers({ topPerformers }) {
   }, []);
 
   const formatRunValue = (val) => {
-    // If val is a number like 1354, it probably means 13 minutes 54 seconds
-    // Let's format it nicely if it's > 100 and < 3000
-    if (typeof val === 'number' && val > 100 && val < 4000) {
-        const mins = Math.floor(val / 100);
-        const secs = val % 100;
+    // val is expected to be total seconds
+    if (typeof val === 'number' && val > 0) {
+        const mins = Math.floor(val / 60);
+        const secs = Math.floor(val % 60);
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
     return val;
