@@ -32,13 +32,28 @@ const PFT1_TAB = process.env.PFT1_TAB || 'PFT1';
 export const revalidate = 30;
 
 export default async function Home() {
+  const ROSTER_SHEET_ID = process.env.ROSTER_SHEET_ID || '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
+  const ROSTER_TAB = 'ROSTER';
+
   // Fetch old data
-  const [trackers, pft1Rows] = await Promise.all([
+  const [trackers, pft1Rows, rosterRows] = await Promise.all([
     getSheetData(SHEET_ID, 'Trackers'),
-    getSheetData(PFT_SHEET_ID, PFT1_TAB)
+    getSheetData(PFT_SHEET_ID, PFT1_TAB),
+    getSheetData(ROSTER_SHEET_ID, ROSTER_TAB)
   ]);
   
-  const { topPerformers } = parsePFTData(pft1Rows);
+  const genderMap = {};
+  if (rosterRows && rosterRows.length > 0) {
+    rosterRows.forEach((row) => {
+      const surname = (row['SURNAME'] || '').trim().toUpperCase();
+      const gender = (row['GENDER'] || '').trim().toUpperCase();
+      if (surname && gender) {
+        genderMap[surname] = gender;
+      }
+    });
+  }
+
+  const { topPerformers } = parsePFTData(pft1Rows, genderMap);
 
   // Fetch all dissemination sheets concurrently
   const disseminationPromises = COUNCILS.map(async (council) => {
