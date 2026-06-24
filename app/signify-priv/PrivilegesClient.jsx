@@ -11,6 +11,14 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
   const [cadetClass, setCadetClass] = useState('1CL');
   const [fullName, setFullName] = useState('');
   const [serialNumber, setSerialNumber] = useState('');
+
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   const [status, setStatus] = useState('idle');
   const [errorMsg, setErrorMsg] = useState('');
@@ -208,13 +216,13 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
         background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(0,0,0,0) 100%)', 
         border: '1px solid var(--gold-primary)', 
         borderRadius: '16px', 
-        padding: '2.5rem',
-        marginBottom: '2.5rem',
+        padding: isMobile ? '1.5rem 1rem' : '2.5rem',
+        marginBottom: isMobile ? '1.5rem' : '2.5rem',
         position: 'relative',
         overflow: 'hidden'
       }}>
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <h1 style={{ color: 'var(--gold-primary)', fontSize: '2.5rem', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <h1 style={{ color: 'var(--gold-primary)', fontSize: isMobile ? '1.8rem' : '2.5rem', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Signify for Privilege
           </h1>
           <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', maxWidth: '800px', lineHeight: 1.6 }}>

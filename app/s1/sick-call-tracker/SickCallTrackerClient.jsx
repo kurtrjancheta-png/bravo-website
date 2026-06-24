@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const SICK_CALL_TYPES = [
@@ -66,6 +66,14 @@ const formatDisplayDate = (dateStr) => {
 };
 
 export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [feedbackCard, setFeedbackCard] = useState(null); // stores the card being updated
   
@@ -190,7 +198,7 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'flex-end', gap: '1rem', marginBottom: '2rem', width: '100%' }}>
         <a 
           href="https://docs.google.com/spreadsheets/d/1btCK6FhiAHTTbjEZAQZIm_f4l5-_Ik-3IKZm3f983es/edit?usp=sharing"
           target="_blank"
@@ -206,7 +214,9 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
             textDecoration: 'none',
             display: 'flex',
             alignItems: 'center',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
+            justifyContent: 'center',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+            width: isMobile ? '100%' : 'auto'
           }}
         >
           📊 VIEW SPREADSHEET
@@ -214,7 +224,7 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
         <button 
           onClick={() => setIsAddModalOpen(true)}
           style={{
-            background: '#2563eb',
+            background: 'var(--accent-color)',
             color: 'white',
             padding: '0.75rem 1.5rem',
             border: 'none',
@@ -222,7 +232,8 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
             fontSize: '1rem',
             fontWeight: 'bold',
             cursor: 'pointer',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+            width: isMobile ? '100%' : 'auto'
           }}
         >
           + ADD SICK CALL
@@ -317,7 +328,7 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
             >
               <h2 style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>File Sick Call</h2>
               <form onSubmit={handleAddSubmit}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 2fr', gap: '1rem' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.3rem', fontWeight: 'bold' }}>CLASS</label>
                     <select 
@@ -345,7 +356,7 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.3rem', fontWeight: 'bold' }}>PLATOON</label>
                     <select style={inputStyle} value={addForm.platoon} onChange={e => setAddForm({...addForm, platoon: e.target.value})} required>
@@ -454,7 +465,7 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
 
                 {feedbackForm.statusSelect !== 'FULL DUTY' && (
                   <>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', alignItems: 'end' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem', alignItems: 'end' }}>
                       <div>
                         <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.3rem', fontWeight: 'bold' }}>START DATE</label>
                         <input 

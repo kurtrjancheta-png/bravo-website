@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 // ----------------------------------------------------
 // 1. ANIMATED TRACES (UNIFIED)
@@ -303,6 +303,14 @@ export default function InteractiveSchematic({ rifle }) {
   const [isExploded, setIsExploded] = useState(false);
   const hoverTimer = useRef(null);
 
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const handleMouseEnter = (part) => {
     if (hoverTimer.current) {
       clearTimeout(hoverTimer.current);
@@ -521,11 +529,12 @@ export default function InteractiveSchematic({ rifle }) {
 
       {/* RIGHT COLUMN: INFO PANELS */}
       <div style={{
-        flex: '0 0 350px',
+        flex: isMobile ? '1 1 auto' : '0 0 350px',
+        width: isMobile ? '100%' : 'auto',
         display: 'flex',
         flexDirection: 'column',
         gap: '1.5rem',
-        paddingTop: '3.5rem',
+        paddingTop: isMobile ? '0rem' : '3.5rem',
       }}>
         
         {/* DETAILED DESCRIPTION BUBBLE */}

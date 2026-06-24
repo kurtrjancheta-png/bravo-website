@@ -10,6 +10,14 @@ export default function SOIGenerator({ soiData }) {
   const [selectedCadet, setSelectedCadet] = useState(null);
   const [showCard, setShowCard] = useState(false);
 
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useEffect(() => {
     const soiQuery = searchParams.get('soi');
     if (soiQuery) {
@@ -89,7 +97,7 @@ export default function SOIGenerator({ soiData }) {
           Enter a cadet's surname, first name, or serial number to generate their complete SOI profile.
         </p>
         
-        <div style={{ display: 'flex', gap: '1rem', width: '100%', maxWidth: '600px', marginTop: '1rem' }}>
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1rem', width: '100%', maxWidth: '600px', marginTop: '1rem' }}>
           <input 
             type="text" 
             placeholder="Search Name or Serial No. (e.g. Ancheta)"
@@ -112,7 +120,7 @@ export default function SOIGenerator({ soiData }) {
               background: 'var(--accent-gold)',
               color: 'white',
               border: 'none',
-              padding: '0 1.5rem',
+              padding: isMobile ? '0.8rem 1.5rem' : '0 1.5rem',
               borderRadius: '8px',
               fontWeight: '700',
               cursor: 'pointer',
@@ -139,8 +147,8 @@ export default function SOIGenerator({ soiData }) {
           animation: 'fadeIn 0.5s ease'
         }}>
           {/* Header */}
-          <div style={{ background: 'var(--bg-tertiary)', padding: '2rem', color: 'white', display: 'flex', alignItems: 'center', gap: '2rem' }}>
-            <div style={{ width: '120px', height: '120px', background: '#333', borderRadius: '8px', border: '3px solid var(--accent-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          <div style={{ background: 'var(--bg-tertiary)', padding: isMobile ? '1.5rem 1rem' : '2rem', color: 'white', display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: 'center', textAlign: isMobile ? 'center' : 'left', gap: isMobile ? '1rem' : '2rem' }}>
+            <div style={{ width: '120px', height: '120px', background: '#333', borderRadius: '8px', border: '3px solid var(--accent-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
                {getField(selectedCadet, 'PICTURE') !== 'N/A' ? (
                   <img src={driveUrlToImage(getField(selectedCadet, 'PICTURE'))} alt="Cadet Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                ) : (
@@ -153,7 +161,7 @@ export default function SOIGenerator({ soiData }) {
                   ? 'TACTICAL OFFICER'
                   : `${formatClass(getField(selectedCadet, 'CLASS'))} CLASS CADET`}
               </div>
-              <h2 style={{ fontSize: '2.5rem', margin: 0, textTransform: 'uppercase' }}>
+              <h2 style={{ fontSize: isMobile ? '1.8rem' : '2.5rem', margin: 0, textTransform: 'uppercase' }}>
                 {getField(selectedCadet, 'FIRST NAME')} {getField(selectedCadet, 'MIDDLE NAME')} {getField(selectedCadet, 'SURNAME')}
               </h2>
               <div style={{ fontSize: '1.25rem', opacity: 0.9, marginTop: '0.25rem', fontFamily: 'monospace' }}>

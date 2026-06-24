@@ -1,11 +1,19 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 export default function TacODashboardClient({ metrics }) {
   const { adminUser, isLoaded } = useAuth();
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   if (!isLoaded) {
     return (
@@ -111,7 +119,7 @@ export default function TacODashboardClient({ metrics }) {
             <h2>Character</h2>
           </div>
           <div style={styles.cardBody}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
               <div style={styles.statBox}>
                 <div style={styles.statValue}>{character.touringCadets}</div>
                 <div style={styles.statLabel}>Cadets Touring</div>
@@ -157,7 +165,7 @@ export default function TacODashboardClient({ metrics }) {
             <h2>Physical</h2>
           </div>
           <div style={styles.cardBody}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
               <div style={styles.statBox}>
                 <div style={styles.statValue}>{passRate}%</div>
                 <div style={styles.statLabel}>Pass Rate</div>
@@ -186,6 +194,26 @@ export default function TacODashboardClient({ metrics }) {
 
             <Link href="/pft-tracker" style={styles.cardLink}>
               View Athletic Council PFT Board &rarr;
+            </Link>
+          </div>
+        </motion.div>
+
+        {/* S1 HEALTH */}
+        <motion.div variants={cardVariants} style={styles.card}>
+          <div style={styles.cardHeader}>
+            <span style={styles.icon}>🏥</span>
+            <h2>S1 Health</h2>
+          </div>
+          <div style={styles.cardBody}>
+            <div style={styles.statBox}>
+              <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>🏥</div>
+              <div style={styles.statLabel}>Sick Call Tracker</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.5rem', lineHeight: 1.4 }}>
+                Monitor all active sick calls and cadet health status in real time.
+              </div>
+            </div>
+            <Link href="/s1/sick-call-tracker" style={styles.cardLink}>
+              View Sick Call Tracker &rarr;
             </Link>
           </div>
         </motion.div>

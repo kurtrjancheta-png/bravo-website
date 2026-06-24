@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ComposedChart,
@@ -245,6 +245,14 @@ function getPFTInsights(pftData, classKey) {
 }
 
 export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [selectedPFT, setSelectedPFT] = useState('all');
   const [selectedClass, setSelectedClass] = useState('all');
   const [activeList, setActiveList] = useState(null);
@@ -1133,7 +1141,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                       <h4 style={{ fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-secondary)', marginBottom: '0.75rem', fontWeight: 700 }}>
                         Class Level Passing Rates
                       </h4>
-                      <div className="pft-insight-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                      <div className="pft-insight-grid" style={{ gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)' }}>
                         {['1cl', '2cl', '3cl'].map(ck => {
                           const data = activeInsights.classBreakdown[ck];
                           return (
@@ -1437,7 +1445,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
 
                     <div style={{ 
                       display: 'grid', 
-                      gridTemplateColumns: strengths.length > 0 && weaknesses.length > 0 ? '1fr 1fr' : '1fr', 
+                      gridTemplateColumns: strengths.length > 0 && weaknesses.length > 0 ? (isMobile ? '1fr' : '1fr 1fr') : '1fr', 
                       gap: '1rem',
                       alignItems: 'start'
                     }}>

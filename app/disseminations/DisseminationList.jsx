@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DeleteDisseminationButton from "./DeleteDisseminationButton";
 import ImageGallery from "./ImageGallery";
@@ -40,6 +40,14 @@ const getDynamicFontSize = (text) => {
 };
 
 function DisseminationCard({ card, style, sheetName, isArchived }) {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(/Mobi|Android|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   let dateAnnounced = String(card['DATE ANNOUNCED'] || '');
   if (dateAnnounced.includes('Date(')) {
     const match = dateAnnounced.match(/Date\((\d+),(\d+),(\d+)\)/);
@@ -108,7 +116,7 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
         rowIndex={card.sheetRowIndex}
         borderColor={style.border}
       />
-      <div style={{ display: 'flex', flexDirection: 'row', gap: '1.5rem', alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1.5rem', alignItems: isMobile ? 'stretch' : 'flex-start' }}>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <div style={{ fontWeight: 800, fontSize: '1rem', letterSpacing: '0.05em', color: style.border, textTransform: 'uppercase', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             {card['TYPE'] || 'ANNOUNCEMENT'}
@@ -131,7 +139,17 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
           )}
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem', flexShrink: 0 }}>
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: isMobile ? 'row' : 'column', 
+          alignItems: isMobile ? 'center' : 'flex-end', 
+          justifyContent: isMobile ? 'space-between' : 'flex-start',
+          gap: '0.75rem', 
+          flexShrink: 0,
+          width: isMobile ? '100%' : 'auto',
+          borderTop: isMobile ? '1px dashed var(--border-color)' : 'none',
+          paddingTop: isMobile ? '0.75rem' : '0'
+        }}>
           <div style={{ 
             background: style.bg, 
             color: style.color, 
@@ -146,16 +164,17 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
 
           {eventDay && (
             <div style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', 
+              display: 'flex', flexDirection: isMobile ? 'row' : 'column', alignItems: 'center', 
               border: `3px solid ${style.border}`, borderRadius: '10px', overflow: 'hidden',
               boxShadow: '0 4px 8px rgba(0,0,0,0.1)', backgroundColor: 'var(--bg-primary)',
               minWidth: '70px',
-              opacity: isArchived ? 0.8 : 1
+              opacity: isArchived ? 0.8 : 1,
+              gap: isMobile ? '0.5rem' : '0'
             }}>
-              <div style={{ background: style.border, color: 'white', width: '100%', textAlign: 'center', fontSize: '0.9rem', fontWeight: '900', padding: '0.2rem 0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div style={{ background: style.border, color: 'white', width: isMobile ? 'auto' : '100%', textAlign: 'center', fontSize: '0.9rem', fontWeight: '900', padding: '0.2rem 0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 {eventMonth}
               </div>
-              <div style={{ fontSize: '2.2rem', fontWeight: '900', color: 'var(--text-primary)', padding: '0.2rem 0.4rem', lineHeight: '1' }}>
+              <div style={{ fontSize: isMobile ? '1.5rem' : '2.2rem', fontWeight: '900', color: 'var(--text-primary)', padding: isMobile ? '0.1rem 0.5rem' : '0.2rem 0.4rem', lineHeight: '1' }}>
                 {eventDay}
               </div>
             </div>
