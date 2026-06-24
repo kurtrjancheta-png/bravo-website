@@ -86,6 +86,11 @@ export default function LayoutContent({ children }) {
           <div className="nav-label">Councils</div>
           
           <Link href="/disseminations/taco" id="nav-taco" className={`nav-item ${pathname === '/disseminations/taco' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>🌟</span> Tac O's Corner</Link>
+          {adminUser && adminUser.council === 'TACO' && (
+            <Link href="/taco-dashboard" className={`nav-item ${pathname === '/taco-dashboard' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', fontWeight: 800, color: 'var(--accent-color)' }}>
+              <span style={{ marginRight: '10px', marginLeft: '24px' }}>🦅</span> Tac O's Dashboard
+            </Link>
+          )}
           <Link href="/disseminations/co" id="nav-co" className={`nav-item ${pathname === '/disseminations/co' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>⭐</span> CO's Corner</Link>
           <details className="nav-item-group" style={{ cursor: 'pointer' }} open={openSections.exo} onToggle={(e) => toggleSection('exo', e.target.open)}>
             <summary id="nav-exo" className="nav-item" style={{ display: 'flex', alignItems: 'center' }}>
