@@ -13,25 +13,66 @@ export default async function TacODashboardPage() {
   }
 
   let totalTouringCadets = 0;
-  let totalTouringHoursRemaining = 0;
+  let totalConfinedCadets = 0;
+  let totalExcessiveDemerits = 0;
+  let totalDelinquencies = 0;
+
+  const getMaxDemerits = (rank) => {
+    const r = (rank || '').toUpperCase();
+    if (r.includes('1CL') || r.includes('CPT') || r.includes('LT') || r.includes('MAJ') || r.includes('COL')) return 88.2;
+    if (r.includes('2CL')) return 102.9;
+    if (r.includes('3CL')) return 117.6;
+    return 100;
+  };
 
   if (fsgtData && fsgtData.length > 0) {
     const keys = Object.keys(fsgtData[0]);
-    // The keys based on exo-punishment/page.jsx:
-    // k11 = keys[10] // TOURING HOURS TOTAL
-    // k14 = keys[13] // TOURING REMAINING
-    
-    // We will scan dynamically just in case columns moved
-    const findKey = (search) => keys.find(k => String(k).toUpperCase().includes(search));
-    const remainingKey = findKey('REMAINING') || keys[13];
+    const k1 = keys[0];   // NO
+    const k2 = keys[1];   // RANK
+    const k3 = keys[2];   // LAST NAME
+    const k7 = keys[6];   // DEMERITS
+    const k8 = keys[7];   // CONFINED?
+    const k14 = keys[13]; // TOURING REMAINING
+    const k16_idx = keys[15]; // MERIT
 
-    fsgtData.forEach(row => {
-      if (remainingKey && row[remainingKey] !== undefined) {
-        const remaining = parseInt(row[remainingKey], 10);
-        if (!isNaN(remaining) && remaining > 0) {
-          totalTouringCadets++;
-          totalTouringHoursRemaining += remaining;
-        }
+    const validRows = fsgtData.filter(row => {
+      const no = parseInt(row[k1]);
+      return !isNaN(no) && no > 0 && row[k3] && String(row[k3]).trim() !== '';
+    });
+
+    totalDelinquencies = validRows.length;
+
+    const cadetMap = new Map();
+    validRows.forEach(row => {
+      const name = String(row[k3]).trim();
+      const rank = String(row[k2]).trim();
+      const isConfined = String(row[k8] || '').toLowerCase() === 'yes';
+      
+      if (!cadetMap.has(name)) {
+        cadetMap.set(name, {
+          rank,
+          totalDemerits: 0,
+          totalMerits: 0,
+          totalTourRemaining: 0,
+          isConfined: false,
+        });
+      }
+
+      const cadet = cadetMap.get(name);
+      cadet.totalDemerits += Number(row[k7]) || 0;
+      cadet.totalMerits += Number(row[k16_idx]) || 0;
+      cadet.totalTourRemaining += Number(row[k14]) || 0;
+      if (isConfined) cadet.isConfined = true;
+    });
+
+    cadetMap.forEach(cadet => {
+      if (cadet.totalTourRemaining > 0) totalTouringCadets++;
+      if (cadet.isConfined) totalConfinedCadets++;
+      
+      const accumulatedDemerits = Math.max(0, cadet.totalDemerits - cadet.totalMerits);
+      const maxDemerits = getMaxDemerits(cadet.rank);
+      if ((accumulatedDemerits / maxDemerits) > 0.5) {
+        totalExcessiveDemerits++;
       }
     });
   }
@@ -84,7 +125,9 @@ export default async function TacODashboardPage() {
   const metrics = {
     character: {
       touringCadets: totalTouringCadets,
-      hoursRemaining: totalTouringHoursRemaining
+      confinedCadets: totalConfinedCadets,
+      excessiveDemerits: totalExcessiveDemerits,
+      totalDelinquencies: totalDelinquencies
     },
     physical: {
       passed: pftPassed,

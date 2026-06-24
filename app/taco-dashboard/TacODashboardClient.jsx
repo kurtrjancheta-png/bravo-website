@@ -111,14 +111,22 @@ export default function TacODashboardClient({ metrics }) {
             <h2>Character</h2>
           </div>
           <div style={styles.cardBody}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
               <div style={styles.statBox}>
                 <div style={styles.statValue}>{character.touringCadets}</div>
                 <div style={styles.statLabel}>Cadets Touring</div>
               </div>
               <div style={styles.statBox}>
-                <div style={styles.statValue}>{character.hoursRemaining}</div>
-                <div style={styles.statLabel}>Hours Pending</div>
+                <div style={{ ...styles.statValue, color: character.confinedCadets > 0 ? 'var(--error-color)' : 'inherit' }}>{character.confinedCadets}</div>
+                <div style={styles.statLabel}>Confined Cadets</div>
+              </div>
+              <div style={styles.statBox}>
+                <div style={{ ...styles.statValue, color: character.excessiveDemerits > 0 ? 'var(--error-color)' : 'inherit' }}>{character.excessiveDemerits}</div>
+                <div style={styles.statLabel}>&gt;50% Demerits</div>
+              </div>
+              <div style={styles.statBox}>
+                <div style={styles.statValue}>{character.totalDelinquencies}</div>
+                <div style={styles.statLabel}>Total Delinquencies</div>
               </div>
             </div>
             <Link href="/exo-punishment" style={styles.cardLink}>
