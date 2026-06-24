@@ -147,9 +147,15 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
       ? feedbackForm.statusOther 
       : feedbackForm.statusSelect;
 
-    const finalEndDate = feedbackForm.isEndDateUndetermined 
+    let finalStartDate = feedbackForm.startDate;
+    let finalEndDate = feedbackForm.isEndDateUndetermined 
       ? 'UNDETERMINED' 
       : feedbackForm.endDate;
+
+    if (feedbackForm.statusSelect === 'FULL DUTY') {
+      finalStartDate = 'N/A';
+      finalEndDate = 'N/A';
+    }
 
     if (!finalStatus) {
       setErrorMsg('Status is required');
@@ -165,7 +171,7 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
           action: 'update',
           rowIndex: feedbackCard.sheetRowIndex,
           status: finalStatus,
-          startDate: feedbackForm.startDate,
+          startDate: finalStartDate,
           endDate: finalEndDate
         })
       });
@@ -446,39 +452,43 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
                   </motion.div>
                 )}
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', alignItems: 'end' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.3rem', fontWeight: 'bold' }}>START DATE</label>
-                    <input 
-                      type="date" 
-                      style={inputStyle}
-                      value={feedbackForm.startDate}
-                      onChange={e => setFeedbackForm({...feedbackForm, startDate: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.3rem', fontWeight: 'bold' }}>END DATE</label>
-                    <input 
-                      type="date" 
-                      style={inputStyle}
-                      value={feedbackForm.endDate}
-                      onChange={e => setFeedbackForm({...feedbackForm, endDate: e.target.value})}
-                      disabled={feedbackForm.isEndDateUndetermined}
-                      style={{ ...inputStyle, opacity: feedbackForm.isEndDateUndetermined ? 0.5 : 1 }}
-                    />
-                  </div>
-                </div>
+                {feedbackForm.statusSelect !== 'FULL DUTY' && (
+                  <>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', alignItems: 'end' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.3rem', fontWeight: 'bold' }}>START DATE</label>
+                        <input 
+                          type="date" 
+                          style={inputStyle}
+                          value={feedbackForm.startDate}
+                          onChange={e => setFeedbackForm({...feedbackForm, startDate: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.3rem', fontWeight: 'bold' }}>END DATE</label>
+                        <input 
+                          type="date" 
+                          style={inputStyle}
+                          value={feedbackForm.endDate}
+                          onChange={e => setFeedbackForm({...feedbackForm, endDate: e.target.value})}
+                          disabled={feedbackForm.isEndDateUndetermined}
+                          style={{ ...inputStyle, opacity: feedbackForm.isEndDateUndetermined ? 0.5 : 1 }}
+                        />
+                      </div>
+                    </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', marginTop: '-0.5rem' }}>
-                  <input 
-                    type="checkbox" 
-                    id="undetermined-check"
-                    checked={feedbackForm.isEndDateUndetermined}
-                    onChange={(e) => setFeedbackForm({...feedbackForm, isEndDateUndetermined: e.target.checked})}
-                    style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
-                  />
-                  <label htmlFor="undetermined-check" style={{ fontSize: '0.9rem', cursor: 'pointer' }}>End date is undetermined</label>
-                </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', marginTop: '-0.5rem' }}>
+                      <input 
+                        type="checkbox" 
+                        id="undetermined-check"
+                        checked={feedbackForm.isEndDateUndetermined}
+                        onChange={(e) => setFeedbackForm({...feedbackForm, isEndDateUndetermined: e.target.checked})}
+                        style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
+                      />
+                      <label htmlFor="undetermined-check" style={{ fontSize: '0.9rem', cursor: 'pointer' }}>End date is undetermined</label>
+                    </div>
+                  </>
+                )}
 
                 <div style={{ background: 'var(--bg-primary)', padding: '1rem', borderRadius: '8px', borderLeft: '4px solid var(--accent-color)', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
                   <strong>Note:</strong> Submitting this feedback will mark the sick call as completed and remove it from the active tracker.
