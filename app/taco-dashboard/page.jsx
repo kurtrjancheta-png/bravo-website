@@ -88,38 +88,68 @@ export default async function TacODashboardPage() {
   let pftPassed = 0;
   let pftFailed = 0;
   let pftOther = 0;
+  let topFailedEvents = [];
 
   if (pftDataRows && pftDataRows.length > 0) {
-    const keys = Object.keys(pftDataRows[0]);
-    
-    // If we can't find a STATUS column, we guess the last column might be status in PFT
-    // Looking closely at pft-tracker/page.jsx, it checks the last key typically.
-    // Let's do a fallback scan on each row.
-    pftDataRows.forEach(row => {
-      // Find row name to ensure it's a cadet row
-      const nameKey = keys.find(k => String(k).toUpperCase() === 'NAME') || keys[0];
-      const name = String(row[nameKey] || '').trim();
-      
-      if (!name || name === 'NAME' || name.includes('CLASS')) return; // Skip headers
+    let allKeys = [];
+    for (let r of pftDataRows) {
+      const rKeys = Object.keys(r);
+      if (rKeys.length > allKeys.length) allKeys = rKeys;
+    }
 
-      // Find the value that represents passed/failed for this cadet
-      let val = '';
-      for (const k of keys) {
-        const strVal = String(row[k] || '').trim().toUpperCase();
-        if (strVal === 'PASSED' || strVal === 'P' || strVal === 'FAILED' || strVal === 'F' || strVal.includes('SMC') || strVal.includes('FAD')) {
-          val = strVal;
-          break;
+    let nameIdx = -1;
+    for (let i = 0; i < allKeys.length; i++) {
+      if (allKeys[i] && allKeys[i].trim().toUpperCase() === 'NAME') {
+        nameIdx = i; break;
+      }
+    }
+
+    if (nameIdx !== -1) {
+      const pushupKey = allKeys[nameIdx + 2];
+      const situpKey = allKeys[nameIdx + 4];
+      const pullupKey = allKeys[nameIdx + 6];
+      const runKey = allKeys[nameIdx + 8];
+      const remarksKey = allKeys[nameIdx + 10];
+
+      let eventFails = { 'Push-ups': 0, 'Sit-ups': 0, 'Pull-ups/Flex Arm Hang': 0, '3.2KM Run': 0 };
+
+      pftDataRows.forEach(row => {
+        let rowValues = Object.values(row).map(v => typeof v === 'string' ? v.trim().toUpperCase() : '');
+        if (rowValues.includes('1CL') || rowValues.includes('1ST CLASS') || 
+            rowValues.includes('2CL') || rowValues.includes('2ND CLASS') ||
+            rowValues.includes('3CL') || rowValues.includes('3RD CLASS')) return; // header
+
+        if (!remarksKey) return;
+        const val = (typeof row[remarksKey] === 'string' ? row[remarksKey] : '').trim().toUpperCase();
+        if (!val || val === 'REMARKS' || val === 'STATUS') return;
+
+        if (val.includes('PASSED') || val === 'P') {
+          pftPassed++;
+        } else if (val.includes('FAILED') || val === 'F') {
+          pftFailed++;
+        } else if (val !== '') {
+          pftOther++;
         }
-      }
 
-      if (val.includes('PASSED') || val === 'P') {
-        pftPassed++;
-      } else if (val.includes('FAILED') || val === 'F') {
-        pftFailed++;
-      } else if (val !== '') {
-        pftOther++;
-      }
-    });
+        // Count event fails (only for cadets with actual scores)
+        const name = String(row[allKeys[nameIdx]] || '').trim();
+        if (name && name.toUpperCase() !== 'NAME') {
+          const pushups = parseFloat(row[pushupKey]) || 0;
+          const situps = parseFloat(row[situpKey]) || 0;
+          const pullups = parseFloat(row[pullupKey]) || 0;
+          const run = parseFloat(row[runKey]) || 0;
+          
+          // Assuming 0 means they didn't take it or failed. If they actually failed, score < 7.
+          if (pushups > 0 && pushups < 7.0) eventFails['Push-ups']++;
+          if (situps > 0 && situps < 7.0) eventFails['Sit-ups']++;
+          if (pullups > 0 && pullups < 7.0) eventFails['Pull-ups/Flex Arm Hang']++;
+          if (run > 0 && run < 7.0) eventFails['3.2KM Run']++;
+        }
+      });
+      
+      const sortedFails = Object.entries(eventFails).sort((a, b) => b[1] - a[1]);
+      topFailedEvents = sortedFails.slice(0, 2);
+    }
   }
 
   const metrics = {
@@ -132,7 +162,8 @@ export default async function TacODashboardPage() {
     physical: {
       passed: pftPassed,
       failed: pftFailed,
-      other: pftOther
+      other: pftOther,
+      topFailedEvents: topFailedEvents
     }
   };
 

@@ -157,16 +157,33 @@ export default function TacODashboardClient({ metrics }) {
             <h2>Physical</h2>
           </div>
           <div style={styles.cardBody}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
               <div style={styles.statBox}>
                 <div style={styles.statValue}>{passRate}%</div>
                 <div style={styles.statLabel}>Pass Rate</div>
               </div>
               <div style={styles.statBox}>
-                <div style={{ ...styles.statValue, color: 'var(--error-color)' }}>{physical.failed}</div>
+                <div style={{ ...styles.statValue, color: physical.failed > 0 ? 'var(--error-color)' : 'inherit' }}>{physical.failed}</div>
                 <div style={styles.statLabel}>Total Failed</div>
               </div>
             </div>
+            
+            {physical.topFailedEvents && physical.topFailedEvents.length > 0 && (
+              <div style={{ background: 'var(--bg-primary)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-color)', marginBottom: '1.5rem' }}>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: '0.75rem', textAlign: 'center' }}>
+                  Top Failed Events
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {physical.topFailedEvents.map((evt, idx) => (
+                    <div key={evt[0]} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '6px' }}>
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{idx + 1}. {evt[0]}</span>
+                      <span style={{ fontWeight: 800, color: 'var(--error-color)' }}>{evt[1]} fails</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <Link href="/pft-tracker" style={styles.cardLink}>
               View Athletic Council PFT Board &rarr;
             </Link>
