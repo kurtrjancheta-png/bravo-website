@@ -53,6 +53,17 @@ const inputStyle = {
   fontSize: '1rem'
 };
 
+const formatDisplayDate = (dateStr) => {
+  if (!dateStr) return 'No Date';
+  const match = String(dateStr).match(/Date\((\d+),\s*(\d+),\s*(\d+)/);
+  if (match) {
+    // Google Sheets Date(...) format month is 0-indexed
+    const d = new Date(parseInt(match[1]), parseInt(match[2]), parseInt(match[3]));
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  return String(dateStr);
+};
+
 export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [feedbackCard, setFeedbackCard] = useState(null); // stores the card being updated
@@ -172,7 +183,27 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginBottom: '2rem' }}>
+        <a 
+          href="https://docs.google.com/spreadsheets/d/1btCK6FhiAHTTbjEZAQZIm_f4l5-_Ik-3IKZm3f983es/edit?usp=sharing"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            background: 'var(--bg-secondary)',
+            color: 'var(--text-primary)',
+            padding: '0.75rem 1.5rem',
+            border: '1px solid var(--border-color)',
+            borderRadius: '8px',
+            fontSize: '1rem',
+            fontWeight: 'bold',
+            textDecoration: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
+          }}
+        >
+          📊 VIEW SPREADSHEET
+        </a>
         <button 
           onClick={() => setIsAddModalOpen(true)}
           style={{
@@ -198,7 +229,7 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
           <p>All cadets have returned from sick call and filled their feedback.</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '2rem' }}>
           {activeSickCalls.map((card, i) => (
             <motion.div 
               key={i}
@@ -217,8 +248,9 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
                 position: 'relative'
               }}
             >
-              <div style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'rgba(0,0,0,0.05)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                {card['DATE OF SICK CALL']}
+            >
+              <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '1rem', fontWeight: 'bold', textAlign: 'center', marginBottom: '1rem', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                📅 {formatDisplayDate(card['DATE OF SICK CALL'])}
               </div>
               
               <h3 style={{ fontSize: '1.2rem', marginBottom: '0.25rem', marginTop: 0 }}>
@@ -240,10 +272,6 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
                 <div style={{ fontWeight: 600, color: 'var(--accent-color)' }}>
                   {card['TYPE OF SICK CALL'] || 'Not specified'}
                 </div>
-              </div>
-              
-              <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '0.75rem', borderRadius: '8px', color: '#b91c1c', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center' }}>
-                ⚠️ Missing Return Feedback
               </div>
 
               <button 
