@@ -49,6 +49,72 @@ export default function LayoutContent({ children }) {
     }
   }, []);
 
+  useEffect(() => {
+    const isPhone = /Mobi|Android|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (!isPhone) return;
+
+    let timeoutId = null;
+
+    const adjustViewport = () => {
+      let viewportMeta = document.querySelector('meta[name="viewport"]');
+      if (!viewportMeta) {
+        viewportMeta = document.createElement('meta');
+        viewportMeta.name = 'viewport';
+        document.head.appendChild(viewportMeta);
+      }
+
+      // Reset to default viewport to measure overflow
+      viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes');
+
+      // Short timeout to measure after reset has been applied by the browser
+      setTimeout(() => {
+        const viewportWidth = window.innerWidth;
+        const mainWrapper = document.querySelector('.main-wrapper') || document.body;
+        const scrollWidth = Math.max(
+          document.documentElement.scrollWidth,
+          document.body.scrollWidth,
+          mainWrapper.scrollWidth
+        );
+
+        if (scrollWidth > viewportWidth + 5) {
+          const scale = viewportWidth / scrollWidth;
+          const newContent = `width=${scrollWidth}, initial-scale=${scale.toFixed(3)}, minimum-scale=${(scale * 0.5).toFixed(3)}, maximum-scale=3.0, user-scalable=yes`;
+          if (viewportMeta.getAttribute('content') !== newContent) {
+            viewportMeta.setAttribute('content', newContent);
+          }
+        }
+      }, 100);
+    };
+
+    const debouncedAdjust = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(adjustViewport, 300);
+    };
+
+    // Run initially
+    adjustViewport();
+
+    // Listen for resize and orientation change
+    window.addEventListener('resize', debouncedAdjust);
+    window.addEventListener('orientationchange', debouncedAdjust);
+
+    // Watch for DOM changes (content updates)
+    const observer = new MutationObserver(debouncedAdjust);
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+    });
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      window.removeEventListener('resize', debouncedAdjust);
+      window.removeEventListener('orientationchange', debouncedAdjust);
+      observer.disconnect();
+    };
+  }, [pathname]);
+
+
   const toggleDarkMode = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);

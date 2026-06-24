@@ -103,15 +103,6 @@ export default function CellphoneRackClient({ initialData }) {
 
   return (
     <div>
-      {/* Temporary Debug Info for CEIS Check */}
-      <div style={{ position: 'fixed', top: 10, left: 10, background: 'rgba(0,0,0,0.8)', color: '#fff', padding: '10px', zIndex: 10000, borderRadius: '8px', border: '1px solid red', fontSize: '12px' }}>
-        DEBUG: 
-        <br/> adminUser: {adminUser ? 'Present' : 'Null'}
-        <br/> username: {adminUser?.username || 'N/A'}
-        <br/> council: {adminUser?.council || 'N/A'}
-        <br/> userCouncil (parsed): {userCouncil || 'N/A'}
-        <br/> isCEIS: {isCEIS ? 'TRUE' : 'FALSE'}
-      </div>
       {/* Filter and Chart Header */}
       <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
