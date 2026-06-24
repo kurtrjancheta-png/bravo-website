@@ -1553,9 +1553,10 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                 </div>
               )}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </motion.div>
   );
 }
