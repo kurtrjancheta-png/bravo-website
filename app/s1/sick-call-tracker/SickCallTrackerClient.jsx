@@ -248,7 +248,6 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
                 position: 'relative'
               }}
             >
-            >
               <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '1rem', fontWeight: 'bold', textAlign: 'center', marginBottom: '1rem', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
                 📅 {formatDisplayDate(card['DATE OF SICK CALL'])}
               </div>
