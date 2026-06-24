@@ -13,6 +13,7 @@ const SICK_CALL_TYPES = [
 const STATUS_OPTIONS = [
   "FAD",
   "SIQ",
+  "FULL DUTY",
   "OTHERS (SPECIFY)"
 ];
 
