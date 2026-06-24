@@ -76,6 +76,13 @@ function parsePFTData(rows, genderMap = {}) {
   const averageKey = allKeys[nameIdx + 9];
   const remarksKey = allKeys[nameIdx + 10];
 
+  if (nameKey) {
+    const upperKey = nameKey.toUpperCase();
+    if (upperKey.includes('1CL') || upperKey.includes('1ST CLASS')) currentClass = '1cl';
+    else if (upperKey.includes('2CL') || upperKey.includes('2ND CLASS')) currentClass = '2cl';
+    else if (upperKey.includes('3CL') || upperKey.includes('3RD CLASS')) currentClass = '3cl';
+  }
+
   rows.forEach((row) => {
     // Check if this row is a class header
     let rowValues = Object.values(row).map(v => typeof v === 'string' ? v.trim().toUpperCase() : '');
