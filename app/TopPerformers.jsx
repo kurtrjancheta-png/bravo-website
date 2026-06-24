@@ -44,36 +44,50 @@ export default function TopPerformers({ topPerformers }) {
     return val;
   };
 
-  const renderEvent = (title, data, icon, unit = '', isTime = false) => {
-    if (!data || data.value === -1 || data.value === 999999 || data.cadets.length === 0) return null;
+  const renderCombinedEvent = (title, dataM, labelM, unitM, dataF, labelF, unitF, icon, isTime = false) => {
+    const hasM = dataM && dataM.value !== -1 && dataM.value !== 999999 && dataM.cadets.length > 0;
+    const hasF = dataF && dataF.value !== -1 && dataF.value !== 999999 && dataF.cadets.length > 0;
+    
+    if (!hasM && !hasF) return null;
 
-    let displayValue = isTime ? formatRunValue(data.value) : data.value;
+    const renderGenderSection = (genderData, label, unit) => {
+      if (!genderData || genderData.value === -1 || genderData.value === 999999 || genderData.cadets.length === 0) return null;
+      let displayValue = isTime ? formatRunValue(genderData.value) : genderData.value;
+      
+      return (
+        <div style={{ marginBottom: '1rem', borderBottom: label === labelM && hasF ? '1px dashed #cbd5e1' : 'none', paddingBottom: label === labelM && hasF ? '1rem' : '0' }}>
+          <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#64748b', marginBottom: '0.5rem' }}>{label}</div>
+          <div style={{ fontSize: '2rem', fontWeight: '900', color: '#0f172a', marginBottom: '0.75rem' }}>
+            {displayValue} <span style={{ fontSize: '1rem', color: '#64748b', fontWeight: 'normal' }}>{unit}</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {genderData.cadets.map((c, i) => {
+              const pic = getCadetImageUrl(c.surname || c.name, '', c.name, c.class);
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: '#fff', padding: '0.5rem', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
+                  {pic ? (
+                    <img src={pic} alt={c.name} style={{ width: '45px', height: '45px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #cbd5e1' }} />
+                  ) : (
+                    <div style={{ width: '45px', height: '45px', borderRadius: '50%', border: '2px solid #cbd5e1', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
+                      🧑‍✈️
+                    </div>
+                  )}
+                  <span style={{ fontWeight: '600', fontSize: '1rem', color: '#1e293b' }}>{c.name}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    };
 
     return (
-      <div className="event-card" style={{ flex: '1', minWidth: '200px', padding: '1.25rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0', margin: '0.5rem', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-        <h4 style={{ color: '#475569', fontSize: '0.95rem', textTransform: 'uppercase', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 'bold' }}>
+      <div className="event-card" style={{ flex: '1', minWidth: '220px', padding: '1.25rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0', margin: '0.5rem', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+        <h4 style={{ color: '#475569', fontSize: '0.95rem', textTransform: 'uppercase', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 'bold' }}>
           <span style={{ fontSize: '1.25rem' }}>{icon}</span> {title}
         </h4>
-        <div style={{ fontSize: '1.75rem', fontWeight: '900', color: '#0f172a', marginBottom: '1.25rem' }}>
-          {displayValue} <span style={{ fontSize: '1rem', color: '#64748b', fontWeight: 'normal' }}>{unit}</span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {data.cadets.map((c, i) => {
-            const pic = getCadetImageUrl(c.surname || c.name, '', c.name, c.class);
-            return (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: '#fff', padding: '0.5rem', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-                {pic ? (
-                  <img src={pic} alt={c.name} style={{ width: '45px', height: '45px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #cbd5e1' }} />
-                ) : (
-                  <div style={{ width: '45px', height: '45px', borderRadius: '50%', border: '2px solid #cbd5e1', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
-                    🧑‍✈️
-                  </div>
-                )}
-                <span style={{ fontWeight: '600', fontSize: '1rem', color: '#1e293b' }}>{c.name}</span>
-              </div>
-            );
-          })}
-        </div>
+        {hasM && renderGenderSection(dataM, labelM, unitM)}
+        {hasF && renderGenderSection(dataF, labelF, unitF)}
       </div>
     );
   };
@@ -120,14 +134,10 @@ export default function TopPerformers({ topPerformers }) {
 
         {/* Individual Events */}
         <div style={{ display: 'flex', flexWrap: 'wrap', margin: '-0.5rem' }}>
-          {renderEvent('Push-Ups (M)', data.pushups, '💪', 'reps')}
-          {renderEvent('Push-Ups (F)', data.pushupsF, '💪', 'reps')}
-          {renderEvent('Sit-Ups (M)', data.situps, '💪', 'reps')}
-          {renderEvent('Sit-Ups (F)', data.situpsF, '💪', 'reps')}
-          {renderEvent('Pull-Ups (M)', data.pullups, '💪', 'reps')}
-          {renderEvent('Flexed-Arm Hang (F)', data.flexarm, '⏱️', 'secs')}
-          {renderEvent('3.2KM Run (M)', data.run, '🏃', '', true)}
-          {renderEvent('3.2KM Run (F)', data.runF, '🏃', '', true)}
+          {renderCombinedEvent('Push-Ups', data.pushups, '(M)', 'reps', data.pushupsF, '(F)', 'reps', '💪')}
+          {renderCombinedEvent('Sit-Ups', data.situps, '(M)', 'reps', data.situpsF, '(F)', 'reps', '💪')}
+          {renderCombinedEvent('Pull-Ups / Flexed-Arm', data.pullups, 'Pull-Ups (M)', 'reps', data.flexarm, 'Flexed-Arm (F)', 'secs', '💪')}
+          {renderCombinedEvent('3.2KM Run', data.run, '(M)', '', data.runF, '(F)', '', '🏃', true)}
         </div>
       </div>
     );
