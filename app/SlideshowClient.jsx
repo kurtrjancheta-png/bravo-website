@@ -206,7 +206,7 @@ export default function SlideshowClient({ disseminations }) {
               </div>
               
               <div style={{ 
-                fontSize: '1.5rem', 
+                fontSize: '12px', 
                 color: 'var(--card-text)',
                 lineHeight: 1.6, 
                 flex: 1, 
