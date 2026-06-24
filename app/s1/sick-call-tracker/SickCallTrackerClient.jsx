@@ -224,8 +224,8 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
         <button 
           onClick={() => setIsAddModalOpen(true)}
           style={{
-            background: 'var(--accent-color)',
-            color: 'white',
+            background: 'var(--accent-gold)',
+            color: '#000',
             padding: '0.75rem 1.5rem',
             border: 'none',
             borderRadius: '8px',
