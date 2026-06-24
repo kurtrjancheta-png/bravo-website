@@ -10,6 +10,16 @@ const urgencyStyles = {
   'FOR IMMEDIATE COMPLIANCE': { bg: '#fed7aa', border: '#fb923c', color: '#9a3412', animation: 'pulse-orange 1.5s infinite', label: 'FOR IMMEDIATE COMPLIANCE' }
 };
 
+const getDynamicFontSize = (text) => {
+  if (!text) return '1.5rem';
+  const len = text.length;
+  if (len < 50) return '1.8rem';
+  if (len < 150) return '1.4rem';
+  if (len < 300) return '1.2rem';
+  if (len < 600) return '1rem';
+  return '14px'; // Min size is 14px so it's not too small
+};
+
 export default function SlideshowClient({ disseminations }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentDuration, setCurrentDuration] = useState(12000);
@@ -206,7 +216,7 @@ export default function SlideshowClient({ disseminations }) {
               </div>
               
               <div style={{ 
-                fontSize: '12px', 
+                fontSize: getDynamicFontSize(currentSlide['CONTENT']), 
                 color: 'var(--card-text)',
                 lineHeight: 1.6, 
                 flex: 1, 

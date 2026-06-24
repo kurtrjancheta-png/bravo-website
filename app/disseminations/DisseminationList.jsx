@@ -29,6 +29,16 @@ const urgencyStyles = {
   }
 };
 
+const getDynamicFontSize = (text) => {
+  if (!text) return '1.2rem';
+  const len = text.length;
+  if (len < 50) return '1.5rem';
+  if (len < 150) return '1.2rem';
+  if (len < 300) return '1rem';
+  if (len < 600) return '0.9rem';
+  return '12px'; // Min size is 12px for list view
+};
+
 function DisseminationCard({ card, style, sheetName, isArchived }) {
   let dateAnnounced = String(card['DATE ANNOUNCED'] || '');
   if (dateAnnounced.includes('Date(')) {
@@ -109,7 +119,7 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
             )}
           </div>
           
-          <div style={{ fontSize: '12px', color: 'var(--text-primary)', lineHeight: 1.5, flex: 1, whiteSpace: 'pre-wrap' }}>
+          <div style={{ fontSize: getDynamicFontSize(card['CONTENT']), color: 'var(--text-primary)', lineHeight: 1.5, flex: 1, whiteSpace: 'pre-wrap' }}>
             {card['CONTENT'] || 'No content provided.'}
           </div>
           
