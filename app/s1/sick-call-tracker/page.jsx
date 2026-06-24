@@ -4,7 +4,7 @@ import SickCallTrackerClient from './SickCallTrackerClient';
 export const revalidate = 10; // revalidate often so it shows fresh data
 
 const SOI_SHEET_ID = '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
-const SICK_CALL_SHEET_ID = '1z4SydwsYW2LRbLp-UkOYlgeUlKRIuFJ7';
+const SICK_CALL_SHEET_ID = '1btCK6FhiAHTTbjEZAQZIm_f4l5-_Ik-3IKZm3f983es';
 const SICK_CALL_SHEET_NAME = 'SICK CALL RECORD';
 
 export default async function SickCallTrackerPage() {
