@@ -3,8 +3,11 @@ import { Suspense } from 'react';
 import CouncilAdminForms from '../CouncilAdminForms';
 import ImageGallery from '../ImageGallery';
 import DeleteDisseminationButton from '../DeleteDisseminationButton';
+import RaiseConcernModal from '../RaiseConcernModal';
+import ViewConcernsAdmin from '../ViewConcernsAdmin';
 
 const SHEET_ID = '1YeaoloRz4REe_iVomGfFI9WugalrDFsHiz04eOcD0a8';
+const CONCERNS_APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_CONCERNS_APPS_SCRIPT_URL || 'YOUR_DEPLOYED_APPS_SCRIPT_URL';
 
 const councilData = {
   taco: { title: "Tac O's Corner", sheetTab: 'TACO', overview: "Official announcements and activities direct from the Tactical Officer." },
@@ -248,7 +251,11 @@ export default function CouncilDisseminationPage({ params }) {
         </div>
       </div>
 
+      <RaiseConcernModal councilName={data.sheetTab} appsScriptUrl={CONCERNS_APPS_SCRIPT_URL} />
+      
       <CouncilAdminForms councilName={data.sheetTab} />
+      
+      <ViewConcernsAdmin councilName={data.sheetTab} appsScriptUrl={CONCERNS_APPS_SCRIPT_URL} />
 
       <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem' }}>Loading disseminations...</div>}>
         <DisseminationCards councilId={councilId} />
