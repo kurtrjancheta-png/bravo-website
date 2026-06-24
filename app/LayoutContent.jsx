@@ -10,6 +10,7 @@ import { useAuth } from './AuthContext';
 export default function LayoutContent({ children }) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { adminUser, logout, isLoaded } = useAuth();
   const pathname = usePathname();
 
@@ -33,6 +34,7 @@ export default function LayoutContent({ children }) {
       s6: pathname === '/cellphone-rack' || pathname === '/tablet-directory' || pathname === '/disseminations/s6',
       athletic: pathname === '/pft-tracker' || pathname === '/disseminations/athletic'
     });
+    setIsMobileMenuOpen(false); // Close mobile drawer when route changes
   }, [pathname]);
 
   const toggleSection = (section, isOpen) => {
@@ -61,7 +63,7 @@ export default function LayoutContent({ children }) {
   return (
     <div className="app-container">
       {/* Left Sidebar */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <div className="logo-circle" style={{ padding: 0, overflow: 'hidden', background: 'transparent' }}>
             <img src="/logo.png" alt="Bravo Logo" style={{ width: '100%', height: '100%', objectFit: 'cover', mixBlendMode: 'multiply' }} />
@@ -264,8 +266,24 @@ export default function LayoutContent({ children }) {
         </div>
       </aside>
 
+      {/* Mobile Overlay backdrop when menu is open */}
+      {isMobileMenuOpen && (
+        <div className="mobile-overlay" onClick={() => setIsMobileMenuOpen(false)} />
+      )}
+
       {/* Main Content Area */}
       <div className="main-wrapper">
+        {/* Mobile Top Header (Sticky on Mobile, Hidden on Desktop) */}
+        <header className="mobile-header">
+          <button className="menu-toggle-btn" onClick={() => setIsMobileMenuOpen(true)}>
+            ☰
+          </button>
+          <span className="mobile-header-title">BRAVO CO.</span>
+          <button className="mobile-theme-btn" onClick={toggleDarkMode} style={{ color: 'inherit' }}>
+            {isDarkMode ? '☀️' : '⚙️'}
+          </button>
+        </header>
+
         {/* Top Bar (Only visible on Home Overview) */}
         {pathname === '/' && (
           <header className="topbar">

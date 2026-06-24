@@ -1,9 +1,18 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function OrgChart({ tacticalOfficer, cmdr, firstSgt, exo, sStaff, specialStaff, platoonLeaders }) {
   const router = useRouter();
+
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleCardClick = (person) => {
     if (!person) return;
@@ -92,49 +101,74 @@ export default function OrgChart({ tacticalOfficer, cmdr, firstSgt, exo, sStaff,
           {/* Use flex to center the CMDR. The First Sgt will be absolutely positioned off to the side so CMDR stays perfectly centered. */}
           <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
             
-            <div style={{ position: 'relative', zIndex: 2 }}>
-              <PersonCard 
-                person={cmdr}
-                customStyle={{
-                  card: { borderColor: 'var(--text-primary)', borderWidth: '2px' },
-                  placeholder: { backgroundColor: 'var(--text-primary)', color: 'white', borderColor: 'var(--text-primary)' },
-                  wrapper: { position: 'relative' } // Remove the top line pseudo-element if needed, but it's fine
-                }}
-              />
+            {isMobile ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', position: 'relative', zIndex: 2 }}>
+                <PersonCard 
+                  person={cmdr}
+                  customStyle={{
+                    card: { borderColor: 'var(--text-primary)', borderWidth: '2px' },
+                    placeholder: { backgroundColor: 'var(--text-primary)', color: 'white', borderColor: 'var(--text-primary)' },
+                    wrapper: { position: 'relative' }
+                  }}
+                />
+                {firstSgt && (
+                  <PersonCard 
+                    person={firstSgt}
+                    customStyle={{
+                      card: { width: '220px' },
+                      avatar: { width: '60px', height: '60px' },
+                      placeholder: { width: '60px', height: '60px', fontSize: '1.5rem' },
+                      name: { fontSize: '0.8rem' },
+                      wrapper: { position: 'relative' } 
+                    }}
+                  />
+                )}
+              </div>
+            ) : (
+              <div style={{ position: 'relative', zIndex: 2 }}>
+                <PersonCard 
+                  person={cmdr}
+                  customStyle={{
+                    card: { borderColor: 'var(--text-primary)', borderWidth: '2px' },
+                    placeholder: { backgroundColor: 'var(--text-primary)', color: 'white', borderColor: 'var(--text-primary)' },
+                    wrapper: { position: 'relative' }
+                  }}
+                />
 
-              {/* First Sergeant attached to the side */}
-              {firstSgt && (
-                <>
-                  <div style={{
-                    position: 'absolute',
-                    top: '50px',
-                    left: '100%',
-                    width: '3rem',
-                    height: '2px',
-                    backgroundColor: 'var(--border-color)',
-                    zIndex: 0
-                  }}></div>
+                {/* First Sergeant attached to the side */}
+                {firstSgt && (
+                  <>
+                    <div style={{
+                      position: 'absolute',
+                      top: '50px',
+                      left: '100%',
+                      width: '3rem',
+                      height: '2px',
+                      backgroundColor: 'var(--border-color)',
+                      zIndex: 0
+                    }}></div>
 
-                  <div style={{ 
-                    position: 'absolute', 
-                    left: 'calc(100% + 3rem)', 
-                    top: '20px',
-                    zIndex: 2 
-                  }}>
-                    <PersonCard 
-                      person={firstSgt}
-                      customStyle={{
-                        card: { width: '220px' },
-                        avatar: { width: '60px', height: '60px' },
-                        placeholder: { width: '60px', height: '60px', fontSize: '1.5rem' },
-                        name: { fontSize: '0.8rem' },
-                        wrapper: { position: 'relative' } 
-                      }}
-                    />
-                  </div>
-                </>
-              )}
-            </div>
+                    <div style={{ 
+                      position: 'absolute', 
+                      left: 'calc(100% + 3rem)', 
+                      top: '20px',
+                      zIndex: 2 
+                    }}>
+                      <PersonCard 
+                        person={firstSgt}
+                        customStyle={{
+                          card: { width: '220px' },
+                          avatar: { width: '60px', height: '60px' },
+                          placeholder: { width: '60px', height: '60px', fontSize: '1.5rem' },
+                          name: { fontSize: '0.8rem' },
+                          wrapper: { position: 'relative' } 
+                        }}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
 
           </div>
           <div className="org-connector-down"></div>

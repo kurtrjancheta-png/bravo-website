@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { useAuth } from '../AuthContext';
 import { useRouter } from 'next/navigation';
@@ -20,6 +20,14 @@ export default function CellphoneRackClient({ initialData }) {
   const [isUploading, setIsUploading] = useState(false);
   const [isLaunching, setIsLaunching] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
 
   const classes = ['1', '2', '3', '4'];
@@ -153,16 +161,16 @@ export default function CellphoneRackClient({ initialData }) {
 
         {summary.length > 0 && (
           <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '1rem', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', transition: 'all 0.3s ease' }}>
-            <PieChart width={340} height={140}>
-              <text x={90} y={65} textAnchor="middle" dominantBaseline="middle" style={{ fontSize: '1.5rem', fontWeight: 800, fill: 'var(--text-primary)' }}>
+            <PieChart width={isMobile ? 280 : 340} height={140}>
+              <text x={isMobile ? 70 : 90} y={65} textAnchor="middle" dominantBaseline="middle" style={{ fontSize: '1.5rem', fontWeight: 800, fill: 'var(--text-primary)' }}>
                 {filteredData.length}
               </text>
-              <text x={90} y={85} textAnchor="middle" dominantBaseline="middle" style={{ fontSize: '0.65rem', fontWeight: 800, fill: 'var(--text-secondary)', letterSpacing: '1px' }}>
+              <text x={isMobile ? 70 : 90} y={85} textAnchor="middle" dominantBaseline="middle" style={{ fontSize: '0.65rem', fontWeight: 800, fill: 'var(--text-secondary)', letterSpacing: '1px' }}>
                 TOTAL
               </text>
               <Pie
                 data={summary}
-                cx={90}
+                cx={isMobile ? 70 : 90}
                 cy={70}
                 innerRadius={45}
                 outerRadius={65}
@@ -194,6 +202,9 @@ export default function CellphoneRackClient({ initialData }) {
         const classCadets = groupedData[c];
         if (!classCadets || classCadets.length === 0) return null;
 
+        const cardWidth = isMobile ? '135px' : '180px';
+        const cardHeight = isMobile ? '300px' : '400px';
+
         return (
           <div key={c} style={{ marginBottom: '4rem' }}>
             <h3 style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '2rem', color: 'var(--accent-gold)' }}>
@@ -202,9 +213,10 @@ export default function CellphoneRackClient({ initialData }) {
             
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(5, 180px)', 
-              gap: '2.5rem',
-              justifyContent: 'center'
+              gridTemplateColumns: isMobile ? 'repeat(auto-fit, minmax(130px, 1fr))' : 'repeat(5, 180px)', 
+              gap: isMobile ? '1rem' : '2.5rem',
+              justifyContent: 'center',
+              padding: isMobile ? '0.5rem' : '0'
             }}>
               {classCadets.map((cadet, i) => {
                 const hasNoPhone = !cadet.numPhones || cadet.numPhones === 0 || cadet.status.toUpperCase() === 'NO SMARTPHONE';
@@ -212,8 +224,8 @@ export default function CellphoneRackClient({ initialData }) {
                 if (hasNoPhone) {
                   return (
                     <div key={i} style={{
-                      width: '180px',
-                      height: '400px',
+                      width: cardWidth,
+                      height: cardHeight,
                       borderRadius: '36px',
                       border: '2px dashed var(--border-color)',
                       padding: '8px',
@@ -224,8 +236,8 @@ export default function CellphoneRackClient({ initialData }) {
                       textAlign: 'center',
                       position: 'relative'
                     }}>
-                      <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem', color: 'var(--text-secondary)', letterSpacing: '1px' }}>{cadet.name}</h4>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 800 }}>NO SMARTPHONE</div>
+                      <h4 style={{ fontSize: isMobile ? '0.96rem' : '1.2rem', margin: '0 0 0.5rem', color: 'var(--text-secondary)', letterSpacing: '1px' }}>{cadet.name}</h4>
+                      <div style={{ fontSize: isMobile ? '0.65rem' : '0.8rem', color: 'var(--text-secondary)', fontWeight: 800 }}>NO SMARTPHONE</div>
                       
                       {/* Swipe Indicator (Home Bar) */}
                       <div 
@@ -250,8 +262,8 @@ export default function CellphoneRackClient({ initialData }) {
 
                 return (
                   <div key={i} style={{
-                    width: '180px',
-                    height: '400px',
+                    width: cardWidth,
+                    height: cardHeight,
                     borderRadius: '36px',
                     background: bezelColor,
                     padding: '8px',
@@ -261,10 +273,10 @@ export default function CellphoneRackClient({ initialData }) {
                     flexDirection: 'column'
                   }}>
                     {/* Hardware Buttons (Simulated) */}
-                    <div style={{ position: 'absolute', left: '-3px', top: '100px', width: '3px', height: '25px', background: bezelColor, borderRadius: '3px 0 0 3px' }} />
-                    <div style={{ position: 'absolute', left: '-3px', top: '140px', width: '3px', height: '40px', background: bezelColor, borderRadius: '3px 0 0 3px' }} />
-                    <div style={{ position: 'absolute', left: '-3px', top: '190px', width: '3px', height: '40px', background: bezelColor, borderRadius: '3px 0 0 3px' }} />
-                    <div style={{ position: 'absolute', right: '-3px', top: '140px', width: '3px', height: '60px', background: bezelColor, borderRadius: '0 3px 3px 0' }} />
+                    <div style={{ position: 'absolute', left: '-3px', top: isMobile ? '70px' : '100px', width: '3px', height: '25px', background: bezelColor, borderRadius: '3px 0 0 3px' }} />
+                    <div style={{ position: 'absolute', left: '-3px', top: isMobile ? '100px' : '140px', width: '3px', height: '40px', background: bezelColor, borderRadius: '3px 0 0 3px' }} />
+                    <div style={{ position: 'absolute', left: '-3px', top: isMobile ? '140px' : '190px', width: '3px', height: '40px', background: bezelColor, borderRadius: '3px 0 0 3px' }} />
+                    <div style={{ position: 'absolute', right: '-3px', top: isMobile ? '100px' : '140px', width: '3px', height: '60px', background: bezelColor, borderRadius: '0 3px 3px 0' }} />
 
                     {/* The Screen */}
                     <div style={{
@@ -284,8 +296,8 @@ export default function CellphoneRackClient({ initialData }) {
                         top: '8px',
                         left: '50%',
                         transform: 'translateX(-50%)',
-                        width: '60px',
-                        height: '18px',
+                        width: isMobile ? '45px' : '60px',
+                        height: isMobile ? '12px' : '18px',
                         background: '#000',
                         borderRadius: '10px',
                         zIndex: 10
@@ -354,19 +366,19 @@ export default function CellphoneRackClient({ initialData }) {
                       )}
 
                       {/* Top Status Bar (Time/Battery) */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px 0', fontSize: '0.65rem', fontWeight: 800, color: 'rgba(255,255,255,0.8)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: isMobile ? '8px 12px 0' : '12px 20px 0', fontSize: '0.65rem', fontWeight: 800, color: 'rgba(255,255,255,0.8)' }}>
                         <span>9:41</span>
                         <span>{statusIcon}</span>
                       </div>
 
                       {/* Main Content Area */}
-                      <div style={{ flex: 1, padding: '2rem 1rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', overflowY: 'auto' }} className="hide-scrollbar">
+                      <div style={{ flex: 1, padding: isMobile ? '1.2rem 0.5rem 1rem' : '2rem 1rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', overflowY: 'auto' }} className="hide-scrollbar">
                         
                         <div style={{ 
-                          width: '64px', height: '64px', minHeight: '64px', minWidth: '64px', flexShrink: 0,
+                          width: isMobile ? '48px' : '64px', height: isMobile ? '48px' : '64px', minHeight: isMobile ? '48px' : '64px', minWidth: isMobile ? '48px' : '64px', flexShrink: 0,
                           borderRadius: '50%', background: 'rgba(255,255,255,0.2)', 
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '1.5rem', marginBottom: '1rem',
+                          fontSize: isMobile ? '1.2rem' : '1.5rem', marginBottom: isMobile ? '0.5rem' : '1rem',
                           backdropFilter: 'blur(5px)', border: '1px solid rgba(255,255,255,0.3)',
                           overflow: 'hidden'
                         }}>
@@ -377,33 +389,33 @@ export default function CellphoneRackClient({ initialData }) {
                           )}
                         </div>
                         
-                        <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.25rem', color: '#fff', letterSpacing: '1px' }}>{cadet.name}</h4>
-                        <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', fontWeight: 800, marginBottom: '1.5rem' }}>{cadet.status.toUpperCase()}</div>
+                        <h4 style={{ fontSize: isMobile ? '0.96rem' : '1.2rem', margin: '0 0 0.25rem', color: '#fff', letterSpacing: '1px' }}>{cadet.name}</h4>
+                        <div style={{ fontSize: isMobile ? '0.65rem' : '0.8rem', color: 'rgba(255,255,255,0.7)', fontWeight: 800, marginBottom: isMobile ? '0.75rem' : '1.5rem' }}>{cadet.status.toUpperCase()}</div>
 
                         {/* App Icon grid styling for info */}
-                        <div style={{ display: 'flex', gap: '1rem', marginBottom: 'auto', width: '100%', justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', gap: isMobile ? '0.5rem' : '1rem', marginBottom: 'auto', width: '100%', justifyContent: 'center' }}>
                           {cadet.phone && cadet.phone !== 'null' && (
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
                               <div 
-                                style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.15)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', backdropFilter: 'blur(5px)', cursor: 'pointer' }} 
+                                style={{ width: isMobile ? '28px' : '36px', height: isMobile ? '28px' : '36px', background: 'rgba(255,255,255,0.15)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? '0.9rem' : '1.1rem', backdropFilter: 'blur(5px)', cursor: 'pointer' }} 
                                 title="Click to view contact"
                                 onClick={() => setActiveContact(prev => ({ ...prev, [cadet.name]: true }))}
                               >📞</div>
-                              <span style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.8)', fontWeight: 800 }}>Phone</span>
+                              <span style={{ fontSize: isMobile ? '0.45rem' : '0.55rem', color: 'rgba(255,255,255,0.8)', fontWeight: 800 }}>Phone</span>
                             </div>
                           )}
                           {cadet.ig && cadet.ig !== 'null' && (
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
                               <div 
-                                style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.15)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(5px)', cursor: 'pointer' }} 
+                                style={{ width: isMobile ? '28px' : '36px', height: isMobile ? '28px' : '36px', background: 'rgba(255,255,255,0.15)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(5px)', cursor: 'pointer' }} 
                                 title="Click to view Signal"
                                 onClick={() => setActiveSocial(prev => ({ ...prev, [cadet.name]: true }))}
                               >
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <svg width={isMobile ? '16' : '22'} height={isMobile ? '16' : '22'} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                   <path d="M12 2C6.477 2 2 6.03 2 11c0 2.82 1.45 5.34 3.75 6.94L4.5 22l4.2-2.1c1.05.32 2.16.5 3.3.5 5.523 0 10-4.03 10-9s-4.477-9-10-9z" fill="#3a76f0"/>
                                 </svg>
                               </div>
-                              <span style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.8)', fontWeight: 800 }}>Signal</span>
+                              <span style={{ fontSize: isMobile ? '0.45rem' : '0.55rem', color: 'rgba(255,255,255,0.8)', fontWeight: 800 }}>Signal</span>
                             </div>
                           )}
                         </div>
@@ -413,14 +425,14 @@ export default function CellphoneRackClient({ initialData }) {
                           <div style={{ 
                             background: 'rgba(0,0,0,0.4)', 
                             borderRadius: '12px', 
-                            padding: '0.75rem', 
+                            padding: isMobile ? '0.4rem' : '0.75rem', 
                             width: '100%',
-                            marginTop: '1rem',
+                            marginTop: '0.5rem',
                             border: '1px solid rgba(255,255,255,0.1)',
                             backdropFilter: 'blur(5px)'
                           }}>
-                            <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.5)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.25rem', textAlign: 'left' }}>Authorized Reason</div>
-                            <div style={{ fontSize: '0.75rem', color: '#fff', textAlign: 'left', lineHeight: 1.3 }}>{cadet.remarks}</div>
+                            <div style={{ fontSize: isMobile ? '0.45rem' : '0.55rem', color: 'rgba(255,255,255,0.5)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.25rem', textAlign: 'left' }}>Authorized Reason</div>
+                            <div style={{ fontSize: isMobile ? '0.6rem' : '0.75rem', color: '#fff', textAlign: 'left', lineHeight: 1.3 }}>{cadet.remarks}</div>
                           </div>
                         )}
                       </div>

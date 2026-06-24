@@ -1,11 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function RaiseConcernModal({ councilName, appsScriptUrl }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const [submitStatus, setSubmitStatus] = useState(null); // 'success' or 'error'
 
   const [formData, setFormData] = useState({
@@ -151,7 +159,7 @@ export default function RaiseConcernModal({ councilName, appsScriptUrl }) {
                 background: "var(--bg-primary)",
                 border: "1px solid var(--border-color)",
                 borderRadius: "16px",
-                padding: "2rem",
+                padding: isMobile ? "1.25rem" : "2rem",
                 width: "100%",
                 maxWidth: "600px",
                 maxHeight: "90vh",
@@ -196,7 +204,7 @@ export default function RaiseConcernModal({ councilName, appsScriptUrl }) {
                     <strong>Privacy Notice:</strong> The following demographic fields are completely optional. You may submit your concern anonymously if you prefer.
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "1rem" }}>
                     <div>
                       <label style={{ display: "block", marginBottom: "0.25rem", color: "var(--text-secondary)", fontSize: "0.85rem" }}>Name (Optional)</label>
                       <input 

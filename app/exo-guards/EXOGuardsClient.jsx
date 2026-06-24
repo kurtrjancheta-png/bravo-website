@@ -116,9 +116,14 @@ export default function EXOGuardsClient({ data1CL = [], data2CL = [], data3CL = 
   const router = useRouter();
   const { adminUser } = useAuth() || {};
 
+  const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     // Keep time updated slightly
     setNow(new Date());
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const processGuards = (data, getStatusFn, postedDate, incomingDate, sortOrder) => {
@@ -322,6 +327,16 @@ export default function EXOGuardsClient({ data1CL = [], data2CL = [], data3CL = 
             marginTop: '0.5rem',
             alignSelf: 'stretch'
           }}>
+            {isMobile && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '0.05em' }}>
+                  {guards === leftGuards ? 'POSTED SENTINELS' : 'INCOMING SENTINELS'}
+                </h3>
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 800, backgroundColor: 'var(--card-bg)', padding: '0.15rem 0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                  {guards === leftGuards ? `ON DUTY (${postedDateStr})` : `18:30 (${incomingDateStr})`}
+                </span>
+              </div>
+            )}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
               <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: 'var(--card-text)', letterSpacing: '0.05em' }}>
                 SENTINELS
@@ -394,6 +409,16 @@ export default function EXOGuardsClient({ data1CL = [], data2CL = [], data3CL = 
       } else {
         return (
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {isMobile && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '0.05em' }}>
+                  {guards === leftGuards ? 'POSTED GUARDS' : 'INCOMING GUARDS'}
+                </h3>
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 800, backgroundColor: 'var(--card-bg)', padding: '0.15rem 0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                  {guards === leftGuards ? `ON DUTY (${postedDateStr})` : `18:30 (${incomingDateStr})`}
+                </span>
+              </div>
+            )}
             {guards.map((guard, idx) => renderGuardCard(guard, idx))}
           </div>
         );
@@ -402,7 +427,7 @@ export default function EXOGuardsClient({ data1CL = [], data2CL = [], data3CL = 
 
     return (
       <div style={{ marginBottom: '2rem' }}>
-        {!isSentinel && (
+        {!isSentinel && !isMobile && (
           <div style={{ 
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
@@ -420,7 +445,7 @@ export default function EXOGuardsClient({ data1CL = [], data2CL = [], data3CL = 
             <div>{title} GUARDS (INCOMING)</div>
           </div>
         )}
-        <div style={{ display: 'flex', gap: '3rem', alignItems: 'stretch' }}>
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '1.5rem' : '3rem', alignItems: 'stretch' }}>
           {renderBlock(leftGuards)}
           {renderBlock(rightGuards)}
         </div>
@@ -486,24 +511,26 @@ export default function EXOGuardsClient({ data1CL = [], data2CL = [], data3CL = 
         )}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <h2 style={{ color: 'var(--text-primary)', fontSize: '1.4rem', fontWeight: 900, margin: 0 }}>
-            POSTED GUARDS
-          </h2>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, backgroundColor: 'var(--card-bg)', padding: '0.25rem 0.75rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-            ON DUTY ({postedDateStr})
-          </span>
+      {!isMobile && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <h2 style={{ color: 'var(--text-primary)', fontSize: '1.4rem', fontWeight: 900, margin: 0 }}>
+              POSTED GUARDS
+            </h2>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, backgroundColor: 'var(--card-bg)', padding: '0.25rem 0.75rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+              ON DUTY ({postedDateStr})
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <h2 style={{ color: 'var(--text-primary)', fontSize: '1.4rem', fontWeight: 900, margin: 0 }}>
+              INCOMING GUARDS
+            </h2>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, backgroundColor: 'var(--card-bg)', padding: '0.25rem 0.75rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+              POSTING AT 18:30 ({incomingDateStr})
+            </span>
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <h2 style={{ color: 'var(--text-primary)', fontSize: '1.4rem', fontWeight: 900, margin: 0 }}>
-            INCOMING GUARDS
-          </h2>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, backgroundColor: 'var(--card-bg)', padding: '0.25rem 0.75rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-            POSTING AT 18:30 ({incomingDateStr})
-          </span>
-        </div>
-      </div>
+      )}
       
       {((activeTab === '1CL' && today1CL.length === 0 && tomorrow1CL.length === 0) ||
         (activeTab === '2CL' && today2CL.length === 0 && tomorrow2CL.length === 0) ||

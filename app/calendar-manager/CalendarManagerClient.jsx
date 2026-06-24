@@ -24,6 +24,15 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
   const [isLaunching, setIsLaunching] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [formData, setFormData] = useState({
     title: '',
     date: '',
@@ -412,7 +421,7 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
             onDragLeave={(e) => handleDragLeave(e, bgColor)}
             onDrop={(e) => handleDrop(e, cloneDay, bgColor)}
             style={{
-              minHeight: '120px',
+              minHeight: isMobile ? '65px' : '120px',
               borderRight: '1px solid var(--border-color)',
               borderBottom: '1px solid var(--border-color)',
               padding: '0.25rem',
@@ -423,8 +432,8 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
               flexDirection: 'column',
               overflow: 'hidden'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(212,175,55,0.1)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = bgColor; }}
+            onMouseEnter={(e) => { if (!isMobile) e.currentTarget.style.backgroundColor = 'rgba(212,175,55,0.1)'; }}
+            onMouseLeave={(e) => { if (!isMobile) e.currentTarget.style.backgroundColor = bgColor; }}
           >
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.25rem' }}>
               <span style={{ 
@@ -443,89 +452,100 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
               </span>
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flexGrow: 1, overflowY: 'auto' }}>
-              {/* Birthdays (Read-Only) */}
-              {dayBDays.map((b, idx) => (
-                <div key={`bday-${idx}`} style={{ 
-                  backgroundColor: 'rgba(236,72,153,0.8)', color: 'white', padding: '2px 4px', 
-                  borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', 
-                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                  cursor: 'default'
-                }} onClick={(e) => e.stopPropagation()}>
-                  🎂 {b.lastName}
-                </div>
-              ))}
-              
-              {/* Activities (Draggable & Editable) */}
-              {dayActs.map((act, idx) => {
-                const color = act.color || '#3b82f6';
-                
-                // Determine if this is a multi-day event and if it's the start/end segment
-                const actStart = new Date(act.date);
-                const actStartNorm = new Date(actStart.getFullYear(), actStart.getMonth(), actStart.getDate());
-                const actEnd = act.endDate ? new Date(act.endDate) : actStart;
-                const actEndNorm = new Date(actEnd.getFullYear(), actEnd.getMonth(), actEnd.getDate());
-                const dayNorm = new Date(cloneDay.getFullYear(), cloneDay.getMonth(), cloneDay.getDate());
-                
-                const isStart = actStartNorm.getTime() === dayNorm.getTime();
-                const isEnd = actEndNorm.getTime() === dayNorm.getTime();
-                const isMultiDay = actStartNorm.getTime() !== actEndNorm.getTime();
-
-                return (
-                  <div 
-                    key={`act-${act.id || idx}`}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, act, 'move')}
-                    onClick={(e) => handleEventClick(e, act)}
-                    className="clickable-event-chip"
-                    style={{ 
-                      backgroundColor: color, 
-                      color: 'white', 
-                      padding: '2px 4px', 
-                      borderRadius: isMultiDay ? (isStart ? '4px 0 0 4px' : (isEnd ? '0 4px 4px 0' : '0')) : '4px',
-                      fontSize: '0.7rem', 
-                      fontWeight: 'bold', 
-                      whiteSpace: 'nowrap', 
-                      overflow: 'hidden', 
-                      textOverflow: 'ellipsis',
-                      cursor: 'grab',
-                      position: 'relative',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      opacity: 1,
-                      border: '1px solid rgba(255,255,255,0.2)'
-                    }}
-                  >
-                    {/* Left Resize Handle */}
-                    {isStart && (
-                       <div 
-                         draggable
-                         onDragStart={(e) => handleDragStart(e, act, 'resizeStart')}
-                         onClick={(e) => e.stopPropagation()}
-                         style={{ cursor: 'ew-resize', width: '6px', height: '100%', background: 'rgba(255,255,255,0.4)', borderRadius: '2px' }}
-                         title="Drag to adjust start date"
-                       />
-                    )}
-                    
-                    <span style={{ padding: '0 4px', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {(isStart || day.getDay() === 0) ? (act.title || act.description || 'Untitled') : '\u00A0'}
-                    </span>
-
-                    {/* Right Resize Handle */}
-                    {isEnd && (
-                       <div 
-                         draggable
-                         onDragStart={(e) => handleDragStart(e, act, 'resizeEnd')}
-                         onClick={(e) => e.stopPropagation()}
-                         style={{ cursor: 'ew-resize', width: '6px', height: '100%', background: 'rgba(255,255,255,0.4)', borderRadius: '2px' }}
-                         title="Drag to adjust end date"
-                       />
-                    )}
+            {isMobile ? (
+              <div style={{ display: 'flex', gap: '3px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '0.25rem', overflow: 'hidden' }}>
+                {dayBDays.map((_, idx) => (
+                  <div key={`bday-dot-${idx}`} style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'rgba(236,72,153,0.8)', flexShrink: 0 }} onClick={(e) => e.stopPropagation()} />
+                ))}
+                {dayActs.map((act, idx) => (
+                  <div key={`act-dot-${idx}`} style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: act.color || '#3b82f6', flexShrink: 0 }} onClick={(e) => { e.stopPropagation(); handleEventClick(e, act); }} />
+                ))}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flexGrow: 1, overflowY: 'auto' }}>
+                {/* Birthdays (Read-Only) */}
+                {dayBDays.map((b, idx) => (
+                  <div key={`bday-${idx}`} style={{ 
+                    backgroundColor: 'rgba(236,72,153,0.8)', color: 'white', padding: '2px 4px', 
+                    borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', 
+                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                    cursor: 'default'
+                  }} onClick={(e) => e.stopPropagation()}>
+                    🎂 {b.lastName}
                   </div>
-                );
-              })}
-            </div>
+                ))}
+                
+                {/* Activities (Draggable & Editable) */}
+                {dayActs.map((act, idx) => {
+                  const color = act.color || '#3b82f6';
+                  
+                  // Determine if this is a multi-day event and if it's the start/end segment
+                  const actStart = new Date(act.date);
+                  const actStartNorm = new Date(actStart.getFullYear(), actStart.getMonth(), actStart.getDate());
+                  const actEnd = act.endDate ? new Date(act.endDate) : actStart;
+                  const actEndNorm = new Date(actEnd.getFullYear(), actEnd.getMonth(), actEnd.getDate());
+                  const dayNorm = new Date(cloneDay.getFullYear(), cloneDay.getMonth(), cloneDay.getDate());
+                  
+                  const isStart = actStartNorm.getTime() === dayNorm.getTime();
+                  const isEnd = actEndNorm.getTime() === dayNorm.getTime();
+                  const isMultiDay = actStartNorm.getTime() !== actEndNorm.getTime();
+
+                  return (
+                    <div 
+                      key={`act-${act.id || idx}`}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, act, 'move')}
+                      onClick={(e) => handleEventClick(e, act)}
+                      className="clickable-event-chip"
+                      style={{ 
+                        backgroundColor: color, 
+                        color: 'white', 
+                        padding: '2px 4px', 
+                        borderRadius: isMultiDay ? (isStart ? '4px 0 0 4px' : (isEnd ? '0 4px 4px 0' : '0')) : '4px',
+                        fontSize: '0.7rem', 
+                        fontWeight: 'bold', 
+                        whiteSpace: 'nowrap', 
+                        overflow: 'hidden', 
+                        textOverflow: 'ellipsis',
+                        cursor: 'grab',
+                        position: 'relative',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        opacity: 1,
+                        border: '1px solid rgba(255,255,255,0.2)'
+                      }}
+                    >
+                      {/* Left Resize Handle */}
+                      {isStart && (
+                         <div 
+                           draggable
+                           onDragStart={(e) => handleDragStart(e, act, 'resizeStart')}
+                           onClick={(e) => e.stopPropagation()}
+                           style={{ cursor: 'ew-resize', width: '6px', height: '100%', background: 'rgba(255,255,255,0.4)', borderRadius: '2px' }}
+                           title="Drag to adjust start date"
+                         />
+                      )}
+                      
+                      <span style={{ padding: '0 4px', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {(isStart || day.getDay() === 0) ? (act.title || act.description || 'Untitled') : '\u00A0'}
+                      </span>
+
+                      {/* Right Resize Handle */}
+                      {isEnd && (
+                         <div 
+                           draggable
+                           onDragStart={(e) => handleDragStart(e, act, 'resizeEnd')}
+                           onClick={(e) => e.stopPropagation()}
+                           style={{ cursor: 'ew-resize', width: '6px', height: '100%', background: 'rgba(255,255,255,0.4)', borderRadius: '2px' }}
+                           title="Drag to adjust end date"
+                         />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         );
         day = addDays(day, 1);

@@ -15,6 +15,14 @@ const INEFFECTIVE_COLORS = [
 export default function DispositionDashboard({ dispositionData, attachmentData, rosterData = [] }) {
   const [selectedDetails, setSelectedDetails] = useState(null);
 
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   if (!dispositionData || dispositionData.length === 0) return null;
 
   const classes = {
@@ -118,7 +126,7 @@ export default function DispositionDashboard({ dispositionData, attachmentData, 
       }}>
         DISPOSITION OF TROOPS
       </h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: '1.5rem' }}>
         {Object.entries(classes).map(([className, classInfo]) => (
           <ClassPieChart 
             key={className} 
@@ -138,6 +146,7 @@ export default function DispositionDashboard({ dispositionData, attachmentData, 
           attachmentData={attachmentData}
           rosterData={rosterData}
           onClose={() => setSelectedDetails(null)} 
+          isMobile={isMobile}
         />
       )}
     </div>
@@ -258,7 +267,7 @@ function ClassPieChart({ title, className, data, total, onSliceClick, selectedDe
   );
 }
 
-function AttachmentDetailsView({ details, attachmentData, rosterData, onClose }) {
+function AttachmentDetailsView({ details, attachmentData, rosterData, onClose, isMobile }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -286,7 +295,7 @@ function AttachmentDetailsView({ details, attachmentData, rosterData, onClose })
        const ln = (c.lastName || '').toUpperCase();
        if (!ln) return false;
        return !attachedCadets.some(ac => ac.includes(ln) || ln.includes(ac));
-    });
+     });
 
     filtered = fullDutyCadets.map(c => ({
        name: c.lastName ? c.lastName : 'UNKNOWN',
@@ -305,7 +314,7 @@ function AttachmentDetailsView({ details, attachmentData, rosterData, onClose })
       ref={containerRef}
       style={{ 
       marginTop: '3rem', 
-      padding: '2rem', 
+      padding: isMobile ? '1rem' : '2rem', 
       background: 'var(--card-bg)', 
       borderRadius: '16px', 
       border: `1px solid var(--border-color, #e2e8f0)`, 
@@ -336,7 +345,7 @@ function AttachmentDetailsView({ details, attachmentData, rosterData, onClose })
            No individual personnel records found for this disposition.
          </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: '0.75rem' }}>
           {filtered.map((cadet, i) => (
             <div 
               key={i} 

@@ -214,7 +214,7 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
         <button 
           onClick={() => setIsAddModalOpen(true)}
           style={{
-            background: 'var(--accent-color)',
+            background: '#2563eb',
             color: 'white',
             padding: '0.75rem 1.5rem',
             border: 'none',
@@ -247,7 +247,7 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
                 background: 'var(--bg-secondary)',
                 borderRadius: '12px',
                 border: '2px solid var(--border-color)',
-                borderTop: '6px solid var(--accent-color)',
+                borderTop: '6px solid #2563eb',
                 padding: '1.5rem',
                 boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
                 display: 'flex',
@@ -275,7 +275,7 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
 
               <div style={{ marginBottom: '1.5rem' }}>
                 <strong style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Type</strong>
-                <div style={{ fontWeight: 600, color: 'var(--accent-color)' }}>
+                <div style={{ fontWeight: 600, color: '#2563eb' }}>
                   {card['TYPE OF SICK CALL'] || 'Not specified'}
                 </div>
               </div>
@@ -402,7 +402,7 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
 
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                   <button type="button" onClick={() => setIsAddModalOpen(false)} style={{ flex: 1, padding: '0.75rem', background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
-                  <button type="submit" disabled={isSubmitting} style={{ flex: 1, padding: '0.75rem', background: 'var(--accent-color)', border: 'none', color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', opacity: isSubmitting ? 0.7 : 1 }}>
+                  <button type="submit" disabled={isSubmitting} style={{ flex: 1, padding: '0.75rem', background: '#2563eb', border: 'none', color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', opacity: isSubmitting ? 0.7 : 1 }}>
                     {isSubmitting ? 'Submitting...' : 'Add Sick Call'}
                   </button>
                 </div>
@@ -490,7 +490,7 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
                   </>
                 )}
 
-                <div style={{ background: 'var(--bg-primary)', padding: '1rem', borderRadius: '8px', borderLeft: '4px solid var(--accent-color)', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+                <div style={{ background: 'var(--bg-primary)', padding: '1rem', borderRadius: '8px', borderLeft: '4px solid #2563eb', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
                   <strong>Note:</strong> Submitting this feedback will mark the sick call as completed and remove it from the active tracker.
                 </div>
 
@@ -498,7 +498,7 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
 
                 <div style={{ display: 'flex', gap: '1rem' }}>
                   <button type="button" onClick={() => setFeedbackCard(null)} style={{ flex: 1, padding: '0.75rem', background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
-                  <button type="submit" disabled={isSubmitting} style={{ flex: 1, padding: '0.75rem', background: 'var(--accent-color)', border: 'none', color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', opacity: isSubmitting ? 0.7 : 1 }}>
+                  <button type="submit" disabled={isSubmitting} style={{ flex: 1, padding: '0.75rem', background: '#2563eb', border: 'none', color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', opacity: isSubmitting ? 0.7 : 1 }}>
                     {isSubmitting ? 'Saving...' : 'Submit Feedback'}
                   </button>
                 </div>

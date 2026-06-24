@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   format,
   addMonths,
@@ -26,6 +26,15 @@ export default function CalendarClient({ birthdays, activities }) {
   const [selectedDate, setSelectedDate] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEventDetails, setSelectedEventDetails] = useState(null);
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const nextPeriod = () => {
     if (viewMode === 'MONTH') setCurrentMonth(addMonths(currentMonth, 1));
@@ -174,7 +183,7 @@ export default function CalendarClient({ birthdays, activities }) {
             key={day}
             onClick={() => onDateClick(cloneDay)}
             style={{
-              minHeight: viewMode === 'WEEK' ? '600px' : '120px',
+              minHeight: viewMode === 'WEEK' ? (isMobile ? '250px' : '600px') : (isMobile ? '65px' : '120px'),
               borderRight: '1px solid var(--border-color)',
               borderBottom: '1px solid var(--border-color)',
               padding: '0.25rem',
@@ -185,8 +194,8 @@ export default function CalendarClient({ birthdays, activities }) {
               flexDirection: 'column',
               overflow: 'hidden'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(212,175,55,0.1)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = bgColor; }}
+            onMouseEnter={(e) => { if (!isMobile) e.currentTarget.style.backgroundColor = 'rgba(212,175,55,0.1)'; }}
+            onMouseLeave={(e) => { if (!isMobile) e.currentTarget.style.backgroundColor = bgColor; }}
           >
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.25rem' }}>
               <span style={{ 
@@ -205,22 +214,33 @@ export default function CalendarClient({ birthdays, activities }) {
               </span>
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flexGrow: 1, overflowY: 'auto' }}>
-              {/* Event Chips */}
-              {dayBDays.map((b, idx) => (
-                <div key={`bday-${idx}`} className="clickable-event-chip birthday-chip" style={{ backgroundColor: '#ec4899', color: 'white', padding: '2px 4px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  🎂 {b.lastName}
-                </div>
-              ))}
-              {dayActs.map((act, idx) => {
-                const color = act.color || '#3b82f6';
-                return (
-                  <div key={`act-${idx}`} className="clickable-event-chip" style={{ backgroundColor: color, color: 'white', padding: '2px 4px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {act.title || act.content || 'Untitled Event'}
+            {isMobile ? (
+              <div style={{ display: 'flex', gap: '3px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '0.25rem', overflow: 'hidden' }}>
+                {dayBDays.map((_, idx) => (
+                  <div key={`bday-dot-${idx}`} style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#ec4899', flexShrink: 0 }} title="Birthday" />
+                ))}
+                {dayActs.map((act, idx) => (
+                  <div key={`act-dot-${idx}`} style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: act.color || '#3b82f6', flexShrink: 0 }} title={act.title} />
+                ))}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flexGrow: 1, overflowY: 'auto' }}>
+                {/* Event Chips */}
+                {dayBDays.map((b, idx) => (
+                  <div key={`bday-${idx}`} className="clickable-event-chip birthday-chip" style={{ backgroundColor: '#ec4899', color: 'white', padding: '2px 4px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    🎂 {b.lastName}
                   </div>
-                );
-              })}
-            </div>
+                ))}
+                {dayActs.map((act, idx) => {
+                  const color = act.color || '#3b82f6';
+                  return (
+                    <div key={`act-${idx}`} className="clickable-event-chip" style={{ backgroundColor: color, color: 'white', padding: '2px 4px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {act.title || act.content || 'Untitled Event'}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         );
         day = addDays(day, 1);

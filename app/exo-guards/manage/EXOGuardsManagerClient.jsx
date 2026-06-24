@@ -164,6 +164,14 @@ export default function EXOGuardsManagerClient({
 
   const [now] = useState(new Date());
 
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const { 
     today1CL, tomorrow1CL, permanent1CL, tally1CL,
     today2CL, tomorrow2CL, permanent2CL, tally2CL,
@@ -655,7 +663,7 @@ export default function EXOGuardsManagerClient({
       )}
 
       {/* Toggle Switch */}
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1.5rem', marginBottom: '2.5rem' }}>
+      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'center', alignItems: 'center', gap: isMobile ? '1rem' : '1.5rem', marginBottom: '2.5rem' }}>
         <div style={{
           display: 'inline-flex',
           backgroundColor: '#e2e8f0', // slate-200
@@ -683,7 +691,7 @@ export default function EXOGuardsManagerClient({
             style={{
               padding: '0.6rem 2.5rem', fontWeight: 800, border: 'none', background: 'transparent',
               color: activeTab === 'today' ? '#0f172a' : '#64748b', cursor: 'pointer',
-              zIndex: 2, transition: 'color 0.3s', whiteSpace: 'nowrap', width: '160px', fontSize: '0.9rem',
+              zIndex: 2, transition: 'color 0.3s', whiteSpace: 'nowrap', width: isMobile ? '120px' : '160px', fontSize: '0.9rem',
               letterSpacing: '0.05em'
             }}
           >
@@ -695,7 +703,7 @@ export default function EXOGuardsManagerClient({
             style={{
               padding: '0.6rem 2.5rem', fontWeight: 800, border: 'none', background: 'transparent',
               color: activeTab === 'tomorrow' ? '#0f172a' : '#64748b', cursor: 'pointer',
-              zIndex: 2, transition: 'color 0.3s', whiteSpace: 'nowrap', width: '160px', fontSize: '0.9rem',
+              zIndex: 2, transition: 'color 0.3s', whiteSpace: 'nowrap', width: isMobile ? '120px' : '160px', fontSize: '0.9rem',
               letterSpacing: '0.05em'
             }}
           >
@@ -709,7 +717,8 @@ export default function EXOGuardsManagerClient({
             padding: '0.6rem 1.5rem', fontWeight: 800, border: 'none', background: '#3b82f6',
             color: '#ffffff', cursor: 'pointer', borderRadius: '8px',
             transition: 'background 0.3s', whiteSpace: 'nowrap', fontSize: '0.9rem',
-            letterSpacing: '0.05em', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+            letterSpacing: '0.05em', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            width: isMobile ? '100%' : 'auto', maxWidth: isMobile ? '300px' : 'none'
           }}
         >
           📊 WEEKLY TALLY
@@ -717,13 +726,13 @@ export default function EXOGuardsManagerClient({
       </div>
       
       {/* Class Tabs */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem', gap: '0.5rem', width: '100%' }}>
         {['1CL', '2CL', '3CL'].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveClassTab(tab)}
             style={{
-              padding: '0.5rem 2rem',
+              padding: isMobile ? '0.5rem 1.25rem' : '0.5rem 2rem',
               borderRadius: '999px',
               border: 'none',
               backgroundColor: activeClassTab === tab ? '#0f172a' : '#e2e8f0',
@@ -732,7 +741,9 @@ export default function EXOGuardsManagerClient({
               fontSize: '0.9rem',
               cursor: 'pointer',
               transition: 'all 0.2s',
-              boxShadow: activeClassTab === tab ? '0 4px 12px rgba(0,0,0,0.15)' : 'none'
+              boxShadow: activeClassTab === tab ? '0 4px 12px rgba(0,0,0,0.15)' : 'none',
+              flex: isMobile ? 1 : 'none',
+              maxWidth: isMobile ? '120px' : 'none'
             }}
           >
             {tab}
@@ -985,6 +996,7 @@ export default function EXOGuardsManagerClient({
           todayList={showNonPostingModal === '1CL' ? getGuardsByRole(today1CL, 'NON-POSTING') : showNonPostingModal === '2CL' ? getGuardsByRole(today2CL, 'NON-POSTING') : getGuardsByRole(today3CL, 'NON-POSTING')}
           tomorrowList={showNonPostingModal === '1CL' ? getGuardsByRole(tomorrow1CL, 'NON-POSTING') : showNonPostingModal === '2CL' ? getGuardsByRole(tomorrow2CL, 'NON-POSTING') : getGuardsByRole(tomorrow3CL, 'NON-POSTING')}
           soiData={soiData}
+          isMobile={isMobile}
           onTogglePermanent={(cadetName, isPermanent) => {
             const apiUrl = showNonPostingModal === '1CL' ? apiUrl1CL : showNonPostingModal === '2CL' ? apiUrl2CL : apiUrl3CL;
             setPendingChanges(prev => [...prev, {
@@ -1056,7 +1068,7 @@ export default function EXOGuardsManagerClient({
 
 
 // Temporary inline component for the modal
-function NonPostingListModal({ isOpen, onClose, classLevel, dateStr, permanentList, todayList, tomorrowList, soiData, onTogglePermanent, onRemoveTemporary }) {
+function NonPostingListModal({ isOpen, onClose, classLevel, dateStr, permanentList, todayList, tomorrowList, soiData, onTogglePermanent, onRemoveTemporary, isMobile }) {
   const [searchTerm, setSearchTerm] = useState('');
   
   const allCadets = soiData.filter(row => {
@@ -1071,13 +1083,13 @@ function NonPostingListModal({ isOpen, onClose, classLevel, dateStr, permanentLi
 
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-      <div style={{ background: 'var(--bg-secondary)', padding: '2rem', borderRadius: '12px', width: '90%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+      <div style={{ background: 'var(--bg-secondary)', padding: isMobile ? '1rem' : '2rem', borderRadius: '12px', width: '90%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <h3 style={{ margin: 0, color: 'var(--text-primary)' }}>{classLevel} Non-Posting List</h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '1rem' : '2rem' }}>
           <div>
             <h4 style={{ color: '#8b5cf6', borderBottom: '2px solid #8b5cf6', paddingBottom: '0.5rem' }}>Permanent</h4>
             {permanentList.length === 0 ? <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>None assigned.</p> : (

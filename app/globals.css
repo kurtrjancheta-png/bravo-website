@@ -1302,3 +1302,152 @@ tbody tr:hover {
   background-color: rgba(212, 175, 55, 0.1);
   color: var(--accent-gold);
 }
+
+/* --- MOBILE RESPONSIVENESS AND SMARTPHONE VIEWPORT OPTIMIZATIONS --- */
+@media (max-width: 768px) {
+  /* Layout Adjustments */
+  .app-container {
+    flex-direction: column;
+  }
+
+  /* Fixed sidebar converted into a slide-out drawer menu */
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
+    width: var(--sidebar-width);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.3);
+  }
+
+  .main-wrapper {
+    margin-left: 0 !important;
+    width: 100%;
+  }
+
+  /* Sticky mobile top header */
+  .mobile-header {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    padding: 0 1rem;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 90;
+  }
+
+  .menu-toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+
+  .menu-toggle-btn:active {
+    background-color: rgba(128,128,128,0.1);
+  }
+
+  .mobile-header-title {
+    font-weight: 800;
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+    color: var(--text-primary);
+    text-transform: uppercase;
+  }
+
+  .mobile-theme-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+  }
+
+  /* Backdrop overlay for mobile drawer open state */
+  .mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 95;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  /* Hide regular breadcrumb top bar on mobile */
+  .topbar {
+    display: none !important;
+  }
+
+  .main-content {
+    padding: 1rem !important; /* Smaller spacing on mobile */
+  }
+
+  /* Card layouts and spacing */
+  .section-header {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .section-title {
+    font-size: 1.5rem !important;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem;
+  }
+
+  .info-card {
+    padding: 1.25rem !important;
+  }
+
+  /* Responsive PFT Pie Charts inside Dashboard */
+  .pft-chart-body {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center;
+    gap: 1rem !important;
+  }
+
+  .pft-legend {
+    width: 100% !important;
+    align-items: center !important;
+  }
+
+  /* Dynamic Council Disseminations Header styling */
+  .council-header {
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  .council-header h1 {
+    font-size: 1.6rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+}
+
+/* Hide mobile header on desktop */
+.mobile-header {
+  display: none;
+}

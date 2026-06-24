@@ -93,7 +93,7 @@ export default function CouncilDisseminationPage({ params }) {
   return (
     <div className="dashboard-container" style={{ padding: '2rem' }}>
       {/* Header section */}
-      <div style={{ 
+      <div className="council-header" style={{ 
         background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(0,0,0,0) 100%)', 
         border: '1px solid var(--gold-primary)', 
         borderRadius: '16px', 

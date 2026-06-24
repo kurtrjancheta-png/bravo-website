@@ -24,6 +24,14 @@ export default function SlideshowClient({ disseminations }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentDuration, setCurrentDuration] = useState(12000);
 
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const totalSlides = disseminations && disseminations.length > 0 ? disseminations.length + 1 : 0;
   const isCaughtUp = currentIndex === disseminations.length;
 
@@ -104,7 +112,7 @@ export default function SlideshowClient({ disseminations }) {
   }
 
   return (
-    <div style={{ position: 'relative', width: '100%', maxWidth: '900px', margin: '0 auto', padding: '0 70px' }}>
+    <div style={{ position: 'relative', width: '100%', maxWidth: '900px', margin: '0 auto', padding: isMobile ? '0 36px' : '0 70px' }}>
       <style>{`
         @keyframes dealCard {
           0% { 
@@ -141,13 +149,13 @@ export default function SlideshowClient({ disseminations }) {
           background: 'var(--bg-secondary)',
           border: '1px solid var(--border-color)',
           borderRadius: '50%',
-          width: '50px',
-          height: '50px',
+          width: isMobile ? '30px' : '50px',
+          height: isMobile ? '30px' : '50px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           color: 'var(--text-primary)',
-          fontSize: '1.5rem',
+          fontSize: isMobile ? '1rem' : '1.5rem',
           fontWeight: 'bold',
           cursor: 'pointer',
           zIndex: 10,
@@ -192,33 +200,33 @@ export default function SlideshowClient({ disseminations }) {
             border: `2px solid ${style.border}`,
             borderTop: `16px solid ${style.border}`, // Thick top border like a tab
             borderRadius: '16px',
-            padding: '2.5rem',
+            padding: isMobile ? '1.25rem' : '2.5rem',
             animation: `dealCard 0.65s ease-out both${style.animation !== 'none' ? `, ${style.animation}` : ''}`,
             display: 'flex',
             flexDirection: 'column',
             gap: '1.5rem',
-            minHeight: '350px', // Allow growth
+            minHeight: isMobile ? '250px' : '350px', // Allow growth
             transition: 'background-color 0.3s, border 0.3s ease-in-out',
             width: '100%',
             color: 'var(--card-text)'
           }}
         >
-          <div style={{ display: 'flex', flexDirection: 'row', gap: '2rem', flex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '1rem' : '2rem', flex: 1 }}>
             {/* Left Column: Header + Content */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <div style={{ marginBottom: '1.5rem' }}>
-                <div style={{ fontWeight: 800, fontSize: '0.85rem', letterSpacing: '0.1em', color: '#64748b', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ fontWeight: 800, fontSize: '0.85rem', letterSpacing: '0.1em', color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
                   {currentSlide.council}
                 </div>
-                <div style={{ fontWeight: 800, fontSize: '1.25rem', letterSpacing: '0.05em', color: style.border, textTransform: 'uppercase' }}>
+                <div style={{ fontWeight: 800, fontSize: isMobile ? '1.1rem' : '1.25rem', letterSpacing: '0.05em', color: style.border, textTransform: 'uppercase' }}>
                   {currentSlide['TYPE'] || 'ANNOUNCEMENT'}
                 </div>
               </div>
               
               <div style={{ 
-                fontSize: getDynamicFontSize(currentSlide['CONTENT']), 
+                fontSize: isMobile ? '1rem' : getDynamicFontSize(currentSlide['CONTENT']), 
                 color: 'var(--card-text)',
-                lineHeight: 1.6, 
+                lineHeight: 1.5, 
                 flex: 1, 
                 fontWeight: 500,
                 whiteSpace: 'pre-wrap'
@@ -228,14 +236,24 @@ export default function SlideshowClient({ disseminations }) {
 
               {/* Render Attachments if they exist */}
               {!isCaughtUp && ((currentSlide['ATTACHMENT'] && currentSlide['ATTACHMENT'].trim() !== '') || (currentSlide['Column 6'] && currentSlide['Column 6'].trim() !== '')) && (
-                <div style={{ marginTop: '1.5rem' }}>
+                <div style={{ marginTop: '1rem' }}>
                   <ImageGallery urls={(currentSlide['ATTACHMENT'] || currentSlide['Column 6']).split(',')} />
                 </div>
               )}
             </div>
 
             {/* Right Column: Badge + Calendar */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1rem', flexShrink: 0 }}>
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: isMobile ? 'row' : 'column', 
+              alignItems: isMobile ? 'center' : 'flex-end', 
+              justifyContent: isMobile ? 'space-between' : 'flex-start',
+              gap: '1rem', 
+              flexShrink: 0,
+              width: isMobile ? '100%' : 'auto',
+              borderTop: isMobile ? '1px dashed var(--border-color)' : 'none',
+              paddingTop: isMobile ? '1rem' : '0'
+            }}>
               <div style={{ 
                 background: style.bg, 
                 color: style.color, 
@@ -252,15 +270,30 @@ export default function SlideshowClient({ disseminations }) {
 
               {eventDay && (
                 <div style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', 
+                  display: 'flex', flexDirection: isMobile ? 'row' : 'column', alignItems: 'center', 
                   border: `3px solid ${style.border}`, borderRadius: '12px', overflow: 'hidden',
                   boxShadow: '0 6px 12px rgba(0,0,0,0.1)', backgroundColor: 'var(--bg-primary)',
-                  minWidth: '90px'
+                  minWidth: isMobile ? 'auto' : '90px'
                 }}>
-                  <div style={{ background: style.border, color: 'white', width: '100%', textAlign: 'center', fontSize: '1.1rem', fontWeight: '900', padding: '0.3rem 0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <div style={{ 
+                    background: style.border, 
+                    color: 'white', 
+                    textAlign: 'center', 
+                    fontSize: isMobile ? '0.9rem' : '1.1rem', 
+                    fontWeight: '900', 
+                    padding: '0.3rem 0.6rem', 
+                    textTransform: 'uppercase', 
+                    letterSpacing: '0.05em' 
+                  }}>
                     {eventMonth}
                   </div>
-                  <div style={{ fontSize: '2.8rem', fontWeight: '900', color: '#1e293b', padding: '0.2rem 0.5rem', lineHeight: '1' }}>
+                  <div style={{ 
+                    fontSize: isMobile ? '1.5rem' : '2.8rem', 
+                    fontWeight: '900', 
+                    color: 'var(--text-primary)', 
+                    padding: '0.2rem 0.6rem', 
+                    lineHeight: '1' 
+                  }}>
                     {eventDay}
                   </div>
                 </div>
@@ -268,7 +301,17 @@ export default function SlideshowClient({ disseminations }) {
             </div>
           </div>
           
-          <div style={{ fontSize: '0.85rem', color: '#94a3b8', borderTop: '1px solid #cbd5e1', paddingTop: '1rem', display: 'flex', justifyContent: 'space-between', marginTop: 'auto' }}>
+          <div style={{ 
+            fontSize: '0.85rem', 
+            color: '#94a3b8', 
+            borderTop: '1px solid var(--border-color)', 
+            paddingTop: '1rem', 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            marginTop: 'auto',
+            flexWrap: 'wrap',
+            gap: '0.5rem'
+          }}>
             <span><strong>Date Announced:</strong> {currentSlide['DATE ANNOUNCED'] || 'N/A'}</span>
             <span>Slide {currentIndex + 1} of {totalSlides}</span>
           </div>
@@ -287,13 +330,13 @@ export default function SlideshowClient({ disseminations }) {
           background: 'var(--bg-secondary)',
           border: '1px solid var(--border-color)',
           borderRadius: '50%',
-          width: '50px',
-          height: '50px',
+          width: isMobile ? '30px' : '50px',
+          height: isMobile ? '30px' : '50px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           color: 'var(--text-primary)',
-          fontSize: '1.5rem',
+          fontSize: isMobile ? '1rem' : '1.5rem',
           fontWeight: 'bold',
           cursor: 'pointer',
           zIndex: 10,
