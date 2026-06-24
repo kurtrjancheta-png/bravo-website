@@ -30,12 +30,12 @@ export default function ViewConcernsAdmin({ councilName, appsScriptUrl }) {
     setError("");
     
     try {
-      const payload = { action: "getConcerns", councilName };
+      const url = new URL(appsScriptUrl);
+      url.searchParams.append("action", "getConcerns");
+      url.searchParams.append("councilName", councilName);
       
-      const response = await fetch(appsScriptUrl, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain" }, // Standard text/plain to avoid CORS preflight issues
-        body: JSON.stringify(payload)
+      const response = await fetch(url.toString(), {
+        method: "GET"
       });
       
       const data = await response.json();
