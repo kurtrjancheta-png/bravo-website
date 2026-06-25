@@ -66,10 +66,71 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
   const [viewModes, setViewModes] = useState({});
   const { adminUser } = useAuth();
 
-  const chartData = (violationsOverTime || []).map(item => ({
-    ...item,
-    timestamp: new Date(item.date).getTime()
-  }));
+  const chartData = (violationsOverTime || [])
+    .map(item => ({
+      ...item,
+      timestamp: new Date(item.date).getTime()
+    }))
+    .sort((a, b) => a.timestamp - b.timestamp);
+
+  // Auto-calculated domains for dynamic scales
+  const timestamps = chartData.map(d => d.timestamp);
+  const minTime = timestamps.length > 0 ? Math.min(...timestamps) : 0;
+  const maxTime = timestamps.length > 0 ? Math.max(...timestamps) : 0;
+  // Pad X axis dynamically by 5 days (5 * 24 * 60 * 60 * 1000 = 432000000 ms) for nice visual spacing
+  const paddingX = 432000000; 
+  const domainX = timestamps.length > 0 ? [minTime - paddingX, maxTime + paddingX] : ['auto', 'auto'];
+
+  const counts = chartData.map(d => d.count);
+  const maxCount = counts.length > 0 ? Math.max(...counts) : 0;
+  const domainY = [0, maxCount + 1];
+
+  // Helper to generate custom gradient stops based on segment slope
+  const generateGradientStops = () => {
+    if (!chartData || chartData.length < 2) return [];
+    
+    const xMin = minTime;
+    const xMax = maxTime;
+    const xRange = xMax - xMin || 1;
+    
+    const stops = [];
+    
+    for (let i = 0; i < chartData.length - 1; i++) {
+      const curr = chartData[i];
+      const next = chartData[i + 1];
+      
+      const dy = next.count - curr.count;
+      const dxDays = (next.timestamp - curr.timestamp) / (24 * 60 * 60 * 1000) || 1;
+      const slope = dy / dxDays;
+      
+      let color = '#fbbf24'; // default yellow
+      if (slope > 0) {
+        // Upward
+        if (slope >= 0.1) {
+          color = '#ef4444'; // steep upward -> Red
+        } else {
+          color = '#fbbf24'; // less/moderate steep -> Yellow
+        }
+      } else if (slope < 0) {
+        // Downward
+        if (slope <= -0.1) {
+          color = '#10b981'; // steep downward -> Green
+        } else {
+          color = '#fbbf24'; // less steep -> Yellow
+        }
+      }
+      
+      const pctStart = ((curr.timestamp - xMin) / xRange) * 100;
+      const pctEnd = ((next.timestamp - xMin) / xRange) * 100;
+      
+      stops.push({ offset: `${pctStart}%`, color });
+      stops.push({ offset: `${pctEnd}%`, color });
+    }
+    
+    return stops;
+  };
+
+  const gradientStops = generateGradientStops();
 
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -152,11 +213,22 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
           <div style={{ width: '100%', height: '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                <defs>
+                  <linearGradient id="violationsGradient" x1="0" y1="0" x2="1" y2="0">
+                    {gradientStops.length > 0 ? (
+                      gradientStops.map((stop, idx) => (
+                        <stop key={idx} offset={stop.offset} stopColor={stop.color} />
+                      ))
+                    ) : (
+                      <stop offset="0%" stopColor="#f43f5e" />
+                    )}
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                 <XAxis 
                   dataKey="timestamp" 
                   type="number"
-                  domain={['dataMin - 172800000', 'dataMax + 172800000']}
+                  domain={domainX}
                   tickFormatter={formatDateTick}
                   stroke="var(--text-secondary)" 
                   tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} 
@@ -164,6 +236,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
                 <YAxis 
                   stroke="var(--text-secondary)" 
                   tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+                  domain={domainY}
                   allowDecimals={false}
                 />
                 <Tooltip 
@@ -172,9 +245,9 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
                   itemStyle={{ color: 'var(--text-primary)' }}
                 />
                 <Line 
-                  type="monotone" 
+                  type="linear" 
                   dataKey="count" 
-                  stroke="#f43f5e" 
+                  stroke="url(#violationsGradient)" 
                   strokeWidth={3}
                   activeDot={{ r: 8, fill: '#f43f5e', stroke: 'var(--bg-primary)' }} 
                   name="Reports"
