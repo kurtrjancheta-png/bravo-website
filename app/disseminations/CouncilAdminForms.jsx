@@ -24,7 +24,8 @@ export default function CouncilAdminForms({ councilName }) {
 
   // Form State
   const [formData, setFormData] = useState({
-    urgency: "LIGHT",
+    urgency: "FOR INFO",
+    headline: "",
     content: "",
     eventDate: ""
   });
@@ -41,7 +42,7 @@ export default function CouncilAdminForms({ councilName }) {
     setActiveFormType(type);
     setModalState("FORM");
     setErrorMsg("");
-    setFormData({ urgency: "LIGHT", content: "", eventDate: "" });
+    setFormData({ urgency: "FOR INFO", headline: "", content: "", eventDate: "" });
     setSelectedFiles([]);
   };
 
@@ -83,12 +84,16 @@ export default function CouncilAdminForms({ councilName }) {
 
     const dateAnnounced = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
     
+    const finalContent = activeFormType === "ANNOUNCEMENT"
+      ? `${formData.headline.trim()}:${formData.content.trim()}`
+      : formData.content.trim();
+
     // We send data to the Google Apps Script via POST
     const payload = {
       sheetName: councilName,
       type: activeFormType,
       urgency: formData.urgency,
-      content: formData.content,
+      content: finalContent,
       dateAnnounced: dateAnnounced,
       eventDate: activeFormType === "ACTIVITY" ? formData.eventDate : "",
       files: selectedFiles
@@ -216,10 +221,10 @@ export default function CouncilAdminForms({ councilName }) {
                     fontWeight: 'bold'
                   }}
                 >
-                  <option value="LIGHT" style={{ color: 'black' }}>For Info</option>
-                  <option value="MODERATE" style={{ color: 'black' }}>Attention</option>
-                  <option value="EMERGENCY" style={{ color: 'black' }}>Urgent</option>
-                  <option value="FOR IMMEDIATE COMPLIANCE" style={{ color: 'black' }}>For Immediate Compliance</option>
+                  <option value="FOR INFO" style={{ color: 'black' }}>For Info</option>
+                  <option value="ATTENTION" style={{ color: 'black' }}>Attention</option>
+                  <option value="URGENT" style={{ color: 'black' }}>Urgent</option>
+                  <option value="FOR STRICT COMPLIANCE" style={{ color: 'black' }}>For Strict Compliance</option>
                 </select>
               </div>
 
@@ -232,6 +237,29 @@ export default function CouncilAdminForms({ councilName }) {
                     required
                     value={formData.eventDate}
                     onChange={(e) => setFormData({...formData, eventDate: e.target.value})}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 1rem',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-color)',
+                      backgroundColor: 'rgba(0,0,0,0.2)',
+                      color: 'var(--text-primary)',
+                      fontSize: '1rem'
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* HEADLINE */}
+              {activeFormType === "ANNOUNCEMENT" && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <label style={{ fontSize: '0.875rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Headline</label>
+                  <input 
+                    type="text" 
+                    required
+                    placeholder="Enter the headline of the announcement..."
+                    value={formData.headline || ""}
+                    onChange={(e) => setFormData({...formData, headline: e.target.value})}
                     style={{
                       width: '100%',
                       padding: '0.75rem 1rem',

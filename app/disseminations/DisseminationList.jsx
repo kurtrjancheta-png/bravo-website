@@ -5,26 +5,55 @@ import { motion, AnimatePresence } from "framer-motion";
 import DeleteDisseminationButton from "./DeleteDisseminationButton";
 import ImageGallery from "./ImageGallery";
 
+const normalizeUrgency = (urgency) => {
+  const u = String(urgency || '').trim().toUpperCase();
+  if (u === 'LIGHT' || u === 'FOR INFO') return 'FOR INFO';
+  if (u === 'MODERATE' || u === 'ATTENTION') return 'ATTENTION';
+  if (u === 'EMERGENCY' || u === 'URGENT') return 'URGENT';
+  if (u === 'FOR IMMEDIATE COMPLIANCE' || u === 'FOR STRICT COMPLIANCE') return 'FOR STRICT COMPLIANCE';
+  return 'FOR INFO';
+};
+
+const parseHeadlineAndContent = (content) => {
+  const str = String(content || '').trim();
+  const colonIndex = str.indexOf(':');
+  if (colonIndex > 0) {
+    const headline = str.substring(0, colonIndex).trim();
+    if (headline.toLowerCase() !== 'http' && headline.toLowerCase() !== 'https') {
+      const body = str.substring(colonIndex + 1).trim();
+      return { headline, body };
+    }
+  }
+  return { headline: null, body: str };
+};
+
 const urgencyStyles = {
-  LIGHT: {
-    border: '#10b981', // green
-    bg: 'rgba(16, 185, 129, 0.1)',
-    color: '#059669',
-    label: 'Standard Info',
+  'FOR INFO': {
+    border: '#94a3b8', // slate/grey
+    bg: 'rgba(148, 163, 184, 0.1)',
+    color: '#475569',
+    label: 'FOR INFO',
     animation: 'none'
   },
-  'URGENT - MUST READ': {
-    border: '#f59e0b', // amber
-    bg: 'rgba(245, 158, 11, 0.1)',
-    color: '#d97706',
-    label: 'Action Required',
-    animation: 'pulse-glow-amber 2s infinite'
+  'ATTENTION': {
+    border: '#d4af37', // gold
+    bg: 'rgba(212, 175, 55, 0.1)',
+    color: '#854d0e',
+    label: 'ATTENTION',
+    animation: 'none'
   },
-  'EXTREME URGENT - MUST COMPLY': {
+  'URGENT': {
+    border: '#fb923c', // orange
+    bg: 'rgba(251, 146, 60, 0.1)',
+    color: '#c2410c',
+    label: 'URGENT',
+    animation: 'pulse-glow-orange 2s infinite'
+  },
+  'FOR STRICT COMPLIANCE': {
     border: '#ef4444', // red
     bg: 'rgba(239, 68, 68, 0.1)',
     color: '#b91c1c',
-    label: 'Immediate Compliance',
+    label: 'FOR STRICT COMPLIANCE',
     animation: 'pulse-glow-red 1.5s infinite'
   }
 };
@@ -127,9 +156,27 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
             )}
           </div>
           
-          <div style={{ fontSize: getDynamicFontSize(card['CONTENT']), color: 'var(--text-primary)', lineHeight: 1.5, flex: 1, whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
-            {card['CONTENT'] || 'No content provided.'}
-          </div>
+          {(() => {
+            const { headline, body } = parseHeadlineAndContent(card['CONTENT']);
+            return (
+              <>
+                {headline && (
+                  <h3 style={{
+                    fontSize: '1.25rem',
+                    fontWeight: '850',
+                    color: 'var(--text-primary)',
+                    margin: '0 0 0.5rem 0',
+                    lineHeight: '1.3'
+                  }}>
+                    {headline}
+                  </h3>
+                )}
+                <div style={{ fontSize: getDynamicFontSize(body), color: 'var(--text-primary)', lineHeight: 1.5, flex: 1, whiteSpace: 'pre-wrap' }}>
+                  {body || 'No content provided.'}
+                </div>
+              </>
+            );
+          })()}
           
           {/* If the Google API parses the header as "Column 6", we should check both keys */}
           {((card['ATTACHMENT'] && card['ATTACHMENT'].trim() !== '') || (card['Column 6'] && card['Column 6'].trim() !== '')) && (
@@ -251,7 +298,7 @@ export default function DisseminationList({ activeCards, archivedCards, sheetNam
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
                 {activeCards.map((card, i) => {
                   const urgency = String(card['URGENCY'] || '').trim().toUpperCase();
-                  const style = urgencyStyles[urgency] || urgencyStyles['LIGHT'];
+                  const style = urgencyStyles[normalizeUrgency(urgency)] || urgencyStyles['FOR INFO'];
                   return <DisseminationCard key={`active-${i}-${card.sheetRowIndex}`} card={card} style={style} sheetName={sheetName} isArchived={false} />;
                 })}
               </div>
@@ -275,7 +322,7 @@ export default function DisseminationList({ activeCards, archivedCards, sheetNam
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
                 {archivedCards.map((card, i) => {
                   const urgency = String(card['URGENCY'] || '').trim().toUpperCase();
-                  const style = urgencyStyles[urgency] || urgencyStyles['LIGHT'];
+                  const style = urgencyStyles[normalizeUrgency(urgency)] || urgencyStyles['FOR INFO'];
                   return <DisseminationCard key={`archive-${i}-${card.sheetRowIndex}`} card={card} style={style} sheetName={sheetName} isArchived={true} />;
                 })}
               </div>
@@ -283,6 +330,18 @@ export default function DisseminationList({ activeCards, archivedCards, sheetNam
           </motion.div>
         )}
       </AnimatePresence>
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes pulse-glow-orange {
+          0% { box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.4); border-color: rgba(251, 146, 60, 0.7); }
+          70% { box-shadow: 0 0 0 10px rgba(251, 146, 60, 0); border-color: rgba(251, 146, 60, 1); }
+          100% { box-shadow: 0 0 0 0 rgba(251, 146, 60, 0); border-color: rgba(251, 146, 60, 0.7); }
+        }
+        @keyframes pulse-glow-red {
+          0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); border-color: rgba(239, 68, 68, 0.7); }
+          70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); border-color: rgba(239, 68, 68, 1); }
+          100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); border-color: rgba(239, 68, 68, 0.7); }
+        }
+      `}} />
     </div>
   );
 }

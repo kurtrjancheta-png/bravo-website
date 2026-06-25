@@ -29,10 +29,10 @@ const councilData = {
 };
 
 const urgencyStyles = {
-  'LIGHT': { bg: 'rgba(74, 222, 128, 0.15)', border: '#4ade80', color: '#4ade80', animation: 'none', label: 'FOR INFO' },
-  'MODERATE': { bg: 'rgba(250, 204, 21, 0.15)', border: '#facc15', color: '#facc15', animation: 'none', label: 'ATTENTION' },
-  'EMERGENCY': { bg: 'rgba(248, 113, 113, 0.15)', border: '#f87171', color: '#f87171', animation: 'pulse-red 1.5s infinite', label: 'URGENT' },
-  'FOR IMMEDIATE COMPLIANCE': { bg: 'rgba(251, 146, 60, 0.15)', border: '#fb923c', color: '#fb923c', animation: 'pulse-orange 1.5s infinite', label: 'FOR IMMEDIATE COMPLIANCE' }
+  'FOR INFO': { bg: 'rgba(148, 163, 184, 0.15)', border: '#94a3b8', color: '#475569', animation: 'none', label: 'FOR INFO' },
+  'ATTENTION': { bg: 'rgba(250, 204, 21, 0.15)', border: '#facc15', color: '#854d0e', animation: 'none', label: 'ATTENTION' },
+  'URGENT': { bg: 'rgba(251, 146, 60, 0.15)', border: '#fb923c', color: '#c2410c', animation: 'pulse-orange 1.5s infinite', label: 'URGENT' },
+  'FOR STRICT COMPLIANCE': { bg: 'rgba(248, 113, 113, 0.15)', border: '#f87171', color: '#b91c1c', animation: 'pulse-red 1.5s infinite', label: 'FOR STRICT COMPLIANCE' }
 };
 
 export const revalidate = 30; // revalidate every 30 seconds

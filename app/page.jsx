@@ -122,12 +122,16 @@ export default async function Home() {
     return { ...d, 'DATE ANNOUNCED': dateAnnounced, 'EVENT DATE': eventDate };
   });
   
-  // Sort by urgency roughly (4: FOR IMMEDIATE COMPLIANCE, 3: EMERGENCY, 2: MODERATE, 1: LIGHT)
+  // Sort by urgency roughly (4: FOR STRICT COMPLIANCE, 3: URGENT, 2: ATTENTION, 1: FOR INFO)
   const urgencyWeight = {
+    'FOR STRICT COMPLIANCE': 4,
     'FOR IMMEDIATE COMPLIANCE': 4,
     'EMERGENCY': 3,
+    'URGENT': 3,
     'MODERATE': 2,
-    'LIGHT': 1
+    'ATTENTION': 2,
+    'LIGHT': 1,
+    'FOR INFO': 1
   };
 
   allDisseminations.sort((a, b) => {

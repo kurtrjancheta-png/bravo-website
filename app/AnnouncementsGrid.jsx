@@ -49,12 +49,36 @@ const getCouncilMetadata = (councilId) => {
   }
 };
 
+const normalizeUrgency = (urgency) => {
+  const u = String(urgency || '').trim().toUpperCase();
+  if (u === 'LIGHT' || u === 'FOR INFO') return 'FOR INFO';
+  if (u === 'MODERATE' || u === 'ATTENTION') return 'ATTENTION';
+  if (u === 'EMERGENCY' || u === 'URGENT') return 'URGENT';
+  if (u === 'FOR IMMEDIATE COMPLIANCE' || u === 'FOR STRICT COMPLIANCE') return 'FOR STRICT COMPLIANCE';
+  return 'FOR INFO';
+};
+
+const parseHeadlineAndContent = (content) => {
+  const str = String(content || '').trim();
+  const colonIndex = str.indexOf(':');
+  if (colonIndex > 0) {
+    const headline = str.substring(0, colonIndex).trim();
+    if (headline.toLowerCase() !== 'http' && headline.toLowerCase() !== 'https') {
+      const body = str.substring(colonIndex + 1).trim();
+      return { headline, body };
+    }
+  }
+  return { headline: null, body: str };
+};
+
 const getUrgencyColor = (urgency) => {
-  switch (String(urgency).trim().toUpperCase()) {
-    case 'EMERGENCY':
-    case 'FOR IMMEDIATE COMPLIANCE':
+  const normU = normalizeUrgency(urgency);
+  switch (normU) {
+    case 'FOR STRICT COMPLIANCE':
       return '#ef4444'; // Red
-    case 'MODERATE':
+    case 'URGENT':
+      return '#fb923c'; // Orange
+    case 'ATTENTION':
       return '#d4af37'; // Bravo Gold
     default:
       return '#94a3b8'; // Grey
@@ -127,7 +151,7 @@ export default function AnnouncementsGrid({ disseminations }) {
   };
 
   const FILTER_COUNCILS = ['ALL', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S10', 'EXO', 'TACO', 'CO', 'FSGT', 'ATHLETIC', 'HONOR COMM', 'CCPB'];
-  const FILTER_TYPES = ['ALL', 'URGENT', 'IMPORTANT', 'INFO', 'TRAINING', 'ACTIVITY'];
+  const FILTER_TYPES = ['ALL', 'FOR INFO', 'ATTENTION', 'URGENT', 'FOR STRICT COMPLIANCE'];
 
   const filteredDisseminations = disseminations.filter(d => {
     // 1. Search term filter
@@ -153,24 +177,8 @@ export default function AnnouncementsGrid({ disseminations }) {
 
     // 3. Type/Urgency Filter
     if (selectedType !== 'ALL') {
-      const t = String(d['TYPE'] || '').trim().toUpperCase();
       const u = String(d['URGENCY'] || '').trim().toUpperCase();
-      const c = String(d['CONTENT'] || '').toLowerCase();
-
-      switch (selectedType) {
-        case 'URGENT':
-          return u === 'EMERGENCY' || u === 'FOR IMMEDIATE COMPLIANCE';
-        case 'IMPORTANT':
-          return u === 'MODERATE';
-        case 'INFO':
-          return u === 'LIGHT';
-        case 'TRAINING':
-          return c.includes('training') || t === 'TRAINING';
-        case 'ACTIVITY':
-          return t === 'ACTIVITY';
-        default:
-          return true;
-      }
+      return normalizeUrgency(u) === selectedType;
     }
 
     return true;
@@ -365,25 +373,30 @@ export default function AnnouncementsGrid({ disseminations }) {
             
             // Build tag elements
             const cardType = String(card['TYPE'] || '').trim().toUpperCase();
-            const cardUrgency = String(card['URGENCY'] || '').trim().toUpperCase();
+            const normU = normalizeUrgency(card['URGENCY']);
             
             const tags = [];
-            if (cardUrgency === 'EMERGENCY' || cardUrgency === 'FOR IMMEDIATE COMPLIANCE') {
+            if (normU === 'FOR STRICT COMPLIANCE') {
+              tags.push({ label: 'FOR STRICT COMPLIANCE', bg: '#fee2e2', color: '#b91c1c', border: '#fecaca' });
+            } else if (normU === 'URGENT') {
               tags.push({ label: 'URGENT', bg: '#fee2e2', color: '#b91c1c', border: '#fecaca' });
-              tags.push({ label: 'PRIORITY', bg: '#fee2e2', color: '#b91c1c', border: '#fecaca' });
-            } else if (cardUrgency === 'MODERATE') {
-              tags.push({ label: 'IMPORTANT', bg: '#fef9c3', color: '#854d0e', border: '#fef08a' });
+            } else if (normU === 'ATTENTION') {
+              tags.push({ label: 'ATTENTION', bg: '#fef9c3', color: '#854d0e', border: '#fef08a' });
             } else {
-              tags.push({ label: 'INFO', bg: '#f1f5f9', color: '#475569', border: '#e2e8f0' });
+              tags.push({ label: 'FOR INFO', bg: '#f1f5f9', color: '#475569', border: '#e2e8f0' });
             }
 
             if (cardType === 'ACTIVITY') {
               tags.push({ label: 'ACTIVITY', bg: '#dbeafe', color: '#1e40af', border: '#bfdbfe' });
             }
 
-            const truncatedText = card['CONTENT'] && card['CONTENT'].length > 180 
-              ? card['CONTENT'].substring(0, 180).trim() + '...' 
-              : card['CONTENT'];
+            const { headline, body } = parseHeadlineAndContent(card['CONTENT']);
+            const displayHeadline = headline || (cardType === 'ACTIVITY' ? `[ACTIVITY] Event scheduled` : 'Announcement Bulletin');
+            const displayBody = body;
+
+            const truncatedText = displayBody && displayBody.length > 180 
+              ? displayBody.substring(0, 180).trim() + '...' 
+              : displayBody;
 
             const cardReactions = reactionsState[cardId] || { love: 0, like: 0, salute: 0, laugh: 0 };
             const cardUserReactions = userReactionsState[cardId] || { love: false, like: false, salute: false, laugh: false };
@@ -443,6 +456,7 @@ export default function AnnouncementsGrid({ disseminations }) {
                 </div>
 
                 {/* Card Body: Title (or truncated body) */}
+                {/* Card Body: Title */}
                 <h3 style={{
                   fontSize: '1.2rem',
                   fontWeight: '800',
@@ -451,7 +465,7 @@ export default function AnnouncementsGrid({ disseminations }) {
                   margin: '0 0 0.75rem 0',
                   letterSpacing: '-0.01em'
                 }}>
-                  {card['TYPE'] === 'ACTIVITY' ? `[ACTIVITY] Event scheduled` : 'Announcement Bulletin'}
+                  {displayHeadline}
                 </h3>
                 
                 <p style={{
@@ -549,6 +563,11 @@ export default function AnnouncementsGrid({ disseminations }) {
         const councilInfo = getCouncilMetadata(d.councilId);
         const cardReactions = reactionsState[cardId] || { love: 0, like: 0, salute: 0, laugh: 0 };
         const cardUserReactions = userReactionsState[cardId] || { love: false, like: false, salute: false, laugh: false };
+
+        const { headline, body } = parseHeadlineAndContent(d['CONTENT']);
+        const isActivity = String(d['TYPE'] || '').trim().toUpperCase() === 'ACTIVITY';
+        const displayHeadline = headline || (isActivity ? `[ACTIVITY] Event details` : 'Announcement Bulletin Details');
+        const displayBody = body;
 
         return (
           <div 
@@ -651,7 +670,7 @@ export default function AnnouncementsGrid({ disseminations }) {
                     color: stripeColor,
                     border: `1px solid ${stripeColor}50`
                   }}>
-                    {d['URGENCY'] || 'STANDARD'}
+                    {normalizeUrgency(d['URGENCY'])}
                   </span>
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 800 }}>
                     Announced: {d['DATE ANNOUNCED'] || 'N/A'}
@@ -665,7 +684,7 @@ export default function AnnouncementsGrid({ disseminations }) {
                   marginBottom: '1rem',
                   lineHeight: '1.3'
                 }}>
-                  {d['TYPE'] === 'ACTIVITY' ? `[ACTIVITY] Event details` : 'Announcement Bulletin Details'}
+                  {displayHeadline}
                 </h2>
 
                 <p style={{ 
@@ -675,7 +694,7 @@ export default function AnnouncementsGrid({ disseminations }) {
                   whiteSpace: 'pre-wrap',
                   marginBottom: '1.5rem'
                 }}>
-                  {d['CONTENT']}
+                  {displayBody}
                 </p>
 
                 {/* EVENT DATE if it is an activity */}
