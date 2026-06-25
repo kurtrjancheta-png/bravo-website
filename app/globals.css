@@ -1451,3 +1451,44 @@ tbody tr:hover {
 .mobile-header {
   display: none;
 }
+
+/* Task Organization Tab and Connector styling */
+.taskorg-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.taskorg-tab-btn {
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.taskorg-tab-btn:hover {
+  background-color: rgba(212, 175, 55, 0.1);
+  color: var(--text-primary);
+  border-color: var(--accent-gold);
+  transform: translateY(-1px);
+}
+
+.taskorg-tab-btn.active {
+  background-color: var(--accent-gold);
+  color: var(--text-light) !important;
+  border-color: var(--accent-gold);
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+}
+
+.org-node-wrapper.no-connector::before {
+  display: none !important;
+}
+

@@ -24,6 +24,8 @@ export default async function TaskOrganization() {
   const sStaff = [];
   const specialStaff = [];
   const platoonLeaders = [];
+  const battalionStaff = [];
+  const regimentStaff = [];
 
   // Map designation keywords to sidebar nav IDs
   // IMPORTANT: Check the most specific matches FIRST to avoid false positives
@@ -76,6 +78,9 @@ export default async function TaskOrganization() {
 
     if (!desLower || !nameStr) continue;
 
+    const isRegiment = desLower.includes('regiment') || desLower.includes('regimental');
+    const isBattalion = desLower.includes('battalion');
+
     // --- FILTER: Skip Sergeants and Corporals ---
     const nameLower = nameStr.toLowerCase();
     if (
@@ -85,7 +90,7 @@ export default async function TaskOrganization() {
       nameLower.includes('cdt pvt')
     ) {
       // Exception: First Sergeant is specifically requested
-      if (desLower === 'first sergeant') {
+      if (desLower === 'first sergeant' && !isRegiment && !isBattalion) {
         firstSgt = { designation: designationStr, name: nameStr, navTarget: 'nav-fsgt', picture: getCadetImageUrl(null, null, nameStr) || '' };
       }
       continue;
@@ -98,7 +103,11 @@ export default async function TaskOrganization() {
       picture: getCadetImageUrl(null, null, nameStr) || '',
     };
 
-    if (desLower.includes('company commander')) {
+    if (isRegiment) {
+      regimentStaff.push(person);
+    } else if (isBattalion) {
+      battalionStaff.push(person);
+    } else if (desLower.includes('company commander')) {
       cmdr = person;
     } else if (desLower.includes('company executive officer')) {
       exo = person;
@@ -119,7 +128,7 @@ export default async function TaskOrganization() {
     <div>
       <div className="section-header" style={{ marginBottom: '3rem' }}>
         <h1 className="section-title">TASK ORGANIZATION</h1>
-        <div className="section-subtitle">Bravo Company Hierarchy</div>
+        <div className="section-subtitle">Bravo Company Hierarchy & Staffs</div>
       </div>
 
       <OrgChart
@@ -130,6 +139,8 @@ export default async function TaskOrganization() {
         sStaff={sStaff}
         specialStaff={specialStaff}
         platoonLeaders={platoonLeaders}
+        battalionStaff={battalionStaff}
+        regimentStaff={regimentStaff}
       />
     </div>
   );
