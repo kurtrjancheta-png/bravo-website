@@ -186,6 +186,10 @@ export default async function ExoPunishmentPage() {
       }
     }
 
+    // Track violation dates
+    const refStr = row[k17] || '';
+    const extractedDate = extractDateFromReference(refStr);
+
     // Add offense details
     cadet.offenses.push({
       description: String(row[k4] || ''),
@@ -199,12 +203,10 @@ export default async function ExoPunishmentPage() {
       confStart: row[k9] || null,
       confEnd: row[k10] || null,
       remarks: String(row[k18] || ''),
-      reference: getCorrectedReference(row[k17] || '')
+      reference: getCorrectedReference(refStr),
+      date: extractedDate
     });
 
-    // Track violation dates
-    const refStr = row[k17] || '';
-    const extractedDate = extractDateFromReference(refStr);
     if (extractedDate) {
       if (!violationsByDate.has(extractedDate)) {
         violationsByDate.set(extractedDate, {

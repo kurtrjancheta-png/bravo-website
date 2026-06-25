@@ -102,6 +102,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 export default function ExoPunishmentClient({ initialCadets, violationsOverTime }) {
   const [viewModes, setViewModes] = useState({});
   const [showClassLines, setShowClassLines] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
   const { adminUser } = useAuth();
 
   const chartData = (violationsOverTime || [])
@@ -192,7 +193,25 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
     setViewModes(prev => ({ ...prev, [cadetName]: mode }));
   };
 
-  const sortedCadets = [...initialCadets].map(cadet => {
+  const handleChartClick = (state) => {
+    if (state && state.activePayload && state.activePayload.length > 0) {
+      const dateStr = state.activePayload[0].payload.date;
+      setSelectedDate(prev => prev === dateStr ? null : dateStr);
+    }
+  };
+
+  const filteredCadets = selectedDate
+    ? initialCadets.map(cadet => {
+        const matchingOffenses = cadet.offenses.filter(off => off.date === selectedDate);
+        if (matchingOffenses.length === 0) return null;
+        return {
+          ...cadet,
+          offenses: matchingOffenses
+        };
+      }).filter(Boolean)
+    : initialCadets;
+
+  const sortedCadets = [...filteredCadets].map(cadet => {
     let activeOffenseCount = 0;
     cadet.offenses.forEach(off => {
       const offConfStats = getConfinementStats(off.confStart, off.confEnd);
@@ -282,7 +301,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
           </div>
           <div style={{ width: '100%', height: '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+              <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }} onClick={handleChartClick} style={{ cursor: 'pointer' }}>
                 <defs>
                   <linearGradient id="violationsGradient" x1="0" y1="0" x2="1" y2="0">
                     {gradientStops.length > 0 ? (
@@ -315,7 +334,8 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
                   dataKey="total" 
                   stroke="url(#violationsGradient)" 
                   strokeWidth={3.5}
-                  activeDot={{ r: 8, fill: '#f43f5e', stroke: 'var(--bg-primary)' }} 
+                  dot={{ r: 4, style: { cursor: 'pointer' } }}
+                  activeDot={{ r: 8, fill: '#f43f5e', stroke: 'var(--bg-primary)', style: { cursor: 'pointer' } }} 
                   name="Total Reports"
                 />
                 {showClassLines && (
@@ -361,6 +381,54 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
               </LineChart>
             </ResponsiveContainer>
           </div>
+        </div>
+      )}
+
+      {selectedDate && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          background: 'rgba(59, 130, 246, 0.1)',
+          border: '1px solid rgba(59, 130, 246, 0.2)',
+          padding: '0.75rem 1.25rem',
+          borderRadius: '12px',
+          marginBottom: '1.5rem',
+          animation: 'fadeIn 0.3s ease'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: '#3b82f6',
+              display: 'inline-block'
+            }} />
+            <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+              Showing offenses on <strong style={{ color: 'var(--text-primary)' }}>{formatDateTick(selectedDate)}</strong>
+            </span>
+          </div>
+          <button
+            onClick={() => setSelectedDate(null)}
+            style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid var(--border-color)',
+              color: 'var(--text-primary)',
+              padding: '0.35rem 0.75rem',
+              borderRadius: '8px',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)'; e.currentTarget.style.color = '#ef4444'; }}
+            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'; e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+          >
+            CLEAR FILTER
+          </button>
         </div>
       )}
 
