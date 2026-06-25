@@ -114,18 +114,23 @@ export default function DispositionDashboard({ dispositionData, attachmentData, 
     }
   };
 
+  const companyTotal = Object.values(classes).reduce((sum, cls) => sum + cls.total, 0);
+
   return (
     <div className="disposition-dashboard" style={{ marginBottom: '3rem' }}>
-      <h2 style={{ 
-        borderBottom: `2px solid var(--border-color)`, 
-        paddingBottom: '0.5rem', 
-        marginBottom: '1.5rem',
-        color: 'var(--text-primary)',
-        fontSize: '1.25rem',
-        textTransform: 'uppercase'
-      }}>
-        DISPOSITION OF TROOPS
-      </h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: `2px solid var(--border-color)`, paddingBottom: '0.5rem', marginBottom: '1.5rem' }}>
+        <h2 style={{ 
+          margin: 0,
+          color: 'var(--text-primary)',
+          fontSize: '1.25rem',
+          textTransform: 'uppercase'
+        }}>
+          DISPOSITION OF TROOPS
+        </h2>
+        <div style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+          COMPANY STRENGTH: <span style={{ color: 'var(--text-primary)', fontSize: '1.25rem' }}>{companyTotal}</span>
+        </div>
+      </div>
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: '1.5rem' }}>
         {Object.entries(classes).map(([className, classInfo]) => (
           <ClassPieChart 
