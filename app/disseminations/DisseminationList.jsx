@@ -127,7 +127,7 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
             )}
           </div>
           
-          <div style={{ fontSize: getDynamicFontSize(card['CONTENT']), color: 'var(--text-primary)', lineHeight: 1.5, flex: 1, whiteSpace: 'pre-wrap' }}>
+          <div style={{ fontSize: getDynamicFontSize(card['CONTENT']), color: 'var(--text-primary)', lineHeight: 1.5, flex: 1, whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
             {card['CONTENT'] || 'No content provided.'}
           </div>
           

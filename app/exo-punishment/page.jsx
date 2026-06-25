@@ -55,8 +55,8 @@ export default async function ExoPunishmentPage() {
 
   const k15 = keys[14]; // DEMERIT ALLOWANCE
   const k16_idx = keys[15]; // MERIT
-  const k17 = keys[16]; // REFERENCE
-  const k18 = keys[17]; // REMARKS
+  const k17 = keys[18]; // REFERENCE
+  const k18 = keys[19]; // REMARKS
 
   // Helper to extract date from strings like "S.O. Nr 95 dtd 12 MAY 2026"
   function extractDateFromReference(ref) {
