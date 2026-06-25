@@ -50,9 +50,26 @@ const getMaxDemerits = (rank) => {
   return 100;
 };
 
+const formatDateTick = (tick) => {
+  if (!tick) return '';
+  const date = new Date(tick);
+  if (isNaN(date.getTime())) return '';
+  const day = date.getDate();
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  return `${day} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+};
+
 export default function ExoPunishmentClient({ initialCadets, violationsOverTime }) {
   const [viewModes, setViewModes] = useState({});
   const { adminUser } = useAuth();
+
+  const chartData = (violationsOverTime || []).map(item => ({
+    ...item,
+    timestamp: new Date(item.date).getTime()
+  }));
 
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -129,15 +146,18 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
         </div>
       )}
 
-      {violationsOverTime && violationsOverTime.length > 0 && (
+      {chartData && chartData.length > 0 && (
         <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Violations Over Time</h2>
           <div style={{ width: '100%', height: '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={violationsOverTime} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+              <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                 <XAxis 
-                  dataKey="date" 
+                  dataKey="timestamp" 
+                  type="number"
+                  domain={['dataMin - 172800000', 'dataMax + 172800000']}
+                  tickFormatter={formatDateTick}
                   stroke="var(--text-secondary)" 
                   tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} 
                 />
@@ -147,6 +167,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
                   allowDecimals={false}
                 />
                 <Tooltip 
+                  labelFormatter={formatDateTick}
                   contentStyle={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px' }}
                   itemStyle={{ color: 'var(--text-primary)' }}
                 />

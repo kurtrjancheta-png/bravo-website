@@ -58,23 +58,83 @@ export default async function ExoPunishmentPage() {
   const k17 = keys[18]; // REFERENCE
   const k18 = keys[19]; // REMARKS
 
-  // Helper to extract date from strings like "S.O. Nr 95 dtd 12 MAY 2026"
-  function extractDateFromReference(ref) {
-    if (!ref) return null;
-    const s = String(ref).trim();
-    // Match "dtd DD Month YYYY"
-    const dtdMatch = s.match(/dtd\s+([0-9]{1,2}\s+[a-zA-Z]+\s+[0-9]{4})/i);
-    if (dtdMatch) {
-      const parsed = new Date(dtdMatch[1]);
-      if (!isNaN(parsed.getTime())) return parsed.toISOString().split('T')[0];
-    }
-    // Match generic "DD Month YYYY"
-    const genericMatch = s.match(/([0-9]{1,2}\s+[a-zA-Z]+\s+[0-9]{4})/i);
-    if (genericMatch) {
-      const parsed = new Date(genericMatch[1]);
-      if (!isNaN(parsed.getTime())) return parsed.toISOString().split('T')[0];
+  // Helper to parse reference string details
+  function parseReference(refStr) {
+    if (!refStr) return null;
+    const s = String(refStr).trim();
+    // Match date part
+    const dateMatch = s.match(/(?:dtd\s+)?([0-9]{1,2}\s+[a-zA-Z]+\s+[0-9]{4})/i);
+    if (dateMatch) {
+      const dateVal = new Date(dateMatch[1]);
+      if (!isNaN(dateVal.getTime())) {
+        const year = dateVal.getFullYear();
+        const month = String(dateVal.getMonth() + 1).padStart(2, '0');
+        const day = String(dateVal.getDate()).padStart(2, '0');
+        const isoDate = `${year}-${month}-${day}`;
+        const dateIndex = s.indexOf(dateMatch[0]);
+        let prefix = s.substring(0, dateIndex).trim();
+        if (prefix.toLowerCase().endsWith('dtd')) {
+          prefix = prefix.substring(0, prefix.length - 3).trim();
+        }
+        const normPrefix = prefix.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        return { prefix, normPrefix, date: isoDate, rawDatePart: dateMatch[1] };
+      }
     }
     return null;
+  }
+
+  // Pre-process references to build a map of normalized prefix -> earliest date
+  // This automatically corrects Google Sheets auto-fill drag-down errors (where the year was incremented consecutively)
+  const prefixMap = new Map();
+  validRows.forEach(row => {
+    const refStr = row[k17] || '';
+    const parsed = parseReference(refStr);
+    if (parsed && parsed.normPrefix) {
+      const { normPrefix, date } = parsed;
+      if (!prefixMap.has(normPrefix) || new Date(date) < new Date(prefixMap.get(normPrefix))) {
+        prefixMap.set(normPrefix, date);
+      }
+    }
+  });
+
+  // Helper to extract date from strings like "S.O. Nr 95 dtd 12 MAY 2026"
+  // It checks if there's a corrected earliest date for this order prefix
+  function extractDateFromReference(ref) {
+    if (!ref) return null;
+    const parsed = parseReference(ref);
+    if (parsed && parsed.normPrefix) {
+      const correctedDate = prefixMap.get(parsed.normPrefix);
+      if (correctedDate) return correctedDate;
+    }
+    // Fallback to original parsing if prefix grouping failed
+    const s = String(ref).trim();
+    const dtdMatch = s.match(/dtd\s+([0-9]{1,2}\s+[a-zA-Z]+\s+[0-9]{4})/i);
+    if (dtdMatch) {
+      const parsedD = new Date(dtdMatch[1]);
+      if (!isNaN(parsedD.getTime())) return parsedD.toISOString().split('T')[0];
+    }
+    const genericMatch = s.match(/([0-9]{1,2}\s+[a-zA-Z]+\s+[0-9]{4})/i);
+    if (genericMatch) {
+      const parsedD = new Date(genericMatch[1]);
+      if (!isNaN(parsedD.getTime())) return parsedD.toISOString().split('T')[0];
+    }
+    return null;
+  }
+
+  // Helper to correct the year inside reference string
+  function getCorrectedReference(ref) {
+    if (!ref) return '';
+    const parsed = parseReference(ref);
+    if (parsed && parsed.normPrefix) {
+      const correctedDate = prefixMap.get(parsed.normPrefix);
+      if (correctedDate) {
+        const correctYear = correctedDate.split('-')[0];
+        return String(ref).replace(parsed.rawDatePart, (match) => {
+          return match.replace(/\b[0-9]{4}\b/, correctYear);
+        });
+      }
+    }
+    return String(ref);
   }
 
   // Group by cadet (LAST NAME)
@@ -139,7 +199,7 @@ export default async function ExoPunishmentPage() {
       confStart: row[k9] || null,
       confEnd: row[k10] || null,
       remarks: String(row[k18] || ''),
-      reference: String(row[k17] || '')
+      reference: getCorrectedReference(row[k17] || '')
     });
 
     // Track violation dates
