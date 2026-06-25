@@ -1,5 +1,5 @@
 import { getSheetData, isExpired } from '../lib/googleSheets';
-import SlideshowClient from './SlideshowClient';
+import AnnouncementsGrid from './AnnouncementsGrid';
 import TopPerformers from './TopPerformers';
 import { parsePFTData } from '../lib/pftParser';
 
@@ -59,7 +59,12 @@ export default async function Home() {
   const disseminationPromises = COUNCILS.map(async (council) => {
     try {
       const data = await getSheetData(DISSEMINATION_SHEET_ID, council.id);
-      return data.map(row => ({ ...row, council: council.name }));
+      return data.map((row, index) => ({ 
+        ...row, 
+        council: council.name, 
+        councilId: council.id,
+        sheetRowIndex: row._sheetRowIndex || index 
+      }));
     } catch (e) {
       console.error(`Failed to fetch disseminations for ${council.name}`);
       return [];
@@ -177,14 +182,8 @@ export default async function Home() {
       {/* Top Performers Section */}
       <TopPerformers topPerformers={topPerformers} />
 
-      {/* Dissemination Flashcards */}
-      <div className="section-header" style={{ marginTop: '2rem' }}>
-        <h2 className="section-title">COUNCIL DISSEMINATIONS</h2>
-        <div className="section-subtitle">Live Updates from All Councils</div>
-      </div>
-      
-      <div style={{ marginBottom: '4rem' }}>
-        <SlideshowClient disseminations={allDisseminations} />
+      <div style={{ marginBottom: '4rem', marginTop: '2rem' }}>
+        <AnnouncementsGrid disseminations={allDisseminations} />
       </div>
 
     </div>

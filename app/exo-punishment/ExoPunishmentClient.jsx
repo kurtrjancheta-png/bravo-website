@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 function parseGoogleDate(dateStr) {
   if (!dateStr) return null;
@@ -49,7 +50,7 @@ const getMaxDemerits = (rank) => {
   return 100;
 };
 
-export default function ExoPunishmentClient({ initialCadets }) {
+export default function ExoPunishmentClient({ initialCadets, violationsOverTime }) {
   const [viewModes, setViewModes] = useState({});
   const { adminUser } = useAuth();
 
@@ -127,7 +128,43 @@ export default function ExoPunishmentClient({ initialCadets }) {
           </a>
         </div>
       )}
-            {isMobile ? (
+
+      {violationsOverTime && violationsOverTime.length > 0 && (
+        <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
+          <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Violations Over Time</h2>
+          <div style={{ width: '100%', height: '300px' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={violationsOverTime} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                <XAxis 
+                  dataKey="date" 
+                  stroke="var(--text-secondary)" 
+                  tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} 
+                />
+                <YAxis 
+                  stroke="var(--text-secondary)" 
+                  tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+                  allowDecimals={false}
+                />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px' }}
+                  itemStyle={{ color: 'var(--text-primary)' }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="count" 
+                  stroke="#f43f5e" 
+                  strokeWidth={3}
+                  activeDot={{ r: 8, fill: '#f43f5e', stroke: 'var(--bg-primary)' }} 
+                  name="Reports"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      {isMobile ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1rem', width: '100%' }}>
           {sortedCadets.map((cadet, index) => {
             const maxDemerits = getMaxDemerits(cadet.rank);

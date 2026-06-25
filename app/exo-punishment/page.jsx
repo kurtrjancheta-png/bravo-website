@@ -58,8 +58,29 @@ export default async function ExoPunishmentPage() {
   const k17 = keys[16]; // REFERENCE
   const k18 = keys[17]; // REMARKS
 
+  // Helper to extract date from strings like "S.O. Nr 95 dtd 12 MAY 2026"
+  function extractDateFromReference(ref) {
+    if (!ref) return null;
+    const s = String(ref).trim();
+    // Match "dtd DD Month YYYY"
+    const dtdMatch = s.match(/dtd\s+([0-9]{1,2}\s+[a-zA-Z]+\s+[0-9]{4})/i);
+    if (dtdMatch) {
+      const parsed = new Date(dtdMatch[1]);
+      if (!isNaN(parsed.getTime())) return parsed.toISOString().split('T')[0];
+    }
+    // Match generic "DD Month YYYY"
+    const genericMatch = s.match(/([0-9]{1,2}\s+[a-zA-Z]+\s+[0-9]{4})/i);
+    if (genericMatch) {
+      const parsed = new Date(genericMatch[1]);
+      if (!isNaN(parsed.getTime())) return parsed.toISOString().split('T')[0];
+    }
+    return null;
+  }
+
   // Group by cadet (LAST NAME)
   const cadetMap = new Map();
+  // Aggregate violations by date
+  const violationsByDate = new Map();
 
   validRows.forEach(row => {
     const name = String(row[k3]).trim();
@@ -117,11 +138,23 @@ export default async function ExoPunishmentPage() {
       isConfined: String(row[k8] || '').toLowerCase() === 'yes',
       confStart: row[k9] || null,
       confEnd: row[k10] || null,
-      remarks: String(row[k16] || '')
+      remarks: String(row[k18] || ''),
+      reference: String(row[k17] || '')
     });
+
+    // Track violation dates
+    const refStr = row[k17] || '';
+    const extractedDate = extractDateFromReference(refStr);
+    if (extractedDate) {
+      violationsByDate.set(extractedDate, (violationsByDate.get(extractedDate) || 0) + 1);
+    }
   });
 
   const cadets = Array.from(cadetMap.values());
+
+  const violationsOverTime = Array.from(violationsByDate.entries())
+    .map(([date, count]) => ({ date, count }))
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
 
   return (
     <div className="page-container">
@@ -135,7 +168,7 @@ export default async function ExoPunishmentPage() {
         )}
       </header>
 
-      <ExoPunishmentClient initialCadets={cadets} />
+      <ExoPunishmentClient initialCadets={cadets} violationsOverTime={violationsOverTime} />
     </div>
   );
 }
