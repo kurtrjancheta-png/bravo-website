@@ -62,6 +62,43 @@ const formatDateTick = (tick) => {
   return `${day} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
 };
 
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    const filteredPayload = payload.filter(item => Number(item.value) > 0);
+    
+    if (filteredPayload.length === 0) return null;
+
+    return (
+      <div style={{ 
+        backgroundColor: 'var(--bg-secondary)', 
+        border: '1px solid var(--border-color)', 
+        borderRadius: '8px',
+        padding: '0.75rem',
+        boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4px'
+      }}>
+        <div style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
+          {formatDateTick(label)}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+          {filteredPayload.map((item, idx) => {
+            const itemColor = String(item.color || '').startsWith('url') ? '#f43f5e' : (item.color || 'var(--text-primary)');
+            return (
+              <div key={idx} style={{ fontSize: '0.8rem', color: itemColor, fontWeight: 600, display: 'flex', gap: '4px' }}>
+                <span>{item.name}:</span>
+                <span style={{ color: 'var(--text-primary)' }}>{item.value}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function ExoPunishmentClient({ initialCadets, violationsOverTime }) {
   const [viewModes, setViewModes] = useState({});
   const [showClassLines, setShowClassLines] = useState(false);
@@ -272,11 +309,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
                   domain={domainY}
                   allowDecimals={false}
                 />
-                <Tooltip 
-                  labelFormatter={formatDateTick}
-                  contentStyle={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px' }}
-                  itemStyle={{ color: 'var(--text-primary)' }}
-                />
+                <Tooltip content={<CustomTooltip />} />
                 <Line 
                   type="monotone" 
                   dataKey="total" 
