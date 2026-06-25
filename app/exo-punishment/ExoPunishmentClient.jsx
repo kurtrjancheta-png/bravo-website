@@ -64,6 +64,7 @@ const formatDateTick = (tick) => {
 
 export default function ExoPunishmentClient({ initialCadets, violationsOverTime }) {
   const [viewModes, setViewModes] = useState({});
+  const [showClassLines, setShowClassLines] = useState(false);
   const { adminUser } = useAuth();
 
   const chartData = (violationsOverTime || [])
@@ -209,7 +210,39 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
 
       {chartData && chartData.length > 0 && (
         <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Violations Over Time</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '10px' }}>
+            <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', margin: 0 }}>Violations Over Time</h2>
+            <button
+              onClick={() => setShowClassLines(prev => !prev)}
+              style={{
+                padding: '0.45rem 1rem',
+                background: showClassLines ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                color: showClassLines ? '#3b82f6' : 'var(--text-secondary)',
+                border: showClassLines ? '1px solid rgba(59, 130, 246, 0.4)' : '1px solid var(--border-color)',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontWeight: 700,
+                fontSize: '0.8rem',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+              onMouseOver={(e) => {
+                if (!showClassLines) e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
+              }}
+              onMouseOut={(e) => {
+                if (!showClassLines) e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+              {showClassLines ? 'HIDE CLASS BREAKDOWNS' : 'SHOW CLASS BREAKDOWNS'}
+            </button>
+          </div>
           <div style={{ width: '100%', height: '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
@@ -252,42 +285,46 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
                   activeDot={{ r: 8, fill: '#f43f5e', stroke: 'var(--bg-primary)' }} 
                   name="Total Reports"
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="class1" 
-                  stroke="#ef4444" 
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={{ r: 3 }}
-                  name="Class 1 (Grave)"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="class2" 
-                  stroke="#f97316" 
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={{ r: 3 }}
-                  name="Class 2 (Major)"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="class3" 
-                  stroke="#eab308" 
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={{ r: 3 }}
-                  name="Class 3 (Moderate)"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="class4" 
-                  stroke="#3b82f6" 
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={{ r: 3 }}
-                  name="Class 4 (Minor)"
-                />
+                {showClassLines && (
+                  <>
+                    <Line 
+                      type="monotone" 
+                      dataKey="class1" 
+                      stroke="#ef4444" 
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      dot={{ r: 3 }}
+                      name="Class 1 (Grave)"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="class2" 
+                      stroke="#f97316" 
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      dot={{ r: 3 }}
+                      name="Class 2 (Major)"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="class3" 
+                      stroke="#eab308" 
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      dot={{ r: 3 }}
+                      name="Class 3 (Moderate)"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="class4" 
+                      stroke="#3b82f6" 
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      dot={{ r: 3 }}
+                      name="Class 4 (Minor)"
+                    />
+                  </>
+                )}
               </LineChart>
             </ResponsiveContainer>
           </div>
