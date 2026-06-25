@@ -206,14 +206,36 @@ export default async function ExoPunishmentPage() {
     const refStr = row[k17] || '';
     const extractedDate = extractDateFromReference(refStr);
     if (extractedDate) {
-      violationsByDate.set(extractedDate, (violationsByDate.get(extractedDate) || 0) + 1);
+      if (!violationsByDate.has(extractedDate)) {
+        violationsByDate.set(extractedDate, {
+          date: extractedDate,
+          total: 0,
+          class1: 0,
+          class2: 0,
+          class3: 0,
+          class4: 0
+        });
+      }
+      
+      const dayData = violationsByDate.get(extractedDate);
+      dayData.total += 1;
+      
+      const classVal = String(row[k5] || '').trim().toUpperCase();
+      if (classVal === 'I' || classVal === '1') {
+        dayData.class1 += 1;
+      } else if (classVal === 'II' || classVal === '2') {
+        dayData.class2 += 1;
+      } else if (classVal === 'III' || classVal === '3') {
+        dayData.class3 += 1;
+      } else if (classVal === 'IV' || classVal === '4') {
+        dayData.class4 += 1;
+      }
     }
   });
 
   const cadets = Array.from(cadetMap.values());
 
-  const violationsOverTime = Array.from(violationsByDate.entries())
-    .map(([date, count]) => ({ date, count }))
+  const violationsOverTime = Array.from(violationsByDate.values())
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
   return (

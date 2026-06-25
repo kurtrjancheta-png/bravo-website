@@ -81,7 +81,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
   const paddingX = 432000000; 
   const domainX = timestamps.length > 0 ? [minTime - paddingX, maxTime + paddingX] : ['auto', 'auto'];
 
-  const counts = chartData.map(d => d.count);
+  const counts = chartData.map(d => d.total);
   const maxCount = counts.length > 0 ? Math.max(...counts) : 0;
   const domainY = [0, maxCount + 1];
 
@@ -99,7 +99,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
       const curr = chartData[i];
       const next = chartData[i + 1];
       
-      const dy = next.count - curr.count;
+      const dy = next.total - curr.total;
       const dxDays = (next.timestamp - curr.timestamp) / (24 * 60 * 60 * 1000) || 1;
       const slope = dy / dxDays;
       
@@ -245,12 +245,48 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
                   itemStyle={{ color: 'var(--text-primary)' }}
                 />
                 <Line 
-                  type="linear" 
-                  dataKey="count" 
+                  type="monotone" 
+                  dataKey="total" 
                   stroke="url(#violationsGradient)" 
-                  strokeWidth={3}
+                  strokeWidth={3.5}
                   activeDot={{ r: 8, fill: '#f43f5e', stroke: 'var(--bg-primary)' }} 
-                  name="Reports"
+                  name="Total Reports"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="class1" 
+                  stroke="#ef4444" 
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  dot={{ r: 3 }}
+                  name="Class 1 (Grave)"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="class2" 
+                  stroke="#f97316" 
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  dot={{ r: 3 }}
+                  name="Class 2 (Major)"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="class3" 
+                  stroke="#eab308" 
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  dot={{ r: 3 }}
+                  name="Class 3 (Moderate)"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="class4" 
+                  stroke="#3b82f6" 
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  dot={{ r: 3 }}
+                  name="Class 4 (Minor)"
                 />
               </LineChart>
             </ResponsiveContainer>
