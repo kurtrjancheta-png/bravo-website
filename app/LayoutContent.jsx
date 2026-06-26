@@ -148,6 +148,9 @@ export default function LayoutContent({ children }) {
           <Link href="/event-calendar" className={`nav-item ${pathname === '/event-calendar' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
             <span style={{ marginRight: '10px' }}>📅</span> Event Calendar
           </Link>
+          <Link href="/leaderboards" className={`nav-item ${pathname === '/leaderboards' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+            <span style={{ marginRight: '10px' }}>🏆</span> Leaderboards
+          </Link>
         </div>
 
         <div className="nav-section">

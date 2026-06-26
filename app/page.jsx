@@ -1,6 +1,5 @@
 import { getSheetData, isExpired } from '../lib/googleSheets';
 import AnnouncementsGrid from './AnnouncementsGrid';
-import TopPerformers from './TopPerformers';
 import { parsePFTData } from '../lib/pftParser';
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID || '';
@@ -182,9 +181,6 @@ export default async function Home() {
             <p>Please set the <code>GOOGLE_SHEET_ID</code> in Vercel to see your live data below.</p>
          </div>
       )}
-
-      {/* Top Performers Section */}
-      <TopPerformers topPerformers={topPerformers} />
 
       <div style={{ marginBottom: '4rem', marginTop: '2rem' }}>
         <AnnouncementsGrid disseminations={allDisseminations} />
