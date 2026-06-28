@@ -14,6 +14,10 @@ export default function LayoutContent({ children }) {
   const { adminUser, logout, isLoaded } = useAuth();
   const pathname = usePathname();
 
+  // Push subscription state
+  const [showBanner, setShowBanner] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+
   const [openSections, setOpenSections] = useState({
     exo: false,
     fsgt: false,
@@ -48,6 +52,92 @@ export default function LayoutContent({ children }) {
       document.body.classList.add('dark-mode');
     }
   }, []);
+
+  // Base64 helper to convert VAPID public key
+  const urlBase64ToUint8Array = (base64String) => {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+      .replace(/\-/g, '+')
+      .replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  };
+
+  // Register Service Worker and check subscription state
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      console.log('Web Push is not supported in this browser.');
+      return;
+    }
+
+    navigator.serviceWorker.register('/sw.js')
+      .then(async (reg) => {
+        console.log('Service Worker registered successfully:', reg.scope);
+        
+        // Wait until service worker is ready
+        const activeReg = await navigator.serviceWorker.ready;
+        const sub = await activeReg.pushManager.getSubscription();
+        if (sub) {
+          setIsSubscribed(true);
+        } else if (Notification.permission !== 'denied') {
+          // Show prompt banner after a 3 second delay
+          const timer = setTimeout(() => setShowBanner(true), 3000);
+          return () => clearTimeout(timer);
+        }
+      })
+      .catch((err) => {
+        console.error('Service Worker registration failed:', err);
+      });
+  }, []);
+
+  // Request browser permission and save subscription details
+  const subscribeUser = async () => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+
+    try {
+      const activeReg = await navigator.serviceWorker.ready;
+      
+      const publicVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!publicVapidKey) {
+        alert('Public VAPID key is missing from environment variables.');
+        return;
+      }
+
+      const subscribeOptions = {
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+      };
+
+      const subscription = await activeReg.pushManager.subscribe(subscribeOptions);
+      
+      const response = await fetch('/api/web-push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subscription: subscription.toJSON(),
+          userAgent: navigator.userAgent
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setIsSubscribed(true);
+        setShowBanner(false);
+        alert('Dissemination alerts enabled successfully!');
+      } else {
+        throw new Error(data.error || 'Failed to save subscription.');
+      }
+    } catch (error) {
+      console.error('Push subscription failed:', error);
+      alert('Could not enable alerts: ' + error.message);
+    }
+  };
 
   useEffect(() => {
     const isPhone = /Mobi|Android|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -376,6 +466,86 @@ export default function LayoutContent({ children }) {
           {children}
         </main>
       </div>
+
+      {/* Premium Dark Theme Push Subscription Banner */}
+      {showBanner && !isSubscribed && (
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          backgroundColor: 'rgba(17, 24, 39, 0.95)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid var(--border-color)',
+          borderLeft: '4px solid #d4af37', // Gold accent
+          borderRadius: '12px',
+          padding: '1.25rem',
+          maxWidth: '360px',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+          zIndex: 100,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.75rem'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: '800', color: '#ffffff', letterSpacing: '0.05em' }}>
+                🔔 ENABLE BULLETIN ALERTS
+              </h4>
+              <p style={{ margin: '4px 0 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                Receive instant background alerts on your screen when new announcements or operational disseminations are posted.
+              </p>
+            </div>
+            <button 
+              onClick={() => setShowBanner(false)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                padding: '0 4px',
+                lineHeight: 1
+              }}
+            >
+              ✕
+            </button>
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '4px' }}>
+            <button
+              onClick={subscribeUser}
+              style={{
+                flex: 1,
+                padding: '0.5rem 1rem',
+                background: 'linear-gradient(135deg, #d4af37 0%, #b45309 100%)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '0.78rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                boxShadow: '0 2px 4px rgba(212, 175, 55, 0.2)'
+              }}
+            >
+              Enable Alerts
+            </button>
+            <button
+              onClick={() => setShowBanner(false)}
+              style={{
+                padding: '0.5rem 1rem',
+                background: 'rgba(255,255,255,0.05)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                fontSize: '0.78rem',
+                fontWeight: 'bold',
+                cursor: 'pointer'
+              }}
+            >
+              Not Now
+            </button>
+          </div>
+        </div>
+      )}
 
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
     </div>

@@ -121,6 +121,7 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
 
   return (
     <motion.div 
+      id={`dissemination-card-${card.sheetRowIndex}`}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
@@ -238,6 +239,36 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
 
 export default function DisseminationList({ activeCards, archivedCards, sheetName }) {
   const [viewState, setViewState] = useState("ACTIVE"); // ACTIVE or ARCHIVED
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const row = parseInt(params.get('row'), 10);
+    if (!isNaN(row)) {
+      // If the row belongs to an archived card, automatically switch to the Archive tab
+      const isArchivedCard = archivedCards.some(c => c.sheetRowIndex === row);
+      if (isArchivedCard) {
+        setViewState("ARCHIVED");
+      }
+      
+      // Scroll to the card and flash highlight it
+      const timer = setTimeout(() => {
+        const el = document.getElementById(`dissemination-card-${row}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.style.boxShadow = '0 0 0 4px #d4af37, 0 10px 15px -3px rgba(212, 175, 55, 0.4)';
+          el.style.transform = 'scale(1.02)';
+          el.style.transition = 'all 0.5s ease';
+          
+          setTimeout(() => {
+            el.style.boxShadow = '';
+            el.style.transform = '';
+          }, 3500);
+        }
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [archivedCards]);
 
   return (
     <div style={{ marginTop: '2rem' }}>

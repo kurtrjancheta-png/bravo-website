@@ -88,7 +88,6 @@ export default function CouncilAdminForms({ councilName }) {
       ? `${formData.headline.trim()}:${formData.content.trim()}`
       : formData.content.trim();
 
-    // We send data to the Google Apps Script via POST
     const payload = {
       sheetName: councilName,
       type: activeFormType,
@@ -99,9 +98,31 @@ export default function CouncilAdminForms({ councilName }) {
       files: selectedFiles
     };
 
+    // Helper to map tab names to URL paths
+    const getCouncilPath = (name) => {
+      const n = String(name || '').trim().toUpperCase();
+      if (n === 'HONOR COMM') return 'honor-comm';
+      return n.toLowerCase();
+    };
+
     try {
-      // Use no-cors and text/plain to avoid CORS preflight errors with Google Apps Script
-      const response = await fetch(SCRIPT_URL, {
+      // 1. Resolve row count to calculate the new row index for deep-linking
+      let targetRow = "";
+      try {
+        const SHEET_ID = '1YeaoloRz4REe_iVomGfFI9WugalrDFsHiz04eOcD0a8';
+        const gvizUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${councilName}&cb=${Date.now()}`;
+        const gvizRes = await fetch(gvizUrl);
+        const gvizText = await gvizRes.text();
+        const jsonString = gvizText.substring(gvizText.indexOf('{'), gvizText.lastIndexOf('}') + 1);
+        const gvizData = JSON.parse(jsonString);
+        const rowCount = gvizData.table.rows.length;
+        targetRow = rowCount + 2; // Row offset: 1-indexed + header row
+      } catch (e) {
+        console.warn("Could not calculate target row index:", e);
+      }
+
+      // 2. Post to Google Sheet (Existing logic)
+      await fetch(SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
         headers: {
@@ -110,9 +131,32 @@ export default function CouncilAdminForms({ councilName }) {
         body: JSON.stringify(payload),
       });
 
-      // Since we use no-cors, the response is opaque and we can't read response.json()
-      // We will assume it's successful if the fetch didn't throw an error.
-      alert("Successfully added to the board! Refresh the page to see it.");
+      // 3. Dispatch web push broadcast to all subscribed devices
+      const pushTitle = activeFormType === "ANNOUNCEMENT" 
+        ? `📢 BRAVO BULLETIN: ${formData.headline.trim()}` 
+        : `📅 BRAVO ACTIVITY: ${formData.urgency}`;
+
+      const pushBody = activeFormType === "ANNOUNCEMENT" 
+        ? formData.content.trim() 
+        : `Urgency: ${formData.urgency}\nEvent Date: ${formData.eventDate}\n${formData.content.trim()}`;
+
+      const targetPath = `/disseminations/${getCouncilPath(councilName)}${targetRow ? '?row=' + targetRow : ''}`;
+
+      try {
+        await fetch('/api/web-push/broadcast', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: pushTitle,
+            body: pushBody,
+            url: targetPath
+          })
+        });
+      } catch (pushErr) {
+        console.error("Failed to dispatch push broadcast:", pushErr);
+      }
+
+      alert("Successfully added to the board and broadcasted alert! Refresh the page to see it.");
       window.location.reload();
       setModalState("CLOSED");
     } catch (error) {
