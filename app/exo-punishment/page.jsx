@@ -1,11 +1,14 @@
-import { getSheetData } from '../../lib/googleSheets';
+import { getSheetData, getSheetBreakdown } from '../../lib/googleSheets';
 import ExoPunishmentClient from './ExoPunishmentClient';
 import { getCadetImageUrl } from '../../lib/imageMatcher';
 
 export const revalidate = 30; // seconds
 
 export default async function ExoPunishmentPage() {
-  const data = await getSheetData('1kdpf8pdHx2ETbfLqyJfyxcOnWGiz08JxI__FvJIRH3M', 'Sheet 1');
+  const [data, breakdownData] = await Promise.all([
+    getSheetData('1kdpf8pdHx2ETbfLqyJfyxcOnWGiz08JxI__FvJIRH3M', 'Sheet 1'),
+    getSheetBreakdown('1kdpf8pdHx2ETbfLqyJfyxcOnWGiz08JxI__FvJIRH3M', 'BREAKDOWN')
+  ]);
 
   if (!data || data.length === 0) {
     return (
@@ -14,7 +17,7 @@ export default async function ExoPunishmentPage() {
           <h1>F/SGT's Punishment Monitoring</h1>
           <p>Monitoring Dashboard for Cadet Punishments</p>
         </header>
-        <ExoPunishmentClient initialCadets={[]} />
+        <ExoPunishmentClient initialCadets={[]} breakdownData={breakdownData || []} />
       </div>
     );
   }
@@ -258,7 +261,7 @@ export default async function ExoPunishmentPage() {
         )}
       </header>
 
-      <ExoPunishmentClient initialCadets={cadets} violationsOverTime={violationsOverTime} />
+      <ExoPunishmentClient initialCadets={cadets} violationsOverTime={violationsOverTime} breakdownData={breakdownData || []} />
     </div>
   );
 }

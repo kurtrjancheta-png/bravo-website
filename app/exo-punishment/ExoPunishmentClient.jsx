@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
 
 function parseGoogleDate(dateStr) {
   if (!dateStr) return null;
@@ -99,7 +99,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-export default function ExoPunishmentClient({ initialCadets, violationsOverTime }) {
+export default function ExoPunishmentClient({ initialCadets, violationsOverTime, breakdownData }) {
   const [viewModes, setViewModes] = useState({});
   const [showClassLines, setShowClassLines] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -264,123 +264,237 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
         </div>
       )}
 
-      {chartData && chartData.length > 0 && (
-        <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '10px' }}>
-            <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', margin: 0 }}>Violations Over Time</h2>
-            <button
-              onClick={() => setShowClassLines(prev => !prev)}
-              style={{
-                padding: '0.45rem 1rem',
-                background: showClassLines ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.03)',
-                color: showClassLines ? '#3b82f6' : 'var(--text-secondary)',
-                border: showClassLines ? '1px solid rgba(59, 130, 246, 0.4)' : '1px solid var(--border-color)',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: 700,
-                fontSize: '0.8rem',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-              onMouseOver={(e) => {
-                if (!showClassLines) e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
-              }}
-              onMouseOut={(e) => {
-                if (!showClassLines) e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
-              }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="20" x2="18" y2="10" />
-                <line x1="12" y1="20" x2="12" y2="4" />
-                <line x1="6" y1="20" x2="6" y2="14" />
-              </svg>
-              {showClassLines ? 'HIDE CLASS BREAKDOWNS' : 'SHOW CLASS BREAKDOWNS'}
-            </button>
-          </div>
-          <div style={{ width: '100%', height: '300px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }} onClick={handleChartClick} style={{ cursor: 'pointer' }}>
-                <defs>
-                  <linearGradient id="violationsGradient" x1="0" y1="0" x2="1" y2="0">
-                    {gradientStops.length > 0 ? (
-                      gradientStops.map((stop, idx) => (
-                        <stop key={idx} offset={stop.offset} stopColor={stop.color} />
-                      ))
-                    ) : (
-                      <stop offset="0%" stopColor="#f43f5e" />
-                    )}
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                <XAxis 
-                  dataKey="timestamp" 
-                  type="number"
-                  domain={domainX}
-                  tickFormatter={formatDateTick}
-                  stroke="var(--text-secondary)" 
-                  tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} 
-                />
-                <YAxis 
-                  stroke="var(--text-secondary)" 
-                  tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
-                  domain={domainY}
-                  allowDecimals={false}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Line 
-                  type="monotone" 
-                  dataKey="total" 
-                  stroke="url(#violationsGradient)" 
-                  strokeWidth={3.5}
-                  dot={{ r: 4, style: { cursor: 'pointer' } }}
-                  activeDot={{ r: 8, fill: '#f43f5e', stroke: 'var(--bg-primary)', style: { cursor: 'pointer' } }} 
-                  name="Total Reports"
-                />
-                {showClassLines && (
-                  <>
-                    <Line 
-                      type="monotone" 
-                      dataKey="class1" 
-                      stroke="#ef4444" 
-                      strokeWidth={2}
-                      strokeDasharray="5 5"
-                      dot={{ r: 3 }}
-                      name="Class 1 (Grave)"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="class2" 
-                      stroke="#f97316" 
-                      strokeWidth={2}
-                      strokeDasharray="5 5"
-                      dot={{ r: 3 }}
-                      name="Class 2 (Major)"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="class3" 
-                      stroke="#eab308" 
-                      strokeWidth={2}
-                      strokeDasharray="5 5"
-                      dot={{ r: 3 }}
-                      name="Class 3 (Moderate)"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="class4" 
-                      stroke="#3b82f6" 
-                      strokeWidth={2}
-                      strokeDasharray="5 5"
-                      dot={{ r: 3 }}
-                      name="Class 4 (Minor)"
-                    />
-                  </>
-                )}
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+      {((chartData && chartData.length > 0) || (breakdownData && breakdownData.length > 0)) && (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+          gap: '1.5rem',
+          marginBottom: '2rem',
+          alignItems: 'stretch'
+        }}>
+          {/* Card 1: Violations Over Time */}
+          {chartData && chartData.length > 0 && (
+            <div className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '10px' }}>
+                  <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', margin: 0 }}>Violations Over Time</h2>
+                  <button
+                    onClick={() => setShowClassLines(prev => !prev)}
+                    style={{
+                      padding: '0.45rem 1rem',
+                      background: showClassLines ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                      color: showClassLines ? '#3b82f6' : 'var(--text-secondary)',
+                      border: showClassLines ? '1px solid rgba(59, 130, 246, 0.4)' : '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontWeight: 700,
+                      fontSize: '0.8rem',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                    onMouseOver={(e) => {
+                      if (!showClassLines) e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
+                    }}
+                    onMouseOut={(e) => {
+                      if (!showClassLines) e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="20" x2="18" y2="10" />
+                      <line x1="12" y1="20" x2="12" y2="4" />
+                      <line x1="6" y1="20" x2="6" y2="14" />
+                    </svg>
+                    {showClassLines ? 'HIDE CLASS BREAKDOWNS' : 'SHOW CLASS BREAKDOWNS'}
+                  </button>
+                </div>
+                <div style={{ width: '100%', height: '300px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }} onClick={handleChartClick} style={{ cursor: 'pointer' }}>
+                      <defs>
+                        <linearGradient id="violationsGradient" x1="0" y1="0" x2="1" y2="0">
+                          {gradientStops.length > 0 ? (
+                            gradientStops.map((stop, idx) => (
+                              <stop key={idx} offset={stop.offset} stopColor={stop.color} />
+                            ))
+                          ) : (
+                            <stop offset="0%" stopColor="#f43f5e" />
+                          )}
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                      <XAxis 
+                        dataKey="timestamp" 
+                        type="number"
+                        domain={domainX}
+                        tickFormatter={formatDateTick}
+                        stroke="var(--text-secondary)" 
+                        tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} 
+                      />
+                      <YAxis 
+                        stroke="var(--text-secondary)" 
+                        tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+                        domain={domainY}
+                        allowDecimals={false}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Line 
+                        type="monotone" 
+                        dataKey="total" 
+                        stroke="url(#violationsGradient)" 
+                        strokeWidth={3.5}
+                        dot={{ r: 4, style: { cursor: 'pointer' } }}
+                        activeDot={{ r: 8, fill: '#f43f5e', stroke: 'var(--bg-primary)', style: { cursor: 'pointer' } }} 
+                        name="Total Reports"
+                      />
+                      {showClassLines && (
+                        <>
+                          <Line 
+                            type="monotone" 
+                            dataKey="class1" 
+                            stroke="#ef4444" 
+                            strokeWidth={2}
+                            strokeDasharray="5 5"
+                            dot={{ r: 3 }}
+                            name="Class 1 (Grave)"
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="class2" 
+                            stroke="#f97316" 
+                            strokeWidth={2}
+                            strokeDasharray="5 5"
+                            dot={{ r: 3 }}
+                            name="Class 2 (Major)"
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="class3" 
+                            stroke="#eab308" 
+                            strokeWidth={2}
+                            strokeDasharray="5 5"
+                            dot={{ r: 3 }}
+                            name="Class 3 (Moderate)"
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="class4" 
+                            stroke="#3b82f6" 
+                            strokeWidth={2}
+                            strokeDasharray="5 5"
+                            dot={{ r: 3 }}
+                            name="Class 4 (Minor)"
+                          />
+                        </>
+                      )}
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Card 2: Offenses Breakdown (Radar Chart) */}
+          {breakdownData && breakdownData.length > 0 && (
+            <div className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div>
+                <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>Offenses Breakdown</h2>
+                <div style={{ width: '100%', height: '220px', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius="75%" data={breakdownData}>
+                      <PolarGrid stroke="rgba(255,255,255,0.08)" />
+                      <PolarAngleAxis 
+                        dataKey="name" 
+                        tickFormatter={(text) => {
+                          if (!text) return '';
+                          const s = String(text).trim();
+                          if (s.length > 10) return s.substring(0, 10) + '...';
+                          return s;
+                        }}
+                        tick={{ fill: 'var(--text-secondary)', fontSize: 9, fontWeight: 600 }} 
+                      />
+                      <PolarRadiusAxis 
+                        angle={30} 
+                        domain={[0, 'auto']} 
+                        stroke="rgba(255,255,255,0.1)" 
+                        tick={{ fill: 'var(--text-secondary)', fontSize: 8 }} 
+                      />
+                      <Radar 
+                        name="Offenses Count" 
+                        dataKey="count" 
+                        stroke="var(--gold-primary)" 
+                        fill="var(--gold-primary)" 
+                        fillOpacity={0.2} 
+                      />
+                      <Tooltip content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const data = payload[0].payload;
+                          return (
+                            <div style={{ 
+                              backgroundColor: 'var(--bg-secondary)', 
+                              border: '1px solid var(--border-color)', 
+                              borderRadius: '8px',
+                              padding: '0.75rem',
+                              boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+                              zIndex: 999
+                            }}>
+                              <div style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
+                                {data.name}
+                              </div>
+                              <div style={{ fontSize: '0.8rem', color: 'var(--gold-primary)', fontWeight: 600 }}>
+                                Count: <span style={{ color: 'var(--text-primary)' }}>{data.count}</span>
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }} />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Legend List with values and percentages */}
+                <div style={{ 
+                  marginTop: '0.75rem', 
+                  maxHeight: '140px', 
+                  overflowY: 'auto', 
+                  paddingRight: '5px',
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: '6px',
+                  borderTop: '1px solid var(--border-color)',
+                  paddingTop: '0.75rem'
+                }}>
+                  {(() => {
+                    const totalCount = breakdownData.reduce((sum, d) => sum + (d.count || 0), 0);
+                    return breakdownData.map((item, idx) => {
+                      const percentage = totalCount > 0 ? ((item.count / totalCount) * 100).toFixed(1) : 0;
+                      return (
+                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', overflow: 'hidden' }}>
+                            <span style={{ 
+                              width: '6px', 
+                              height: '6px', 
+                              borderRadius: '50%', 
+                              background: item.count > 0 ? 'var(--gold-primary)' : 'rgba(255,255,255,0.2)',
+                              flexShrink: 0
+                            }}></span>
+                            <span title={item.name} style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '220px' }}>
+                              {item.name}
+                            </span>
+                          </div>
+                          <div style={{ fontWeight: 'bold', color: item.count > 0 ? 'var(--text-primary)' : 'var(--text-secondary)', flexShrink: 0 }}>
+                            {item.count} <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>({percentage}%)</span>
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
