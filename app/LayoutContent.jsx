@@ -98,17 +98,41 @@ export default function LayoutContent({ children }) {
 
   // Request browser permission and save subscription details
   const subscribeUser = async () => {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      alert('Push notifications are not supported in this browser.');
+      return;
+    }
 
     try {
       const activeReg = await navigator.serviceWorker.ready;
       
-      const publicVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      // Fallback to verified key if environment variable isn't injected in the client bundle
+      const publicVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "BO9Q7iN7CAdgbkHAL5NlRSY1_PutOA6cxH8ovFBTmAMul4MUcIVWY5lE2Rg6REA_nf2FMIg27f87DqAzuAgu5QU";
       if (!publicVapidKey) {
-        alert('Public VAPID key is missing from environment variables.');
+        alert('Public VAPID key is missing.');
         return;
       }
 
+      // 1. Explicitly request permission first to trigger native browser prompts reliably
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        alert('Notification permission was not granted. Please enable notifications in your browser settings to receive alerts.');
+        return;
+      }
+
+      // 2. Clear any existing/stale subscriptions first to avoid "Registration failed - push service error"
+      // which happens when there is a VAPID key mismatch or corrupted state.
+      const existingSub = await activeReg.pushManager.getSubscription();
+      if (existingSub) {
+        try {
+          await existingSub.unsubscribe();
+          console.log('Stale push subscription cleared.');
+        } catch (unsubErr) {
+          console.warn('Failed to unsubscribe existing push:', unsubErr);
+        }
+      }
+
+      // 3. Subscribe with the public VAPID key
       const subscribeOptions = {
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
@@ -135,7 +159,11 @@ export default function LayoutContent({ children }) {
       }
     } catch (error) {
       console.error('Push subscription failed:', error);
-      alert('Could not enable alerts: ' + error.message);
+      if (error.message && error.message.includes('push service error')) {
+        alert('Could not enable alerts: Registration failed (push service error). \n\nTip: Click the lock icon in your address bar, reset/clear the site permissions, refresh the page, and try again.');
+      } else {
+        alert('Could not enable alerts: ' + error.message);
+      }
     }
   };
 
