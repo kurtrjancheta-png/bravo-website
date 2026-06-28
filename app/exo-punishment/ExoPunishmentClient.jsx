@@ -99,6 +99,35 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
+const getOffenseColor = (name) => {
+  const normalized = String(name || '').trim().toUpperCase();
+  if (normalized.includes('UNACCOUNTED') || normalized.includes('ABSENT')) return '#ef4444';
+  if (normalized.includes('LATE')) return '#f97316';
+  if (normalized.includes('NEGLIGENCE') || normalized.includes('NEGLEGENCE') || normalized.includes('DUTY')) return '#facc15';
+  if (normalized.includes('POSSESSING') || normalized.includes('UNAUTHORIZED ITEMS')) return '#a855f7';
+  if (normalized.includes('DOING') || normalized.includes('UNAUTHORIZED THINGS')) return '#ec4899';
+  if (normalized.includes('MALTREATMENT') || normalized.includes('NTP') || normalized.includes('CTP')) return '#3b82f6';
+  if (normalized.includes('HONOR')) return '#10b981';
+  if (normalized.includes('CLEANLINESS') || normalized.includes('ROOM')) return '#06b6d4';
+  if (normalized.includes('UNIFORM') || normalized.includes('RIFLE')) return '#6366f1';
+  return '#94a3b8';
+};
+
+const CustomRadarDot = (props) => {
+  const { cx, cy, payload } = props;
+  if (!cx || !cy || !payload) return null;
+  const count = payload.count || 0;
+  if (count === 0) return null;
+  
+  const color = getOffenseColor(payload.name);
+  return (
+    <g>
+      <circle cx={cx} cy={cy} r={4.5} fill={color} stroke="var(--bg-primary)" strokeWidth={1.5} />
+      <circle cx={cx} cy={cy} r={8} fill="none" stroke={color} strokeWidth={1} opacity={0.3} />
+    </g>
+  );
+};
+
 export default function ExoPunishmentClient({ initialCadets, violationsOverTime, breakdownData }) {
   const [viewModes, setViewModes] = useState({});
   const [showClassLines, setShowClassLines] = useState(false);
@@ -403,7 +432,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                 <div style={{ width: '100%', height: '220px', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <RadarChart cx="50%" cy="50%" outerRadius="75%" data={breakdownData}>
-                      <PolarGrid stroke="rgba(255,255,255,0.08)" />
+                      <PolarGrid stroke="rgba(255,255,255,0.12)" />
                       <PolarAngleAxis 
                         dataKey="name" 
                         tickFormatter={(text) => {
@@ -412,7 +441,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                           if (s.length > 10) return s.substring(0, 10) + '...';
                           return s;
                         }}
-                        tick={{ fill: 'var(--text-secondary)', fontSize: 9, fontWeight: 600 }} 
+                        tick={{ fill: 'var(--text-secondary)', fontSize: 9, fontWeight: 700 }} 
                       />
                       <PolarRadiusAxis 
                         angle={30} 
@@ -425,24 +454,27 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                         dataKey="count" 
                         stroke="var(--gold-primary)" 
                         fill="var(--gold-primary)" 
-                        fillOpacity={0.2} 
+                        fillOpacity={0.15} 
+                        strokeWidth={2}
+                        dot={<CustomRadarDot />}
                       />
                       <Tooltip content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           const data = payload[0].payload;
+                          const color = getOffenseColor(data.name);
                           return (
                             <div style={{ 
                               backgroundColor: 'var(--bg-secondary)', 
-                              border: '1px solid var(--border-color)', 
+                              border: `1.5px solid ${color}`, 
                               borderRadius: '8px',
                               padding: '0.75rem',
-                              boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+                              boxShadow: `0 4px 12px ${color}20`,
                               zIndex: 999
                             }}>
                               <div style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
                                 {data.name}
                               </div>
-                              <div style={{ fontSize: '0.8rem', color: 'var(--gold-primary)', fontWeight: 600 }}>
+                              <div style={{ fontSize: '0.8rem', color: color, fontWeight: 700 }}>
                                 Count: <span style={{ color: 'var(--text-primary)' }}>{data.count}</span>
                               </div>
                             </div>
@@ -462,7 +494,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                   paddingRight: '5px',
                   display: 'flex', 
                   flexDirection: 'column', 
-                  gap: '6px',
+                  gap: '8px',
                   borderTop: '1px solid var(--border-color)',
                   paddingTop: '0.75rem'
                 }}>
@@ -470,23 +502,33 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                     const totalCount = breakdownData.reduce((sum, d) => sum + (d.count || 0), 0);
                     return breakdownData.map((item, idx) => {
                       const percentage = totalCount > 0 ? ((item.count / totalCount) * 100).toFixed(1) : 0;
+                      const catColor = getOffenseColor(item.name);
+                      const hasCount = item.count > 0;
                       return (
-                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', overflow: 'hidden' }}>
-                            <span style={{ 
-                              width: '6px', 
-                              height: '6px', 
-                              borderRadius: '50%', 
-                              background: item.count > 0 ? 'var(--gold-primary)' : 'rgba(255,255,255,0.2)',
-                              flexShrink: 0
-                            }}></span>
-                            <span title={item.name} style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '220px' }}>
-                              {item.name}
-                            </span>
+                        <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', overflow: 'hidden' }}>
+                              <span style={{ 
+                                width: '7px', 
+                                height: '7px', 
+                                borderRadius: '50%', 
+                                background: catColor,
+                                boxShadow: hasCount ? `0 0 6px ${catColor}` : 'none',
+                                flexShrink: 0
+                              }}></span>
+                              <span title={item.name} style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '240px', fontWeight: hasCount ? 600 : 400, color: hasCount ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                                {item.name}
+                              </span>
+                            </div>
+                            <div style={{ fontWeight: 'bold', color: hasCount ? catColor : 'var(--text-secondary)', flexShrink: 0 }}>
+                              {item.count} <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>({percentage}%)</span>
+                            </div>
                           </div>
-                          <div style={{ fontWeight: 'bold', color: item.count > 0 ? 'var(--text-primary)' : 'var(--text-secondary)', flexShrink: 0 }}>
-                            {item.count} <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>({percentage}%)</span>
-                          </div>
+                          {hasCount && (
+                            <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden' }}>
+                              <div style={{ width: `${percentage}%`, height: '100%', background: catColor, borderRadius: '2px', boxShadow: `0 0 4px ${catColor}` }}></div>
+                            </div>
+                          )}
                         </div>
                       );
                     });
