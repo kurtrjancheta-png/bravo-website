@@ -41,7 +41,12 @@ export async function POST(req) {
       return NextResponse.json({ success: false, error: 'Invalid response from Sheets proxy.' }, { status: 500 });
     }
 
-    return NextResponse.json(result);
+    const isSuccess = result.status === 'success' || result.success === true;
+    return NextResponse.json({
+      success: isSuccess,
+      message: result.message || '',
+      error: !isSuccess ? (result.message || 'Failed to save subscription.') : undefined
+    });
   } catch (error) {
     console.error('Error handling subscription registration:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
