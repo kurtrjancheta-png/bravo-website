@@ -128,6 +128,182 @@ const CustomRadarDot = (props) => {
   );
 };
 
+const OffensesPizzaChart = ({ data, isMobile }) => {
+  if (!data || data.length === 0) return null;
+  
+  const cx = 225;
+  const cy = 135;
+  const maxRadius = 90;
+  const innerRadius = 15;
+  const numCategories = data.length;
+  const angleStep = 360 / numCategories;
+  
+  const maxVal = Math.max(1, ...data.map(d => d.count || 0));
+  
+  const getCoords = (radius, angle) => {
+    const rad = (angle - 90) * Math.PI / 180.0;
+    return {
+      x: cx + radius * Math.cos(rad),
+      y: cy + radius * Math.sin(rad)
+    };
+  };
+
+  const getSectorPath = (innerR, outerR, startA, endA) => {
+    const startOuter = getCoords(outerR, endA);
+    const endOuter = getCoords(outerR, startA);
+    const startInner = getCoords(innerR, endA);
+    const endInner = getCoords(innerR, startA);
+    
+    const largeArcFlag = endA - startA <= 180 ? "0" : "1";
+    
+    return [
+      "M", startOuter.x, startOuter.y,
+      "A", outerR, outerR, 0, largeArcFlag, 0, endOuter.x, endOuter.y,
+      "L", endInner.x, endInner.y,
+      "A", innerR, innerR, 0, largeArcFlag, 1, startInner.x, startInner.y,
+      "Z"
+    ].join(" ");
+  };
+
+  return (
+    <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <svg width="100%" height={260} viewBox="0 0 450 260" style={{ overflow: 'visible' }}>
+        {/* Background circular tracks & concentric grid lines */}
+        {[0.25, 0.5, 0.75, 1.0].map((ratio, i) => {
+          const r = innerRadius + (maxRadius - innerRadius) * ratio;
+          return (
+            <circle 
+              key={i} 
+              cx={cx} 
+              cy={cy} 
+              r={r} 
+              fill="none" 
+              stroke="rgba(255,255,255,0.06)" 
+              strokeWidth={1} 
+            />
+          );
+        })}
+
+        {/* Render each slice */}
+        {data.map((item, idx) => {
+          const startAngle = idx * angleStep;
+          const endAngle = startAngle + angleStep;
+          const middleAngle = startAngle + angleStep / 2;
+          
+          const catColor = getOffenseColor(item.name);
+          const hasCount = item.count > 0;
+          
+          // Calculate active radius
+          const activeRadius = innerRadius + (maxRadius - innerRadius) * (item.count / maxVal);
+          
+          // Coords for spokes
+          const spokeEnd = getCoords(maxRadius, startAngle);
+          
+          // Coords for badge label (offset inside the edge of active slice)
+          const badgeRadius = Math.max(innerRadius + 8, activeRadius - 8);
+          const badgePos = getCoords(badgeRadius, middleAngle);
+          
+          // Coords for category name text (outside the circle)
+          const labelPos = getCoords(maxRadius + 18, middleAngle);
+          
+          // Determine text anchor based on position
+          let textAnchor = "middle";
+          if (labelPos.x > cx + 10) textAnchor = "start";
+          else if (labelPos.x < cx - 10) textAnchor = "end";
+          
+          const shortName = (() => {
+            const s = String(item.name).trim();
+            if (s.length > 9) return s.substring(0, 9) + '...';
+            return s;
+          })();
+
+          return (
+            <g key={idx}>
+              {/* Background dark track */}
+              <path 
+                d={getSectorPath(innerRadius, maxRadius, startAngle, endAngle)} 
+                fill="rgba(255,255,255,0.02)" 
+                stroke="rgba(255,255,255,0.04)" 
+                strokeWidth={1} 
+              />
+              
+              {/* Active colored slice */}
+              {hasCount && (
+                <path 
+                  d={getSectorPath(innerRadius, activeRadius, startAngle, endAngle)} 
+                  fill={`${catColor}33`} 
+                  stroke={catColor} 
+                  strokeWidth={2}
+                  style={{ filter: `drop-shadow(0 0 4px ${catColor}30)` }}
+                />
+              )}
+              
+              {/* Spoke line separating sectors */}
+              <line 
+                x1={cx} 
+                y1={cy} 
+                x2={spokeEnd.x} 
+                y2={spokeEnd.y} 
+                stroke="rgba(255,255,255,0.1)" 
+                strokeWidth={1} 
+              />
+
+              {/* Text label outside the circle */}
+              <text 
+                x={labelPos.x} 
+                y={labelPos.y + 3} 
+                fill={hasCount ? 'var(--text-primary)' : 'var(--text-secondary)'} 
+                fontSize={9} 
+                fontWeight={hasCount ? 700 : 500} 
+                textAnchor={textAnchor}
+                title={item.name}
+              >
+                {shortName}
+              </text>
+
+              {/* Value Badge on active slice */}
+              {hasCount && (
+                <g>
+                  <rect 
+                    x={badgePos.x - 9} 
+                    y={badgePos.y - 6} 
+                    width={18} 
+                    height={12} 
+                    rx={2.5} 
+                    fill="#1e293b" 
+                    stroke={catColor} 
+                    strokeWidth={1} 
+                  />
+                  <text 
+                    x={badgePos.x} 
+                    y={badgePos.y + 3} 
+                    fill="#fff" 
+                    fontSize={8.5} 
+                    fontWeight="bold" 
+                    textAnchor="middle"
+                  >
+                    {item.count}
+                  </text>
+                </g>
+              )}
+            </g>
+          );
+        })}
+
+        {/* Center circle */}
+        <circle 
+          cx={cx} 
+          cy={cy} 
+          r={8} 
+          fill="var(--bg-primary)" 
+          stroke="rgba(255,255,255,0.3)" 
+          strokeWidth={1.5} 
+        />
+      </svg>
+    </div>
+  );
+};
+
 export default function ExoPunishmentClient({ initialCadets, violationsOverTime, breakdownData }) {
   const [viewModes, setViewModes] = useState({});
   const [showClassLines, setShowClassLines] = useState(false);
@@ -429,61 +605,8 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
             <div className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div>
                 <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>Offenses Breakdown</h2>
-                <div style={{ width: '100%', height: '220px', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart cx="50%" cy="50%" outerRadius="75%" data={breakdownData}>
-                      <PolarGrid stroke="rgba(255,255,255,0.12)" />
-                      <PolarAngleAxis 
-                        dataKey="name" 
-                        tickFormatter={(text) => {
-                          if (!text) return '';
-                          const s = String(text).trim();
-                          if (s.length > 10) return s.substring(0, 10) + '...';
-                          return s;
-                        }}
-                        tick={{ fill: 'var(--text-secondary)', fontSize: 9, fontWeight: 700 }} 
-                      />
-                      <PolarRadiusAxis 
-                        angle={30} 
-                        domain={[0, 'auto']} 
-                        stroke="rgba(255,255,255,0.1)" 
-                        tick={{ fill: 'var(--text-secondary)', fontSize: 8 }} 
-                      />
-                      <Radar 
-                        name="Offenses Count" 
-                        dataKey="count" 
-                        stroke="var(--gold-primary)" 
-                        fill="var(--gold-primary)" 
-                        fillOpacity={0.15} 
-                        strokeWidth={2}
-                        dot={<CustomRadarDot />}
-                      />
-                      <Tooltip content={({ active, payload }) => {
-                        if (active && payload && payload.length) {
-                          const data = payload[0].payload;
-                          const color = getOffenseColor(data.name);
-                          return (
-                            <div style={{ 
-                              backgroundColor: 'var(--bg-secondary)', 
-                              border: `1.5px solid ${color}`, 
-                              borderRadius: '8px',
-                              padding: '0.75rem',
-                              boxShadow: `0 4px 12px ${color}20`,
-                              zIndex: 999
-                            }}>
-                              <div style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
-                                {data.name}
-                              </div>
-                              <div style={{ fontSize: '0.8rem', color: color, fontWeight: 700 }}>
-                                Count: <span style={{ color: 'var(--text-primary)' }}>{data.count}</span>
-                              </div>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }} />
-                    </RadarChart>
-                  </ResponsiveContainer>
+                <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+                  <OffensesPizzaChart data={breakdownData} />
                 </div>
 
                 {/* Legend List with values and percentages */}
