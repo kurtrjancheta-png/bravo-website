@@ -36,9 +36,11 @@ export default async function TacODashboardPage() {
     const k16_idx = keys[15]; // MERIT
 
     const validRows = fsgtData.filter(row => {
-      const no = parseInt(row[k1]);
-      return !isNaN(no) && no > 0 && row[k3] && String(row[k3]).trim() !== '';
-    });
+    const lastName = String(row[k3] || '').trim();
+    const rank = String(row[k2] || '').trim().toUpperCase();
+    // Include all rows with a valid cadet name that are not header rows
+    return lastName !== '' && lastName.toUpperCase() !== 'LAST NAME' && rank !== '' && rank !== 'RANK';
+  });
 
     totalDelinquencies = validRows.length;
 

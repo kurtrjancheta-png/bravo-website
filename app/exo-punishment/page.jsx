@@ -37,20 +37,24 @@ export default async function ExoPunishmentPage() {
   const k14 = keys[13]; // TOURING REMAINING
   const k16 = keys[15]; // REMARKS
 
-  // Extract "UPDATED AS OF" date
+  // Extract "UPDATED AS OF" date from the first data row (col E = CLASS col)
   let updatedAsOf = 'Unknown';
-  if (String(k1).toUpperCase().includes('UPDATED AS OF')) {
-    updatedAsOf = String(k5 || '').trim();
+  if (data[0]) {
+    const dateCandidate = String(data[0][k5] || '').trim();
+    if (dateCandidate && !dateCandidate.toUpperCase().includes('CLASS') && dateCandidate !== '') {
+      updatedAsOf = dateCandidate;
+    }
   }
-  const updatedRow = data.find(row => String(row[k1]).toUpperCase().includes('UPDATED AS OF'));
-  if (updatedRow && updatedAsOf === 'Unknown') {
-    updatedAsOf = String(updatedRow[k5] || '').trim();
-  }
+  // Also check any row where col A mentions UPDATED AS OF
+  const updatedRow = data.find(row => String(row[k1] || '').toUpperCase().includes('UPDATED AS OF'));
+  if (updatedRow) updatedAsOf = String(updatedRow[k5] || updatedRow[k4] || '').trim();
 
-  // Filter valid rows: Column 1 (NO) must be a number > 0, Column 3 must exist
+  // Filter valid rows: must have a LAST NAME and not be a header row
+  // NOTE: We do NOT filter by NO column — many valid entries have no sequential number
   const validRows = data.filter(row => {
-    const no = parseInt(row[k1]);
-    return !isNaN(no) && no > 0 && row[k3] && String(row[k3]).trim() !== '';
+    const lastName = String(row[k3] || '').trim();
+    const rank = String(row[k2] || '').trim().toUpperCase();
+    return lastName !== '' && lastName.toUpperCase() !== 'LAST NAME' && rank !== '' && rank !== 'RANK';
   });
 
   const k15 = keys[14]; // DEMERIT ALLOWANCE
