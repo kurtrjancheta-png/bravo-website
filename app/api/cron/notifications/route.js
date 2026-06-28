@@ -53,7 +53,7 @@ export async function GET(req) {
     if (allDayEvents.length > 0 && (is7AM || is12PM || is3PM)) {
       const titles = allDayEvents.map(a => a.title).join(', ');
       notificationsToSend.push({
-        title: 'Today\\'s Events Summary',
+        title: "Today's Events Summary",
         body: `You have the following events today: ${titles}`,
         url: '/event-calendar'
       });
