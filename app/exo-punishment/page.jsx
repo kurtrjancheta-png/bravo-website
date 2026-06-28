@@ -149,8 +149,7 @@ export default async function ExoPunishmentPage() {
   validRows.forEach(row => {
     const name = String(row[k3]).trim();
     const rank = String(row[k2]).trim();
-    const isConfined = String(row[k8] || '').toLowerCase() === 'yes';
-    
+
     if (!cadetMap.has(name)) {
       cadetMap.set(name, {
         name,

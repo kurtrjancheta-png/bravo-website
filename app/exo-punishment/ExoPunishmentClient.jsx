@@ -613,13 +613,21 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
                         const offTourCompleted = offense.tourTotal === 0 || offTourProgress >= offense.tourTotal;
                         
                         const isOffInactive = offConfCompleted && offTourCompleted;
+                        const classColor = isOffInactive ? '#6b7280' : (() => {
+                          const c = String(offense.classOfOffense || '').trim().toUpperCase();
+                          if (c === 'I' || c === '1') return '#ef4444';
+                          if (c === 'II' || c === '2') return '#f97316';
+                          if (c === 'III' || c === '3') return '#eab308';
+                          if (c === 'IV' || c === '4') return '#22c55e';
+                          return '#eab308';
+                        })();
 
                         return (
                           <div key={i} style={{ 
                             background: 'var(--bg-primary)', 
                             padding: '0.6rem', 
                             borderRadius: '8px', 
-                            borderLeft: isOffInactive ? '3px solid #6b7280' : '3px solid #fbbf24',
+                            borderLeft: `3px solid ${classColor}`,
                             border: '1px solid var(--border-color)',
                             opacity: isOffInactive ? 0.6 : 1
                           }}>
@@ -627,7 +635,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
                               <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
                                 {offense.natureOfOffense || 'UNKNOWN'}
                               </div>
-                              <div style={{ fontSize: '0.65rem', color: isOffInactive ? '#6b7280' : '#eab308', fontWeight: 800 }}>Class {offense.classOfOffense}</div>
+                              <div style={{ fontSize: '0.65rem', color: classColor, fontWeight: 800 }}>Class {offense.classOfOffense}</div>
                             </div>
                             <div style={{ fontSize: '0.8rem', color: 'var(--text-primary)', lineHeight: 1.3 }}>{offense.description}</div>
                           </div>
@@ -890,13 +898,21 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
                           const offTourCompleted = offense.tourTotal === 0 || offTourProgress >= offense.tourTotal;
                           
                           const isOffInactive = offConfCompleted && offTourCompleted;
+                          const classColor = isOffInactive ? '#6b7280' : (() => {
+                            const c = String(offense.classOfOffense || '').trim().toUpperCase();
+                            if (c === 'I' || c === '1') return '#ef4444';
+                            if (c === 'II' || c === '2') return '#f97316';
+                            if (c === 'III' || c === '3') return '#eab308';
+                            if (c === 'IV' || c === '4') return '#22c55e';
+                            return '#eab308';
+                          })();
 
                           return (
                             <div key={i} style={{ 
                               background: isOffInactive ? 'rgba(128,128,128,0.05)' : 'rgba(128,128,128,0.1)', 
                               padding: '0.75rem', 
                               borderRadius: '8px', 
-                              borderLeft: isOffInactive ? '3px solid #6b7280' : '3px solid #fbbf24',
+                              borderLeft: `3px solid ${classColor}`,
                               opacity: isOffInactive ? 0.6 : 1
                             }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
@@ -904,7 +920,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime 
                                   {offense.natureOfOffense || 'UNKNOWN'}
                                   {isOffInactive && <span style={{ marginLeft: '0.5rem', color: '#10b981', fontWeight: 800 }}>✓ INACTIVE</span>}
                                 </div>
-                                <div style={{ fontSize: '0.7rem', color: isOffInactive ? '#6b7280' : '#eab308', fontWeight: 800 }}>Class {offense.classOfOffense}</div>
+                                <div style={{ fontSize: '0.7rem', color: classColor, fontWeight: 800 }}>Class {offense.classOfOffense}</div>
                               </div>
                               <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', lineHeight: 1.4 }}>{offense.description}</div>
                             </div>
