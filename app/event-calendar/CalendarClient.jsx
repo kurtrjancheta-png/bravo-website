@@ -399,7 +399,7 @@ export default function CalendarClient({ birthdays, activities }) {
                   </span>
                 )}
                 {a.urgency && (
-                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', padding: '0.35rem 0.75rem', borderRadius: '6px', backgroundColor: a.urgency === 'EMERGENCY' || a.urgency === 'FOR IMMEDIATE COMPLIANCE' ? 'rgba(248, 113, 113, 0.2)' : 'rgba(59, 130, 246, 0.2)', color: a.urgency === 'EMERGENCY' || a.urgency === 'FOR IMMEDIATE COMPLIANCE' ? '#fca5a5' : '#93c5fd', border: `1px solid ${a.urgency === 'EMERGENCY' || a.urgency === 'FOR IMMEDIATE COMPLIANCE' ? '#f87171' : '#60a5fa'}`, textTransform: 'uppercase' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', padding: '0.35rem 0.75rem', borderRadius: '6px', backgroundColor: a.urgency === 'URGENT' || a.urgency === 'FOR STRICT COMPLIANCE' ? 'rgba(248, 113, 113, 0.2)' : 'rgba(59, 130, 246, 0.2)', color: a.urgency === 'URGENT' || a.urgency === 'FOR STRICT COMPLIANCE' ? '#fca5a5' : '#93c5fd', border: `1px solid ${a.urgency === 'URGENT' || a.urgency === 'FOR STRICT COMPLIANCE' ? '#f87171' : '#60a5fa'}`, textTransform: 'uppercase' }}>
                     {a.urgency}
                   </span>
                 )}

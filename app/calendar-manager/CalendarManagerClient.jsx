@@ -43,7 +43,7 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
     photos: '',   // new
     files: '',    // new
     color: '#3b82f6',
-    urgency: 'LIGHT',
+    urgency: 'FOR INFO',
     isAllDay: true
   });
 
@@ -102,7 +102,7 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
       photos: '',
       files: '',
       color: '#3b82f6',
-      urgency: 'LIGHT',
+      urgency: 'FOR INFO',
       isAllDay: true
     });
     setIsModalOpen(true);
@@ -122,7 +122,7 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
       photos: act.photos || '',
       files: act.files || '',
       color: act.color || '#3b82f6',
-      urgency: act.urgency || 'LIGHT',
+      urgency: act.urgency || 'FOR INFO',
       isAllDay: act.isAllDay !== undefined ? act.isAllDay : (!act.date || act.date.includes('T00:00:00'))
     });
     setIsModalOpen(true);
@@ -683,10 +683,10 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
                   value={formData.urgency} onChange={e => setFormData({...formData, urgency: e.target.value})}
                   style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
                 >
-                  <option value="LIGHT">Light</option>
-                  <option value="NORMAL">Normal</option>
+                  <option value="FOR INFO">For Info</option>
+                  <option value="ATTENTION">Attention</option>
                   <option value="URGENT">Urgent</option>
-                  <option value="EMERGENCY">Emergency</option>
+                  <option value="FOR STRICT COMPLIANCE">For Strict Compliance</option>
                 </select>
               </div>
             </div>
