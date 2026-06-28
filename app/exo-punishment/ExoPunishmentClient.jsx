@@ -128,31 +128,21 @@ const CustomRadarDot = (props) => {
   );
 };
 
-const getChartLabel = (name) => {
-  const normalized = String(name || '').trim().toUpperCase();
-  if (normalized.includes('UNACCOUNTED') || normalized.includes('ABSENT')) return 'ABSENCE';
-  if (normalized.includes('LATE')) return 'TARDINESS';
-  if (normalized.includes('NEGLIGENCE') || normalized.includes('NEGLEGENCE') || normalized.includes('DUTY')) return 'NEGLIGENCE';
-  if (normalized.includes('POSSESSING') || normalized.includes('UNAUTHORIZED ITEMS')) return 'ITEMS';
-  if (normalized.includes('DOING') || normalized.includes('UNAUTHORIZED THINGS')) return 'ACTIVITIES';
-  if (normalized.includes('MALTREATMENT') || normalized.includes('NTP') || normalized.includes('CTP')) return 'MALTREATMENT';
-  if (normalized.includes('HONOR')) return 'HONOR';
-  if (normalized.includes('CLEANLINESS') || normalized.includes('ROOM')) return 'CLEANLINESS';
-  if (normalized.includes('UNIFORM') || normalized.includes('RIFLE')) return 'UNIFORM/RIFLE';
-  return 'MISCONDUCT';
-};
-
 const OffensesPizzaChart = ({ data }) => {
+  const [hoveredItem, setHoveredItem] = useState(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  
   if (!data || data.length === 0) return null;
   
-  const cx = 250;
-  const cy = 160;
-  const maxRadius = 110;
+  const cx = 200;
+  const cy = 130;
+  const maxRadius = 115;
   const innerRadius = 22;
   const numCategories = data.length;
   const angleStep = 360 / numCategories;
   
   const maxVal = Math.max(1, ...data.map(d => d.count || 0));
+  const totalCount = data.reduce((sum, d) => sum + (d.count || 0), 0);
   
   const getCoords = (radius, angle) => {
     const rad = (angle - 90) * Math.PI / 180.0;
@@ -180,30 +170,17 @@ const OffensesPizzaChart = ({ data }) => {
   };
 
   return (
-    <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <svg width="100%" height={320} viewBox="0 0 500 320" style={{ overflow: 'visible' }}>
-        {/* Background circular tracks & concentric grid lines */}
-        {[0.25, 0.5, 0.75, 1.0].map((ratio, i) => {
-          const r = innerRadius + (maxRadius - innerRadius) * ratio;
-          return (
-            <circle 
-              key={i} 
-              cx={cx} 
-              cy={cy} 
-              r={r} 
-              fill="none" 
-              stroke="rgba(255,255,255,0.08)" 
-              strokeWidth={1} 
-            />
-          );
-        })}
-
+    <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+      <svg 
+        width="100%" 
+        height={260} 
+        viewBox="0 0 400 260" 
+        style={{ overflow: 'visible' }}
+      >
         {/* Render each slice */}
         {data.map((item, idx) => {
           const startAngle = idx * angleStep;
           const endAngle = startAngle + angleStep;
-          const middleAngle = startAngle + angleStep / 2;
-          
           const catColor = getOffenseColor(item.name);
           const hasCount = item.count > 0;
           
@@ -212,26 +189,27 @@ const OffensesPizzaChart = ({ data }) => {
           
           // Coords for spokes
           const spokeEnd = getCoords(maxRadius, startAngle);
-          
-          // Coords for badge label (offset inside the edge of active slice)
-          const badgeRadius = Math.max(innerRadius + 14, activeRadius - 12);
-          const badgePos = getCoords(badgeRadius, middleAngle);
-          
-          // Coords for category name text (outside the circle)
-          const labelPos = getCoords(maxRadius + 18, middleAngle);
-          
-          // Determine text anchor based on position
-          let textAnchor = "middle";
-          if (labelPos.x > cx + 10) textAnchor = "start";
-          else if (labelPos.x < cx - 10) textAnchor = "end";
+          const isHovered = hoveredItem && hoveredItem.name === item.name;
 
           return (
-            <g key={idx}>
-              {/* Background dark track */}
+            <g 
+              key={idx}
+              onMouseEnter={() => setHoveredItem(item)}
+              onMouseMove={(e) => {
+                const rect = e.currentTarget.ownerSVGElement.getBoundingClientRect();
+                setMousePos({
+                  x: e.clientX - rect.left,
+                  y: e.clientY - rect.top
+                });
+              }}
+              onMouseLeave={() => setHoveredItem(null)}
+              style={{ cursor: 'pointer' }}
+            >
+              {/* Background light track */}
               <path 
                 d={getSectorPath(innerRadius, maxRadius, startAngle, endAngle)} 
-                fill="#090d16" 
-                stroke="rgba(255,255,255,0.04)" 
+                fill="rgba(0, 0, 0, 0.02)" 
+                stroke="rgba(0, 0, 0, 0.04)" 
                 strokeWidth={1} 
               />
               
@@ -239,10 +217,13 @@ const OffensesPizzaChart = ({ data }) => {
               {hasCount && (
                 <path 
                   d={getSectorPath(innerRadius, activeRadius, startAngle, endAngle)} 
-                  fill={`${catColor}bb`} 
+                  fill={isHovered ? catColor : `${catColor}cc`} 
                   stroke={catColor} 
-                  strokeWidth={2}
-                  style={{ filter: `drop-shadow(0 0 6px ${catColor}40)` }}
+                  strokeWidth={isHovered ? 2.5 : 1.5}
+                  style={{ 
+                    transition: 'all 0.2s ease',
+                    filter: isHovered ? `drop-shadow(0 0 6px ${catColor}50)` : 'none'
+                  }}
                 />
               )}
               
@@ -252,49 +233,27 @@ const OffensesPizzaChart = ({ data }) => {
                 y1={cy} 
                 x2={spokeEnd.x} 
                 y2={spokeEnd.y} 
-                stroke="rgba(255,255,255,0.15)" 
-                strokeWidth={1.5} 
+                stroke="rgba(0, 0, 0, 0.08)" 
+                strokeWidth={1} 
               />
-
-              {/* Text label outside the circle */}
-              <text 
-                x={labelPos.x} 
-                y={labelPos.y + 4} 
-                fill={hasCount ? '#f8fafc' : '#475569'} 
-                fontSize={9.5} 
-                fontWeight={hasCount ? 800 : 500} 
-                textAnchor={textAnchor}
-                style={{ letterSpacing: '0.02em' }}
-              >
-                {getChartLabel(item.name)}
-              </text>
-
-              {/* Value Badge on active slice */}
-              {hasCount && (
-                <g>
-                  <rect 
-                    x={badgePos.x - 10} 
-                    y={badgePos.y - 7} 
-                    width={20} 
-                    height={14} 
-                    rx={3} 
-                    fill="#090d16" 
-                    stroke="rgba(255,255,255,0.4)" 
-                    strokeWidth={1} 
-                  />
-                  <text 
-                    x={badgePos.x} 
-                    y={badgePos.y + 3.5} 
-                    fill="#fff" 
-                    fontSize={9} 
-                    fontWeight="bold" 
-                    textAnchor="middle"
-                  >
-                    {item.count}
-                  </text>
-                </g>
-              )}
             </g>
+          );
+        })}
+
+        {/* Background concentric grid lines */}
+        {[0.25, 0.5, 0.75, 1.0].map((ratio, i) => {
+          const r = innerRadius + (maxRadius - innerRadius) * ratio;
+          return (
+            <circle 
+              key={i} 
+              cx={cx} 
+              cy={cy} 
+              r={r} 
+              fill="none" 
+              stroke="rgba(0, 0, 0, 0.06)" 
+              strokeWidth={1} 
+              style={{ pointerEvents: 'none' }}
+            />
           );
         })}
 
@@ -302,12 +261,40 @@ const OffensesPizzaChart = ({ data }) => {
         <circle 
           cx={cx} 
           cy={cy} 
-          r={12} 
-          fill="#090d16" 
-          stroke="rgba(255,255,255,0.4)" 
-          strokeWidth={2} 
+          r={10} 
+          fill="var(--bg-primary)" 
+          stroke="rgba(0, 0, 0, 0.15)" 
+          strokeWidth={1.5} 
+          style={{ pointerEvents: 'none' }}
         />
       </svg>
+
+      {/* Hover Tooltip */}
+      {hoveredItem && (
+        <div style={{
+          position: 'absolute',
+          left: mousePos.x + 12,
+          top: mousePos.y + 12,
+          backgroundColor: 'var(--bg-secondary)',
+          border: `1.5px solid ${getOffenseColor(hoveredItem.name)}`,
+          borderRadius: '8px',
+          padding: '0.6rem 0.8rem',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+          pointerEvents: 'none',
+          zIndex: 100,
+          whiteSpace: 'nowrap'
+        }}>
+          <div style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
+            {hoveredItem.name}
+          </div>
+          <div style={{ fontSize: '0.8rem', color: getOffenseColor(hoveredItem.name), fontWeight: 700 }}>
+            Count: <span style={{ color: 'var(--text-primary)' }}>{hoveredItem.count}</span>
+            <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginLeft: '6px', fontWeight: 'normal' }}>
+              ({totalCount > 0 ? ((hoveredItem.count / totalCount) * 100).toFixed(1) : 0}%)
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
