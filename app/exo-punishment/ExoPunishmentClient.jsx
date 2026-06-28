@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../AuthContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
 
@@ -129,17 +129,26 @@ const CustomRadarDot = (props) => {
 };
 
 const OffensesPizzaChart = ({ data, hoveredItem, setHoveredItem }) => {
+  const [enlargedIndex, setEnlargedIndex] = useState(null);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+
   if (!data || data.length === 0) return null;
-  
+
   const cx = 200;
   const cy = 130;
-  const maxRadius = 115;
+  const maxRadius = 125;
   const innerRadius = 22;
   const numCategories = data.length;
   const angleStep = 360 / numCategories;
-  
+
   const maxVal = Math.max(1, ...data.map(d => d.count || 0));
-  
+
   const getCoords = (radius, angle) => {
     const rad = (angle - 90) * Math.PI / 180.0;
     return {
@@ -153,9 +162,9 @@ const OffensesPizzaChart = ({ data, hoveredItem, setHoveredItem }) => {
     const endOuter = getCoords(outerR, startA);
     const startInner = getCoords(innerR, endA);
     const endInner = getCoords(innerR, startA);
-    
+
     const largeArcFlag = endA - startA <= 180 ? "0" : "1";
-    
+
     return [
       "M", startOuter.x, startOuter.y,
       "A", outerR, outerR, 0, largeArcFlag, 0, endOuter.x, endOuter.y,
@@ -163,6 +172,25 @@ const OffensesPizzaChart = ({ data, hoveredItem, setHoveredItem }) => {
       "A", innerR, innerR, 0, largeArcFlag, 1, startInner.x, startInner.y,
       "Z"
     ].join(" ");
+  };
+
+  const handleMouseEnter = (item, idx) => {
+    setHoveredItem(item);
+    setEnlargedIndex(idx);
+
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      setEnlargedIndex(null);
+    }, 2000);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredItem(null);
+    setEnlargedIndex(null);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
   };
 
   return (
@@ -179,70 +207,44 @@ const OffensesPizzaChart = ({ data, hoveredItem, setHoveredItem }) => {
           const endAngle = startAngle + angleStep;
           const catColor = getOffenseColor(item.name);
           const hasCount = item.count > 0;
-          
-          // Calculate active radius
-          const activeRadius = innerRadius + (maxRadius - innerRadius) * (item.count / maxVal);
-          
-          // Coords for spokes
-          const spokeEnd = getCoords(maxRadius, startAngle);
+
           const isHovered = hoveredItem && hoveredItem.name === item.name;
+          const isEnlarged = enlargedIndex === idx;
+
+          // Calculate radii
+          const activeRadius = innerRadius + (maxRadius - innerRadius) * (item.count / maxVal);
+          const currentRadius = isEnlarged 
+            ? innerRadius + (maxRadius - innerRadius) * (item.count / maxVal) * 1.15
+            : activeRadius;
 
           return (
             <g 
               key={idx}
-              onMouseEnter={() => setHoveredItem(item)}
-              onMouseLeave={() => setHoveredItem(null)}
+              onMouseEnter={() => handleMouseEnter(item, idx)}
+              onMouseLeave={handleMouseLeave}
               style={{ cursor: 'pointer' }}
             >
-              {/* Background light track */}
+              {/* Background slice track (faint fill, no stroke) */}
               <path 
                 d={getSectorPath(innerRadius, maxRadius, startAngle, endAngle)} 
-                fill="rgba(0, 0, 0, 0.02)" 
-                stroke="rgba(0, 0, 0, 0.04)" 
-                strokeWidth={1} 
+                fill="rgba(0, 0, 0, 0.015)" 
+                stroke="none" 
               />
-              
+
               {/* Active colored slice */}
               {hasCount && (
                 <path 
-                  d={getSectorPath(innerRadius, activeRadius, startAngle, endAngle)} 
+                  d={getSectorPath(innerRadius, currentRadius, startAngle, endAngle)} 
                   fill={isHovered ? catColor : `${catColor}cc`} 
                   stroke={catColor} 
                   strokeWidth={isHovered ? 2.5 : 1.5}
                   style={{ 
-                    transition: 'all 0.2s ease',
-                    filter: isHovered ? `drop-shadow(0 0 6px ${catColor}50)` : 'none'
+                    transition: 'd 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), fill 0.2s ease, filter 0.2s ease',
+                    filter: isHovered ? `drop-shadow(0 0 8px ${catColor})` : 'none'
                   }}
                 />
               )}
-              
-              {/* Spoke line separating sectors */}
-              <line 
-                x1={cx} 
-                y1={cy} 
-                x2={spokeEnd.x} 
-                y2={spokeEnd.y} 
-                stroke="rgba(0, 0, 0, 0.08)" 
-                strokeWidth={1} 
-              />
             </g>
-          );
-        })}
-
-        {/* Background concentric grid lines */}
-        {[0.25, 0.5, 0.75, 1.0].map((ratio, i) => {
-          const r = innerRadius + (maxRadius - innerRadius) * ratio;
-          return (
-            <circle 
-              key={i} 
-              cx={cx} 
-              cy={cy} 
-              r={r} 
-              fill="none" 
-              stroke="rgba(0, 0, 0, 0.06)" 
-              strokeWidth={1} 
-              style={{ pointerEvents: 'none' }}
-            />
           );
         })}
 
