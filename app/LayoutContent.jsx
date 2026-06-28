@@ -496,7 +496,7 @@ export default function LayoutContent({ children }) {
       </div>
 
       {/* Premium Dark Theme Push Subscription Banner */}
-      {showBanner && !isSubscribed && (
+      {showBanner && !isSubscribed && pathname !== '/subscribe' && (
         <div style={{
           position: 'fixed',
           bottom: '24px',
