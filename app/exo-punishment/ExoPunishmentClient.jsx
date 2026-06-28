@@ -128,10 +128,7 @@ const CustomRadarDot = (props) => {
   );
 };
 
-const OffensesPizzaChart = ({ data }) => {
-  const [hoveredItem, setHoveredItem] = useState(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  
+const OffensesPizzaChart = ({ data, hoveredItem, setHoveredItem }) => {
   if (!data || data.length === 0) return null;
   
   const cx = 200;
@@ -142,7 +139,6 @@ const OffensesPizzaChart = ({ data }) => {
   const angleStep = 360 / numCategories;
   
   const maxVal = Math.max(1, ...data.map(d => d.count || 0));
-  const totalCount = data.reduce((sum, d) => sum + (d.count || 0), 0);
   
   const getCoords = (radius, angle) => {
     const rad = (angle - 90) * Math.PI / 180.0;
@@ -195,13 +191,6 @@ const OffensesPizzaChart = ({ data }) => {
             <g 
               key={idx}
               onMouseEnter={() => setHoveredItem(item)}
-              onMouseMove={(e) => {
-                const rect = e.currentTarget.ownerSVGElement.getBoundingClientRect();
-                setMousePos({
-                  x: e.clientX - rect.left,
-                  y: e.clientY - rect.top
-                });
-              }}
               onMouseLeave={() => setHoveredItem(null)}
               style={{ cursor: 'pointer' }}
             >
@@ -268,33 +257,6 @@ const OffensesPizzaChart = ({ data }) => {
           style={{ pointerEvents: 'none' }}
         />
       </svg>
-
-      {/* Hover Tooltip */}
-      {hoveredItem && (
-        <div style={{
-          position: 'absolute',
-          left: mousePos.x + 12,
-          top: mousePos.y + 12,
-          backgroundColor: 'var(--bg-secondary)',
-          border: `1.5px solid ${getOffenseColor(hoveredItem.name)}`,
-          borderRadius: '8px',
-          padding: '0.6rem 0.8rem',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
-          pointerEvents: 'none',
-          zIndex: 100,
-          whiteSpace: 'nowrap'
-        }}>
-          <div style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
-            {hoveredItem.name}
-          </div>
-          <div style={{ fontSize: '0.8rem', color: getOffenseColor(hoveredItem.name), fontWeight: 700 }}>
-            Count: <span style={{ color: 'var(--text-primary)' }}>{hoveredItem.count}</span>
-            <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginLeft: '6px', fontWeight: 'normal' }}>
-              ({totalCount > 0 ? ((hoveredItem.count / totalCount) * 100).toFixed(1) : 0}%)
-            </span>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
@@ -303,6 +265,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
   const [viewModes, setViewModes] = useState({});
   const [showClassLines, setShowClassLines] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [hoveredItem, setHoveredItem] = useState(null);
   const { adminUser } = useAuth();
 
   const chartData = (violationsOverTime || [])
@@ -602,71 +565,119 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
               display: 'flex', 
               flexDirection: 'column', 
               justifyContent: 'space-between',
-              background: '#111827',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.25)',
-              borderRadius: '12px'
+              minHeight: '390px'
             }}>
               <div>
-                <h2 style={{ fontSize: '1.25rem', color: '#f8fafc', marginBottom: '1rem', fontWeight: 700 }}>Offenses Breakdown</h2>
+                <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: '1rem', fontWeight: 700 }}>Offenses Breakdown</h2>
                 <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
-                  <OffensesPizzaChart data={breakdownData} />
+                  <OffensesPizzaChart data={breakdownData} hoveredItem={hoveredItem} setHoveredItem={setHoveredItem} />
                 </div>
 
-                {/* Legend List with values and percentages */}
+                {/* Compact Interactive Legend Grid */}
                 <div style={{ 
                   marginTop: '0.75rem', 
-                  maxHeight: '140px', 
-                  overflowY: 'auto', 
-                  paddingRight: '5px',
-                  display: 'flex', 
-                  flexDirection: 'column', 
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
                   gap: '8px',
-                  borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-                  paddingTop: '0.75rem'
+                  borderTop: '1px solid var(--border-color)',
+                  paddingTop: '0.75rem',
+                  fontSize: '0.7rem'
                 }}>
-                  {(() => {
+                  {breakdownData.map((item, idx) => {
+                    const catColor = getOffenseColor(item.name);
+                    const isHovered = hoveredItem && hoveredItem.name === item.name;
+                    return (
+                      <div 
+                        key={idx} 
+                        onMouseEnter={() => setHoveredItem(item)}
+                        onMouseLeave={() => setHoveredItem(null)}
+                        style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '6px', 
+                          color: isHovered ? 'var(--text-primary)' : 'var(--text-secondary)',
+                          cursor: 'pointer',
+                          fontWeight: isHovered ? 700 : 400,
+                          transition: 'all 0.15s ease',
+                          opacity: hoveredItem && !isHovered ? 0.4 : 1
+                        }}
+                      >
+                        <span style={{ 
+                          width: '6px', 
+                          height: '6px', 
+                          borderRadius: '50%', 
+                          background: catColor,
+                          boxShadow: item.count > 0 ? `0 0 4px ${catColor}` : 'none',
+                          flexShrink: 0
+                        }}></span>
+                        <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                          {item.name}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Dynamic Infobox displaying progress bar on hover */}
+                <div style={{
+                  marginTop: '1rem',
+                  minHeight: '62px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  padding: '0.6rem 0.8rem',
+                  background: 'var(--bg-secondary)',
+                  borderRadius: '10px',
+                  border: '1px solid var(--border-color)',
+                  transition: 'all 0.25s ease',
+                  boxShadow: hoveredItem && hoveredItem.count > 0 ? `0 2px 10px ${getOffenseColor(hoveredItem.name)}15` : 'none',
+                  textAlign: 'center'
+                }}>
+                  {hoveredItem ? (() => {
                     const totalCount = breakdownData.reduce((sum, d) => sum + (d.count || 0), 0);
-                    return breakdownData.map((item, idx) => {
-                      const percentage = totalCount > 0 ? ((item.count / totalCount) * 100).toFixed(1) : 0;
-                      const catColor = getOffenseColor(item.name);
-                      const hasCount = item.count > 0;
-                      return (
-                        <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
-                              <span style={{ 
-                                width: '7px', 
-                                height: '7px', 
-                                borderRadius: '50%', 
-                                background: catColor,
-                                boxShadow: hasCount ? `0 0 6px ${catColor}` : 'none',
-                                flexShrink: 0
-                              }}></span>
-                              <span title={item.name} style={{ 
-                                textOverflow: 'ellipsis', 
-                                overflow: 'hidden', 
-                                whiteSpace: 'nowrap', 
-                                maxWidth: '240px', 
-                                fontWeight: hasCount ? 600 : 400, 
-                                color: hasCount ? '#f8fafc' : '#475569' 
-                              }}>
-                                {item.name}
-                              </span>
-                            </div>
-                            <div style={{ fontWeight: 'bold', color: hasCount ? catColor : '#475569', flexShrink: 0 }}>
-                              {item.count} <span style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 'normal' }}>({percentage}%)</span>
-                            </div>
-                          </div>
-                          {hasCount && (
-                            <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.04)', borderRadius: '2px', overflow: 'hidden' }}>
-                              <div style={{ width: `${percentage}%`, height: '100%', background: catColor, borderRadius: '2px', boxShadow: `0 0 4px ${catColor}` }}></div>
-                            </div>
-                          )}
+                    const percentage = totalCount > 0 ? ((hoveredItem.count / totalCount) * 100).toFixed(1) : 0;
+                    const catColor = getOffenseColor(hoveredItem.name);
+                    return (
+                      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px', animation: 'fadeIn 0.15s ease' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ 
+                            fontWeight: 700, 
+                            fontSize: '0.8rem', 
+                            color: 'var(--text-primary)', 
+                            textAlign: 'left', 
+                            textOverflow: 'ellipsis', 
+                            overflow: 'hidden', 
+                            whiteSpace: 'nowrap', 
+                            maxWidth: '240px' 
+                          }}>
+                            {hoveredItem.name}
+                          </span>
+                          <span style={{ fontWeight: 800, fontSize: '0.85rem', color: catColor, flexShrink: 0 }}>
+                            {hoveredItem.count} <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>({percentage}%)</span>
+                          </span>
                         </div>
-                      );
-                    });
-                  })()}
+                        <div style={{ width: '100%', height: '5px', background: 'rgba(0,0,0,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                          <div style={{ 
+                            width: `${percentage}%`, 
+                            height: '100%', 
+                            background: catColor, 
+                            borderRadius: '3px', 
+                            boxShadow: hoveredItem.count > 0 ? `0 0 6px ${catColor}` : 'none' 
+                          }}></div>
+                        </div>
+                      </div>
+                    );
+                  })() : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '0.75rem' }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 16v-4" />
+                        <path d="M12 8h.01" />
+                      </svg>
+                      <span>Hover chart or legend to inspect data</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
