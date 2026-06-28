@@ -249,11 +249,11 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
       style={{
         position: 'relative',
         background: isArchived ? 'rgba(0,0,0,0.1)' : 'var(--bg-secondary)',
-        border: `2px solid ${style.border}`,
-        borderTop: `12px solid ${style.border}`,
+        border: isArchived ? '2px solid #6b7280' : `2px solid ${style.border}`,
+        borderTop: isArchived ? '12px solid #6b7280' : `12px solid ${style.border}`,
         borderRadius: '12px',
         padding: '1.5rem',
-        animation: isArchived ? 'none' : style.animation,
+        animation: 'none',
         display: 'flex',
         flexDirection: 'column',
         gap: '1rem',
@@ -268,13 +268,8 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
       />
       <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1.5rem', alignItems: isMobile ? 'stretch' : 'flex-start' }}>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontWeight: 800, fontSize: '1rem', letterSpacing: '0.05em', color: style.border, textTransform: 'uppercase', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ fontWeight: 800, fontSize: '1rem', letterSpacing: '0.05em', color: isArchived ? '#6b7280' : style.border, textTransform: 'uppercase', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             {card['TYPE'] || 'ANNOUNCEMENT'}
-            {isArchived && (
-              <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.5rem', borderRadius: '4px', background: 'var(--border-color)', color: 'var(--text-secondary)' }}>
-                ARCHIVED
-              </span>
-            )}
           </div>
           
           {(() => {
@@ -319,8 +314,8 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
           paddingTop: isMobile ? '0.75rem' : '0'
         }}>
           <div style={{ 
-            background: style.bg, 
-            color: style.color, 
+            background: isArchived ? 'rgba(107,114,128,0.15)' : style.bg, 
+            color: isArchived ? '#6b7280' : style.color, 
             padding: '0.25rem 0.75rem', 
             borderRadius: '9999px', 
             fontSize: '0.75rem', 
@@ -333,13 +328,13 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
           {eventDay && (
             <div style={{
               display: 'flex', flexDirection: isMobile ? 'row' : 'column', alignItems: 'center', 
-              border: `3px solid ${style.border}`, borderRadius: '10px', overflow: 'hidden',
+              border: isArchived ? '3px solid #6b7280' : `3px solid ${style.border}`, borderRadius: '10px', overflow: 'hidden',
               boxShadow: '0 4px 8px rgba(0,0,0,0.1)', backgroundColor: 'var(--bg-primary)',
               minWidth: '70px',
               opacity: isArchived ? 0.8 : 1,
               gap: isMobile ? '0.5rem' : '0'
             }}>
-              <div style={{ background: style.border, color: 'white', width: isMobile ? 'auto' : '100%', textAlign: 'center', fontSize: '0.9rem', fontWeight: '900', padding: '0.2rem 0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div style={{ background: isArchived ? '#6b7280' : style.border, color: 'white', width: isMobile ? 'auto' : '100%', textAlign: 'center', fontSize: '0.9rem', fontWeight: '900', padding: '0.2rem 0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 {eventMonth}
               </div>
               <div style={{ fontSize: isMobile ? '1.5rem' : '2.2rem', fontWeight: '900', color: 'var(--text-primary)', padding: isMobile ? '0.1rem 0.5rem' : '0.2rem 0.4rem', lineHeight: '1' }}>
