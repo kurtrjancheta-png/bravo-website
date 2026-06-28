@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import ImageGallery from './disseminations/ImageGallery';
+import { useAuth } from './AuthContext';
 
 // Emojis mapping for reactions
 const EMOJIS = {
@@ -93,6 +94,56 @@ export default function AnnouncementsGrid({ disseminations }) {
 
   const [reactionsState, setReactionsState] = useState({});
   const [userReactionsState, setUserReactionsState] = useState({});
+
+  const { adminUser } = useAuth();
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
+
+  const handleFollowUp = async (card, e) => {
+    if (e) e.stopPropagation();
+    if (isBroadcasting) return;
+
+    const confirmSend = window.confirm("Are you sure you want to broadcast a follow-up push notification for this dissemination to all subscribers?");
+    if (!confirmSend) return;
+
+    setIsBroadcasting(true);
+
+    const councilId = card.councilId || "SYSTEM";
+    const councilLabel = card.council || "SYSTEM";
+    const councilSlug = String(councilId).trim().toUpperCase() === "HONOR COMM" ? "honor-comm" : String(councilId).trim().toLowerCase();
+    
+    const { headline, body } = parseHeadlineAndContent(card.CONTENT);
+    const displayHeadline = headline || (String(card.TYPE).toUpperCase() === 'ACTIVITY' ? `[ACTIVITY] Event scheduled` : 'Announcement Bulletin');
+    
+    const title = `[Follow Up] ${councilLabel}`;
+    const notificationBody = displayHeadline;
+    const url = `/disseminations/${councilSlug}?row=${card.sheetRowIndex}`;
+    const image = card.ATTACHMENT || card.Column6 || null;
+
+    try {
+      const response = await fetch('/api/web-push/broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          body: notificationBody,
+          url,
+          image
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        alert(`Follow-up alert broadcasted successfully to ${data.sentCount} subscriber(s)!`);
+      } else {
+        alert(`Failed to broadcast follow-up: ${data.error || 'Unknown error'}`);
+      }
+    } catch (err) {
+      console.error('Follow-up broadcast failed:', err);
+      alert('Network error when attempting to broadcast follow-up alert.');
+    } finally {
+      setIsBroadcasting(false);
+    }
+  };
 
   useEffect(() => {
     const loadedReactions = {};
@@ -484,26 +535,58 @@ export default function AnnouncementsGrid({ disseminations }) {
 
                 {/* Card Footer */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-                  {/* Left: Badge + Council Name */}
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <span style={{ 
-                      display: 'inline-flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      width: '18px', 
-                      height: '18px', 
-                      borderRadius: '50%', 
-                      background: 'var(--accent-gold)', 
-                      color: '#ffffff', 
-                      fontSize: '9px', 
-                      fontWeight: 900, 
-                      marginRight: '6px' 
-                    }}>
-                      B
-                    </span>
-                    <span style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-secondary)' }}>
-                      {councilInfo.label}
-                    </span>
+                  {/* Left: Badge + Council Name + Follow Up */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <span style={{ 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        width: '18px', 
+                        height: '18px', 
+                        borderRadius: '50%', 
+                        background: 'var(--accent-gold)', 
+                        color: '#ffffff', 
+                        fontSize: '9px', 
+                        fontWeight: 900, 
+                        marginRight: '6px' 
+                      }}>
+                        B
+                      </span>
+                      <span style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-secondary)' }}>
+                        {councilInfo.label}
+                      </span>
+                    </div>
+                    {adminUser && (
+                      <button
+                        onClick={(e) => handleFollowUp(card, e)}
+                        disabled={isBroadcasting}
+                        title="Resend/Follow up with push notification"
+                        style={{
+                          padding: '0.25rem 0.5rem',
+                          fontSize: '0.7rem',
+                          fontWeight: 'bold',
+                          backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                          border: '1px solid var(--accent-gold)',
+                          color: 'var(--accent-gold-dark)',
+                          borderRadius: '6px',
+                          cursor: isBroadcasting ? 'not-allowed' : 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '3px',
+                          transition: 'background-color 0.2s',
+                          zIndex: 5
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = 'rgba(212, 175, 55, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'rgba(212, 175, 55, 0.1)';
+                        }}
+                      >
+                        📢 {isBroadcasting ? 'Sending...' : 'Follow Up'}
+                      </button>
+                    )}
                   </div>
 
                   {/* Right: Emojis */}
@@ -732,9 +815,39 @@ export default function AnnouncementsGrid({ disseminations }) {
                 justifyContent: 'space-between',
                 alignItems: 'center'
               }}>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
-                  Was this helpful?
-                </span>
+                {adminUser ? (
+                  <button
+                    onClick={(e) => handleFollowUp(d, e)}
+                    disabled={isBroadcasting}
+                    style={{
+                      padding: '0.4rem 1rem',
+                      fontSize: '0.8rem',
+                      fontWeight: 'bold',
+                      backgroundColor: 'var(--accent-gold)',
+                      color: '#000',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: isBroadcasting ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'background-color 0.2s',
+                      boxShadow: '0 2px 4px rgba(212, 175, 55, 0.2)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--accent-gold-dark)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--accent-gold)';
+                    }}
+                  >
+                    📢 {isBroadcasting ? 'Broadcasting...' : 'Broadcast Follow-Up'}
+                  </button>
+                ) : (
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
+                    Was this helpful?
+                  </span>
+                )}
                 
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   {Object.entries(EMOJIS).map(([key, emoji]) => {

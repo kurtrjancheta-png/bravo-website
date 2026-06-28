@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DeleteDisseminationButton from "./DeleteDisseminationButton";
 import ImageGallery from "./ImageGallery";
+import { useAuth } from "../AuthContext";
 
 const normalizeUrgency = (urgency) => {
   const u = String(urgency || '').trim().toUpperCase();
@@ -70,6 +71,56 @@ const getDynamicFontSize = (text) => {
 
 function DisseminationCard({ card, style, sheetName, isArchived }) {
   const [isMobile, setIsMobile] = useState(false);
+  const { adminUser } = useAuth();
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
+
+  const handleFollowUp = async (e) => {
+    if (e) e.stopPropagation();
+    if (isBroadcasting) return;
+
+    const confirmSend = window.confirm("Are you sure you want to broadcast a follow-up push notification for this dissemination to all subscribers?");
+    if (!confirmSend) return;
+
+    setIsBroadcasting(true);
+
+    const councilId = card.councilId || sheetName || "SYSTEM";
+    const councilLabel = card.council || sheetName || "SYSTEM";
+    const councilSlug = String(councilId).trim().toUpperCase() === "HONOR COMM" ? "honor-comm" : String(councilId).trim().toLowerCase();
+    
+    const { headline, body } = parseHeadlineAndContent(card.CONTENT);
+    const displayHeadline = headline || (String(card.TYPE).toUpperCase() === 'ACTIVITY' ? `[ACTIVITY] Event scheduled` : 'Announcement Bulletin');
+    
+    const title = `[Follow Up] ${councilLabel}`;
+    const notificationBody = displayHeadline;
+    const url = `/disseminations/${councilSlug}?row=${card.sheetRowIndex}`;
+    const image = card.ATTACHMENT || card.Column6 || null;
+
+    try {
+      const response = await fetch('/api/web-push/broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          body: notificationBody,
+          url,
+          image
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        alert(`Follow-up alert broadcasted successfully to ${data.sentCount} subscriber(s)!`);
+      } else {
+        alert(`Failed to broadcast follow-up: ${data.error || 'Unknown error'}`);
+      }
+    } catch (err) {
+      console.error('Follow-up broadcast failed:', err);
+      alert('Network error when attempting to broadcast follow-up alert.');
+    } finally {
+      setIsBroadcasting(false);
+    }
+  };
+
   useEffect(() => {
     const handleResize = () => setIsMobile(/Mobi|Android|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && window.innerWidth < 768);
     handleResize();
@@ -230,8 +281,49 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
         </div>
       </div>
       
-      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
-        <strong>Date Announced:</strong> {dateAnnounced || 'N/A'}
+      <div style={{ 
+        fontSize: '0.8rem', 
+        color: 'var(--text-secondary)', 
+        borderTop: '1px solid var(--border-color)', 
+        paddingTop: '1rem',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '0.5rem'
+      }}>
+        <div>
+          <strong>Date Announced:</strong> {dateAnnounced || 'N/A'}
+        </div>
+        {!isArchived && adminUser && (
+          <button
+            onClick={handleFollowUp}
+            disabled={isBroadcasting}
+            title="Broadcast a follow-up alert"
+            style={{
+              padding: '0.25rem 0.5rem',
+              fontSize: '0.7rem',
+              fontWeight: 'bold',
+              backgroundColor: 'rgba(212, 175, 55, 0.1)',
+              border: '1px solid var(--accent-gold)',
+              color: 'var(--accent-gold-dark)',
+              borderRadius: '6px',
+              cursor: isBroadcasting ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '3px',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(212, 175, 55, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(212, 175, 55, 0.1)';
+            }}
+          >
+            📢 {isBroadcasting ? 'Sending...' : 'Follow Up'}
+          </button>
+        )}
       </div>
     </motion.div>
   );
