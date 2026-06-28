@@ -43,7 +43,8 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
     photos: '',   // new
     files: '',    // new
     color: '#3b82f6',
-    urgency: 'LIGHT'
+    urgency: 'LIGHT',
+    isAllDay: true
   });
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
@@ -93,15 +94,16 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
     setEditingEvent(null);
     setFormData({
       title: '',
-      date: format(day, "yyyy-MM-dd'T'12:00"),
-      endDate: format(day, "yyyy-MM-dd'T'13:00"),
+      date: format(day, "yyyy-MM-dd'T'00:00"),
+      endDate: format(day, "yyyy-MM-dd'T'23:59"),
       council: '',
       description: '',
       location: '',
       photos: '',
       files: '',
       color: '#3b82f6',
-      urgency: 'LIGHT'
+      urgency: 'LIGHT',
+      isAllDay: true
     });
     setIsModalOpen(true);
   };
@@ -119,7 +121,8 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
       photos: act.photos || '',
       files: act.files || '',
       color: act.color || '#3b82f6',
-      urgency: act.urgency || 'LIGHT'
+      urgency: act.urgency || 'LIGHT',
+      isAllDay: act.isAllDay !== undefined ? act.isAllDay : (!act.date || act.date.includes('T00:00:00'))
     });
     setIsModalOpen(true);
   };
@@ -140,14 +143,15 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
     }
 
     if (editingEvent) {
-      const updatedEvent = { ...editingEvent, ...formData, date: d, endDate: ed };
+      const updatedEvent = { ...editingEvent, ...formData, date: d, endDate: ed, isAllDay: formData.isAllDay };
       addPendingChange({ type: 'UPDATE', event: updatedEvent });
     } else {
       const newEvent = { 
         id: `local-${Date.now()}`, // Temporary ID
         ...formData, 
         date: d, 
-        endDate: ed 
+        endDate: ed,
+        isAllDay: formData.isAllDay
       };
       addPendingChange({ type: 'CREATE', event: newEvent });
     }
@@ -594,20 +598,41 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
               />
             </div>
 
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <input 
+                type="checkbox" 
+                id="isAllDay" 
+                checked={formData.isAllDay} 
+                onChange={e => setFormData({...formData, isAllDay: e.target.checked})} 
+                style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
+              />
+              <label htmlFor="isAllDay" style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                All Day Event
+              </label>
+            </div>
+
             <div style={{ display: 'flex', gap: '1rem' }}>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Start Date</label>
+                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Start Date {formData.isAllDay ? '' : '& Time'}</label>
                 <input 
-                  type="datetime-local" required
-                  value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})}
+                  type={formData.isAllDay ? "date" : "datetime-local"} required
+                  value={formData.isAllDay ? formData.date.slice(0, 10) : formData.date} 
+                  onChange={e => {
+                    const val = e.target.value;
+                    setFormData({...formData, date: formData.isAllDay ? `${val}T00:00` : val});
+                  }}
                   style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
                 />
               </div>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>End Date</label>
+                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>End Date {formData.isAllDay ? '' : '& Time'}</label>
                 <input 
-                  type="datetime-local" 
-                  value={formData.endDate} onChange={e => setFormData({...formData, endDate: e.target.value})}
+                  type={formData.isAllDay ? "date" : "datetime-local"} 
+                  value={formData.endDate ? (formData.isAllDay ? formData.endDate.slice(0, 10) : formData.endDate) : ''} 
+                  onChange={e => {
+                    const val = e.target.value;
+                    setFormData({...formData, endDate: val ? (formData.isAllDay ? `${val}T23:59` : val) : ''});
+                  }}
                   style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
                 />
               </div>

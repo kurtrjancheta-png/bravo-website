@@ -41,6 +41,21 @@ export default function S1AdminForms() {
       
       const result = await response.json();
       if (result.status === 'success') {
+         // Trigger push notification to all users
+         try {
+           await fetch('/api/web-push/broadcast', {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify({
+               title: 'New Privilege Signify Form Posted',
+               body: `A new ${type} form for ${date} has been posted by S1. Please signify before the deadline.`,
+               url: '/signify-priv'
+             })
+           });
+         } catch (pushErr) {
+           console.error('Failed to send push notification:', pushErr);
+         }
+
          setStatus('success');
          setTimeout(() => window.location.reload(), 2000);
       } else {

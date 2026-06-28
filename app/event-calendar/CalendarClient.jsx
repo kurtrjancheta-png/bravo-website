@@ -38,11 +38,13 @@ export default function CalendarClient({ birthdays, activities }) {
 
   const nextPeriod = () => {
     if (viewMode === 'MONTH') setCurrentMonth(addMonths(currentMonth, 1));
-    else setCurrentMonth(addWeeks(currentMonth, 1));
+    else if (viewMode === 'WEEK') setCurrentMonth(addWeeks(currentMonth, 1));
+    else setCurrentMonth(addDays(currentMonth, 1));
   };
   const prevPeriod = () => {
     if (viewMode === 'MONTH') setCurrentMonth(subMonths(currentMonth, 1));
-    else setCurrentMonth(subWeeks(currentMonth, 1));
+    else if (viewMode === 'WEEK') setCurrentMonth(subWeeks(currentMonth, 1));
+    else setCurrentMonth(subDays(currentMonth, 1));
   };
   const goToToday = () => setCurrentMonth(new Date());
 
@@ -98,7 +100,7 @@ export default function CalendarClient({ birthdays, activities }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <h2 style={{ fontSize: '1.75rem', fontWeight: 'bold', color: 'var(--gold-primary)', margin: 0 }}>
-            {viewMode === 'MONTH' ? format(currentMonth, 'MMMM yyyy') : `Week of ${format(startOfWeek(currentMonth), 'MMM d, yyyy')}`}
+            {viewMode === 'MONTH' ? format(currentMonth, 'MMMM yyyy') : viewMode === 'WEEK' ? `Week of ${format(startOfWeek(currentMonth), 'MMM d, yyyy')}` : format(currentMonth, 'MMMM d, yyyy')}
           </h2>
           <button onClick={goToToday} style={{ padding: '0.4rem 1rem', backgroundColor: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', color: 'var(--text-primary)' }}>
             Today
@@ -117,6 +119,12 @@ export default function CalendarClient({ birthdays, activities }) {
               style={{ padding: '0.4rem 1rem', backgroundColor: viewMode === 'WEEK' ? 'var(--gold-primary)' : 'transparent', color: viewMode === 'WEEK' ? '#000' : 'var(--text-primary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s' }}
             >
               Week
+            </button>
+            <button 
+              onClick={() => setViewMode('DAY')} 
+              style={{ padding: '0.4rem 1rem', backgroundColor: viewMode === 'DAY' ? 'var(--gold-primary)' : 'transparent', color: viewMode === 'DAY' ? '#000' : 'var(--text-primary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s' }}
+            >
+              Day
             </button>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -255,6 +263,97 @@ export default function CalendarClient({ birthdays, activities }) {
     return <div style={{ borderLeft: '1px solid var(--border-color)', borderTop: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)' }}>{rows}</div>;
   };
 
+  const renderDayView = () => {
+    const { birthdays: dayBDays, activities: dayActs } = getEventsForDay(currentMonth);
+    
+    const allDayEvents = [];
+    const timedEvents = [];
+    
+    dayActs.forEach(act => {
+      const isAllDay = act.isAllDay !== undefined ? act.isAllDay : (!act.dateRaw || act.dateRaw.includes('T00:00:00'));
+      if (isAllDay) {
+        allDayEvents.push(act);
+      } else {
+        timedEvents.push(act);
+      }
+    });
+
+    return (
+      <div style={{ borderLeft: '1px solid var(--border-color)', borderTop: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)' }}>
+          <div style={{ width: '60px', flexShrink: 0, padding: '0.5rem', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-secondary)', borderRight: '1px solid var(--border-color)' }}>
+            All Day
+          </div>
+          <div style={{ flex: 1, padding: '0.5rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {dayBDays.map((b, idx) => (
+              <div key={`day-bday-${idx}`} className="clickable-event-chip" style={{ backgroundColor: '#ec4899', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                🎂 {b.lastName}, {b.name} (Birthday)
+              </div>
+            ))}
+            {allDayEvents.map((act, idx) => (
+              <div key={`day-all-${idx}`} className="clickable-event-chip" onClick={() => { setSelectedDate(currentMonth); setSelectedEventDetails(act); setIsModalOpen(true); }} style={{ backgroundColor: act.color || '#3b82f6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}>
+                {act.title || act.content || 'Untitled Event'}
+              </div>
+            ))}
+            {dayBDays.length === 0 && allDayEvents.length === 0 && <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>No all-day events</span>}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', position: 'relative', height: '600px', overflowY: 'auto' }}>
+          <div style={{ width: '60px', flexShrink: 0, borderRight: '1px solid var(--border-color)' }}>
+            {Array.from({ length: 24 }).map((_, i) => (
+              <div key={`time-${i}`} style={{ height: '60px', position: 'relative' }}>
+                <span style={{ position: 'absolute', top: '-10px', right: '8px', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                  {i === 0 ? '12 AM' : i < 12 ? `${i} AM` : i === 12 ? '12 PM' : `${i - 12} PM`}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ flex: 1, position: 'relative' }}>
+            {Array.from({ length: 24 }).map((_, i) => (
+              <div key={`grid-${i}`} style={{ height: '60px', borderBottom: '1px solid var(--border-color)', opacity: 0.1 }}></div>
+            ))}
+            
+            {timedEvents.map((act, idx) => {
+              const startDate = new Date(act.dateRaw);
+              const startHour = startDate.getHours();
+              const startMinute = startDate.getMinutes();
+              const top = (startHour * 60) + startMinute;
+              
+              let duration = 60;
+              if (act.endDateRaw) {
+                const endDate = new Date(act.endDateRaw);
+                const diffMins = (endDate - startDate) / 60000;
+                if (diffMins > 0) duration = diffMins;
+              }
+              const height = Math.max(20, duration);
+
+              return (
+                <div 
+                  key={`day-timed-${idx}`} 
+                  onClick={() => { setSelectedDate(currentMonth); setSelectedEventDetails(act); setIsModalOpen(true); }}
+                  style={{
+                    position: 'absolute', top: `${top}px`, height: `${height}px`, left: '10px', right: '10px',
+                    backgroundColor: act.color || '#3b82f6', color: 'white', borderRadius: '4px', padding: '4px 8px',
+                    fontSize: '0.8rem', fontWeight: 'bold', overflow: 'hidden', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>{act.title || act.content || 'Untitled'}</span>
+                    <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>
+                      {format(startDate, 'h:mm a')}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderEventModal = () => {
     if (!isModalOpen || !selectedDate) return null;
 
@@ -377,8 +476,14 @@ export default function CalendarClient({ birthdays, activities }) {
   return (
     <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', backgroundColor: 'var(--bg-secondary)', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-color)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
       {renderHeader()}
-      {renderDays()}
-      {renderCells()}
+      {viewMode === 'DAY' ? (
+        renderDayView()
+      ) : (
+        <>
+          {renderDays()}
+          {renderCells()}
+        </>
+      )}
       {renderEventModal()}
     </div>
   );
