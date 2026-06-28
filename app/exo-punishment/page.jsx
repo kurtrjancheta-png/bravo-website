@@ -179,15 +179,18 @@ export default async function ExoPunishmentPage() {
     cadet.totalTourServed += Number(row[k13]) || 0;
     cadet.totalTourRemaining += Number(row[k14]) || 0;
 
-    // Update confinement
+    // Confinement is only real when CONFINED?=Yes AND both start and end dates exist
+    const confStart = row[k9] || null;
+    const confEnd = row[k10] || null;
+    const isConfined = String(row[k8] || '').toLowerCase() === 'yes'
+      && confStart && String(confStart).trim() !== ''
+      && confEnd && String(confEnd).trim() !== '';
+
+    // Update confinement — only mark confined if this offense actually has dates
     if (isConfined) {
       cadet.isConfined = true;
-      const start = String(row[k9] || '');
-      const end = String(row[k10] || '');
-      if (start && end) {
-        cadet.confinementStart = start;
-        cadet.confinementEnd = end;
-      }
+      cadet.confinementStart = String(confStart);
+      cadet.confinementEnd = String(confEnd);
     }
 
     // Track violation dates
@@ -203,9 +206,9 @@ export default async function ExoPunishmentPage() {
       tourConverted: Number(row[k12]) || 0,
       tourServed: Number(row[k13]) || 0,
       tourRemaining: Number(row[k14]) || 0,
-      isConfined: String(row[k8] || '').toLowerCase() === 'yes',
-      confStart: row[k9] || null,
-      confEnd: row[k10] || null,
+      isConfined: String(row[k8] || '').toLowerCase() === 'yes' && !!confStart && !!confEnd,
+      confStart: confStart,
+      confEnd: confEnd,
       remarks: String(row[k18] || ''),
       reference: getCorrectedReference(refStr),
       date: extractedDate

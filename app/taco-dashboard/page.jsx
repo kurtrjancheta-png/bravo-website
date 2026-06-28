@@ -48,8 +48,14 @@ export default async function TacODashboardPage() {
     validRows.forEach(row => {
       const name = String(row[k3]).trim();
       const rank = String(row[k2]).trim();
-      const isConfined = String(row[k8] || '').toLowerCase() === 'yes';
-      
+
+      // Confinement only counts when CONFINED?=Yes AND both start and end dates are filled
+      const confStart = row[k9] || null;
+      const confEnd = row[k10] || null;
+      const isConfined = String(row[k8] || '').toLowerCase() === 'yes'
+        && confStart && String(confStart).trim() !== ''
+        && confEnd && String(confEnd).trim() !== '';
+
       if (!cadetMap.has(name)) {
         cadetMap.set(name, {
           rank,
