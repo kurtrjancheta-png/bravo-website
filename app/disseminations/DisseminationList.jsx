@@ -121,6 +121,75 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
     }
   };
 
+  const handleReannounce = async (e) => {
+    if (e) e.stopPropagation();
+    if (isBroadcasting) return;
+
+    const confirmSend = window.confirm("Are you sure you want to reannounce this dissemination? This will extend its active duration for another 5 days.");
+    if (!confirmSend) return;
+
+    setIsBroadcasting(true);
+
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbynZfRwktqV30Wf4Np3oRWAdeWu02JQkfN6zZNQnV2Vk9tEy_h-Dps9js5ZKXJbjvGcPg/exec";
+    
+    const dateAnnounced = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric" });
+    const eventDate = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'reannounce',
+          sheetName,
+          rowIndex: card.sheetRowIndex,
+          dateAnnounced,
+          eventDate
+        })
+      });
+
+      // Since Apps Script returning redirects may run in no-cors with opaque response,
+      // we assume success and trigger a push notification as well!
+      
+      const councilId = card.councilId || sheetName || "SYSTEM";
+      const councilLabel = card.council || sheetName || "SYSTEM";
+      const councilSlug = String(councilId).trim().toUpperCase() === "HONOR COMM" ? "honor-comm" : String(councilId).trim().toLowerCase();
+      
+      const { headline, body } = parseHeadlineAndContent(card.CONTENT);
+      const displayHeadline = headline || (String(card.TYPE).toUpperCase() === 'ACTIVITY' ? `[ACTIVITY] Event scheduled` : 'Announcement Bulletin');
+      
+      const title = `[Reannounced] ${councilLabel}`;
+      const notificationBody = displayHeadline;
+      const url = `/disseminations/${councilSlug}?row=${card.sheetRowIndex}`;
+      const image = card.ATTACHMENT || card.Column6 || null;
+
+      try {
+        await fetch('/api/web-push/broadcast', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title,
+            body: notificationBody,
+            url,
+            image
+          })
+        });
+      } catch (pushErr) {
+        console.error('Failed to broadcast reannounce push:', pushErr);
+      }
+
+      alert("Successfully reannounced dissemination! The page will reload now.");
+      window.location.reload();
+
+    } catch (err) {
+      console.error('Reannounce failed:', err);
+      alert('Failed to reannounce dissemination. Please try again.');
+    } finally {
+      setIsBroadcasting(false);
+    }
+  };
+
   useEffect(() => {
     const handleResize = () => setIsMobile(/Mobi|Android|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && window.innerWidth < 768);
     handleResize();
@@ -322,6 +391,35 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
             }}
           >
             📢 {isBroadcasting ? 'Sending...' : 'Follow Up'}
+          </button>
+        )}
+        {isArchived && adminUser && (
+          <button
+            onClick={handleReannounce}
+            disabled={isBroadcasting}
+            title="Reannounce this dissemination for another 5 days"
+            style={{
+              padding: '0.25rem 0.5rem',
+              fontSize: '0.7rem',
+              fontWeight: 'bold',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              border: '1px solid #10b981',
+              color: '#059669',
+              borderRadius: '6px',
+              cursor: isBroadcasting ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '3px',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+            }}
+          >
+            🔄 {isBroadcasting ? 'Processing...' : 'Reannounce'}
           </button>
         )}
       </div>
