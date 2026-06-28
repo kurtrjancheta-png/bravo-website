@@ -25,7 +25,7 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   const [isMobile, setIsMobile] = useState(false);
-
+  const [showAttachments, setShowAttachments] = useState(false);
   useEffect(() => {
     const handleResize = () => setIsMobile(/Mobi|Android|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && window.innerWidth < 768);
     handleResize();
@@ -106,6 +106,7 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
       isAllDay: true
     });
     setIsModalOpen(true);
+    setShowAttachments(false);
   };
 
   const handleEventClick = (e, act) => {
@@ -125,6 +126,7 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
       isAllDay: act.isAllDay !== undefined ? act.isAllDay : (!act.date || act.date.includes('T00:00:00'))
     });
     setIsModalOpen(true);
+    setShowAttachments(false);
   };
 
   const handleSaveEvent = (e) => {
@@ -589,69 +591,76 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
           
           <form onSubmit={handleSaveEvent} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Title</label>
-              <input 
-                type="text" required
-                value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})}
-                style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
-              />
-            </div>
+            {/* Title */}
+            <input 
+              type="text" required
+              placeholder="Add title"
+              value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})}
+              style={{ 
+                fontSize: '1.75rem', fontWeight: 'bold', padding: '0', 
+                border: 'none', borderBottom: '2px solid transparent',
+                background: 'transparent', color: 'var(--text-primary)', outline: 'none',
+                width: '100%', marginBottom: '0.5rem'
+              }}
+              onFocus={e => e.target.style.borderBottom = '2px solid #3b82f6'}
+              onBlur={e => e.target.style.borderBottom = '2px solid transparent'}
+            />
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <input 
-                type="checkbox" 
-                id="isAllDay" 
-                checked={formData.isAllDay} 
-                onChange={e => setFormData({...formData, isAllDay: e.target.checked})} 
-                style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
-              />
-              <label htmlFor="isAllDay" style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-primary)', cursor: 'pointer' }}>
-                All Day Event
-              </label>
-            </div>
-
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Start Date {formData.isAllDay ? '' : '& Time'}</label>
-                <input 
-                  type={formData.isAllDay ? "date" : "datetime-local"} required
-                  value={formData.isAllDay ? formData.date.slice(0, 10) : formData.date} 
-                  onChange={e => {
-                    const val = e.target.value;
-                    setFormData({...formData, date: formData.isAllDay ? `${val}T00:00` : val});
-                  }}
-                  style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
-                />
+            {/* Date and Time Group */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--bg-primary)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+              <span style={{ fontSize: '1.2rem' }}>🕒</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1 }}>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <input 
+                    type={formData.isAllDay ? "date" : "datetime-local"} required
+                    value={formData.isAllDay ? formData.date.slice(0, 10) : formData.date} 
+                    onChange={e => {
+                      const val = e.target.value;
+                      setFormData({...formData, date: formData.isAllDay ? `${val}T00:00` : val});
+                    }}
+                    style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none', flex: 1 }}
+                  />
+                  <span style={{ color: 'var(--text-secondary)' }}>to</span>
+                  <input 
+                    type={formData.isAllDay ? "date" : "datetime-local"} 
+                    value={formData.endDate ? (formData.isAllDay ? formData.endDate.slice(0, 10) : formData.endDate) : ''} 
+                    onChange={e => {
+                      const val = e.target.value;
+                      setFormData({...formData, endDate: val ? (formData.isAllDay ? `${val}T23:59` : val) : ''});
+                    }}
+                    style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none', flex: 1 }}
+                  />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input 
+                    type="checkbox" 
+                    id="isAllDay" 
+                    checked={formData.isAllDay} 
+                    onChange={e => setFormData({...formData, isAllDay: e.target.checked})} 
+                    style={{ width: '1.1rem', height: '1.1rem', cursor: 'pointer' }}
+                  />
+                  <label htmlFor="isAllDay" style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                    All Day Event
+                  </label>
+                </div>
               </div>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>End Date {formData.isAllDay ? '' : '& Time'}</label>
-                <input 
-                  type={formData.isAllDay ? "date" : "datetime-local"} 
-                  value={formData.endDate ? (formData.isAllDay ? formData.endDate.slice(0, 10) : formData.endDate) : ''} 
-                  onChange={e => {
-                    const val = e.target.value;
-                    setFormData({...formData, endDate: val ? (formData.isAllDay ? `${val}T23:59` : val) : ''});
-                  }}
-                  style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
-                />
-              </div>
             </div>
 
+            {/* Council and Urgency */}
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Council/Team</label>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <span style={{ fontSize: '1.2rem', minWidth: '24px' }}>👥</span>
                 <input 
-                  type="text" 
+                  type="text" placeholder="Council / Team"
                   value={formData.council} onChange={e => setFormData({...formData, council: e.target.value})}
-                  style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
                 />
               </div>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Urgency</label>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <span style={{ fontSize: '1.2rem', minWidth: '24px' }}>🚨</span>
                 <select 
                   value={formData.urgency} onChange={e => setFormData({...formData, urgency: e.target.value})}
-                  style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
                 >
                   <option value="LIGHT">Light</option>
                   <option value="NORMAL">Normal</option>
@@ -661,86 +670,109 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Location (Optional)</label>
+            {/* Location */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span style={{ fontSize: '1.2rem', minWidth: '24px' }}>📍</span>
               <input 
-                type="text" placeholder="Where will this take place?"
+                type="text" placeholder="Location"
                 value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})}
-                style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
               />
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Photos URL (Optional)</label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <input 
-                    type="url" placeholder="https://..."
-                    value={formData.photos} onChange={e => setFormData({...formData, photos: e.target.value})}
-                    style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
-                  />
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span>Or upload a file:</span>
-                    <input 
-                      type="file" 
-                      onChange={e => handleFileUpload(e, 'photos')} 
-                      disabled={isUploadingFile}
-                      style={{ fontSize: '0.75rem' }}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Files/Drive Link (Optional)</label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <input 
-                    type="url" placeholder="https://..."
-                    value={formData.files} onChange={e => setFormData({...formData, files: e.target.value})}
-                    style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
-                  />
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span>Or upload a file:</span>
-                    <input 
-                      type="file" 
-                      onChange={e => handleFileUpload(e, 'files')} 
-                      disabled={isUploadingFile}
-                      style={{ fontSize: '0.75rem' }}
-                    />
-                  </div>
-                </div>
-              </div>
+            {/* Description */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+              <span style={{ fontSize: '1.2rem', minWidth: '24px', marginTop: '10px' }}>📝</span>
+              <textarea 
+                rows="3" placeholder="Add description or remarks"
+                value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none', resize: 'vertical' }}
+              />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Color Label</label>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+            {/* Advanced Settings (Attachments) */}
+            <div>
+              <button 
+                type="button" 
+                onClick={() => setShowAttachments(!showAttachments)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: 'none', color: '#3b82f6', fontWeight: 'bold', cursor: 'pointer', padding: 0 }}
+              >
+                <span>📎</span> {showAttachments ? 'Hide Attachments' : 'Add Attachments'}
+              </button>
+              
+              {showAttachments && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: '12px', border: '1px solid var(--border-color)', animation: 'fade-in 0.2s ease-out' }}>
+                  <div style={{ display: 'flex', gap: '1rem', flexDirection: isMobile ? 'column' : 'row' }}>
+                    
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <label style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Photos URL</label>
+                      <input 
+                        type="url" placeholder="https://..."
+                        value={formData.photos} onChange={e => setFormData({...formData, photos: e.target.value})}
+                        style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none' }}
+                      />
+                      <div style={{ position: 'relative', marginTop: '0.25rem' }}>
+                        <input 
+                          type="file" 
+                          onChange={e => handleFileUpload(e, 'photos')} 
+                          disabled={isUploadingFile}
+                          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                        />
+                        <div style={{ padding: '0.5rem', textAlign: 'center', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 'bold', border: '1px dashed rgba(59, 130, 246, 0.5)' }}>
+                          {isUploadingFile ? 'Uploading...' : 'Upload Photo'}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <label style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Files / Drive Link</label>
+                      <input 
+                        type="url" placeholder="https://..."
+                        value={formData.files} onChange={e => setFormData({...formData, files: e.target.value})}
+                        style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none' }}
+                      />
+                      <div style={{ position: 'relative', marginTop: '0.25rem' }}>
+                        <input 
+                          type="file" 
+                          onChange={e => handleFileUpload(e, 'files')} 
+                          disabled={isUploadingFile}
+                          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                        />
+                        <div style={{ padding: '0.5rem', textAlign: 'center', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 'bold', border: '1px dashed rgba(59, 130, 246, 0.5)' }}>
+                          {isUploadingFile ? 'Uploading...' : 'Upload File'}
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Color Label */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span style={{ fontSize: '1.2rem', minWidth: '24px' }}>🎨</span>
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                 {['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6b7280'].map(color => (
                   <div 
                     key={color}
                     onClick={() => setFormData({...formData, color})}
                     style={{ 
-                      width: '32px', height: '32px', borderRadius: '50%', backgroundColor: color, cursor: 'pointer',
-                      border: formData.color === color ? '3px solid #fff' : '3px solid transparent',
-                      boxShadow: formData.color === color ? `0 0 0 2px ${color}` : 'none',
-                      transition: 'all 0.2s'
+                      width: '28px', height: '28px', borderRadius: '50%', backgroundColor: color, cursor: 'pointer',
+                      border: formData.color === color ? '3px solid var(--bg-secondary)' : '3px solid transparent',
+                      boxShadow: formData.color === color ? `0 0 0 2px ${color}` : '0 2px 4px rgba(0,0,0,0.1)',
+                      transition: 'transform 0.1s',
+                      transform: formData.color === color ? 'scale(1.1)' : 'scale(1)'
                     }}
                   />
                 ))}
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Description / Remarks</label>
-              <textarea 
-                rows="4"
-                value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
-                style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none', resize: 'vertical' }}
-              />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
+            {/* Form Actions */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
               {editingEvent ? (
-                <button type="button" onClick={handleDeleteEvent} style={{ padding: '0.75rem 1.5rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
+                <button type="button" onClick={handleDeleteEvent} style={{ padding: '0.75rem 1.5rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }}>
                   Delete
                 </button>
               ) : <div></div>}
@@ -752,7 +784,7 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
                 <button 
                   type="submit" 
                   disabled={isUploadingFile}
-                  style={{ padding: '0.75rem 2rem', backgroundColor: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: isUploadingFile ? 'not-allowed' : 'pointer', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)', opacity: isUploadingFile ? 0.7 : 1 }}
+                  style={{ padding: '0.75rem 2.5rem', backgroundColor: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: isUploadingFile ? 'not-allowed' : 'pointer', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)', opacity: isUploadingFile ? 0.7 : 1 }}
                 >
                   {isUploadingFile ? 'Uploading...' : 'Save'}
                 </button>
