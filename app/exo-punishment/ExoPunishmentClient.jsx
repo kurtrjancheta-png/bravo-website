@@ -128,13 +128,27 @@ const CustomRadarDot = (props) => {
   );
 };
 
-const OffensesPizzaChart = ({ data, isMobile }) => {
+const getChartLabel = (name) => {
+  const normalized = String(name || '').trim().toUpperCase();
+  if (normalized.includes('UNACCOUNTED') || normalized.includes('ABSENT')) return 'ABSENCE';
+  if (normalized.includes('LATE')) return 'TARDINESS';
+  if (normalized.includes('NEGLIGENCE') || normalized.includes('NEGLEGENCE') || normalized.includes('DUTY')) return 'NEGLIGENCE';
+  if (normalized.includes('POSSESSING') || normalized.includes('UNAUTHORIZED ITEMS')) return 'ITEMS';
+  if (normalized.includes('DOING') || normalized.includes('UNAUTHORIZED THINGS')) return 'ACTIVITIES';
+  if (normalized.includes('MALTREATMENT') || normalized.includes('NTP') || normalized.includes('CTP')) return 'MALTREATMENT';
+  if (normalized.includes('HONOR')) return 'HONOR';
+  if (normalized.includes('CLEANLINESS') || normalized.includes('ROOM')) return 'CLEANLINESS';
+  if (normalized.includes('UNIFORM') || normalized.includes('RIFLE')) return 'UNIFORM/RIFLE';
+  return 'MISCONDUCT';
+};
+
+const OffensesPizzaChart = ({ data }) => {
   if (!data || data.length === 0) return null;
   
-  const cx = 225;
-  const cy = 135;
-  const maxRadius = 90;
-  const innerRadius = 15;
+  const cx = 250;
+  const cy = 160;
+  const maxRadius = 110;
+  const innerRadius = 22;
   const numCategories = data.length;
   const angleStep = 360 / numCategories;
   
@@ -167,7 +181,7 @@ const OffensesPizzaChart = ({ data, isMobile }) => {
 
   return (
     <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <svg width="100%" height={260} viewBox="0 0 450 260" style={{ overflow: 'visible' }}>
+      <svg width="100%" height={320} viewBox="0 0 500 320" style={{ overflow: 'visible' }}>
         {/* Background circular tracks & concentric grid lines */}
         {[0.25, 0.5, 0.75, 1.0].map((ratio, i) => {
           const r = innerRadius + (maxRadius - innerRadius) * ratio;
@@ -178,7 +192,7 @@ const OffensesPizzaChart = ({ data, isMobile }) => {
               cy={cy} 
               r={r} 
               fill="none" 
-              stroke="rgba(255,255,255,0.06)" 
+              stroke="rgba(255,255,255,0.08)" 
               strokeWidth={1} 
             />
           );
@@ -200,7 +214,7 @@ const OffensesPizzaChart = ({ data, isMobile }) => {
           const spokeEnd = getCoords(maxRadius, startAngle);
           
           // Coords for badge label (offset inside the edge of active slice)
-          const badgeRadius = Math.max(innerRadius + 8, activeRadius - 8);
+          const badgeRadius = Math.max(innerRadius + 14, activeRadius - 12);
           const badgePos = getCoords(badgeRadius, middleAngle);
           
           // Coords for category name text (outside the circle)
@@ -210,19 +224,13 @@ const OffensesPizzaChart = ({ data, isMobile }) => {
           let textAnchor = "middle";
           if (labelPos.x > cx + 10) textAnchor = "start";
           else if (labelPos.x < cx - 10) textAnchor = "end";
-          
-          const shortName = (() => {
-            const s = String(item.name).trim();
-            if (s.length > 9) return s.substring(0, 9) + '...';
-            return s;
-          })();
 
           return (
             <g key={idx}>
               {/* Background dark track */}
               <path 
                 d={getSectorPath(innerRadius, maxRadius, startAngle, endAngle)} 
-                fill="rgba(255,255,255,0.02)" 
+                fill="#090d16" 
                 stroke="rgba(255,255,255,0.04)" 
                 strokeWidth={1} 
               />
@@ -231,10 +239,10 @@ const OffensesPizzaChart = ({ data, isMobile }) => {
               {hasCount && (
                 <path 
                   d={getSectorPath(innerRadius, activeRadius, startAngle, endAngle)} 
-                  fill={`${catColor}33`} 
+                  fill={`${catColor}bb`} 
                   stroke={catColor} 
                   strokeWidth={2}
-                  style={{ filter: `drop-shadow(0 0 4px ${catColor}30)` }}
+                  style={{ filter: `drop-shadow(0 0 6px ${catColor}40)` }}
                 />
               )}
               
@@ -244,41 +252,41 @@ const OffensesPizzaChart = ({ data, isMobile }) => {
                 y1={cy} 
                 x2={spokeEnd.x} 
                 y2={spokeEnd.y} 
-                stroke="rgba(255,255,255,0.1)" 
-                strokeWidth={1} 
+                stroke="rgba(255,255,255,0.15)" 
+                strokeWidth={1.5} 
               />
 
               {/* Text label outside the circle */}
               <text 
                 x={labelPos.x} 
-                y={labelPos.y + 3} 
-                fill={hasCount ? 'var(--text-primary)' : 'var(--text-secondary)'} 
-                fontSize={9} 
-                fontWeight={hasCount ? 700 : 500} 
+                y={labelPos.y + 4} 
+                fill={hasCount ? '#f8fafc' : '#475569'} 
+                fontSize={9.5} 
+                fontWeight={hasCount ? 800 : 500} 
                 textAnchor={textAnchor}
-                title={item.name}
+                style={{ letterSpacing: '0.02em' }}
               >
-                {shortName}
+                {getChartLabel(item.name)}
               </text>
 
               {/* Value Badge on active slice */}
               {hasCount && (
                 <g>
                   <rect 
-                    x={badgePos.x - 9} 
-                    y={badgePos.y - 6} 
-                    width={18} 
-                    height={12} 
-                    rx={2.5} 
-                    fill="#1e293b" 
-                    stroke={catColor} 
+                    x={badgePos.x - 10} 
+                    y={badgePos.y - 7} 
+                    width={20} 
+                    height={14} 
+                    rx={3} 
+                    fill="#090d16" 
+                    stroke="rgba(255,255,255,0.4)" 
                     strokeWidth={1} 
                   />
                   <text 
                     x={badgePos.x} 
-                    y={badgePos.y + 3} 
+                    y={badgePos.y + 3.5} 
                     fill="#fff" 
-                    fontSize={8.5} 
+                    fontSize={9} 
                     fontWeight="bold" 
                     textAnchor="middle"
                   >
@@ -290,14 +298,14 @@ const OffensesPizzaChart = ({ data, isMobile }) => {
           );
         })}
 
-        {/* Center circle */}
+        {/* Center hub */}
         <circle 
           cx={cx} 
           cy={cy} 
-          r={8} 
-          fill="var(--bg-primary)" 
-          stroke="rgba(255,255,255,0.3)" 
-          strokeWidth={1.5} 
+          r={12} 
+          fill="#090d16" 
+          stroke="rgba(255,255,255,0.4)" 
+          strokeWidth={2} 
         />
       </svg>
     </div>
@@ -600,11 +608,20 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
             </div>
           )}
 
-          {/* Card 2: Offenses Breakdown (Radar Chart) */}
+          {/* Card 2: Offenses Breakdown (Pizza Chart) */}
           {breakdownData && breakdownData.length > 0 && (
-            <div className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div className="card" style={{ 
+              padding: '1.5rem', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              justifyContent: 'space-between',
+              background: '#111827',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.25)',
+              borderRadius: '12px'
+            }}>
               <div>
-                <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>Offenses Breakdown</h2>
+                <h2 style={{ fontSize: '1.25rem', color: '#f8fafc', marginBottom: '1rem', fontWeight: 700 }}>Offenses Breakdown</h2>
                 <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
                   <OffensesPizzaChart data={breakdownData} />
                 </div>
@@ -618,7 +635,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                   display: 'flex', 
                   flexDirection: 'column', 
                   gap: '8px',
-                  borderTop: '1px solid var(--border-color)',
+                  borderTop: '1px solid rgba(255, 255, 255, 0.08)',
                   paddingTop: '0.75rem'
                 }}>
                   {(() => {
@@ -630,7 +647,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                       return (
                         <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', overflow: 'hidden' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
                               <span style={{ 
                                 width: '7px', 
                                 height: '7px', 
@@ -639,16 +656,23 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                                 boxShadow: hasCount ? `0 0 6px ${catColor}` : 'none',
                                 flexShrink: 0
                               }}></span>
-                              <span title={item.name} style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '240px', fontWeight: hasCount ? 600 : 400, color: hasCount ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                              <span title={item.name} style={{ 
+                                textOverflow: 'ellipsis', 
+                                overflow: 'hidden', 
+                                whiteSpace: 'nowrap', 
+                                maxWidth: '240px', 
+                                fontWeight: hasCount ? 600 : 400, 
+                                color: hasCount ? '#f8fafc' : '#475569' 
+                              }}>
                                 {item.name}
                               </span>
                             </div>
-                            <div style={{ fontWeight: 'bold', color: hasCount ? catColor : 'var(--text-secondary)', flexShrink: 0 }}>
-                              {item.count} <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>({percentage}%)</span>
+                            <div style={{ fontWeight: 'bold', color: hasCount ? catColor : '#475569', flexShrink: 0 }}>
+                              {item.count} <span style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 'normal' }}>({percentage}%)</span>
                             </div>
                           </div>
                           {hasCount && (
-                            <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden' }}>
+                            <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.04)', borderRadius: '2px', overflow: 'hidden' }}>
                               <div style={{ width: `${percentage}%`, height: '100%', background: catColor, borderRadius: '2px', boxShadow: `0 0 4px ${catColor}` }}></div>
                             </div>
                           )}
