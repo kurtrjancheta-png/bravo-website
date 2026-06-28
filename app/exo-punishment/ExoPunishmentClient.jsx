@@ -268,6 +268,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
   const [showClassLines, setShowClassLines] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [hoveredItem, setHoveredItem] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const { adminUser } = useAuth();
 
   const chartData = (violationsOverTime || [])
@@ -376,7 +377,14 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
       }).filter(Boolean)
     : initialCadets;
 
-  const sortedCadets = [...filteredCadets].map(cadet => {
+  const searchedCadets = searchQuery.trim() !== ''
+    ? filteredCadets.filter(cadet => 
+        (cadet.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (cadet.rank || '').toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : filteredCadets;
+
+  const sortedCadets = [...searchedCadets].map(cadet => {
     let activeOffenseCount = 0;
     cadet.offenses.forEach(off => {
       const offConfStats = getConfinementStats(off.confStart, off.confEnd);
@@ -439,123 +447,126 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
         }}>
           {/* Card 1: Violations Over Time */}
           {chartData && chartData.length > 0 && (
-            <div className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '10px' }}>
-                  <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', margin: 0 }}>Violations Over Time</h2>
-                  <button
-                    onClick={() => setShowClassLines(prev => !prev)}
-                    style={{
-                      padding: '0.45rem 1rem',
-                      background: showClassLines ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.03)',
-                      color: showClassLines ? '#3b82f6' : 'var(--text-secondary)',
-                      border: showClassLines ? '1px solid rgba(59, 130, 246, 0.4)' : '1px solid var(--border-color)',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontWeight: 700,
-                      fontSize: '0.8rem',
-                      transition: 'all 0.2s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                    onMouseOver={(e) => {
-                      if (!showClassLines) e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
-                    }}
-                    onMouseOut={(e) => {
-                      if (!showClassLines) e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
-                    }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="18" y1="20" x2="18" y2="10" />
-                      <line x1="12" y1="20" x2="12" y2="4" />
-                      <line x1="6" y1="20" x2="6" y2="14" />
-                    </svg>
-                    {showClassLines ? 'HIDE CLASS BREAKDOWNS' : 'SHOW CLASS BREAKDOWNS'}
-                  </button>
-                </div>
-                <div style={{ width: '100%', height: '300px' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }} onClick={handleChartClick} style={{ cursor: 'pointer' }}>
-                      <defs>
-                        <linearGradient id="violationsGradient" x1="0" y1="0" x2="1" y2="0">
-                          {gradientStops.length > 0 ? (
-                            gradientStops.map((stop, idx) => (
-                              <stop key={idx} offset={stop.offset} stopColor={stop.color} />
-                            ))
-                          ) : (
-                            <stop offset="0%" stopColor="#f43f5e" />
-                          )}
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                      <XAxis 
-                        dataKey="timestamp" 
-                        type="number"
-                        domain={domainX}
-                        tickFormatter={formatDateTick}
-                        stroke="var(--text-secondary)" 
-                        tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} 
-                      />
-                      <YAxis 
-                        stroke="var(--text-secondary)" 
-                        tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
-                        domain={domainY}
-                        allowDecimals={false}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Line 
-                        type="monotone" 
-                        dataKey="total" 
-                        stroke="url(#violationsGradient)" 
-                        strokeWidth={3.5}
-                        dot={{ r: 4, style: { cursor: 'pointer' } }}
-                        activeDot={{ r: 8, fill: '#f43f5e', stroke: 'var(--bg-primary)', style: { cursor: 'pointer' } }} 
-                        name="Total Reports"
-                      />
-                      {showClassLines && (
-                        <>
-                          <Line 
-                            type="monotone" 
-                            dataKey="class1" 
-                            stroke="#ef4444" 
-                            strokeWidth={2}
-                            strokeDasharray="5 5"
-                            dot={{ r: 3 }}
-                            name="Class 1 (Grave)"
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey="class2" 
-                            stroke="#f97316" 
-                            strokeWidth={2}
-                            strokeDasharray="5 5"
-                            dot={{ r: 3 }}
-                            name="Class 2 (Major)"
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey="class3" 
-                            stroke="#eab308" 
-                            strokeWidth={2}
-                            strokeDasharray="5 5"
-                            dot={{ r: 3 }}
-                            name="Class 3 (Moderate)"
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey="class4" 
-                            stroke="#3b82f6" 
-                            strokeWidth={2}
-                            strokeDasharray="5 5"
-                            dot={{ r: 3 }}
-                            name="Class 4 (Minor)"
-                          />
-                        </>
-                      )}
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+            <div className="card" style={{ 
+              padding: '1.5rem', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              height: '460px' 
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '10px' }}>
+                <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', margin: 0, fontWeight: 700 }}>Violations Over Time</h2>
+                <button
+                  onClick={() => setShowClassLines(prev => !prev)}
+                  style={{
+                    padding: '0.45rem 1rem',
+                    background: showClassLines ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                    color: showClassLines ? '#3b82f6' : 'var(--text-secondary)',
+                    border: showClassLines ? '1px solid rgba(59, 130, 246, 0.4)' : '1px solid var(--border-color)',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: 700,
+                    fontSize: '0.8rem',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                  onMouseOver={(e) => {
+                    if (!showClassLines) e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
+                  }}
+                  onMouseOut={(e) => {
+                    if (!showClassLines) e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                  </svg>
+                  {showClassLines ? 'HIDE CLASS BREAKDOWNS' : 'SHOW CLASS BREAKDOWNS'}
+                </button>
+              </div>
+              <div style={{ width: '100%', flex: 1, minHeight: '260px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }} onClick={handleChartClick} style={{ cursor: 'pointer' }}>
+                    <defs>
+                      <linearGradient id="violationsGradient" x1="0" y1="0" x2="1" y2="0">
+                        {gradientStops.length > 0 ? (
+                          gradientStops.map((stop, idx) => (
+                            <stop key={idx} offset={stop.offset} stopColor={stop.color} />
+                          ))
+                        ) : (
+                          <stop offset="0%" stopColor="#f43f5e" />
+                        )}
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                    <XAxis 
+                      dataKey="timestamp" 
+                      type="number"
+                      domain={domainX}
+                      tickFormatter={formatDateTick}
+                      stroke="var(--text-secondary)" 
+                      tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} 
+                    />
+                    <YAxis 
+                      stroke="var(--text-secondary)" 
+                      tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+                      domain={domainY}
+                      allowDecimals={false}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="total" 
+                      stroke="url(#violationsGradient)" 
+                      strokeWidth={3.5}
+                      dot={{ r: 4, style: { cursor: 'pointer' } }}
+                      activeDot={{ r: 8, fill: '#f43f5e', stroke: 'var(--bg-primary)', style: { cursor: 'pointer' } }} 
+                      name="Total Reports"
+                    />
+                    {showClassLines && (
+                      <>
+                        <Line 
+                          type="monotone" 
+                          dataKey="class1" 
+                          stroke="#ef4444" 
+                          strokeWidth={2}
+                          strokeDasharray="5 5"
+                          dot={{ r: 3 }}
+                          name="Class 1 (Grave)"
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="class2" 
+                          stroke="#f97316" 
+                          strokeWidth={2}
+                          strokeDasharray="5 5"
+                          dot={{ r: 3 }}
+                          name="Class 2 (Major)"
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="class3" 
+                          stroke="#eab308" 
+                          strokeWidth={2}
+                          strokeDasharray="5 5"
+                          dot={{ r: 3 }}
+                          name="Class 3 (Moderate)"
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="class4" 
+                          stroke="#3b82f6" 
+                          strokeWidth={2}
+                          strokeDasharray="5 5"
+                          dot={{ r: 3 }}
+                          name="Class 4 (Minor)"
+                        />
+                      </>
+                    )}
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             </div>
           )}
@@ -566,121 +577,118 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
               padding: '1.5rem', 
               display: 'flex', 
               flexDirection: 'column', 
-              justifyContent: 'space-between',
-              minHeight: '390px'
+              height: '460px'
             }}>
-              <div>
-                <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: '1rem', fontWeight: 700 }}>Offenses Breakdown</h2>
-                <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
-                  <OffensesPizzaChart data={breakdownData} hoveredItem={hoveredItem} setHoveredItem={setHoveredItem} />
-                </div>
+              <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 700 }}>Offenses Breakdown</h2>
+              <div style={{ width: '100%', flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+                <OffensesPizzaChart data={breakdownData} hoveredItem={hoveredItem} setHoveredItem={setHoveredItem} />
+              </div>
 
-                {/* Compact Interactive Legend Grid */}
-                <div style={{ 
-                  marginTop: '0.75rem', 
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(2, 1fr)',
-                  gap: '8px',
-                  borderTop: '1px solid var(--border-color)',
-                  paddingTop: '0.75rem',
-                  fontSize: '0.7rem'
-                }}>
-                  {breakdownData.map((item, idx) => {
-                    const catColor = getOffenseColor(item.name);
-                    const isHovered = hoveredItem && hoveredItem.name === item.name;
-                    return (
-                      <div 
-                        key={idx} 
-                        onMouseEnter={() => setHoveredItem(item)}
-                        onMouseLeave={() => setHoveredItem(null)}
-                        style={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          gap: '6px', 
-                          color: isHovered ? 'var(--text-primary)' : 'var(--text-secondary)',
-                          cursor: 'pointer',
-                          fontWeight: isHovered ? 700 : 400,
-                          transition: 'all 0.15s ease',
-                          opacity: hoveredItem && !isHovered ? 0.4 : 1
-                        }}
-                      >
+              {/* Compact Interactive Legend Grid */}
+              <div style={{ 
+                marginTop: '0.75rem', 
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '8px',
+                borderTop: '1px solid var(--border-color)',
+                paddingTop: '0.75rem',
+                fontSize: '0.7rem'
+              }}>
+                {breakdownData.map((item, idx) => {
+                  const catColor = getOffenseColor(item.name);
+                  const isHovered = hoveredItem && hoveredItem.name === item.name;
+                  return (
+                    <div 
+                      key={idx} 
+                      onMouseEnter={() => setHoveredItem(item)}
+                      onMouseLeave={() => setHoveredItem(null)}
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '6px', 
+                        color: isHovered ? 'var(--text-primary)' : 'var(--text-secondary)',
+                        cursor: 'pointer',
+                        fontWeight: isHovered ? 700 : 400,
+                        transition: 'all 0.15s ease',
+                        opacity: hoveredItem && !isHovered ? 0.4 : 1
+                      }}
+                    >
+                      <span style={{ 
+                        width: '6px', 
+                        height: '6px', 
+                        borderRadius: '50%', 
+                        background: catColor,
+                        boxShadow: item.count > 0 ? `0 0 4px ${catColor}` : 'none',
+                        flexShrink: 0
+                      }}></span>
+                      <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                        {item.name}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Dynamic Infobox displaying progress bar on hover */}
+              <div style={{
+                marginTop: '1rem',
+                minHeight: '62px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: '0.6rem 0.8rem',
+                background: 'var(--bg-secondary)',
+                borderRadius: '10px',
+                border: '1px solid var(--border-color)',
+                transition: 'all 0.25s ease',
+                boxShadow: hoveredItem && hoveredItem.count > 0 ? `0 2px 10px ${getOffenseColor(hoveredItem.name)}15` : 'none',
+                textAlign: 'center'
+              }}>
+                {hoveredItem ? (() => {
+                  const totalCount = breakdownData.reduce((sum, d) => sum + (d.count || 0), 0);
+                  const percentage = totalCount > 0 ? ((hoveredItem.count / totalCount) * 100).toFixed(1) : 0;
+                  const catColor = getOffenseColor(hoveredItem.name);
+                  return (
+                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px', animation: 'fadeIn 0.15s ease' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ 
-                          width: '6px', 
-                          height: '6px', 
-                          borderRadius: '50%', 
-                          background: catColor,
-                          boxShadow: item.count > 0 ? `0 0 4px ${catColor}` : 'none',
-                          flexShrink: 0
-                        }}></span>
-                        <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                          {item.name}
+                          fontWeight: 700, 
+                          fontSize: '0.8rem', 
+                          color: 'var(--text-primary)', 
+                          textAlign: 'left', 
+                          textOverflow: 'ellipsis', 
+                          overflow: 'hidden', 
+                          whiteSpace: 'nowrap', 
+                          maxWidth: '240px' 
+                        }}>
+                          {hoveredItem.name}
+                        </span>
+                        <span style={{ fontWeight: 800, fontSize: '0.85rem', color: catColor, flexShrink: 0 }}>
+                          {hoveredItem.count} <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>({percentage}%)</span>
                         </span>
                       </div>
-                    );
-                  })}
-                </div>
-
-                {/* Dynamic Infobox displaying progress bar on hover */}
-                <div style={{
-                  marginTop: '1rem',
-                  minHeight: '62px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  padding: '0.6rem 0.8rem',
-                  background: 'var(--bg-secondary)',
-                  borderRadius: '10px',
-                  border: '1px solid var(--border-color)',
-                  transition: 'all 0.25s ease',
-                  boxShadow: hoveredItem && hoveredItem.count > 0 ? `0 2px 10px ${getOffenseColor(hoveredItem.name)}15` : 'none',
-                  textAlign: 'center'
-                }}>
-                  {hoveredItem ? (() => {
-                    const totalCount = breakdownData.reduce((sum, d) => sum + (d.count || 0), 0);
-                    const percentage = totalCount > 0 ? ((hoveredItem.count / totalCount) * 100).toFixed(1) : 0;
-                    const catColor = getOffenseColor(hoveredItem.name);
-                    return (
-                      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px', animation: 'fadeIn 0.15s ease' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ 
-                            fontWeight: 700, 
-                            fontSize: '0.8rem', 
-                            color: 'var(--text-primary)', 
-                            textAlign: 'left', 
-                            textOverflow: 'ellipsis', 
-                            overflow: 'hidden', 
-                            whiteSpace: 'nowrap', 
-                            maxWidth: '240px' 
-                          }}>
-                            {hoveredItem.name}
-                          </span>
-                          <span style={{ fontWeight: 800, fontSize: '0.85rem', color: catColor, flexShrink: 0 }}>
-                            {hoveredItem.count} <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>({percentage}%)</span>
-                          </span>
-                        </div>
-                        <div style={{ width: '100%', height: '5px', background: 'rgba(0,0,0,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
-                          <div style={{ 
-                            width: `${percentage}%`, 
-                            height: '100%', 
-                            background: catColor, 
-                            borderRadius: '3px', 
-                            boxShadow: hoveredItem.count > 0 ? `0 0 6px ${catColor}` : 'none' 
-                          }}></div>
-                        </div>
+                      <div style={{ width: '100%', height: '5px', background: 'rgba(0,0,0,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ 
+                          width: `${percentage}%`, 
+                          height: '100%', 
+                          background: catColor, 
+                          borderRadius: '3px', 
+                          boxShadow: hoveredItem.count > 0 ? `0 0 6px ${catColor}` : 'none' 
+                        }}></div>
                       </div>
-                    );
-                  })() : (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '0.75rem' }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M12 16v-4" />
-                        <path d="M12 8h.01" />
-                      </svg>
-                      <span>Hover chart or legend to inspect data</span>
                     </div>
-                  )}
-                </div>
+                  );
+                })() : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '0.75rem' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 16v-4" />
+                      <path d="M12 8h.01" />
+                    </svg>
+                    <span>Hover chart or legend to inspect data</span>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -734,8 +742,93 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
           </button>
         </div>
       )}
+      {/* Search Input Bar */}
+      <div style={{ 
+        position: 'relative', 
+        width: '100%', 
+        marginBottom: '1.5rem',
+        marginTop: '0.5rem',
+        animation: 'fadeIn 0.4s ease'
+      }}>
+        <div style={{
+          position: 'absolute',
+          left: '1rem',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          color: 'var(--text-secondary)',
+          display: 'flex',
+          alignItems: 'center',
+          pointerEvents: 'none'
+        }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+        <input 
+          type="text"
+          placeholder="Search cadet by name or rank (e.g. kurtr, 1CL, Cdt)..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '0.85rem 1rem 0.85rem 2.8rem',
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '12px',
+            color: 'var(--text-primary)',
+            fontSize: '0.95rem',
+            fontWeight: 500,
+            outline: 'none',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
+            transition: 'all 0.25s ease'
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = 'var(--gold-primary)';
+            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(212, 175, 55, 0.15)';
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = 'var(--border-color)';
+            e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.02)';
+          }}
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            style={{
+              position: 'absolute',
+              right: '1rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'none',
+              border: 'none',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0.2rem',
+              borderRadius: '50%'
+            }}
+            onMouseOver={(e) => { e.currentTarget.style.color = '#ef4444'; }}
+            onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        )}
+      </div>
 
-      {isMobile ? (
+      {sortedCadets.length === 0 ? (
+        <div className="card" style={{ padding: '3rem', textAlign: 'center', marginTop: '1rem', width: '100%' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🔍</div>
+          <h3 style={{ fontSize: '1.15rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 700 }}>No Cadets Match Your Search</h3>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+            We couldn't find any results for "{searchQuery}". Check the spelling or try searching by rank.
+          </p>
+        </div>
+      ) : isMobile ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1rem', width: '100%' }}>
           {sortedCadets.map((cadet, index) => {
             const maxDemerits = getMaxDemerits(cadet.rank);
