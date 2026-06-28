@@ -150,33 +150,28 @@ export default async function Home() {
     <div>
       {/* Hero Banner */}
       <div className="hero-banner" style={{ marginBottom: '3rem' }}>
-        <div style={{ flex: 1 }}>
-          <h1 className="hero-title">BRAVO COMPANY</h1>
-          <div className="hero-subtitle">
-            <span style={{ color: 'var(--accent-gold)' }}>&#9656;</span> DIGITAL BULLETIN BOARD SYSTEM
-          </div>
-          
-          <div className="hero-stats">
-            <div className="stat-item">
-              <span className="stat-value">{allDisseminations.length || '-'}</span>
-              <span className="stat-label">Active Disseminations</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-value">{trackers.length || '-'}</span>
-              <span className="stat-label">Active Trackers</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-value">{COUNCILS.length}</span>
-              <span className="stat-label">Councils</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-value">{dateStr}</span>
-              <span className="stat-label">Today</span>
-            </div>
-          </div>
+        <h1 className="hero-title">BRAVO COMPANY</h1>
+        <div className="hero-subtitle">
+          <span style={{ color: 'var(--accent-gold)' }}>&#9656;</span> DIGITAL BULLETIN BOARD SYSTEM
         </div>
-        <div className="hero-logo-wrapper">
-          <img src="/logo.png" alt="Bravo Logo" />
+        
+        <div className="hero-stats">
+          <div className="stat-item">
+            <span className="stat-value">{allDisseminations.length || '-'}</span>
+            <span className="stat-label">Active Disseminations</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-value">{trackers.length || '-'}</span>
+            <span className="stat-label">Active Trackers</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-value">{COUNCILS.length}</span>
+            <span className="stat-label">Councils</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-value">{dateStr}</span>
+            <span className="stat-label">Today</span>
+          </div>
         </div>
       </div>
 
