@@ -130,11 +130,33 @@ const CustomRadarDot = (props) => {
 
 const OffensesPizzaChart = ({ data, hoveredItem, setHoveredItem }) => {
   const [enlargedIndex, setEnlargedIndex] = useState(null);
+  const [animationProgress, setAnimationProgress] = useState(0);
   const timerRef = useRef(null);
 
   useEffect(() => {
+    let start = null;
+    const duration = 1000; // 1 second duration
+    let animFrameId = null;
+
+    const animate = (timestamp) => {
+      if (!start) start = timestamp;
+      const elapsed = timestamp - start;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // easeOutCubic
+      const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+      setAnimationProgress(easeOutCubic);
+
+      if (progress < 1) {
+        animFrameId = requestAnimationFrame(animate);
+      }
+    };
+
+    animFrameId = requestAnimationFrame(animate);
+
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
+      if (animFrameId) cancelAnimationFrame(animFrameId);
     };
   }, []);
 
@@ -215,7 +237,7 @@ const OffensesPizzaChart = ({ data, hoveredItem, setHoveredItem }) => {
           const activeRadius = innerRadius + (maxRadius - innerRadius) * (item.count / maxVal);
           const currentRadius = isEnlarged 
             ? innerRadius + (maxRadius - innerRadius) * (item.count / maxVal) * 1.15
-            : activeRadius;
+            : innerRadius + (activeRadius - innerRadius) * animationProgress;
 
           return (
             <g 
