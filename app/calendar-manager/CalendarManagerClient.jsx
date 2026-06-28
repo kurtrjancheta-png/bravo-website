@@ -607,30 +607,10 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
             />
 
             {/* Date and Time Group */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--bg-primary)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-              <span style={{ fontSize: '1.2rem' }}>🕒</span>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1 }}>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <input 
-                    type={formData.isAllDay ? "date" : "datetime-local"} required
-                    value={formData.isAllDay ? formData.date.slice(0, 10) : formData.date} 
-                    onChange={e => {
-                      const val = e.target.value;
-                      setFormData({...formData, date: formData.isAllDay ? `${val}T00:00` : val});
-                    }}
-                    style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none', flex: 1 }}
-                  />
-                  <span style={{ color: 'var(--text-secondary)' }}>to</span>
-                  <input 
-                    type={formData.isAllDay ? "date" : "datetime-local"} 
-                    value={formData.endDate ? (formData.isAllDay ? formData.endDate.slice(0, 10) : formData.endDate) : ''} 
-                    onChange={e => {
-                      const val = e.target.value;
-                      setFormData({...formData, endDate: val ? (formData.isAllDay ? `${val}T23:59` : val) : ''});
-                    }}
-                    style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none', flex: 1 }}
-                  />
-                </div>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', background: 'var(--bg-primary)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+              <span style={{ fontSize: '1.2rem', marginTop: '2px' }}>🕒</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
+                
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <input 
                     type="checkbox" 
@@ -643,6 +623,34 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
                     All Day Event
                   </label>
                 </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ color: 'var(--text-secondary)', width: '35px', fontSize: '0.85rem' }}>Start</span>
+                    <input 
+                      type={formData.isAllDay ? "date" : "datetime-local"} required
+                      value={formData.isAllDay ? formData.date.slice(0, 10) : formData.date} 
+                      onChange={e => {
+                        const val = e.target.value;
+                        setFormData({...formData, date: formData.isAllDay ? `${val}T00:00` : val});
+                      }}
+                      style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none', flex: 1 }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ color: 'var(--text-secondary)', width: '35px', fontSize: '0.85rem' }}>End</span>
+                    <input 
+                      type={formData.isAllDay ? "date" : "datetime-local"} 
+                      value={formData.endDate ? (formData.isAllDay ? formData.endDate.slice(0, 10) : formData.endDate) : ''} 
+                      onChange={e => {
+                        const val = e.target.value;
+                        setFormData({...formData, endDate: val ? (formData.isAllDay ? `${val}T23:59` : val) : ''});
+                      }}
+                      style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none', flex: 1 }}
+                    />
+                  </div>
+                </div>
+
               </div>
             </div>
 
@@ -652,9 +660,22 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
                 <span style={{ fontSize: '1.2rem', minWidth: '24px' }}>👥</span>
                 <input 
                   type="text" placeholder="Council / Team"
+                  list="council-options"
                   value={formData.council} onChange={e => setFormData({...formData, council: e.target.value})}
                   style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' }}
                 />
+                <datalist id="council-options">
+                  <option value="S1" />
+                  <option value="S2" />
+                  <option value="S3" />
+                  <option value="S4" />
+                  <option value="S6" />
+                  <option value="Alpha" />
+                  <option value="Bravo" />
+                  <option value="Charlie" />
+                  <option value="Athh-O" />
+                  <option value="Honor Committee" />
+                </datalist>
               </div>
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <span style={{ fontSize: '1.2rem', minWidth: '24px' }}>🚨</span>
