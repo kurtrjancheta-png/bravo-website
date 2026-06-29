@@ -380,7 +380,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
 
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
-    const handleResize = () => setIsMobile(/Mobi|Android|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && window.innerWidth < 768);
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -492,7 +492,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
               padding: '1.5rem', 
               display: 'flex', 
               flexDirection: 'column', 
-              height: '580px' 
+              height: isMobile ? '450px' : '580px' 
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '10px' }}>
                 <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', margin: 0, fontWeight: 700 }}>Violations Over Time</h2>
@@ -618,7 +618,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
               padding: '1.5rem', 
               display: 'flex', 
               flexDirection: 'column', 
-              height: '580px'
+              height: isMobile ? '450px' : '580px'
             }}>
               <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 700 }}>Offenses Breakdown</h2>
               <div style={{ width: '100%', flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
