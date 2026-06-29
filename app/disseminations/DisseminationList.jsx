@@ -511,7 +511,7 @@ export default function DisseminationList({ activeCards, archivedCards, sheetNam
                 No active disseminations at this time.
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
                 {activeCards.map((card, i) => {
                   const urgency = String(card['URGENCY'] || '').trim().toUpperCase();
                   const style = urgencyStyles[normalizeUrgency(urgency)] || urgencyStyles['FOR INFO'];
@@ -535,7 +535,7 @@ export default function DisseminationList({ activeCards, archivedCards, sheetNam
                 No archived disseminations available.
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
                 {archivedCards.map((card, i) => {
                   const urgency = String(card['URGENCY'] || '').trim().toUpperCase();
                   const style = urgencyStyles[normalizeUrgency(urgency)] || urgencyStyles['FOR INFO'];

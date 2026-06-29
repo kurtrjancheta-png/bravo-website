@@ -332,7 +332,7 @@ details[open] > summary .dropdown-arrow {
 /* Card Grid */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
   margin-bottom: 3rem;
 }
@@ -1153,7 +1153,7 @@ tr:last-child td {
 /* --- TWO-COLUMN GRID FOR CHARTS --- */
 .pft-top-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
@@ -1491,5 +1491,21 @@ tbody tr:hover {
 
 .org-node-wrapper.no-connector::before {
   display: none !important;
+}
+
+@media (max-width: 1024px) {
+  .org-connector-down,
+  .org-horizontal-line,
+  .org-node-wrapper::before {
+    display: none !important;
+  }
+  .org-nodes {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .org-chart {
+    gap: 1.5rem;
+  }
 }
 

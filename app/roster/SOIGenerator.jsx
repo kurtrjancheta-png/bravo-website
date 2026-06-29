@@ -171,7 +171,7 @@ export default function SOIGenerator({ soiData }) {
           </div>
 
           {/* Body */}
-          <div style={{ padding: '2rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+          <div style={{ padding: '2rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
             
             {/* Section 1 */}
             <div className="soi-section">
