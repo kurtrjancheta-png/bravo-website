@@ -93,33 +93,10 @@ export default function CouncilDisseminationPage({ params }) {
   return (
     <div className="dashboard-container" style={{ padding: '2rem' }}>
       {/* Header section */}
-      <div className="council-header" style={{ 
-        background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(0,0,0,0) 100%)', 
-        border: '1px solid var(--gold-primary)', 
-        borderRadius: '16px', 
-        padding: '2.5rem',
-        marginBottom: '2.5rem',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <h1 style={{ color: 'var(--gold-primary)', fontSize: '2.5rem', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            {data.title} Disseminations
-          </h1>
-          <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', maxWidth: '800px', lineHeight: 1.6 }}>
-            <strong>Welcome.</strong> {data.overview}
-          </p>
-        </div>
-        <div style={{
-          position: 'absolute',
-          right: '-5%',
-          top: '-20%',
-          fontSize: '12rem',
-          opacity: 0.03,
-          fontWeight: 900,
-          pointerEvents: 'none'
-        }}>
-          {data.sheetTab}
+      <div className="section-header" style={{ marginBottom: '2rem' }}>
+        <h1 className="section-title">{data.title} DISSEMINATIONS</h1>
+        <div className="section-subtitle">
+          <strong>Welcome.</strong> {data.overview}
         </div>
       </div>
 

@@ -72,27 +72,13 @@ export default async function CalendarManagerPage() {
 
   return (
     <div className="dashboard-container" style={{ padding: '2rem' }}>
-      <div style={{ 
-        background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(0,0,0,0) 100%)', 
-        border: '1px solid var(--gold-primary)', 
-        borderRadius: '16px', 
-        padding: '2.5rem',
-        marginBottom: '2.5rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
+      <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
-          <h1 style={{ color: 'var(--gold-primary)', fontSize: '2.5rem', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Calendar Manager
-          </h1>
-          <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', maxWidth: '800px', lineHeight: 1.6 }}>
-            S3 Operations control panel for scheduling and managing unit activities.
-          </p>
+          <h1 className="section-title">CALENDAR MANAGER</h1>
+          <div className="section-subtitle">S3 Operations control panel for scheduling and managing unit activities.</div>
         </div>
-        <div style={{ padding: '1rem', background: 'rgba(212, 175, 55, 0.1)', border: '1px solid var(--gold-primary)', borderRadius: '12px', textAlign: 'center' }}>
-          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--gold-primary)' }}>S3 ONLY</div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Restricted Access</div>
+        <div style={{ padding: '0.5rem 1rem', background: 'rgba(212, 175, 55, 0.1)', border: '1px solid var(--gold-primary)', borderRadius: '8px', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--gold-primary)' }}>S3 ONLY</div>
         </div>
       </div>
 

@@ -85,19 +85,9 @@ export default async function EventCalendarPage() {
 
   return (
     <div className="dashboard-container" style={{ padding: '2rem' }}>
-      <div style={{ 
-        background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(0,0,0,0) 100%)', 
-        border: '1px solid var(--gold-primary)', 
-        borderRadius: '16px', 
-        padding: '2.5rem',
-        marginBottom: '2.5rem'
-      }}>
-        <h1 style={{ color: 'var(--gold-primary)', fontSize: '2.5rem', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Event Calendar
-        </h1>
-        <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', maxWidth: '800px', lineHeight: 1.6 }}>
-          Track upcoming company activities and celebrate cadet birthdays.
-        </p>
+      <div className="section-header">
+        <h1 className="section-title">EVENT CALENDAR</h1>
+        <div className="section-subtitle">Track upcoming company activities and celebrate cadet birthdays.</div>
       </div>
 
       <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Loading Calendar...</div>}>
