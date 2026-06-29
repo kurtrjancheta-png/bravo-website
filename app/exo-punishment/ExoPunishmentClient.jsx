@@ -917,6 +917,10 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
             let earliestConfStart = null;
             let latestConfEnd = null;
 
+            let stackedTourTotal = 0;
+            let stackedTourServed = 0;
+            let stackedTourConverted = 0;
+
             displayedOffenses.forEach(off => {
               if (off.isConfined && off.confStart && off.confEnd) {
                 const stats = getConfinementStats(off.confStart, off.confEnd);
@@ -931,6 +935,11 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                   if (endObj && (!latestConfEnd || endObj > latestConfEnd)) latestConfEnd = endObj;
                 }
               }
+              if (off.tourTotal > 0) {
+                stackedTourTotal += off.tourTotal;
+                stackedTourServed += (off.tourServed || 0);
+                stackedTourConverted += (off.tourConverted || 0);
+              }
             });
 
             const displayConfStats = {
@@ -940,6 +949,12 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
               percentage: stackedConfTotal > 0 ? (stackedConfServed / stackedConfTotal) * 100 : 0,
               startText: earliestConfStart ? earliestConfStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '-',
               endText: latestConfEnd ? latestConfEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '-'
+            };
+
+            const displayTourStats = {
+              total: stackedTourTotal,
+              progress: stackedTourServed + stackedTourConverted,
+              percentage: stackedTourTotal > 0 ? Math.min(100, Math.max(0, ((stackedTourServed + stackedTourConverted) / stackedTourTotal) * 100)) : 0
             };
 
             return (
@@ -1112,16 +1127,16 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                   )}
 
                   {/* Touring Progress */}
-                  {cadet.totalTour > 0 && (
+                  {displayTourStats.total > 0 && (
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
-                        <span>TOURING ({tourProgress >= cadet.totalTour ? 'SERVED' : 'ACTIVE'})</span>
+                        <span>TOURING ({displayTourStats.progress >= displayTourStats.total ? 'SERVED' : 'ACTIVE'})</span>
                         <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>
-                          {tourProgress} / {cadet.totalTour} hrs
+                          {displayTourStats.progress} / {displayTourStats.total} hrs
                         </span>
                       </div>
                       <div style={{ width: '100%', height: '6px', background: 'rgba(128,128,128,0.2)', borderRadius: '3px', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${tourPercentage}%`, background: '#10b981' }} />
+                        <div style={{ height: '100%', width: `${displayTourStats.percentage}%`, background: '#10b981' }} />
                       </div>
                     </div>
                   )}
@@ -1197,6 +1212,10 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
               let earliestConfStart = null;
               let latestConfEnd = null;
 
+              let stackedTourTotal = 0;
+              let stackedTourServed = 0;
+              let stackedTourConverted = 0;
+
               displayedOffenses.forEach(off => {
                 if (off.isConfined && off.confStart && off.confEnd) {
                   const stats = getConfinementStats(off.confStart, off.confEnd);
@@ -1211,6 +1230,11 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                     if (endObj && (!latestConfEnd || endObj > latestConfEnd)) latestConfEnd = endObj;
                   }
                 }
+                if (off.tourTotal > 0) {
+                  stackedTourTotal += off.tourTotal;
+                  stackedTourServed += (off.tourServed || 0);
+                  stackedTourConverted += (off.tourConverted || 0);
+                }
               });
 
               const displayConfStats = {
@@ -1220,6 +1244,12 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                 percentage: stackedConfTotal > 0 ? (stackedConfServed / stackedConfTotal) * 100 : 0,
                 startText: earliestConfStart ? earliestConfStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '-',
                 endText: latestConfEnd ? latestConfEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '-'
+              };
+
+              const displayTourStats = {
+                total: stackedTourTotal,
+                progress: stackedTourServed + stackedTourConverted,
+                percentage: stackedTourTotal > 0 ? Math.min(100, Math.max(0, ((stackedTourServed + stackedTourConverted) / stackedTourTotal) * 100)) : 0
               };
 
               return (
@@ -1422,25 +1452,31 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                   </td>
 
                   <td style={{ padding: '1.5rem 1rem' }}>
-                    {cadet.totalTour > 0 ? (
-                      tourProgress >= cadet.totalTour ? (
-                        <div style={{ display: 'inline-block', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.05em', border: '1px solid rgba(16,185,129,0.3)' }}>
-                          🟢 SERVED
-                        </div>
-                      ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    {displayTourStats.total > 0 ? (
+                      <div>
+                        {displayTourStats.progress >= displayTourStats.total ? (
+                          <div style={{ display: 'inline-block', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.05em', border: '1px solid rgba(16,185,129,0.3)', marginBottom: '0.75rem' }}>
+                            🟢 SERVED
+                          </div>
+                        ) : (
+                          <div style={{ display: 'inline-block', background: 'rgba(234, 179, 8, 0.1)', color: '#eab308', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.05em', border: '1px solid rgba(234,179,8,0.3)', marginBottom: '0.75rem' }}>
+                            🟡 ACTIVE
+                          </div>
+                        )}
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', opacity: (displayTourStats.progress >= displayTourStats.total) ? 0.6 : 1 }}>
                           <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Hours Served</div>
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
-                            <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '1.1rem' }}>{tourProgress}</span>
-                            <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>/ {cadet.totalTour}</span>
+                            <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '1.1rem' }}>{displayTourStats.progress}</span>
+                            <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>/ {displayTourStats.total}</span>
                           </div>
                           <div style={{ width: '100%', height: '6px', background: 'rgba(128,128,128,0.2)', borderRadius: '3px', overflow: 'hidden', marginTop: '0.25rem' }}>
-                            <div style={{ height: '100%', width: `${tourPercentage}%`, background: '#10b981', borderRadius: '3px' }} />
+                            <div style={{ height: '100%', width: `${displayTourStats.percentage}%`, background: '#10b981', borderRadius: '3px' }} />
                           </div>
                         </div>
-                      )
+                      </div>
                     ) : (
-                      <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>No Tours</span>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', opacity: 0.6 }}>No Tours</div>
                     )}
                   </td>
 
