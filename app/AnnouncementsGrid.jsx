@@ -532,7 +532,6 @@ export default function AnnouncementsGrid({ disseminations }) {
           No announcements match your search or filter options.
         </div>
       ) : isMobile ? (
-        // ── Mobile: full-width swipe carousel ──
         <div
           style={{ position: 'relative', overflow: 'hidden', touchAction: 'pan-y' }}
           onTouchStart={handleTouchStart}
