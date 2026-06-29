@@ -113,6 +113,20 @@ const getOffenseColor = (name) => {
   return '#64748b'; // Integrated slate gray
 };
 
+const getOffenseEmoji = (name) => {
+  const normalized = String(name || '').trim().toUpperCase();
+  if (normalized.includes('UNACCOUNTED') || normalized.includes('ABSENT')) return '🚨';
+  if (normalized.includes('LATE')) return '⏰';
+  if (normalized.includes('NEGLIGENCE') || normalized.includes('NEGLEGENCE') || normalized.includes('DUTY')) return '⚠️';
+  if (normalized.includes('POSSESSING') || normalized.includes('UNAUTHORIZED ITEMS')) return '📦';
+  if (normalized.includes('DOING') || normalized.includes('UNAUTHORIZED THINGS')) return '🚫';
+  if (normalized.includes('MALTREATMENT') || normalized.includes('NTP') || normalized.includes('CTP')) return '🚷';
+  if (normalized.includes('HONOR')) return '🎖️';
+  if (normalized.includes('CLEANLINESS') || normalized.includes('ROOM')) return '🧹';
+  if (normalized.includes('UNIFORM') || normalized.includes('RIFLE')) return '💂';
+  return '📝';
+};
+
 const CustomRadarDot = (props) => {
   const { cx, cy, payload } = props;
   if (!cx || !cy || !payload) return null;
@@ -640,14 +654,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                         opacity: hoveredItem && !isHovered ? 0.4 : 1
                       }}
                     >
-                      <span style={{ 
-                        width: '6px', 
-                        height: '6px', 
-                        borderRadius: '50%', 
-                        background: catColor,
-                        boxShadow: item.count > 0 ? `0 0 4px ${catColor}` : 'none',
-                        flexShrink: 0
-                      }}></span>
+                      <span style={{ fontSize: '0.85rem', flexShrink: 0 }}>{getOffenseEmoji(item.name)}</span>
                       <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                         {item.name}
                       </span>
@@ -689,7 +696,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                           whiteSpace: 'nowrap', 
                           maxWidth: '240px' 
                         }}>
-                          {hoveredItem.name}
+                          {getOffenseEmoji(hoveredItem.name)} {hoveredItem.name}
                         </span>
                         <span style={{ fontWeight: 800, fontSize: '0.85rem', color: catColor, flexShrink: 0 }}>
                           {hoveredItem.count} <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>({percentage}%)</span>
@@ -1055,8 +1062,9 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                             opacity: isOffInactive ? 0.6 : 1
                           }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
-                              <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                                {offense.natureOfOffense || 'UNKNOWN'}
+                              <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <span style={{ fontSize: '0.75rem' }}>{getOffenseEmoji(offense.natureOfOffense)}</span>
+                                <span>{offense.natureOfOffense || 'UNKNOWN'}</span>
                               </div>
                               <div style={{ fontSize: '0.65rem', color: classColor, fontWeight: 800 }}>Class {offense.classOfOffense}</div>
                             </div>
@@ -1339,8 +1347,9 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                               opacity: isOffInactive ? 0.6 : 1
                             }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
-                                <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                                  {offense.natureOfOffense || 'UNKNOWN'}
+                                <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+                                  <span style={{ fontSize: '0.8rem' }}>{getOffenseEmoji(offense.natureOfOffense)}</span>
+                                  <span>{offense.natureOfOffense || 'UNKNOWN'}</span>
                                   {isOffInactive && <span style={{ marginLeft: '0.5rem', color: '#10b981', fontWeight: 800 }}>✓ INACTIVE</span>}
                                 </div>
                                 <div style={{ fontSize: '0.7rem', color: classColor, fontWeight: 800 }}>Class {offense.classOfOffense}</div>
