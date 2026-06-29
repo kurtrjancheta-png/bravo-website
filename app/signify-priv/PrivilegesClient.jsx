@@ -7,6 +7,7 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzklVtvSKHZmH6abCRFP
 
 export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
   const { adminUser } = useAuth();
+  const isCEIS = adminUser && (adminUser.council === 'S6' || String(adminUser.council || '').toUpperCase().includes('CEIS'));
   const [selectedPriv, setSelectedPriv] = useState(null); // Which card is clicked
   const [cadetClass, setCadetClass] = useState('1CL');
   const [fullName, setFullName] = useState('');
@@ -285,7 +286,7 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
                 onMouseEnter={(e) => { if (!isClosed) e.currentTarget.style.transform = 'translateY(-4px)'; }}
                 onMouseLeave={(e) => { if (!isClosed) e.currentTarget.style.transform = 'translateY(0)'; }}
               >
-                {adminUser && adminUser.council === 'S1' && (
+                {adminUser && (adminUser.council === 'S1' || isCEIS) && (
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();

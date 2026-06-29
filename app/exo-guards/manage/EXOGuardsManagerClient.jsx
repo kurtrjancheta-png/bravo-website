@@ -244,7 +244,8 @@ export default function EXOGuardsManagerClient({
 
   if (!isLoaded) return null;
   
-  if (!adminUser || adminUser.council !== 'EXO') {
+  const isCEIS = adminUser && (adminUser.council === 'S6' || String(adminUser.council || '').toUpperCase().includes('CEIS'));
+  if (!adminUser || (adminUser.council !== 'EXO' && !isCEIS)) {
     return (
       <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
         <span style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>🔒</span>

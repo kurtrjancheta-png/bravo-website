@@ -68,8 +68,9 @@ export default function S1AdminForms() {
     }
   };
 
-  // Only render if logged in as S1 globally
-  if (!adminUser || adminUser.council !== 'S1') {
+  // Only render if logged in as S1 or S6/CEIS globally
+  const isCEIS = adminUser && (adminUser.council === 'S6' || String(adminUser.council || '').toUpperCase().includes('CEIS'));
+  if (!adminUser || (adminUser.council !== 'S1' && !isCEIS)) {
     return null;
   }
 

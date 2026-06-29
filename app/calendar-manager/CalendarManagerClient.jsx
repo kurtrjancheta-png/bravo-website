@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useAuth } from '../AuthContext';
 import {
   format, addMonths, subMonths, startOfMonth, endOfMonth,
   startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, isToday, parseISO,
@@ -8,6 +9,7 @@ import {
 } from 'date-fns';
 
 export default function CalendarManagerClient({ initialActivities = [], birthdays = [], apiUrl }) {
+  const { adminUser, isLoaded } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   
   // Local state for activities, incorporating pending changes
@@ -46,6 +48,16 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
     urgency: 'FOR INFO',
     isAllDay: true
   });
+
+  if (isLoaded && (!adminUser || (adminUser.council !== 'S3' && adminUser.council !== 'S6' && !String(adminUser.council || '').toUpperCase().includes('CEIS')))) {
+    return (
+      <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+        <span style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>🔒</span>
+        <h2 style={{ color: '#ef4444', marginBottom: '1rem' }}>Access Denied</h2>
+        <p>This page is restricted to the S3 or CEIS Officer only.</p>
+      </div>
+    );
+  }
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));

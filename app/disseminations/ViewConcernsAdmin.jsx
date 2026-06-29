@@ -8,6 +8,7 @@ const isMatchingCouncil = (userCouncil, formCouncil) => {
   if (!userCouncil || !formCouncil) return false;
   const u = String(userCouncil).toUpperCase().replace(/[^A-Z0-9]/g, '');
   const f = String(formCouncil).toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (u === 'S6' || u.includes('CEIS')) return true; // CEIS has super access
   if ((u === 'HCOMM' || u === 'HONORCOMM') && (f === 'HCOMM' || f === 'HONORCOMM' || f === 'HONORCOMMITTEE')) {
     return true;
   }

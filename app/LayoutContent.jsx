@@ -12,6 +12,7 @@ export default function LayoutContent({ children }) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { adminUser, logout, isLoaded } = useAuth();
+  const isCEIS = adminUser && (adminUser.council === 'S6' || String(adminUser.council || '').toUpperCase().includes('CEIS'));
   const pathname = usePathname();
 
   // Push subscription state
@@ -275,7 +276,7 @@ export default function LayoutContent({ children }) {
           <div className="nav-label">Councils</div>
           
           <Link href="/disseminations/taco" id="nav-taco" className={`nav-item ${pathname === '/disseminations/taco' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>🌟</span> Tac O's Corner</Link>
-          {adminUser && adminUser.council === 'TACO' && (
+          {adminUser && (adminUser.council === 'TACO' || isCEIS) && (
             <Link href="/taco-dashboard" className={`nav-item ${pathname === '/taco-dashboard' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', fontWeight: 800, color: 'var(--accent-color)' }}>
               <span style={{ marginRight: '10px', marginLeft: '24px' }}>🦅</span> Tac O's Dashboard
             </Link>
@@ -290,7 +291,7 @@ export default function LayoutContent({ children }) {
               <Link href="/exo-guards" className={`nav-item ${pathname === '/exo-guards' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
                 Guard Posting Dashboard
               </Link>
-              {adminUser && adminUser.council === 'EXO' && (
+              {adminUser && (adminUser.council === 'EXO' || isCEIS) && (
                 <Link href="/exo-guards/manage" className={`nav-item ${pathname === '/exo-guards/manage' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center', fontWeight: 800, color: 'var(--accent-color)' }}>
                   Guard Posting Manager
                 </Link>
@@ -362,7 +363,7 @@ export default function LayoutContent({ children }) {
               <span className="dropdown-arrow">▼</span>
             </summary>
             <div style={{ marginLeft: '1.5rem', borderLeft: '1px solid var(--border-color)', paddingLeft: '0.5rem', marginTop: '0.25rem', marginBottom: '0.5rem' }}>
-              {adminUser && adminUser.council === 'S3' && (
+              {adminUser && (adminUser.council === 'S3' || isCEIS) && (
                 <Link href="/calendar-manager" className={`nav-item ${pathname === '/calendar-manager' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center', fontWeight: 800, color: 'var(--accent-color)' }}>
                   Calendar Manager
                 </Link>

@@ -10,7 +10,7 @@ export default function DirectoryClient({ initialInventory }) {
   const [isFocused, setIsFocused] = useState(false);
   const { adminUser } = useAuth();
   
-  const isS2Admin = adminUser?.council === 'S2';
+  const isS2Admin = adminUser?.council === 'S2' || (adminUser && (adminUser.council === 'S6' || String(adminUser.council || '').toUpperCase().includes('CEIS')));
 
   const filteredInventory = initialInventory.filter(item => 
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
