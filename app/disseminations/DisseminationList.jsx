@@ -447,6 +447,14 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
 
 export default function DisseminationList({ activeCards, archivedCards, sheetName }) {
   const [viewState, setViewState] = useState("ACTIVE"); // ACTIVE or ARCHIVED
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
