@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ImageGallery from './disseminations/ImageGallery';
 import { useAuth } from './AuthContext';
 import InfiniteSlider from './components/InfiniteSlider';
@@ -109,8 +109,8 @@ export default function AnnouncementsGrid({ disseminations }) {
 
   // Swipe carousel state
   const [activeCardIndex, setActiveCardIndex] = useState(0);
-  const touchStartX = React.useRef(null);
-  const touchCurrentX = React.useRef(null);
+  const touchStartX = useRef(null);
+  const touchCurrentX = useRef(null);
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
@@ -646,10 +646,9 @@ export default function AnnouncementsGrid({ disseminations }) {
                   </span>
                 </div>
 
-                {/* Card Body: Title (or truncated body) */}
                 {/* Card Body: Title */}
                 <h3 style={{
-                  fontSize: isMobile ? '1.05rem' : '1.2rem',
+                  fontSize: '1.05rem',
                   fontWeight: '800',
                   color: 'var(--text-primary)',
                   lineHeight: '1.4',
@@ -658,38 +657,18 @@ export default function AnnouncementsGrid({ disseminations }) {
                 }}>
                   {displayHeadline}
                 </h3>
-                
-                <div style={{
-                  display: 'grid',
-                  gridTemplateRows: (isMobile && !expandedCards[cardId]) ? '0fr' : '1fr',
-                  transition: 'grid-template-rows 0.3s ease-in-out',
-                  overflow: 'hidden'
-                }}>
-                  <div style={{ minHeight: 0 }}>
-                    <p style={{
-                      fontSize: '0.85rem',
-                      color: 'var(--text-secondary)',
-                      lineHeight: '1.5',
-                      margin: '0 0 1rem 0',
-                      whiteSpace: 'pre-wrap'
-                    }}>
-                      {truncatedText}
-                    </p>
-                  </div>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.5', margin: '0 0 0.75rem 0', whiteSpace: 'pre-wrap' }}>
+                  {truncatedText}
+                </p>
+                <div style={{ textAlign: 'right', marginBottom: '0.75rem' }}>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--accent-gold)', fontWeight: 700 }}>Tap to read more ›</span>
                 </div>
-
-                {isMobile && !expandedCards[cardId] && (
-                   <div style={{ textAlign: 'center', margin: '0.5rem 0 0.5rem 0' }}>
-                     <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', borderBottom: '1px dashed var(--text-secondary)' }}>Tap to read more</span>
-                   </div>
-                )}
-
                 {/* Divider Line */}
-                <div style={{ borderTop: '1px solid var(--border-color)', margin: '0 0 1rem 0', display: (isMobile && !expandedCards[cardId]) ? 'none' : 'block' }} />
-
+                <div style={{ borderTop: '1px solid var(--border-color)', margin: '0 0 0.75rem 0' }} />
+                
                 {/* Card Footer */}
-                <div style={{ display: (isMobile && !expandedCards[cardId]) ? 'none' : 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-                  {/* Left: Badge + Council Name + Follow Up */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {/* Left: Badge + Council Name */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                       <span style={{ 
