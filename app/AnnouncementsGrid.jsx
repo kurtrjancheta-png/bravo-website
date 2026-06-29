@@ -520,7 +520,8 @@ export default function AnnouncementsGrid({ disseminations }) {
       </div>
 
       {/* Grid of Cards / Mobile Carousel */}
-      {filteredDisseminations.length === 0 ? (
+
+      {filteredDisseminations.length === 0 && (
         <div style={{ 
           textAlign: 'center', 
           padding: '4rem 2rem', 
@@ -531,14 +532,15 @@ export default function AnnouncementsGrid({ disseminations }) {
         }}>
           No announcements match your search or filter options.
         </div>
-      ) : isMobile ? (
+      )}
+
+      {filteredDisseminations.length > 0 && isMobile && (
         <div
           style={{ position: 'relative', overflow: 'hidden', touchAction: 'pan-y' }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={() => handleTouchEnd(filteredDisseminations.length)}
         >
-          {/* Sliding track */}
           <div style={{
             display: 'flex',
             transform: `translateX(calc(-${activeCardIndex * 100}% - ${activeCardIndex}rem))`,
@@ -547,212 +549,116 @@ export default function AnnouncementsGrid({ disseminations }) {
             alignItems: 'stretch'
           }}>
             {filteredDisseminations.map((card, i) => {
-            const cardId = `${card.councilId || 'SYSTEM'}_${card.sheetRowIndex || i}`;
-            const stripeColor = getUrgencyColor(card['URGENCY']);
-            const councilInfo = getCouncilMetadata(card.councilId);
-            
-            // Build tag elements
-            const cardType = String(card['TYPE'] || '').trim().toUpperCase();
-            const normU = normalizeUrgency(card['URGENCY']);
-            
-            const tags = [];
-            if (normU === 'FOR STRICT COMPLIANCE') {
-              tags.push({ label: 'FOR STRICT COMPLIANCE', bg: '#fee2e2', color: '#b91c1c', border: '#fecaca' });
-            } else if (normU === 'URGENT') {
-              tags.push({ label: 'URGENT', bg: '#fee2e2', color: '#b91c1c', border: '#fecaca' });
-            } else if (normU === 'ATTENTION') {
-              tags.push({ label: 'ATTENTION', bg: '#fef9c3', color: '#854d0e', border: '#fef08a' });
-            } else {
-              tags.push({ label: 'FOR INFO', bg: '#f1f5f9', color: '#475569', border: '#e2e8f0' });
-            }
-
-            if (cardType === 'ACTIVITY') {
-              tags.push({ label: 'ACTIVITY', bg: '#dbeafe', color: '#1e40af', border: '#bfdbfe' });
-            }
-
-            const { headline, body } = parseHeadlineAndContent(card['CONTENT']);
-            const displayHeadline = headline || (cardType === 'ACTIVITY' ? `[ACTIVITY] Event scheduled` : 'Announcement Bulletin');
-            const displayBody = body;
-
-            const truncatedText = displayBody && displayBody.length > 180 
-              ? displayBody.substring(0, 180).trim() + '...' 
-              : displayBody;
-
-            const cardReactions = reactionsState[cardId] || { love: 0, like: 0, salute: 0, laugh: 0 };
-            const cardUserReactions = userReactionsState[cardId] || { love: false, like: false, salute: false, laugh: false };
-
-            return (
-              <div 
-                key={cardId}
-                onClick={(e) => {
-                  setSelectedAnnouncement(card);
-                }}
-                style={{
-                  background: 'var(--card-bg)',
-                  borderRadius: '16px',
-                  border: '1px solid var(--border-color)',
-                  borderLeft: `6px solid ${stripeColor}`,
-                  padding: '1rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
-                  transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
-                  position: 'relative',
-                  width: '100%',
-                  flexShrink: 0,
-                  boxSizing: 'border-box'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.08), 0 0 15px rgba(212, 175, 55, 0.1)';
-                  e.currentTarget.style.borderColor = 'var(--accent-gold)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.03)';
-                  e.currentTarget.style.borderColor = 'var(--border-color)';
-                }}
-              >
-                {/* Card Top: Tags and Date */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-                    {tags.map((t, idx) => (
-                      <span 
-                        key={idx}
-                        style={{
-                          fontSize: '0.65rem',
-                          fontWeight: '800',
-                          padding: '0.2rem 0.6rem',
-                          borderRadius: '12px',
-                          background: t.bg,
-                          color: t.color,
-                          border: `1px solid ${t.border}`,
-                          letterSpacing: '0.04em'
-                        }}
-                      >
-                        {t.label}
-                      </span>
-                    ))}
-                  </div>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)' }}>
-                    {card['DATE ANNOUNCED'] || ''}
-                  </span>
-                </div>
-
-                {/* Card Body: Title */}
-                <h3 style={{
-                  fontSize: '1.05rem',
-                  fontWeight: '800',
-                  color: 'var(--text-primary)',
-                  lineHeight: '1.4',
-                  margin: '0 0 0.5rem 0',
-                  letterSpacing: '-0.01em'
-                }}>
-                  {displayHeadline}
-                </h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.5', margin: '0 0 0.75rem 0', whiteSpace: 'pre-wrap' }}>
-                  {truncatedText}
-                </p>
-                <div style={{ textAlign: 'right', marginBottom: '0.75rem' }}>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--accent-gold)', fontWeight: 700 }}>Tap to read more ›</span>
-                </div>
-                {/* Divider Line */}
-                <div style={{ borderTop: '1px solid var(--border-color)', margin: '0 0 0.75rem 0' }} />
-                
-                {/* Card Footer */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  {/* Left: Badge + Council Name */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <span style={{ 
-                        display: 'inline-flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center', 
-                        width: '18px', 
-                        height: '18px', 
-                        borderRadius: '50%', 
-                        background: 'var(--accent-gold)', 
-                        color: '#ffffff', 
-                        fontSize: '9px', 
-                        fontWeight: 900, 
-                        marginRight: '6px' 
-                      }}>
-                        B
-                      </span>
-                      <span style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-secondary)' }}>
-                        {councilInfo.label}
-                      </span>
+              const cardId = `${card.councilId || 'SYSTEM'}_${card.sheetRowIndex || i}`;
+              const stripeColor = getUrgencyColor(card['URGENCY']);
+              const councilInfo = getCouncilMetadata(card.councilId);
+              const cardType = String(card['TYPE'] || '').trim().toUpperCase();
+              const normU = normalizeUrgency(card['URGENCY']);
+              const tags = [];
+              if (normU === 'FOR STRICT COMPLIANCE') {
+                tags.push({ label: 'FOR STRICT COMPLIANCE', bg: '#fee2e2', color: '#b91c1c', border: '#fecaca' });
+              } else if (normU === 'URGENT') {
+                tags.push({ label: 'URGENT', bg: '#fee2e2', color: '#b91c1c', border: '#fecaca' });
+              } else if (normU === 'ATTENTION') {
+                tags.push({ label: 'ATTENTION', bg: '#fef9c3', color: '#854d0e', border: '#fef08a' });
+              } else {
+                tags.push({ label: 'FOR INFO', bg: '#f1f5f9', color: '#475569', border: '#e2e8f0' });
+              }
+              if (cardType === 'ACTIVITY') {
+                tags.push({ label: 'ACTIVITY', bg: '#dbeafe', color: '#1e40af', border: '#bfdbfe' });
+              }
+              const { headline, body } = parseHeadlineAndContent(card['CONTENT']);
+              const displayHeadline = headline || (cardType === 'ACTIVITY' ? '[ACTIVITY] Event scheduled' : 'Announcement Bulletin');
+              const displayBody = body;
+              const truncatedText = displayBody && displayBody.length > 180 ? displayBody.substring(0, 180).trim() + '...' : displayBody;
+              const cardReactions = reactionsState[cardId] || { love: 0, like: 0, salute: 0, laugh: 0 };
+              const cardUserReactions = userReactionsState[cardId] || { love: false, like: false, salute: false, laugh: false };
+              return (
+                <div
+                  key={cardId}
+                  onClick={() => setSelectedAnnouncement(card)}
+                  style={{
+                    background: 'var(--card-bg)',
+                    borderRadius: '16px',
+                    border: '1px solid var(--border-color)',
+                    borderLeft: `6px solid ${stripeColor}`,
+                    padding: '1rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                    transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
+                    position: 'relative',
+                    width: '100%',
+                    flexShrink: 0,
+                    boxSizing: 'border-box'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--accent-gold)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--border-color)';
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                      {tags.map((t, idx) => (
+                        <span key={idx} style={{ fontSize: '0.65rem', fontWeight: '800', padding: '0.2rem 0.6rem', borderRadius: '12px', background: t.bg, color: t.color, border: `1px solid ${t.border}`, letterSpacing: '0.04em' }}>
+                          {t.label}
+                        </span>
+                      ))}
                     </div>
-                    {adminUser && (
-                      <button
-                        onClick={(e) => handleFollowUp(card, e)}
-                        disabled={isBroadcasting}
-                        title="Resend/Follow up with push notification"
-                        style={{
-                          padding: '0.25rem 0.5rem',
-                          fontSize: '0.7rem',
-                          fontWeight: 'bold',
-                          backgroundColor: 'rgba(212, 175, 55, 0.1)',
-                          border: '1px solid var(--accent-gold)',
-                          color: 'var(--accent-gold-dark)',
-                          borderRadius: '6px',
-                          cursor: isBroadcasting ? 'not-allowed' : 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '3px',
-                          transition: 'background-color 0.2s',
-                          zIndex: 5
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'rgba(212, 175, 55, 0.2)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'rgba(212, 175, 55, 0.1)';
-                        }}
-                      >
-                        📢 {isBroadcasting ? 'Sending...' : 'Follow Up'}
-                      </button>
-                    )}
+                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)' }}>
+                      {card['DATE ANNOUNCED'] || ''}
+                    </span>
                   </div>
-
-                  {/* Right: Emojis */}
-                  <div style={{ display: 'flex', gap: '0.35rem' }}>
-                    {Object.entries(EMOJIS).map(([key, emoji]) => {
-                      const count = cardReactions[key] || 0;
-                      const hasReacted = cardUserReactions[key];
-                      return (
+                  <h3 style={{ fontSize: '1.05rem', fontWeight: '800', color: 'var(--text-primary)', lineHeight: '1.4', margin: '0 0 0.5rem 0', letterSpacing: '-0.01em' }}>
+                    {displayHeadline}
+                  </h3>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.5', margin: '0 0 0.75rem 0', whiteSpace: 'pre-wrap' }}>
+                    {truncatedText}
+                  </p>
+                  <div style={{ textAlign: 'right', marginBottom: '0.75rem' }}>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--accent-gold)', fontWeight: 700 }}>Tap to read more &rsaquo;</span>
+                  </div>
+                  <div style={{ borderTop: '1px solid var(--border-color)', margin: '0 0 0.75rem 0' }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '18px', height: '18px', borderRadius: '50%', background: 'var(--accent-gold)', color: '#ffffff', fontSize: '9px', fontWeight: 900, marginRight: '6px' }}>
+                          B
+                        </span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-secondary)' }}>
+                          {councilInfo.label}
+                        </span>
+                      </div>
+                      {adminUser && (
                         <button
-                          key={key}
-                          onClick={(e) => toggleReaction(cardId, key, e)}
-                          title={`React with ${key}`}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '3px',
-                            background: hasReacted ? 'rgba(212, 175, 55, 0.15)' : 'rgba(0,0,0,0.03)',
-                            border: hasReacted ? '1px solid var(--accent-gold)' : '1px solid transparent',
-                            padding: '0.2rem 0.45rem',
-                            borderRadius: '12px',
-                            cursor: 'pointer',
-                            fontSize: '0.75rem',
-                            transition: 'all 0.15s ease'
-                          }}
+                          onClick={(e) => handleFollowUp(card, e)}
+                          disabled={isBroadcasting}
+                          style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(212, 175, 55, 0.1)', border: '1px solid var(--accent-gold)', color: 'var(--accent-gold-dark)', borderRadius: '6px', cursor: isBroadcasting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
                         >
-                          <span>{emoji}</span>
-                          <span style={{ fontWeight: 800, color: hasReacted ? 'var(--accent-gold-dark)' : 'var(--text-secondary)' }}>
-                            {count}
-                          </span>
+                          📢 {isBroadcasting ? 'Sending...' : 'Follow Up'}
                         </button>
-                      );
-                    })}
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.35rem' }}>
+                      {Object.entries(EMOJIS).map(([key, emoji]) => {
+                        const count = cardReactions[key] || 0;
+                        const hasReacted = cardUserReactions[key];
+                        return (
+                          <button key={key} onClick={(e) => toggleReaction(cardId, key, e)} style={{ display: 'flex', alignItems: 'center', gap: '3px', background: hasReacted ? 'rgba(212,175,55,0.15)' : 'rgba(0,0,0,0.03)', border: hasReacted ? '1px solid var(--accent-gold)' : '1px solid transparent', padding: '0.2rem 0.45rem', borderRadius: '12px', cursor: 'pointer', fontSize: '0.75rem' }}>
+                            <span>{emoji}</span>
+                            <span style={{ fontWeight: 800, color: hasReacted ? 'var(--accent-gold-dark)' : 'var(--text-secondary)' }}>{count}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-          </div>{/* end sliding track */}
-          {/* Dot indicators */}
+              );
+            })}
+          </div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginTop: '1.25rem' }}>
             {filteredDisseminations.map((_, idx) => (
               <button
@@ -771,12 +677,13 @@ export default function AnnouncementsGrid({ disseminations }) {
               />
             ))}
           </div>
-          {/* Swipe hint */}
           <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.72rem', color: 'var(--text-secondary)', opacity: 0.7 }}>
-            ← Swipe to browse · {activeCardIndex + 1} / {filteredDisseminations.length} →
+            Swipe to browse &middot; {activeCardIndex + 1} / {filteredDisseminations.length}
           </div>
-        </div>{/* end mobile carousel */}
-      ) : (
+        </div>
+      )}
+
+      {filteredDisseminations.length > 0 && !isMobile && (
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
@@ -846,6 +753,7 @@ export default function AnnouncementsGrid({ disseminations }) {
           })}
         </div>
       )}
+
 
       {/* Styled css for removing scrollbars from pills slider */}
       <style dangerouslySetInnerHTML={{__html: `
