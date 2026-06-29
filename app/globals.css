@@ -1446,6 +1446,41 @@ tbody tr:hover {
     margin-bottom: 0.75rem !important;
   }
 
+  /* Fix modals overflowing on mobile */
+  .modal-content-wrapper {
+    width: 95% !important;
+    max-width: none !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    padding: 1.25rem !important;
+    margin: 1rem auto !important;
+    border-radius: 12px !important;
+  }
+
+  /* Ensure touch targets are easily tappable on phones */
+  button, select, input[type="text"], input[type="date"], input[type="datetime-local"], input[type="password"], input[type="email"] {
+    min-height: 44px;
+  }
+
+  /* Fix tables overflowing and breaking page width */
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+    border-left: 0;
+    border-right: 0;
+  }
+  
+  table th, table td {
+    white-space: nowrap;
+    padding: 0.8rem 1rem !important;
+  }
+
+  /* Flexible grouping wrap */
+  .flex-mobile-wrap {
+    flex-wrap: wrap !important;
+  }
 }
 
 /* Hide mobile header on desktop */

@@ -588,7 +588,7 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
         display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem',
         animation: 'fade-in 0.2s ease-out'
       }}>
-        <div style={{
+        <div className="modal-content-wrapper" style={{
           backgroundColor: 'var(--bg-secondary)', borderRadius: '20px', padding: '2rem',
           width: '100%', maxWidth: '550px', maxHeight: '90vh', overflowY: 'auto',
           border: '1px solid var(--border-color)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',

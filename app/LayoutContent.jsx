@@ -19,6 +19,11 @@ export default function LayoutContent({ children }) {
   const [showBanner, setShowBanner] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
 
+  // PWA Install Prompt state
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isIOS, setIsIOS] = useState(false);
+
   const [openSections, setOpenSections] = useState({
     exo: false,
     fsgt: false,
@@ -96,6 +101,56 @@ export default function LayoutContent({ children }) {
         console.error('Service Worker registration failed:', err);
       });
   }, []);
+
+  // Check for PWA Installation prompt
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+      return;
+    }
+
+    const isIosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    setIsIOS(isIosDevice);
+
+    if (isIosDevice) {
+      // For iOS, show the prompt manually
+      const installTimer = setTimeout(() => {
+        const hasDismissed = localStorage.getItem('bravo_dismissed_install');
+        if (!hasDismissed) setShowInstallPrompt(true);
+      }, 5000);
+      return () => clearTimeout(installTimer);
+    } else {
+      // For Android/Desktop
+      const handleBeforeInstallPrompt = (e) => {
+        e.preventDefault();
+        setDeferredPrompt(e);
+        const hasDismissed = localStorage.getItem('bravo_dismissed_install');
+        if (!hasDismissed) setShowInstallPrompt(true);
+      };
+      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    }
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (isIOS) {
+      alert('To install on iPhone: Tap the Share button (square with arrow pointing up) at the bottom of your screen, then scroll down and tap "Add to Home Screen".');
+    } else if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setShowInstallPrompt(false);
+      }
+      setDeferredPrompt(null);
+    }
+  };
+
+  const handleDismissInstall = () => {
+    setShowInstallPrompt(false);
+    localStorage.setItem('bravo_dismissed_install', 'true');
+  };
 
   // Request browser permission and save subscription details
   const subscribeUser = async () => {
@@ -510,6 +565,73 @@ export default function LayoutContent({ children }) {
               Not Now
             </button>
           </div>
+        </div>
+      )}
+
+      {/* PWA Install Banner */}
+      {showInstallPrompt && (
+        <div style={{
+          position: 'fixed',
+          top: '24px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: 'rgba(17, 24, 39, 0.95)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid var(--accent-gold)',
+          borderRadius: '12px',
+          padding: '1rem 1.25rem',
+          width: '90%',
+          maxWidth: '400px',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(212, 175, 55, 0.1)',
+          zIndex: 1000,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.75rem'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <img src="/logo.png" alt="Bravo Logo" style={{ width: '40px', height: '40px', borderRadius: '8px' }} />
+              <div>
+                <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: '800', color: '#ffffff' }}>
+                  Install Bravo App
+                </h4>
+                <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                  Add to your home screen for quick access.
+                </p>
+              </div>
+            </div>
+            <button 
+              onClick={handleDismissInstall}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                fontSize: '1.2rem',
+                padding: '0',
+                lineHeight: 1
+              }}
+            >
+              ✕
+            </button>
+          </div>
+          <button
+            onClick={handleInstallClick}
+            style={{
+              width: '100%',
+              padding: '0.6rem',
+              background: 'var(--accent-gold)',
+              color: '#000000',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '0.85rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              boxShadow: '0 2px 4px rgba(212, 175, 55, 0.2)'
+            }}
+          >
+            {isIOS ? "Show Instructions" : "Install App"}
+          </button>
         </div>
       )}
 

@@ -3,8 +3,14 @@ import { AuthProvider } from './AuthContext';
 import LayoutContent from './LayoutContent';
 
 export const metadata = {
-  title: 'Bravo Company Board',
+  title: 'Bravo Bulls',
   description: 'Digital Bulletin Board System',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Bravo Bulls',
+  },
 };
 
 export const viewport = {
@@ -13,6 +19,7 @@ export const viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
+  themeColor: '#0f172a',
 };
 
 export default function RootLayout({ children }) {

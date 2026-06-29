@@ -76,7 +76,7 @@ export default function LoginModal({ isOpen, onClose }) {
       zIndex: 9999,
       backdropFilter: 'blur(4px)'
     }}>
-      <div style={{
+      <div className="modal-content-wrapper" style={{
         backgroundColor: 'var(--card-bg)',
         padding: '2.5rem',
         borderRadius: '16px',
