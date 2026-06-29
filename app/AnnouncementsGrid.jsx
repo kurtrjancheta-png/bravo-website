@@ -92,12 +92,7 @@ export default function AnnouncementsGrid({ disseminations }) {
   const [selectedCouncil, setSelectedCouncil] = useState('ALL');
   const [selectedType, setSelectedType] = useState('ALL');
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
-  const [expandedCards, setExpandedCards] = useState({});
 
-  const toggleCard = (cardId, e) => {
-    if (e) e.stopPropagation();
-    setExpandedCards(prev => ({ ...prev, [cardId]: !prev[cardId] }));
-  };
 
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
