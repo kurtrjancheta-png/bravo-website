@@ -130,24 +130,24 @@ const CustomRadarDot = (props) => {
 
 const OffensesPizzaChart = ({ data, hoveredItem, setHoveredItem }) => {
   const [enlargedIndex, setEnlargedIndex] = useState(null);
-  const [animationProgress, setAnimationProgress] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
   const timerRef = useRef(null);
+
+  const numCategories = data.length;
 
   useEffect(() => {
     let start = null;
-    const duration = 1000; // 1 second duration
+    const growDuration = 500; // 500ms growth duration per slice
+    const staggerDelay = 100; // 100ms staggered clockwise delay between slices
+    const totalDuration = (numCategories - 1) * staggerDelay + growDuration;
     let animFrameId = null;
 
     const animate = (timestamp) => {
       if (!start) start = timestamp;
       const elapsed = timestamp - start;
-      const progress = Math.min(elapsed / duration, 1);
-      
-      // easeOutCubic
-      const easeOutCubic = 1 - Math.pow(1 - progress, 3);
-      setAnimationProgress(easeOutCubic);
+      setElapsedTime(Math.min(elapsed, totalDuration));
 
-      if (progress < 1) {
+      if (elapsed < totalDuration) {
         animFrameId = requestAnimationFrame(animate);
       }
     };
@@ -158,7 +158,7 @@ const OffensesPizzaChart = ({ data, hoveredItem, setHoveredItem }) => {
       if (timerRef.current) clearTimeout(timerRef.current);
       if (animFrameId) cancelAnimationFrame(animFrameId);
     };
-  }, []);
+  }, [numCategories]);
 
   if (!data || data.length === 0) return null;
 
@@ -166,7 +166,6 @@ const OffensesPizzaChart = ({ data, hoveredItem, setHoveredItem }) => {
   const cy = 130;
   const maxRadius = 125;
   const innerRadius = 22;
-  const numCategories = data.length;
   const angleStep = 360 / numCategories;
 
   const maxVal = Math.max(1, ...data.map(d => d.count || 0));
@@ -233,11 +232,17 @@ const OffensesPizzaChart = ({ data, hoveredItem, setHoveredItem }) => {
           const isHovered = hoveredItem && hoveredItem.name === item.name;
           const isEnlarged = enlargedIndex === idx;
 
+          // Calculate individual stagger timing for this slice
+          const sliceStartTime = idx * 100; // 100ms delay per slice clockwise
+          const sliceElapsed = Math.max(0, elapsedTime - sliceStartTime);
+          const sliceProgress = Math.min(sliceElapsed / 500, 1); // 500ms duration per slice
+          const easeProgress = 1 - Math.pow(1 - sliceProgress, 3); // easeOutCubic
+
           // Calculate radii
           const activeRadius = innerRadius + (maxRadius - innerRadius) * (item.count / maxVal);
           const currentRadius = isEnlarged 
             ? innerRadius + (maxRadius - innerRadius) * (item.count / maxVal) * 1.15
-            : innerRadius + (activeRadius - innerRadius) * animationProgress;
+            : innerRadius + (activeRadius - innerRadius) * easeProgress;
 
           return (
             <g 
