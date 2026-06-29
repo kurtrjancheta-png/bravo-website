@@ -75,7 +75,7 @@ export default function InfiniteSlider({ children, itemWidth = '85%', gap = '1re
         <div 
           key={index} 
           style={{ 
-            flex: \`0 0 \${itemWidth}\`, 
+            flex: `0 0 ${itemWidth}`, 
             scrollSnapAlign: 'center',
             minWidth: 0
           }}
