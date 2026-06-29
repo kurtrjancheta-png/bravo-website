@@ -571,7 +571,7 @@ export default function EXOGuardsManagerClient({
   const guards3Sent = getGuardsByRole(active3CL, 'SENTINEL');
 
   return (
-    <div>
+    <div style={{ zoom: isMobile ? '0.8' : '1', transformOrigin: 'top center' }}>
       {/* Success Notification */}
       {showSuccessToast && (
         <div style={{

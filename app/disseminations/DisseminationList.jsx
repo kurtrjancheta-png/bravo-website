@@ -71,6 +71,7 @@ const getDynamicFontSize = (text) => {
 
 function DisseminationCard({ card, style, sheetName, isArchived }) {
   const [isMobile, setIsMobile] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const { adminUser } = useAuth();
   const [isBroadcasting, setIsBroadcasting] = useState(false);
 
@@ -191,7 +192,12 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
   };
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile && expanded) setExpanded(false);
+      else if (!mobile && !expanded) setExpanded(true);
+    };
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -246,19 +252,21 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.2 }}
+      onClick={() => isMobile && setExpanded(!expanded)}
       style={{
         position: 'relative',
         background: isArchived ? 'rgba(0,0,0,0.1)' : 'var(--bg-secondary)',
         border: isArchived ? '2px solid #6b7280' : `2px solid ${style.border}`,
         borderTop: isArchived ? '12px solid #6b7280' : `12px solid ${style.border}`,
         borderRadius: '12px',
-        padding: '1.5rem',
+        padding: isMobile && !expanded ? '1rem' : '1.5rem',
         animation: 'none',
         display: 'flex',
         flexDirection: 'column',
         gap: '1rem',
         boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-        opacity: isArchived ? 0.75 : 1
+        opacity: isArchived ? 0.75 : 1,
+        cursor: isMobile ? 'pointer' : 'default'
       }}
     >
       <DeleteDisseminationButton
@@ -266,7 +274,7 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
         rowIndex={card.sheetRowIndex}
         borderColor={style.border}
       />
-      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1.5rem', alignItems: isMobile ? 'stretch' : 'flex-start' }}>
+      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile && !expanded ? '0.5rem' : '1.5rem', alignItems: isMobile ? 'stretch' : 'flex-start' }}>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <div style={{ fontWeight: 800, fontSize: '1rem', letterSpacing: '0.05em', color: isArchived ? '#6b7280' : style.border, textTransform: 'uppercase', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             {card['TYPE'] || 'ANNOUNCEMENT'}
@@ -287,23 +295,31 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
                     {headline}
                   </h3>
                 )}
-                <div style={{ fontSize: getDynamicFontSize(body), color: 'var(--text-primary)', lineHeight: 1.5, flex: 1, whiteSpace: 'pre-wrap' }}>
-                  {body || 'No content provided.'}
-                </div>
+                {expanded && (
+                  <div style={{ fontSize: getDynamicFontSize(body), color: 'var(--text-primary)', lineHeight: 1.5, flex: 1, whiteSpace: 'pre-wrap' }}>
+                    {body || 'No content provided.'}
+                  </div>
+                )}
               </>
             );
           })()}
           
           {/* If the Google API parses the header as "Column 6", we should check both keys */}
-          {((card['ATTACHMENT'] && card['ATTACHMENT'].trim() !== '') || (card['Column 6'] && card['Column 6'].trim() !== '')) && (
+          {expanded && ((card['ATTACHMENT'] && card['ATTACHMENT'].trim() !== '') || (card['Column 6'] && card['Column 6'].trim() !== '')) && (
             <div style={{ marginTop: '1rem' }}>
               <ImageGallery urls={(card['ATTACHMENT'] || card['Column 6']).split(',')} />
+            </div>
+          )}
+          
+          {isMobile && !expanded && (
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.5rem', textAlign: 'center', fontStyle: 'italic' }}>
+              Tap to expand...
             </div>
           )}
         </div>
 
         <div style={{ 
-          display: 'flex', 
+          display: isMobile && !expanded ? 'none' : 'flex', 
           flexDirection: isMobile ? 'row' : 'column', 
           alignItems: isMobile ? 'center' : 'flex-end', 
           justifyContent: isMobile ? 'space-between' : 'flex-start',

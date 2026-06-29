@@ -446,7 +446,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
   });
 
   return (
-    <div style={{ width: '100%' }}>
+    <div style={{ width: '100%', zoom: isMobile ? '0.8' : '1', transformOrigin: 'top center' }}>
       {adminUser && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem', width: '100%' }}>
           <a
@@ -492,7 +492,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
               padding: '1.5rem', 
               display: 'flex', 
               flexDirection: 'column', 
-              height: isMobile ? '450px' : '580px' 
+              height: isMobile ? '350px' : '580px' 
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '10px' }}>
                 <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', margin: 0, fontWeight: 700 }}>Violations Over Time</h2>
@@ -618,7 +618,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
               padding: '1.5rem', 
               display: 'flex', 
               flexDirection: 'column', 
-              height: isMobile ? '450px' : '580px'
+              height: isMobile ? '350px' : '580px'
             }}>
               <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 700 }}>Offenses Breakdown</h2>
               <div style={{ width: '100%', flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>

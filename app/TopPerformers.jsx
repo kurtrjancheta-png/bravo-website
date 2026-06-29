@@ -1,10 +1,20 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import confetti from 'canvas-confetti';
 import { getCadetImageUrl } from '../lib/imageMatcher';
+import InfiniteSlider from './components/InfiniteSlider';
 
 export default function TopPerformers({ topPerformers }) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useEffect(() => {
     // Fire confetti for 3 seconds on mount
     const duration = 3000;
@@ -133,12 +143,24 @@ export default function TopPerformers({ topPerformers }) {
         )}
 
         {/* Individual Events */}
-        <div className="mobile-slider" style={{ display: 'flex', flexWrap: 'wrap', margin: '-0.5rem' }}>
-          {renderCombinedEvent('Push-Ups', data.pushups, '(M)', 'reps', data.pushupsF, '(F)', 'reps', '💪')}
-          {renderCombinedEvent('Sit-Ups', data.situps, '(M)', 'reps', data.situpsF, '(F)', 'reps', '💪')}
-          {renderCombinedEvent('Pull-Ups / Flexed-Arm', data.pullups, 'Pull-Ups (M)', 'reps', data.flexarm, 'Flexed-Arm (F)', 'secs', '💪')}
-          {renderCombinedEvent('3.2KM Run', data.run, '(M)', '', data.runF, '(F)', '', '🏃', true)}
-        </div>
+        {/* Individual Events */}
+        {isMobile ? (
+          <div style={{ margin: '-0.5rem' }}>
+            <InfiniteSlider itemWidth="85%" gap="1rem">
+              {renderCombinedEvent('Push-Ups', data.pushups, '(M)', 'reps', data.pushupsF, '(F)', 'reps', '💪')}
+              {renderCombinedEvent('Sit-Ups', data.situps, '(M)', 'reps', data.situpsF, '(F)', 'reps', '💪')}
+              {renderCombinedEvent('Pull-Ups / Flexed-Arm', data.pullups, 'Pull-Ups (M)', 'reps', data.flexarm, 'Flexed-Arm (F)', 'secs', '💪')}
+              {renderCombinedEvent('3.2KM Run', data.run, '(M)', '', data.runF, '(F)', '', '🏃', true)}
+            </InfiniteSlider>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexWrap: 'wrap', margin: '-0.5rem' }}>
+            {renderCombinedEvent('Push-Ups', data.pushups, '(M)', 'reps', data.pushupsF, '(F)', 'reps', '💪')}
+            {renderCombinedEvent('Sit-Ups', data.situps, '(M)', 'reps', data.situpsF, '(F)', 'reps', '💪')}
+            {renderCombinedEvent('Pull-Ups / Flexed-Arm', data.pullups, 'Pull-Ups (M)', 'reps', data.flexarm, 'Flexed-Arm (F)', 'secs', '💪')}
+            {renderCombinedEvent('3.2KM Run', data.run, '(M)', '', data.runF, '(F)', '', '🏃', true)}
+          </div>
+        )}
       </div>
     );
   };

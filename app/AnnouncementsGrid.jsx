@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import ImageGallery from './disseminations/ImageGallery';
 import { useAuth } from './AuthContext';
+import InfiniteSlider from './components/InfiniteSlider';
 
 // Emojis mapping for reactions
 const EMOJIS = {
@@ -91,6 +92,14 @@ export default function AnnouncementsGrid({ disseminations }) {
   const [selectedCouncil, setSelectedCouncil] = useState('ALL');
   const [selectedType, setSelectedType] = useState('ALL');
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const [reactionsState, setReactionsState] = useState({});
   const [userReactionsState, setUserReactionsState] = useState({});
@@ -323,68 +332,122 @@ export default function AnnouncementsGrid({ disseminations }) {
       {/* Dynamic Filters Area */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
         {/* Row 1: Council Filter Pills */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '0.5rem', 
-          overflowX: 'auto', 
-          paddingBottom: '0.5rem',
-          scrollbarWidth: 'none', // Firefox
-          WebkitOverflowScrolling: 'touch'
-        }} className="no-scrollbar">
-          {FILTER_COUNCILS.map(c => (
-            <button
-              key={c}
-              onClick={() => setSelectedCouncil(c)}
-              style={{
-                padding: '0.4rem 1.1rem',
-                borderRadius: '20px',
-                border: selectedCouncil === c ? 'none' : '1px solid var(--border-color)',
-                background: selectedCouncil === c ? '#1e293b' : 'var(--bg-primary)',
-                color: selectedCouncil === c ? '#ffffff' : 'var(--text-secondary)',
-                fontWeight: 800,
-                cursor: 'pointer',
-                fontSize: '0.8rem',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.2s ease',
-                boxShadow: selectedCouncil === c ? '0 4px 6px rgba(0,0,0,0.1)' : 'none'
-              }}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
+        {isMobile ? (
+          <div style={{ margin: '0 -1.5rem' }}>
+            <InfiniteSlider itemWidth="auto" gap="0.5rem">
+              {FILTER_COUNCILS.map(c => (
+                <button
+                  key={c}
+                  onClick={() => setSelectedCouncil(c)}
+                  style={{
+                    padding: '0.4rem 1.1rem',
+                    borderRadius: '20px',
+                    border: selectedCouncil === c ? 'none' : '1px solid var(--border-color)',
+                    background: selectedCouncil === c ? '#1e293b' : 'var(--bg-primary)',
+                    color: selectedCouncil === c ? '#ffffff' : 'var(--text-secondary)',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.2s ease',
+                    boxShadow: selectedCouncil === c ? '0 4px 6px rgba(0,0,0,0.1)' : 'none'
+                  }}
+                >
+                  {c}
+                </button>
+              ))}
+            </InfiniteSlider>
+          </div>
+        ) : (
+          <div style={{ 
+            display: 'flex', 
+            gap: '0.5rem', 
+            overflowX: 'auto', 
+            paddingBottom: '0.5rem',
+            scrollbarWidth: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }} className="no-scrollbar">
+            {FILTER_COUNCILS.map(c => (
+              <button
+                key={c}
+                onClick={() => setSelectedCouncil(c)}
+                style={{
+                  padding: '0.4rem 1.1rem',
+                  borderRadius: '20px',
+                  border: selectedCouncil === c ? 'none' : '1px solid var(--border-color)',
+                  background: selectedCouncil === c ? '#1e293b' : 'var(--bg-primary)',
+                  color: selectedCouncil === c ? '#ffffff' : 'var(--text-secondary)',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  fontSize: '0.8rem',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.2s ease',
+                  boxShadow: selectedCouncil === c ? '0 4px 6px rgba(0,0,0,0.1)' : 'none'
+                }}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Row 2: Type/Urgency Filter Pills */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '0.5rem', 
-          overflowX: 'auto', 
-          paddingBottom: '0.5rem',
-          scrollbarWidth: 'none',
-          WebkitOverflowScrolling: 'touch'
-        }} className="no-scrollbar">
-          {FILTER_TYPES.map(t => (
-            <button
-              key={t}
-              onClick={() => setSelectedType(t)}
-              style={{
-                padding: '0.4rem 1.1rem',
-                borderRadius: '20px',
-                border: selectedType === t ? 'none' : '1px solid var(--border-color)',
-                background: selectedType === t ? 'var(--accent-gold)' : 'var(--bg-primary)',
-                color: selectedType === t ? '#1e293b' : 'var(--text-secondary)',
-                fontWeight: 800,
-                cursor: 'pointer',
-                fontSize: '0.8rem',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.2s ease',
-                boxShadow: selectedType === t ? '0 4px 6px rgba(212, 175, 55, 0.2)' : 'none'
-              }}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
+        {isMobile ? (
+          <div style={{ margin: '0 -1.5rem' }}>
+            <InfiniteSlider itemWidth="auto" gap="0.5rem">
+              {FILTER_TYPES.map(t => (
+                <button
+                  key={t}
+                  onClick={() => setSelectedType(t)}
+                  style={{
+                    padding: '0.3rem 0.9rem',
+                    borderRadius: '16px',
+                    border: selectedType === t ? 'none' : '1px solid var(--border-color)',
+                    background: selectedType === t ? 'var(--text-primary)' : 'var(--bg-secondary)',
+                    color: selectedType === t ? 'var(--bg-primary)' : 'var(--text-secondary)',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {t}
+                </button>
+              ))}
+            </InfiniteSlider>
+          </div>
+        ) : (
+          <div style={{ 
+            display: 'flex', 
+            gap: '0.5rem', 
+            overflowX: 'auto', 
+            paddingBottom: '0.5rem',
+            scrollbarWidth: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }} className="no-scrollbar">
+            {FILTER_TYPES.map(t => (
+              <button
+                key={t}
+                onClick={() => setSelectedType(t)}
+                style={{
+                  padding: '0.3rem 0.9rem',
+                  borderRadius: '16px',
+                  border: selectedType === t ? 'none' : '1px solid var(--border-color)',
+                  background: selectedType === t ? 'var(--text-primary)' : 'var(--bg-secondary)',
+                  color: selectedType === t ? 'var(--bg-primary)' : 'var(--text-secondary)',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontSize: '0.75rem',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Showing count */}

@@ -298,7 +298,13 @@ details[open] > summary .dropdown-arrow {
 
 .hero-stats {
   display: flex;
-  gap: 4rem;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+@media (min-width: 768px) {
+  .hero-stats {
+    gap: 4rem;
+  }
 }
 
 .stat-item {

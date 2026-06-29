@@ -28,6 +28,7 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
 
   const [isMobile, setIsMobile] = useState(false);
   const [showAttachments, setShowAttachments] = useState(false);
+  const [selectedMobileDate, setSelectedMobileDate] = useState(new Date());
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
     handleResize();
@@ -103,6 +104,10 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
   };
 
   const handleDayClick = (day) => {
+    if (isMobile) {
+      setSelectedMobileDate(day);
+      return;
+    }
     setEditingEvent(null);
     setFormData({
       title: '',
@@ -423,12 +428,16 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
         const { birthdays: dayBDays, activities: dayActs } = getEventsForDay(day);
         const isCurrentMonth = isSameMonth(day, monthStart);
         const today = isToday(day);
+        const isSelectedMobile = isMobile && format(day, 'yyyy-MM-dd') === format(selectedMobileDate, 'yyyy-MM-dd');
 
         let bgColor = isCurrentMonth ? 'var(--bg-primary)' : 'rgba(0,0,0,0.1)';
         let dateColor = isCurrentMonth ? 'var(--text-primary)' : 'var(--text-secondary)';
         
         if (today) {
           bgColor = 'rgba(212,175,55,0.05)';
+        }
+        if (isSelectedMobile) {
+          bgColor = 'rgba(59, 130, 246, 0.1)'; // soft blue background for selected day
         }
 
         days.push(
@@ -455,9 +464,9 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
           >
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.25rem' }}>
               <span style={{ 
-                fontWeight: today ? 'bold' : 'normal', 
-                color: today ? '#000' : dateColor,
-                backgroundColor: today ? 'var(--gold-primary)' : 'transparent',
+                fontWeight: today || isSelectedMobile ? 'bold' : 'normal', 
+                color: today ? '#000' : isSelectedMobile ? '#fff' : dateColor,
+                backgroundColor: today ? 'var(--gold-primary)' : isSelectedMobile ? '#3b82f6' : 'transparent',
                 borderRadius: '50%',
                 width: '24px',
                 height: '24px',
@@ -576,6 +585,75 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
       days = [];
     }
     return <div style={{ borderLeft: '1px solid var(--border-color)', borderTop: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)' }}>{rows}</div>;
+  };
+
+  const renderMobileAgenda = () => {
+    if (!isMobile) return null;
+    const { birthdays: dayBDays, activities: dayActs } = getEventsForDay(selectedMobileDate);
+    const hasEvents = dayBDays.length > 0 || dayActs.length > 0;
+
+    return (
+      <div style={{ marginTop: '1.5rem', padding: '1rem', backgroundColor: 'var(--bg-primary)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--text-primary)' }}>
+            {format(selectedMobileDate, 'MMMM d, yyyy')}
+          </h3>
+          <button 
+            onClick={() => {
+              setEditingEvent(null);
+              setFormData({
+                title: '',
+                date: format(selectedMobileDate, "yyyy-MM-dd'T'00:00"),
+                endDate: format(selectedMobileDate, "yyyy-MM-dd'T'23:59"),
+                council: '',
+                description: '',
+                location: '',
+                photos: '',
+                files: '',
+                color: '#3b82f6',
+                urgency: 'FOR INFO',
+                isAllDay: true
+              });
+              setIsModalOpen(true);
+              setShowAttachments(false);
+            }}
+            style={{ 
+              backgroundColor: '#3b82f6', color: '#fff', border: 'none', 
+              borderRadius: '50%', width: '40px', height: '40px', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '1.5rem', cursor: 'pointer', boxShadow: '0 4px 6px rgba(59,130,246,0.3)'
+            }}
+          >
+            +
+          </button>
+        </div>
+
+        {!hasEvents ? (
+          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+            No events scheduled.
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {dayBDays.map((bday, idx) => (
+              <div key={`bday-${idx}`} style={{ padding: '0.75rem', borderRadius: '8px', borderLeft: '4px solid #ec4899', backgroundColor: 'var(--bg-secondary)' }}>
+                <span style={{ fontSize: '1.2rem', marginRight: '0.5rem' }}>🎂</span>
+                <strong>{bday.name}</strong> - {bday.remarks}
+              </div>
+            ))}
+            {dayActs.map((act, idx) => (
+              <div 
+                key={`act-${idx}`} 
+                onClick={(e) => handleEventClick(e, act)}
+                style={{ padding: '0.75rem', borderRadius: '8px', borderLeft: `4px solid ${act.color || '#3b82f6'}`, backgroundColor: 'var(--bg-secondary)', cursor: 'pointer' }}
+              >
+                <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{act.title}</div>
+                {act.council && <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{act.council}</div>}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
   };
 
   const renderModal = () => {
@@ -924,6 +1002,7 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
       {renderHeader()}
       {renderDays()}
       {renderCells()}
+      {renderMobileAgenda()}
       {renderModal()}
     </div>
   );
