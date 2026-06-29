@@ -84,8 +84,8 @@ export default async function EventCalendarPage() {
   }
 
   return (
-    <div className="dashboard-container" style={{ padding: '2rem' }}>
-      <div className="section-header">
+    <div className="dashboard-container" style={{ padding: '0.2rem' }}>
+      <div className="section-header" style={{ padding: '1rem' }}>
         <h1 className="section-title">EVENT CALENDAR</h1>
         <div className="section-subtitle">Track upcoming company activities and celebrate cadet birthdays.</div>
       </div>

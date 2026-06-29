@@ -328,7 +328,7 @@ export default function CalendarClient({ birthdays, activities }) {
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: '100%', margin: '0 auto', backgroundColor: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border-color)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)' }}>
+    <div style={{ width: '100%', maxWidth: '100%', margin: '0', backgroundColor: 'var(--bg-secondary)', padding: '0.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)' }}>
       {/* Fixed top calendar grid */}
       <div style={{ flexShrink: 0 }}>
         {renderHeader()}

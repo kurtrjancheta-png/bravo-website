@@ -148,13 +148,14 @@ export default async function Home() {
 
   return (
     <div>
-      {/* Hero Banner */}
-      <div className="hero-banner" style={{ marginBottom: '3rem' }}>
-        <h1 className="hero-title">BRAVO COMPANY</h1>
-        <div className="hero-subtitle">
-          <span style={{ color: 'var(--accent-gold)' }}>&#9656;</span> DIGITAL BULLETIN BOARD SYSTEM
+      {/* Title Card */}
+      <div className="hero-banner" style={{ marginBottom: '3rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0' }}>
+        <img src="/logo.png" alt="Bravo Bulls Logo" style={{ width: '100px', height: '100px', objectFit: 'contain', marginBottom: '1rem', filter: 'drop-shadow(0 4px 16px rgba(212,175,55,0.3))' }} />
+        <h1 className="hero-title" style={{ fontSize: 'clamp(1.4rem, 5vw, 2.5rem)', marginBottom: '0.4rem' }}>Bravo Company</h1>
+        <div className="hero-subtitle" style={{ fontSize: 'clamp(0.75rem, 3vw, 1rem)', letterSpacing: '0.12em', marginBottom: '1.5rem' }}>
+          Integrated Information System
         </div>
-        
+        <div style={{ width: '60px', height: '2px', background: 'var(--accent-gold)', borderRadius: '2px', marginBottom: '1.5rem' }} />
         <div className="hero-stats">
           <div className="stat-item">
             <span className="stat-value">{allDisseminations.length || '-'}</span>
