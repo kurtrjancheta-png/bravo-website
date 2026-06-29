@@ -267,6 +267,135 @@ details[open] > summary .dropdown-arrow {
   overflow: hidden;
 }
 
+/* New Home Hero Card Optimized for Cellphone Use */
+.home-hero-card {
+  background-color: var(--bg-tertiary);
+  border-radius: 16px;
+  padding: 3rem 2.5rem;
+  color: var(--text-light);
+  margin-bottom: 3rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border: 1px solid var(--border-color);
+}
+
+.home-hero-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 150px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1));
+  pointer-events: none;
+}
+
+.home-hero-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.home-hero-logo {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 16px rgba(212, 175, 55, 0.3));
+}
+
+.home-hero-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.home-hero-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin: 0 0 0.4rem 0;
+  letter-spacing: -0.02em;
+  color: var(--text-light);
+}
+
+.home-hero-subtitle {
+  font-size: 1rem;
+  color: #a0aec0;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.home-hero-divider {
+  width: 60px;
+  height: 2px;
+  background: var(--accent-gold);
+  border-radius: 2px;
+  margin: 1.5rem 0;
+}
+
+.home-hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+  width: 100%;
+}
+
+@media (max-width: 767px) {
+  .home-hero-card {
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    border-radius: 16px;
+    align-items: flex-start;
+    text-align: left;
+    background: var(--card-bg);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border-color);
+  }
+  .home-hero-card::after {
+    display: none;
+  }
+  .home-hero-header {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.85rem;
+    width: 100%;
+  }
+  .home-hero-logo {
+    width: 48px;
+    height: 48px;
+    filter: drop-shadow(0 2px 8px rgba(212, 175, 55, 0.2));
+  }
+  .home-hero-text {
+    align-items: flex-start;
+  }
+  .home-hero-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+  }
+  .home-hero-subtitle {
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
+    color: var(--text-secondary);
+  }
+  .home-hero-divider {
+    display: none;
+  }
+  .home-hero-stats {
+    display: none !important;
+  }
+}
+
 /* Subtle gold accent on the hero */
 .hero-banner::after {
   content: '';

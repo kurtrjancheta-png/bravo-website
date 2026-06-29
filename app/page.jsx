@@ -149,14 +149,16 @@ export default async function Home() {
   return (
     <div>
       {/* Title Card */}
-      <div className="hero-banner" style={{ marginBottom: '3rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0' }}>
-        <img src="/logo.png" alt="Bravo Bulls Logo" style={{ width: '100px', height: '100px', objectFit: 'contain', marginBottom: '1rem', filter: 'drop-shadow(0 4px 16px rgba(212,175,55,0.3))' }} />
-        <h1 className="hero-title" style={{ fontSize: 'clamp(1.4rem, 5vw, 2.5rem)', marginBottom: '0.4rem' }}>Bravo Company</h1>
-        <div className="hero-subtitle" style={{ fontSize: 'clamp(0.75rem, 3vw, 1rem)', letterSpacing: '0.12em', marginBottom: '1.5rem' }}>
-          Integrated Information System
+      <div className="home-hero-card">
+        <div className="home-hero-header">
+          <img src="/logo.png" alt="Bravo Bulls Logo" className="home-hero-logo" />
+          <div className="home-hero-text">
+            <h1 className="home-hero-title">Bravo Company</h1>
+            <div className="home-hero-subtitle">Integrated Information System</div>
+          </div>
         </div>
-        <div style={{ width: '60px', height: '2px', background: 'var(--accent-gold)', borderRadius: '2px', marginBottom: '1.5rem' }} />
-        <div className="hero-stats">
+        <div className="home-hero-divider"></div>
+        <div className="home-hero-stats">
           <div className="stat-item">
             <span className="stat-value">{allDisseminations.length || '-'}</span>
             <span className="stat-label">Active Disseminations</span>
