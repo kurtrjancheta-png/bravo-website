@@ -778,7 +778,6 @@ export default function AnnouncementsGrid({ disseminations }) {
           </div>
         </div>{/* end mobile carousel */}
       ) : (
-        // ── Desktop: auto-fill grid ──
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
