@@ -45,7 +45,6 @@ body.dark-mode {
 }
 
 html, body {
-  overflow-x: hidden;
   max-width: 100vw;
   width: 100%;
 }
@@ -1414,6 +1413,41 @@ tbody tr:hover {
     padding: 1rem !important; /* Smaller spacing on mobile */
   }
 
+  .app-container, .main-wrapper {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* Slider for horizontally scrolling elements (like Top Performers cards) */
+  .mobile-slider {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory;
+    gap: 1rem !important;
+    padding-bottom: 0.5rem; /* Space for scrollbar if visible */
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap !important;
+    /* Hide scrollbar for a cleaner native look */
+    scrollbar-width: none; /* Firefox */
+  }
+  .mobile-slider::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
+  }
+  .mobile-slider > * {
+    scroll-snap-align: center;
+    flex: 0 0 85% !important; /* Cards take up 85% of screen width, peeking the next one */
+    min-width: 0 !important;
+  }
+
+  /* Make sure graphs fit their containers */
+  .graph-container {
+    width: 100% !important;
+    overflow-x: auto;
+  }
+  .graph-container .recharts-responsive-container {
+    width: 100% !important;
+  }
+
   /* Card layouts and spacing */
   .section-header {
     margin-bottom: 1.5rem !important;
@@ -1473,7 +1507,7 @@ tbody tr:hover {
   }
 
   /* Transform tables into vertical cards to eliminate horizontal scroll entirely */
-  table, thead, tbody, th, td, tr {
+  .mobile-card-table, .mobile-card-table thead, .mobile-card-table tbody, .mobile-card-table th, .mobile-card-table td, .mobile-card-table tr {
     display: block !important;
     width: 100% !important;
     min-width: 0 !important;
@@ -1482,13 +1516,13 @@ tbody tr:hover {
   }
   
   /* Hide table headers (but not display: none, for accessibility) */
-  thead tr {
+  .mobile-card-table thead tr {
     position: absolute;
     top: -9999px;
     left: -9999px;
   }
   
-  tr {
+  .mobile-card-table tr {
     border: 1px solid var(--border-color);
     border-radius: 8px;
     margin-bottom: 1rem;
@@ -1497,7 +1531,7 @@ tbody tr:hover {
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   }
   
-  td {
+  .mobile-card-table td {
     border: none !important;
     border-bottom: 1px solid rgba(128,128,128,0.1) !important;
     position: relative;
@@ -1508,11 +1542,11 @@ tbody tr:hover {
     min-height: 40px;
   }
   
-  td:last-child {
+  .mobile-card-table td:last-child {
     border-bottom: 0 !important;
   }
   
-  td:before {
+  .mobile-card-table td:before {
     position: absolute;
     top: 0.75rem;
     left: 1rem;

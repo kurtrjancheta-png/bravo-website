@@ -133,7 +133,7 @@ export default function TopPerformers({ topPerformers }) {
         )}
 
         {/* Individual Events */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', margin: '-0.5rem' }}>
+        <div className="mobile-slider" style={{ display: 'flex', flexWrap: 'wrap', margin: '-0.5rem' }}>
           {renderCombinedEvent('Push-Ups', data.pushups, '(M)', 'reps', data.pushupsF, '(F)', 'reps', '💪')}
           {renderCombinedEvent('Sit-Ups', data.situps, '(M)', 'reps', data.situpsF, '(F)', 'reps', '💪')}
           {renderCombinedEvent('Pull-Ups / Flexed-Arm', data.pullups, 'Pull-Ups (M)', 'reps', data.flexarm, 'Flexed-Arm (F)', 'secs', '💪')}

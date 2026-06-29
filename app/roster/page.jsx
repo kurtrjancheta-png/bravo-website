@@ -142,7 +142,7 @@ function RosterSection({ title, cadets, color }) {
         {title}
       </h2>
       <div className="table-container">
-        <table>
+        <table className="mobile-card-table">
           <thead>
             <tr>
               <th>No.</th>

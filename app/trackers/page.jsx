@@ -15,7 +15,7 @@ export default async function Trackers() {
 
       {trackers.length > 0 ? (
         <div className="table-container">
-          <table>
+          <table className="mobile-card-table">
             <thead>
               <tr>
                 {headers.map((header, i) => (

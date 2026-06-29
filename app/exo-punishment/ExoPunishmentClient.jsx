@@ -527,7 +527,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                   {showClassLines ? 'HIDE CLASS BREAKDOWNS' : 'SHOW CLASS BREAKDOWNS'}
                 </button>
               </div>
-              <div style={{ width: '100%', flex: 1, minHeight: '260px' }}>
+              <div className="graph-container" style={{ width: '100%', flex: 1, minHeight: '260px' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }} onClick={handleChartClick} style={{ cursor: 'pointer' }}>
                     <defs>
@@ -1148,7 +1148,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
       ) : (
         <>
           <div className="table-container" style={{ marginTop: '0rem', width: '100%', overflowX: 'auto' }}>
-          <table style={{ width: '100%', minWidth: '1000px', borderCollapse: 'collapse' }}>
+          <table className="mobile-card-table" style={{ width: '100%', minWidth: '1000px', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
               <th style={{ padding: '1rem', textAlign: 'left', width: '25%' }}>Cadet Profile</th>

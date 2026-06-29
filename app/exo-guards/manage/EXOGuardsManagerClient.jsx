@@ -1242,6 +1242,9 @@ function TallySheetModal({ isOpen, onClose, tally1CL, tally2CL, tally3CL, soiDat
     dates.push(d);
   }
 
+  // On mobile, only show 3 days centered around today (index 2,3,4) to prevent horizontal scrolling
+  const displayDates = isMobile ? dates.slice(2, 5) : dates;
+
   const formatDate = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const formatHeader = (date) => date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', weekday: 'short' });
 
@@ -1365,11 +1368,11 @@ function TallySheetModal({ isOpen, onClose, tally1CL, tally2CL, tally3CL, soiDat
         {/* Tally Grid */}
         <div style={{ overflow: 'auto', flex: 1, padding: '0', background: 'var(--bg-primary)' }}>
           <div style={{ ...animState, minHeight: '100%' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '800px', fontSize: '0.8rem' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isMobile ? '0' : '800px', fontSize: '0.8rem' }}>
               <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
                 <tr>
                   <th style={{ padding: '0.5rem 1rem', textAlign: 'left', borderBottom: '2px solid var(--border-color)', borderRight: '1px solid var(--border-color)', width: '180px', position: 'sticky', left: 0, background: 'var(--bg-secondary)', zIndex: 11, color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>CADET</th>
-                  {dates.map((d, i) => {
+                  {displayDates.map((d, i) => {
                     const today = isToday(d);
                     return (
                       <th key={i} style={{ 
@@ -1397,7 +1400,7 @@ function TallySheetModal({ isOpen, onClose, tally1CL, tally2CL, tally3CL, soiDat
                     <td style={{ padding: '0.35rem 1rem', fontWeight: 600, borderRight: '1px solid var(--border-color)', position: 'sticky', left: 0, background: 'inherit', zIndex: 5, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
                       {cadet}
                     </td>
-                    {dates.map((d, colIdx) => {
+                    {displayDates.map((d, colIdx) => {
                       const dateStr = formatDate(d);
                       const posting = activeTally[cadet] ? activeTally[cadet][dateStr] : null;
                       const today = isToday(d);

@@ -731,7 +731,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   </div>
                 </div>
               </div>
-              <div style={{ width: '100%', height: 350, marginTop: '0.5rem' }}>
+              <div className="graph-container" style={{ width: '100%', height: 350, marginTop: '0.5rem' }}>
                 <ResponsiveContainer>
                   <BarChart data={progressChartData} margin={{ top: 15, right: 30, left: -20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
@@ -789,7 +789,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                 </div>
               </div>
             </div>
-            <div style={{ width: '100%', height: 350, marginTop: '0.5rem' }}>
+            <div className="graph-container" style={{ width: '100%', height: 350, marginTop: '0.5rem' }}>
               <ResponsiveContainer>
                 <ComposedChart data={averageGradesData} margin={{ top: 15, right: 30, left: -20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
@@ -898,7 +898,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
 
       {/* Summary Table */}
       <div className="table-container" style={{ marginTop: '2rem' }}>
-        <table>
+        <table className="mobile-card-table">
           <thead>
             <tr>
               <th>PFT Type</th>
@@ -1273,7 +1273,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
               {/* Cadet Progression Line Chart */}
               <div className="pft-chart-card" style={{ marginBottom: '2rem' }}>
                 <h3 className="pft-chart-title">Event Progression</h3>
-                <div style={{ width: '100%', height: 300, marginTop: '1rem' }}>
+                <div className="graph-container" style={{ width: '100%', height: 400, marginTop: '1rem' }}>
                   <ResponsiveContainer>
                     <LineChart 
                       data={[
@@ -1522,7 +1522,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
               {/* Cadet Data Table */}
               {showScorecard && (
                 <div className="table-container" style={{ marginTop: '1.5rem', marginBottom: '1rem' }}>
-                  <table>
+                  <table className="mobile-card-table">
                     <thead>
                       <tr>
                         <th style={{ textAlign: 'left' }}>Event</th>
