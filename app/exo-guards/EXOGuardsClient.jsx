@@ -457,7 +457,7 @@ export default function EXOGuardsClient({ data1CL = [], data2CL = [], data3CL = 
   const getSentinels = (guards) => guards.filter(g => g.status.includes('SENTINEL'));
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', zoom: isMobile ? '0.8' : '1', transformOrigin: 'top center' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           {['1CL', '2CL', '3CL'].map(tab => (

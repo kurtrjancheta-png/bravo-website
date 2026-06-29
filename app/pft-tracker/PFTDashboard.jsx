@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import InfiniteSlider from '../components/InfiniteSlider';
 import { 
   ComposedChart,
   Area,
@@ -258,7 +259,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
   const [activeList, setActiveList] = useState(null);
   
   // Toggle switcher state: 'class' for Class PFT Data, 'event' for PFT Event Data
-  const [activeChartTab, setActiveChartTab] = useState('class');
+  const [activeChartTab, setActiveChartTab] = useState('event');
 
   // Insight Modal State
   const [showInsightModal, setShowInsightModal] = useState(false);
@@ -602,35 +603,102 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
       {/* Controls: Dropdowns + Generate Insights Button */}
-      <div className="pft-controls" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <label htmlFor="pft-select" className="pft-select-label">PFT Type:</label>
-          <select
-            id="pft-select"
-            className="pft-select"
-            value={selectedPFT}
-            onChange={(e) => { setSelectedPFT(e.target.value); setActiveList(null); }}
-          >
-            <option value="all">All PFTs</option>
-            <option value="mock">Mock PFT</option>
-            <option value="pft1">PFT 1</option>
-            <option value="pft2">PFT 2</option>
-          </select>
+      <div className="pft-controls" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center', width: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
+          <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>PFT TYPE</span>
+          <div style={{ margin: '0 -1.5rem' }}>
+            <InfiniteSlider itemWidth="auto" gap="0.5rem">
+              {[
+                { value: 'all', label: 'ALL PFTs' },
+                { value: 'mock', label: 'MOCK PFT' },
+                { value: 'pft1', label: 'PFT 1' }
+              ].map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => { setSelectedPFT(opt.value); setActiveList(null); }}
+                  style={{
+                    position: 'relative',
+                    padding: '0.4rem 1.1rem',
+                    borderRadius: '20px',
+                    border: selectedPFT === opt.value ? 'none' : '1px solid var(--border-color)',
+                    background: selectedPFT === opt.value ? 'var(--text-primary)' : 'var(--bg-primary)',
+                    color: selectedPFT === opt.value ? 'var(--bg-primary)' : 'var(--text-secondary)',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.2s ease',
+                    boxShadow: selectedPFT === opt.value ? '0 4px 6px rgba(0,0,0,0.1)' : 'none'
+                  }}
+                >
+                  {selectedPFT === opt.value && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '-6px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: 0,
+                      height: 0,
+                      borderLeft: '4px solid transparent',
+                      borderRight: '4px solid transparent',
+                      borderTop: '5px solid var(--text-primary)',
+                      animation: 'dropIn 0.2s ease-out'
+                    }} />
+                  )}
+                  {opt.label}
+                </button>
+              ))}
+            </InfiniteSlider>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <label htmlFor="class-select" className="pft-select-label">Class:</label>
-          <select
-            id="class-select"
-            className="pft-select"
-            value={selectedClass}
-            onChange={(e) => { setSelectedClass(e.target.value); setActiveList(null); }}
-          >
-            <option value="all">All Classes</option>
-            <option value="1cl">1st Class (1CL)</option>
-            <option value="2cl">2nd Class (2CL)</option>
-            <option value="3cl">3rd Class (3CL)</option>
-          </select>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
+          <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>CLASS</span>
+          <div style={{ margin: '0 -1.5rem' }}>
+            <InfiniteSlider itemWidth="auto" gap="0.5rem">
+              {[
+                { value: 'all', label: 'ALL CLASSES' },
+                { value: '1cl', label: '1ST CLASS' },
+                { value: '2cl', label: '2ND CLASS' },
+                { value: '3cl', label: '3RD CLASS' }
+              ].map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => { setSelectedClass(opt.value); setActiveList(null); }}
+                  style={{
+                    position: 'relative',
+                    padding: '0.4rem 1.1rem',
+                    borderRadius: '20px',
+                    border: selectedClass === opt.value ? 'none' : '1px solid var(--border-color)',
+                    background: selectedClass === opt.value ? 'var(--text-primary)' : 'var(--bg-primary)',
+                    color: selectedClass === opt.value ? 'var(--bg-primary)' : 'var(--text-secondary)',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.2s ease',
+                    boxShadow: selectedClass === opt.value ? '0 4px 6px rgba(0,0,0,0.1)' : 'none'
+                  }}
+                >
+                  {selectedClass === opt.value && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '-6px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: 0,
+                      height: 0,
+                      borderLeft: '4px solid transparent',
+                      borderRight: '4px solid transparent',
+                      borderTop: '5px solid var(--text-primary)',
+                      animation: 'dropIn 0.2s ease-out'
+                    }} />
+                  )}
+                  {opt.label}
+                </button>
+              ))}
+            </InfiniteSlider>
+          </div>
         </div>
 
         <motion.button 
@@ -639,7 +707,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
           onClick={() => setShowInsightModal(true)}
           className="pft-insight-btn"
           style={{
-            marginLeft: 'auto',
+            margin: '0 auto',
             padding: '0.5rem 1.25rem',
             background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
             color: 'white',
@@ -885,7 +953,6 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
           <>
             <PieChart data={mockData[selectedClass]} title="Mock PFT" onSegmentClick={handleSegmentClick} />
             <PieChart data={pft1Data[selectedClass]} title="PFT 1" onSegmentClick={handleSegmentClick} />
-            <PieChart data={pft2Data[selectedClass]} title="PFT 2" onSegmentClick={handleSegmentClick} />
           </>
         ) : (
           <PieChart 
@@ -896,36 +963,6 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
         )}
       </div>
 
-      {/* Summary Table */}
-      <div className="table-container" style={{ marginTop: '2rem' }}>
-        <table className="mobile-card-table">
-          <thead>
-            <tr>
-              <th>PFT Type</th>
-              <th style={{ color: COLORS.passed }}>Passed</th>
-              <th style={{ color: COLORS.failed }}>Failed</th>
-              <th style={{ color: COLORS.smc }}>SMC</th>
-              <th style={{ color: COLORS.fad }}>FAD/Guard/SIQ</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(pftTypes).map(([key, { label, data }]) => {
-              const cData = data[selectedClass];
-              return (
-                <tr key={key}>
-                  <td data-label="PFT Type" style={{ fontWeight: 600 }}>{label}</td>
-                  <td data-label="Passed">{cData.passed.length}</td>
-                  <td data-label="Failed">{cData.failed.length}</td>
-                  <td data-label="SMC">{cData.smc.length}</td>
-                  <td data-label="FAD/Guard/SIQ">{cData.fad.length}</td>
-                  <td data-label="Total" style={{ fontWeight: 700 }}>{getTotal(cData)}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
 
       {/* Drill-down Cadet List View */}
       <AnimatePresence>

@@ -492,7 +492,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
               padding: '1.5rem', 
               display: 'flex', 
               flexDirection: 'column', 
-              height: isMobile ? '350px' : '580px' 
+              minHeight: isMobile ? '380px' : '580px' 
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '10px' }}>
                 <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', margin: 0, fontWeight: 700 }}>Violations Over Time</h2>
@@ -607,21 +607,16 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                       </>
                     )}
                   </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
-
           {/* Card 2: Offenses Breakdown (Pizza Chart) */}
           {breakdownData && breakdownData.length > 0 && (
             <div className="card" style={{ 
               padding: '1.5rem', 
               display: 'flex', 
               flexDirection: 'column', 
-              height: isMobile ? '350px' : '580px'
+              minHeight: isMobile ? '380px' : '580px'
             }}>
-              <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 700 }}>Offenses Breakdown</h2>
-              <div style={{ width: '100%', flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+              <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', margin: '0 0 1rem 0', fontWeight: 700 }}>Offense Breakdown</h2>
+              <div className="graph-container" style={{ width: '100%', flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
                 <OffensesPizzaChart data={breakdownData} hoveredItem={hoveredItem} setHoveredItem={setHoveredItem} />
               </div>
 

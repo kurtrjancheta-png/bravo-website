@@ -92,6 +92,12 @@ export default function AnnouncementsGrid({ disseminations }) {
   const [selectedCouncil, setSelectedCouncil] = useState('ALL');
   const [selectedType, setSelectedType] = useState('ALL');
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+  const [expandedCards, setExpandedCards] = useState({});
+
+  const toggleCard = (cardId, e) => {
+    if (e) e.stopPropagation();
+    setExpandedCards(prev => ({ ...prev, [cardId]: !prev[cardId] }));
+  };
 
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -340,6 +346,7 @@ export default function AnnouncementsGrid({ disseminations }) {
                   key={c}
                   onClick={() => setSelectedCouncil(c)}
                   style={{
+                    position: 'relative',
                     padding: '0.4rem 1.1rem',
                     borderRadius: '20px',
                     border: selectedCouncil === c ? 'none' : '1px solid var(--border-color)',
@@ -353,6 +360,20 @@ export default function AnnouncementsGrid({ disseminations }) {
                     boxShadow: selectedCouncil === c ? '0 4px 6px rgba(0,0,0,0.1)' : 'none'
                   }}
                 >
+                  {selectedCouncil === c && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '-6px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: 0,
+                      height: 0,
+                      borderLeft: '5px solid transparent',
+                      borderRight: '5px solid transparent',
+                      borderTop: '6px solid #1e293b',
+                      animation: 'dropIn 0.2s ease-out'
+                    }} />
+                  )}
                   {c}
                 </button>
               ))}
@@ -400,6 +421,7 @@ export default function AnnouncementsGrid({ disseminations }) {
                   key={t}
                   onClick={() => setSelectedType(t)}
                   style={{
+                    position: 'relative',
                     padding: '0.3rem 0.9rem',
                     borderRadius: '16px',
                     border: selectedType === t ? 'none' : '1px solid var(--border-color)',
@@ -412,6 +434,20 @@ export default function AnnouncementsGrid({ disseminations }) {
                     transition: 'all 0.2s ease'
                   }}
                 >
+                  {selectedType === t && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '-6px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: 0,
+                      height: 0,
+                      borderLeft: '4px solid transparent',
+                      borderRight: '4px solid transparent',
+                      borderTop: '5px solid var(--text-primary)',
+                      animation: 'dropIn 0.2s ease-out'
+                    }} />
+                  )}
                   {t}
                 </button>
               ))}
@@ -477,8 +513,8 @@ export default function AnnouncementsGrid({ disseminations }) {
       ) : (
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
-          gap: '1.5rem' 
+          gridTemplateColumns: isMobile ? 'repeat(auto-fill, minmax(200px, 1fr))' : 'repeat(auto-fill, minmax(280px, 1fr))', 
+          gap: '1rem' 
         }}>
           {filteredDisseminations.map((card, i) => {
             const cardId = `${card.councilId || 'SYSTEM'}_${card.sheetRowIndex || i}`;
@@ -518,13 +554,19 @@ export default function AnnouncementsGrid({ disseminations }) {
             return (
               <div 
                 key={cardId}
-                onClick={() => setSelectedAnnouncement(card)}
+                onClick={(e) => {
+                  if (isMobile) {
+                    toggleCard(cardId, e);
+                  } else {
+                    setSelectedAnnouncement(card);
+                  }
+                }}
                 style={{
                   background: 'var(--card-bg)',
                   borderRadius: '16px',
                   border: '1px solid var(--border-color)',
-                  borderLeft: `8px solid ${stripeColor}`,
-                  padding: '1.5rem',
+                  borderLeft: `6px solid ${stripeColor}`,
+                  padding: isMobile ? '1rem' : '1.5rem',
                   display: 'flex',
                   flexDirection: 'column',
                   cursor: 'pointer',
@@ -572,32 +614,46 @@ export default function AnnouncementsGrid({ disseminations }) {
                 {/* Card Body: Title (or truncated body) */}
                 {/* Card Body: Title */}
                 <h3 style={{
-                  fontSize: '1.2rem',
+                  fontSize: isMobile ? '1.05rem' : '1.2rem',
                   fontWeight: '800',
                   color: 'var(--text-primary)',
                   lineHeight: '1.4',
-                  margin: '0 0 0.75rem 0',
+                  margin: '0 0 0.5rem 0',
                   letterSpacing: '-0.01em'
                 }}>
                   {displayHeadline}
                 </h3>
                 
-                <p style={{
-                  fontSize: '0.9rem',
-                  color: 'var(--text-secondary)',
-                  lineHeight: '1.5',
-                  margin: '0 0 1.25rem 0',
-                  flex: '1',
-                  whiteSpace: 'pre-wrap'
+                <div style={{
+                  display: 'grid',
+                  gridTemplateRows: (isMobile && !expandedCards[cardId]) ? '0fr' : '1fr',
+                  transition: 'grid-template-rows 0.3s ease-in-out',
+                  overflow: 'hidden'
                 }}>
-                  {truncatedText}
-                </p>
+                  <div style={{ minHeight: 0 }}>
+                    <p style={{
+                      fontSize: '0.85rem',
+                      color: 'var(--text-secondary)',
+                      lineHeight: '1.5',
+                      margin: '0 0 1rem 0',
+                      whiteSpace: 'pre-wrap'
+                    }}>
+                      {truncatedText}
+                    </p>
+                  </div>
+                </div>
+
+                {isMobile && !expandedCards[cardId] && (
+                   <div style={{ textAlign: 'center', margin: '0.5rem 0 0.5rem 0' }}>
+                     <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', borderBottom: '1px dashed var(--text-secondary)' }}>Tap to read more</span>
+                   </div>
+                )}
 
                 {/* Divider Line */}
-                <div style={{ borderTop: '1px solid var(--border-color)', margin: '0 0 1rem 0' }} />
+                <div style={{ borderTop: '1px solid var(--border-color)', margin: '0 0 1rem 0', display: (isMobile && !expandedCards[cardId]) ? 'none' : 'block' }} />
 
                 {/* Card Footer */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <div style={{ display: (isMobile && !expandedCards[cardId]) ? 'none' : 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
                   {/* Left: Badge + Council Name + Follow Up */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center' }}>

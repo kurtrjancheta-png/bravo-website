@@ -295,11 +295,18 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
                     {headline}
                   </h3>
                 )}
-                {expanded && (
-                  <div style={{ fontSize: getDynamicFontSize(body), color: 'var(--text-primary)', lineHeight: 1.5, flex: 1, whiteSpace: 'pre-wrap' }}>
-                    {body || 'No content provided.'}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateRows: (isMobile && !expanded) ? '0fr' : '1fr',
+                  transition: 'grid-template-rows 0.3s ease-in-out',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{ minHeight: 0 }}>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.5', whiteSpace: 'pre-wrap', paddingBottom: '0.5rem' }}>
+                      {body || 'No content provided.'}
+                    </div>
                   </div>
-                )}
+                </div>
               </>
             );
           })()}
@@ -312,9 +319,9 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
           )}
           
           {isMobile && !expanded && (
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.5rem', textAlign: 'center', fontStyle: 'italic' }}>
-              Tap to expand...
-            </div>
+             <div style={{ textAlign: 'center', margin: '0.5rem 0' }}>
+               <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', borderBottom: '1px dashed var(--text-secondary)' }}>Tap to read more</span>
+             </div>
           )}
         </div>
 
@@ -527,7 +534,7 @@ export default function DisseminationList({ activeCards, archivedCards, sheetNam
                 No active disseminations at this time.
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(auto-fill, minmax(200px, 1fr))' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
                 {activeCards.map((card, i) => {
                   const urgency = String(card['URGENCY'] || '').trim().toUpperCase();
                   const style = urgencyStyles[normalizeUrgency(urgency)] || urgencyStyles['FOR INFO'];
@@ -551,7 +558,7 @@ export default function DisseminationList({ activeCards, archivedCards, sheetNam
                 No archived disseminations available.
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(auto-fill, minmax(200px, 1fr))' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
                 {archivedCards.map((card, i) => {
                   const urgency = String(card['URGENCY'] || '').trim().toUpperCase();
                   const style = urgencyStyles[normalizeUrgency(urgency)] || urgencyStyles['FOR INFO'];

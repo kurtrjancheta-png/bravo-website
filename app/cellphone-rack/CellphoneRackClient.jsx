@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { useAuth } from '../AuthContext';
 import { useRouter } from 'next/navigation';
+import InfiniteSlider from '../components/InfiniteSlider';
 
 export default function CellphoneRackClient({ initialData }) {
   const { adminUser } = useAuth();
@@ -107,27 +108,17 @@ export default function CellphoneRackClient({ initialData }) {
       <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           <span style={{ fontWeight: 800, color: 'var(--text-secondary)' }}>FILTER BY CLASS:</span>
-          <select 
-            value={filterClass} 
-            onChange={(e) => setFilterClass(e.target.value)}
-            style={{ 
-              padding: '0.5rem 1rem', 
-              borderRadius: '4px', 
-              background: 'var(--card-bg)', 
-              border: '1px solid var(--border-color)',
-              color: 'var(--text-primary)',
-              outline: 'none',
-              fontFamily: 'inherit',
-              fontWeight: 800,
-              cursor: 'pointer'
-            }}
-          >
-            <option value="All">ALL CLASSES</option>
-            <option value="1">1ST CLASS</option>
-            <option value="2">2ND CLASS</option>
-            <option value="3">3RD CLASS</option>
-            <option value="4">4TH CLASS</option>
-          </select>
+          <InfiniteSlider 
+            items={[
+              { id: 'All', label: 'ALL CLASSES' },
+              { id: '1', label: '1ST CLASS' },
+              { id: '2', label: '2ND CLASS' },
+              { id: '3', label: '3RD CLASS' },
+              { id: '4', label: '4TH CLASS' }
+            ]}
+            activeId={filterClass}
+            onChange={setFilterClass}
+          />
 
           <a 
             href="https://docs.google.com/spreadsheets/d/13xZEcuuedRTppVj479aYhUqpgbvqOq3VMMvBJn_IH5Q/edit"

@@ -117,7 +117,7 @@ export default async function RosterPage() {
       </Suspense>
 
       {/* Roster Sections */}
-      <div className="roster-sections" style={{ marginTop: '3rem' }}>
+      <div className="roster-sections hide-on-mobile" style={{ marginTop: '3rem' }}>
         <RosterSection title="1ST CLASS (1CL)" cadets={class1} color="var(--accent-gold)" />
         <RosterSection title="2ND CLASS (2CL)" cadets={class2} color="#1a7a3a" />
         <RosterSection title="3RD CLASS (3CL)" cadets={class3} color="#2d3748" />

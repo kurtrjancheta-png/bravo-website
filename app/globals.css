@@ -299,7 +299,8 @@ details[open] > summary .dropdown-arrow {
 .hero-stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 2rem;
+  gap: 1.5rem;
+  justify-content: flex-start;
 }
 @media (min-width: 768px) {
   .hero-stats {
@@ -313,9 +314,14 @@ details[open] > summary .dropdown-arrow {
 }
 
 .stat-value {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--text-light);
+}
+@media (min-width: 768px) {
+  .stat-value {
+    font-size: 2rem;
+  }
 }
 
 .stat-label {
@@ -558,8 +564,8 @@ tr:last-child td {
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  padding: 1.25rem;
-  width: 250px;
+  padding: 0.75rem;
+  width: 160px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
@@ -569,6 +575,13 @@ tr:last-child td {
   z-index: 2;
   position: relative; /* For tooltip */
   cursor: pointer;
+}
+
+@media (min-width: 768px) {
+  .org-card {
+    padding: 1.25rem;
+    width: 250px;
+  }
 }
 
 .pie-slice {
@@ -647,28 +660,39 @@ tr:last-child td {
 }
 
 .avatar-placeholder {
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   background-color: var(--surface-gray);
   border: 2px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
+  font-size: 1.5rem;
   color: var(--text-secondary);
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
 }
 
 .avatar-image {
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   border: 2px solid var(--border-color);
   object-fit: cover;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .avatar-placeholder, .avatar-image {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 1rem;
+  }
+  .avatar-placeholder {
+    font-size: 2rem;
+  }
 }
 
 .org-card:hover .avatar-placeholder,
@@ -1635,3 +1659,4 @@ tbody tr:hover {
   }
 }
 
+@media (max-width: 1024px) { .hide-on-mobile { display: none !important; } }
