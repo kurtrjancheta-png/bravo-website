@@ -155,13 +155,13 @@ function RosterSection({ title, cadets, color }) {
           <tbody>
             {cadets.map((c, idx) => (
               <tr key={idx}>
-                <td style={{ color: 'var(--text-secondary)' }}>{c.no}</td>
-                <td style={{ fontWeight: 600 }}>{c.serialNo}</td>
-                <td style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
+                <td data-label="No." style={{ color: 'var(--text-secondary)' }}>{c.no}</td>
+                <td data-label="Serial No." style={{ fontWeight: 600 }}>{c.serialNo}</td>
+                <td data-label="Full Name" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
                   {c.lastName}, {c.firstName} {c.middleName}
                 </td>
-                <td>{c.gender}</td>
-                <td>{c.bos}</td>
+                <td data-label="Gender">{c.gender}</td>
+                <td data-label="BOS">{c.bos}</td>
               </tr>
             ))}
           </tbody>

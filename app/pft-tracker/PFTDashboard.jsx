@@ -914,12 +914,12 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
               const cData = data[selectedClass];
               return (
                 <tr key={key}>
-                  <td style={{ fontWeight: 600 }}>{label}</td>
-                  <td>{cData.passed.length}</td>
-                  <td>{cData.failed.length}</td>
-                  <td>{cData.smc.length}</td>
-                  <td>{cData.fad.length}</td>
-                  <td style={{ fontWeight: 700 }}>{getTotal(cData)}</td>
+                  <td data-label="PFT Type" style={{ fontWeight: 600 }}>{label}</td>
+                  <td data-label="Passed">{cData.passed.length}</td>
+                  <td data-label="Failed">{cData.failed.length}</td>
+                  <td data-label="SMC">{cData.smc.length}</td>
+                  <td data-label="FAD/Guard/SIQ">{cData.fad.length}</td>
+                  <td data-label="Total" style={{ fontWeight: 700 }}>{getTotal(cData)}</td>
                 </tr>
               );
             })}
@@ -1537,22 +1537,22 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                         const k = keys[ev];
                         return (
                           <tr key={ev}>
-                            <td style={{ fontWeight: ev === 'Average' ? 700 : 600, textAlign: 'left' }}>{ev}</td>
-                            <td style={{ fontWeight: ev === 'Average' ? 700 : 400, textAlign: 'center' }}>{selectedCadet.mock?.scores?.[k] !== undefined ? selectedCadet.mock.scores[k].toFixed(2) : '-'}</td>
-                            <td style={{ fontWeight: ev === 'Average' ? 700 : 400, textAlign: 'center' }}>{selectedCadet.pft1?.scores?.[k] !== undefined ? selectedCadet.pft1.scores[k].toFixed(2) : '-'}</td>
-                            <td style={{ fontWeight: ev === 'Average' ? 700 : 400, textAlign: 'center' }}>{selectedCadet.pft2?.scores?.[k] !== undefined ? selectedCadet.pft2.scores[k].toFixed(2) : '-'}</td>
+                            <td data-label="Event" style={{ fontWeight: ev === 'Average' ? 700 : 600, textAlign: 'left' }}>{ev}</td>
+                            <td data-label="Mock PFT" style={{ fontWeight: ev === 'Average' ? 700 : 400, textAlign: 'center' }}>{selectedCadet.mock?.scores?.[k] !== undefined ? selectedCadet.mock.scores[k].toFixed(2) : '-'}</td>
+                            <td data-label="PFT 1" style={{ fontWeight: ev === 'Average' ? 700 : 400, textAlign: 'center' }}>{selectedCadet.pft1?.scores?.[k] !== undefined ? selectedCadet.pft1.scores[k].toFixed(2) : '-'}</td>
+                            <td data-label="PFT 2" style={{ fontWeight: ev === 'Average' ? 700 : 400, textAlign: 'center' }}>{selectedCadet.pft2?.scores?.[k] !== undefined ? selectedCadet.pft2.scores[k].toFixed(2) : '-'}</td>
                           </tr>
                         );
                       })}
                       <tr>
-                        <td style={{ fontWeight: 600, textAlign: 'left' }}>Remarks</td>
-                        <td style={{ color: selectedCadet.mock?.remarks?.includes('PASSED') || selectedCadet.mock?.remarks === 'P' ? '#1a7a3a' : selectedCadet.mock?.remarks ? '#c0392b' : 'inherit', fontWeight: 700, textAlign: 'center' }}>
+                        <td data-label="Event" style={{ fontWeight: 600, textAlign: 'left' }}>Remarks</td>
+                        <td data-label="Mock PFT" style={{ color: selectedCadet.mock?.remarks?.includes('PASSED') || selectedCadet.mock?.remarks === 'P' ? '#1a7a3a' : selectedCadet.mock?.remarks ? '#c0392b' : 'inherit', fontWeight: 700, textAlign: 'center' }}>
                           {selectedCadet.mock?.remarks || '-'}
                         </td>
-                        <td style={{ color: selectedCadet.pft1?.remarks?.includes('PASSED') || selectedCadet.pft1?.remarks === 'P' ? '#1a7a3a' : selectedCadet.pft1?.remarks ? '#c0392b' : 'inherit', fontWeight: 700, textAlign: 'center' }}>
+                        <td data-label="PFT 1" style={{ color: selectedCadet.pft1?.remarks?.includes('PASSED') || selectedCadet.pft1?.remarks === 'P' ? '#1a7a3a' : selectedCadet.pft1?.remarks ? '#c0392b' : 'inherit', fontWeight: 700, textAlign: 'center' }}>
                           {selectedCadet.pft1?.remarks || '-'}
                         </td>
-                        <td style={{ color: selectedCadet.pft2?.remarks?.includes('PASSED') || selectedCadet.pft2?.remarks === 'P' ? '#1a7a3a' : selectedCadet.pft2?.remarks ? '#c0392b' : 'inherit', fontWeight: 700, textAlign: 'center' }}>
+                        <td data-label="PFT 2" style={{ color: selectedCadet.pft2?.remarks?.includes('PASSED') || selectedCadet.pft2?.remarks === 'P' ? '#1a7a3a' : selectedCadet.pft2?.remarks ? '#c0392b' : 'inherit', fontWeight: 700, textAlign: 'center' }}>
                           {selectedCadet.pft2?.remarks || '-'}
                         </td>
                       </tr>

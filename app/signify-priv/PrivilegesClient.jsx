@@ -241,7 +241,7 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
           No active privileges found at this time.
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
           {filteredPrivileges.map((priv, idx) => {
             const rawType = priv.TYPE || priv['TYPE OF PRIV'] || 'Unknown';
             const rawDate = priv.DATE || priv['DATE OF PRIV'] || 'No Date';

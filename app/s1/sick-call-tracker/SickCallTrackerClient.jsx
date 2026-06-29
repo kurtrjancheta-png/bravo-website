@@ -247,7 +247,7 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
           <p>All cadets have returned from sick call and filled their feedback.</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '2rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '2rem' }}>
           {activeSickCalls.map((card, i) => (
             <motion.div 
               key={i}

@@ -1255,7 +1255,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
               return (
                 <tr key={index} style={{ borderBottom: '1px solid rgba(128,128,128,0.2)', verticalAlign: 'top' }}>
                   
-                  <td style={{ padding: '1.5rem 1rem' }}>
+                  <td data-label="Cadet Profile" style={{ padding: '1.5rem 1rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', opacity: isGloballyInactive ? 0.7 : 1 }}>
                       {cadet.picture ? (
                         <img 
@@ -1344,7 +1344,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                     </div>
                   </td>
 
-                  <td style={{ padding: '1.5rem 1rem' }}>
+                  <td data-label="Offenses" style={{ padding: '1.5rem 1rem' }}>
                     {displayedOffenses.length === 0 ? (
                       <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontStyle: 'italic', padding: '1rem 0' }}>
                         (No {currentMode} punishments)
@@ -1392,7 +1392,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                     )}
                   </td>
 
-                  <td style={{ padding: '1.5rem 1rem' }}>
+                  <td data-label="Accumulated Demerits" style={{ padding: '1.5rem 1rem' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', opacity: isGloballyInactive ? 0.6 : 1 }}>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Accumulated Demerits</div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
@@ -1418,7 +1418,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                     </div>
                   </td>
 
-                  <td style={{ padding: '1.5rem 1rem' }}>
+                  <td data-label="Confinement" style={{ padding: '1.5rem 1rem' }}>
                     {displayConfStats.total > 0 ? (
                       <div>
                         {displayConfStats.remaining === 0 ? (
@@ -1451,7 +1451,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                     )}
                   </td>
 
-                  <td style={{ padding: '1.5rem 1rem' }}>
+                  <td data-label="Touring" style={{ padding: '1.5rem 1rem' }}>
                     {displayTourStats.total > 0 ? (
                       <div>
                         {displayTourStats.progress >= displayTourStats.total ? (
