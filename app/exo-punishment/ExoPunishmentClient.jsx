@@ -607,6 +607,10 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                       </>
                     )}
                   </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
           {/* Card 2: Offenses Breakdown (Pizza Chart) */}
           {breakdownData && breakdownData.length > 0 && (
             <div className="card" style={{ 
