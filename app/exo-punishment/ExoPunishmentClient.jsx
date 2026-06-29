@@ -101,16 +101,16 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 const getOffenseColor = (name) => {
   const normalized = String(name || '').trim().toUpperCase();
-  if (normalized.includes('UNACCOUNTED') || normalized.includes('ABSENT')) return '#ef4444';
-  if (normalized.includes('LATE')) return '#f97316';
-  if (normalized.includes('NEGLIGENCE') || normalized.includes('NEGLEGENCE') || normalized.includes('DUTY')) return '#facc15';
-  if (normalized.includes('POSSESSING') || normalized.includes('UNAUTHORIZED ITEMS')) return '#a855f7';
-  if (normalized.includes('DOING') || normalized.includes('UNAUTHORIZED THINGS')) return '#ec4899';
-  if (normalized.includes('MALTREATMENT') || normalized.includes('NTP') || normalized.includes('CTP')) return '#3b82f6';
-  if (normalized.includes('HONOR')) return '#10b981';
-  if (normalized.includes('CLEANLINESS') || normalized.includes('ROOM')) return '#06b6d4';
-  if (normalized.includes('UNIFORM') || normalized.includes('RIFLE')) return '#6366f1';
-  return '#94a3b8';
+  if (normalized.includes('UNACCOUNTED') || normalized.includes('ABSENT')) return '#de3c4b'; // Crimson Rose
+  if (normalized.includes('LATE')) return '#d97706'; // Burnt copper amber
+  if (normalized.includes('NEGLIGENCE') || normalized.includes('NEGLEGENCE') || normalized.includes('DUTY')) return '#d4af37'; // Military brass gold
+  if (normalized.includes('POSSESSING') || normalized.includes('UNAUTHORIZED ITEMS')) return '#8a5cf6'; // Amethyst violet
+  if (normalized.includes('DOING') || normalized.includes('UNAUTHORIZED THINGS')) return '#be185d'; // Deep raspberry red
+  if (normalized.includes('MALTREATMENT') || normalized.includes('NTP') || normalized.includes('CTP')) return '#1d4ed8'; // Royal cadet blue
+  if (normalized.includes('HONOR')) return '#0d9488'; // Sleek teal green
+  if (normalized.includes('CLEANLINESS') || normalized.includes('ROOM')) return '#0284c7'; // Cool deep sky blue
+  if (normalized.includes('UNIFORM') || normalized.includes('RIFLE')) return '#4f46e5'; // Deep navy indigo
+  return '#64748b'; // Integrated slate gray
 };
 
 const CustomRadarDot = (props) => {
