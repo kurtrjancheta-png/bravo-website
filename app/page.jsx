@@ -147,7 +147,7 @@ export default async function Home() {
   const dateStr = today.toLocaleDateString('en-US', options);
 
   return (
-    <div>
+    <div style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden', boxSizing: 'border-box' }}>
       {/* Title Card */}
       <div className="home-hero-card">
         <div className="home-hero-header">
@@ -185,7 +185,7 @@ export default async function Home() {
          </div>
       )}
 
-      <div style={{ marginBottom: '4rem', marginTop: '2rem' }}>
+      <div style={{ marginBottom: '4rem', marginTop: '2rem', width: '100%', maxWidth: '100%', overflow: 'hidden', boxSizing: 'border-box' }}>
         <AnnouncementsGrid disseminations={allDisseminations} />
       </div>
 
