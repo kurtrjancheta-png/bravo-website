@@ -23,6 +23,7 @@ export default function LayoutContent({ children }) {
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isIOS, setIsIOS] = useState(false);
+  const [showIosGuide, setShowIosGuide] = useState(false);
 
   const [openSections, setOpenSections] = useState({
     exo: false,
@@ -134,9 +135,19 @@ export default function LayoutContent({ children }) {
     }
   }, []);
 
+  // Listen for custom trigger-pwa-install event
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleTriggerInstall = () => {
+      handleInstallClick();
+    };
+    window.addEventListener('trigger-pwa-install', handleTriggerInstall);
+    return () => window.removeEventListener('trigger-pwa-install', handleTriggerInstall);
+  }, [deferredPrompt, isIOS]);
+
   const handleInstallClick = async () => {
     if (isIOS) {
-      alert('To install on iPhone: Tap the Share button (square with arrow pointing up) at the bottom of your screen, then scroll down and tap "Add to Home Screen".');
+      setShowIosGuide(true);
     } else if (deferredPrompt) {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
@@ -144,6 +155,8 @@ export default function LayoutContent({ children }) {
         setShowInstallPrompt(false);
       }
       setDeferredPrompt(null);
+    } else {
+      setShowIosGuide(true);
     }
   };
 

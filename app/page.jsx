@@ -1,6 +1,7 @@
 import { getSheetData, isExpired } from '../lib/googleSheets';
 import AnnouncementsGrid from './AnnouncementsGrid';
 import { parsePFTData } from '../lib/pftParser';
+import InstallAppButton from './components/InstallAppButton';
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID || '';
 const DISSEMINATION_SHEET_ID = '1YeaoloRz4REe_iVomGfFI9WugalrDFsHiz04eOcD0a8';
@@ -155,6 +156,7 @@ export default async function Home() {
           <div className="home-hero-text">
             <h1 className="home-hero-title">Bravo Company</h1>
             <div className="home-hero-subtitle">Integrated Information System</div>
+            <InstallAppButton />
           </div>
         </div>
         <div className="home-hero-divider"></div>
