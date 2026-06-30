@@ -360,7 +360,7 @@ export default function AnnouncementsGrid({ disseminations }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
         {/* Row 1: Council Filter Pills */}
         {isMobile ? (
-          <div style={{ margin: '0 -1.5rem' }}>
+          <div style={{ width: '100%', overflow: 'hidden' }}>
             <InfiniteSlider itemWidth="auto" gap="0.5rem">
               {FILTER_COUNCILS.map(c => (
                 <button
@@ -435,7 +435,7 @@ export default function AnnouncementsGrid({ disseminations }) {
 
         {/* Row 2: Type/Urgency Filter Pills */}
         {isMobile ? (
-          <div style={{ margin: '0 -1.5rem' }}>
+          <div style={{ width: '100%', overflow: 'hidden' }}>
             <InfiniteSlider itemWidth="auto" gap="0.5rem">
               {FILTER_TYPES.map(t => (
                 <button
@@ -536,13 +536,14 @@ export default function AnnouncementsGrid({ disseminations }) {
 
       {filteredDisseminations.length > 0 && isMobile && (
         <div
-          style={{ position: 'relative', overflow: 'hidden', touchAction: 'pan-y' }}
+          style={{ position: 'relative', overflow: 'hidden', touchAction: 'pan-y', width: '100%' }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={() => handleTouchEnd(filteredDisseminations.length)}
         >
           <div style={{
             display: 'flex',
+            width: '100%',
             transform: `translateX(calc(-${activeCardIndex * 100}% - ${activeCardIndex}rem))`,
             transition: 'transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1)',
             gap: '1rem',

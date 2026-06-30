@@ -606,7 +606,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
       <div className="pft-controls" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center', width: '100%' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
           <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>PFT TYPE</span>
-          <div style={{ margin: '0 -1.5rem' }}>
+          <div style={{ width: '100%', overflow: 'hidden' }}>
             <InfiniteSlider itemWidth="auto" gap="0.5rem">
               {[
                 { value: 'all', label: 'ALL PFTs' },
@@ -654,7 +654,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
           <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>CLASS</span>
-          <div style={{ margin: '0 -1.5rem' }}>
+          <div style={{ width: '100%', overflow: 'hidden' }}>
             <InfiniteSlider itemWidth="auto" gap="0.5rem">
               {[
                 { value: 'all', label: 'ALL CLASSES' },

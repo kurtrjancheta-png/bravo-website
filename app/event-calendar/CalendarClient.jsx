@@ -337,7 +337,7 @@ export default function CalendarClient({ birthdays, activities }) {
       </div>
       
       {/* Divider */}
-      <div style={{ height: '1px', backgroundColor: 'var(--border-color)', margin: '1rem -1.5rem 0' }}></div>
+      <div style={{ height: '1px', backgroundColor: 'var(--border-color)', margin: '1rem -0.5rem 0' }}></div>
       
       {/* Scrollable agenda list */}
       {renderAgenda()}

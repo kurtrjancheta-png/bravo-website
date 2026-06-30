@@ -64,7 +64,7 @@ export default function InfiniteSlider({ children, itemWidth = '85%', gap = '1re
         padding: '0 10vw',
         opacity: isReady ? 1 : 0,
         transition: 'opacity 0.2s',
-        margin: '0 -1.5rem' // Negate parent padding
+        margin: '0'
       }}
       className="hide-scrollbar"
     >

@@ -145,7 +145,7 @@ export default function TopPerformers({ topPerformers }) {
         {/* Individual Events */}
         {/* Individual Events */}
         {isMobile ? (
-          <div style={{ margin: '-0.5rem' }}>
+          <div style={{ margin: '-0.5rem', width: '100%', overflow: 'hidden' }}>
             <InfiniteSlider itemWidth="85%" gap="1rem">
               {renderCombinedEvent('Push-Ups', data.pushups, '(M)', 'reps', data.pushupsF, '(F)', 'reps', '💪')}
               {renderCombinedEvent('Sit-Ups', data.situps, '(M)', 'reps', data.situpsF, '(F)', 'reps', '💪')}
