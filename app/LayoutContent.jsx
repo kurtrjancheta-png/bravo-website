@@ -648,6 +648,143 @@ export default function LayoutContent({ children }) {
         </div>
       )}
 
+      {/* iOS / Frictionless PWA Install Guide Modal */}
+      {showIosGuide && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.75)',
+          backdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 99999,
+          padding: '1.25rem',
+          animation: 'fadeIn 0.2s ease-out'
+        }}
+        onClick={() => setShowIosGuide(false)}
+        >
+          <div style={{
+            backgroundColor: 'var(--card-bg)',
+            border: '1px solid var(--accent-gold)',
+            borderRadius: '24px',
+            padding: '2rem 1.5rem',
+            width: '100%',
+            maxWidth: '400px',
+            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(212, 175, 55, 0.15)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            position: 'relative',
+            animation: 'scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }}
+          onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button 
+              onClick={() => setShowIosGuide(false)}
+              style={{
+                position: 'absolute',
+                top: '1.25rem',
+                right: '1.25rem',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: 'none',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}
+            >
+              ✕
+            </button>
+
+            {/* App Logo */}
+            <img 
+              src="/logo.png" 
+              alt="Bravo Logo" 
+              style={{ 
+                width: '72px', 
+                height: '72px', 
+                objectFit: 'contain', 
+                marginBottom: '1rem',
+                filter: 'drop-shadow(0 4px 12px rgba(212, 175, 55, 0.25))'
+              }} 
+            />
+
+            <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+              Install Bravo Bulls
+            </h3>
+            <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+              Follow these simple steps to install the app on your iPhone for quick, full-screen offline access.
+            </p>
+
+            {/* Visual Steps */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', textAlign: 'left', marginBottom: '1.75rem' }}>
+              
+              {/* Step 1 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(255, 255, 255, 0.02)', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                <span style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--accent-gold)' }}>1</span>
+                <div style={{ fontSize: '0.82rem', color: 'var(--text-primary)', lineHeight: 1.3 }}>
+                  Tap the **Share** button in Safari’s bottom toolbar.
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    Look for this icon: <span style={{ fontSize: '1rem' }}>📤</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 2 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(255, 255, 255, 0.02)', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                <span style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--accent-gold)' }}>2</span>
+                <div style={{ fontSize: '0.82rem', color: 'var(--text-primary)', lineHeight: 1.3 }}>
+                  Scroll down the options list and select **"Add to Home Screen"**.
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    Look for this option: <span style={{ fontSize: '0.9rem', background: 'rgba(255,255,255,0.1)', padding: '1px 5px', borderRadius: '4px' }}>➕ Add to Home Screen</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 3 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(255, 255, 255, 0.02)', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                <span style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--accent-gold)' }}>3</span>
+                <div style={{ fontSize: '0.82rem', color: 'var(--text-primary)', lineHeight: 1.3 }}>
+                  Tap **"Add"** in the top-right corner to complete installation!
+                </div>
+              </div>
+
+            </div>
+
+            <button 
+              onClick={() => setShowIosGuide(false)}
+              style={{
+                width: '100%',
+                padding: '0.85rem',
+                background: 'var(--accent-gold)',
+                color: '#000000',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '0.9rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                boxShadow: '0 4px 15px rgba(212, 175, 55, 0.25)',
+                transition: 'all 0.2s'
+              }}
+            >
+              GOT IT
+            </button>
+          </div>
+        </div>
+      )}
+
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
     </div>
   );
