@@ -145,6 +145,22 @@ export default function LayoutContent({ children }) {
     return () => window.removeEventListener('trigger-pwa-install', handleTriggerInstall);
   }, [deferredPrompt, isIOS]);
 
+  // Handle automatic install prompt from query string
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('install') === 'true') {
+      const trigger = () => {
+        handleInstallClick();
+        // Remove the parameter from history so it doesn't prompt again on refresh
+        const newUrl = window.location.pathname + window.location.search.replace(/[?&]install=true/, '').replace(/^&/, '?');
+        window.history.replaceState({}, '', newUrl);
+      };
+      const timer = setTimeout(trigger, 1500); // 1.5s delay to let hydration complete
+      return () => clearTimeout(timer);
+    }
+  }, [deferredPrompt, isIOS]);
+
   const handleInstallClick = async () => {
     if (isIOS) {
       setShowIosGuide(true);
