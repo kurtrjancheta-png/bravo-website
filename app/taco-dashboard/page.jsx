@@ -32,6 +32,8 @@ export default async function TacODashboardPage() {
     const k3 = keys[2];   // LAST NAME
     const k7 = keys[6];   // DEMERITS
     const k8 = keys[7];   // CONFINED?
+    const k9 = keys[8];   // CONFINEMENT START
+    const k10 = keys[9];  // CONFINEMENT END
     const k14 = keys[13]; // TOURING REMAINING
     const k16_idx = keys[15]; // MERIT
 

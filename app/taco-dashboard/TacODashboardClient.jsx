@@ -285,6 +285,8 @@ export default function TacODashboardClient({ metrics }) {
   const { adminUser, isLoaded } = useAuth();
   const [activeTab, setActiveTab] = useState('character');
 
+  const isCEIS = adminUser && (adminUser.council === 'S6' || String(adminUser.council || '').toUpperCase().includes('CEIS'));
+
   if (!isLoaded) {
     return (
       <div style={{ textAlign: 'center', padding: '4rem', color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>
@@ -293,7 +295,7 @@ export default function TacODashboardClient({ metrics }) {
     );
   }
 
-  if (!adminUser || adminUser.council !== 'TACO') {
+  if (!adminUser || (adminUser.council !== 'TACO' && !isCEIS)) {
     return (
       <div style={{ padding: '2rem', textAlign: 'center' }}>
         <h1 style={{ color: '#ef4444', marginBottom: '1rem' }}>Unauthorized Access</h1>
