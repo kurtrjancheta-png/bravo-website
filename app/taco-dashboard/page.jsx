@@ -1,5 +1,6 @@
 import { getSheetData } from '../../lib/googleSheets';
 import TacODashboardClient from './TacODashboardClient';
+import { parsePFTData } from '../../lib/pftParser';
 
 export const revalidate = 60; // seconds
 
@@ -88,78 +89,115 @@ export default async function TacODashboardPage() {
   }
 
   // 2. Fetch Physical Data (PFT)
-  let pftDataRows = [];
-  try {
-    pftDataRows = await getSheetData('1YfwRNbWer8QDtqSyw7A3jxHAOrWSl6p6tW-7zI074yM', 'MOCK PFT');
-  } catch (error) {
-    console.error("Failed to fetch PFT data:", error);
-  }
+  const PFT_SHEET_ID = process.env.PFT_SHEET_ID || '1YfwRNbWer8QDtqSyw7A3jxHAOrWSl6p6tW-7zI074yM';
+  const ROSTER_SHEET_ID = process.env.ROSTER_SHEET_ID || '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
 
   let pftPassed = 0;
   let pftFailed = 0;
   let pftOther = 0;
   let topFailedEvents = [];
 
-  if (pftDataRows && pftDataRows.length > 0) {
-    let allKeys = [];
-    for (let r of pftDataRows) {
-      const rKeys = Object.keys(r);
-      if (rKeys.length > allKeys.length) allKeys = rKeys;
-    }
+  try {
+    const [mockRows, pft1Rows, pft2Rows, rosterRows] = await Promise.all([
+      getSheetData(PFT_SHEET_ID, 'MOCK PFT').catch(() => []),
+      getSheetData(PFT_SHEET_ID, 'PFT1').catch(() => []),
+      getSheetData(PFT_SHEET_ID, 'PFT2').catch(() => []),
+      getSheetData(ROSTER_SHEET_ID, 'ROSTER').catch(() => []),
+    ]);
 
-    let nameIdx = -1;
-    for (let i = 0; i < allKeys.length; i++) {
-      if (allKeys[i] && allKeys[i].trim().toUpperCase() === 'NAME') {
-        nameIdx = i; break;
-      }
-    }
-
-    if (nameIdx !== -1) {
-      const pushupKey = allKeys[nameIdx + 2];
-      const situpKey = allKeys[nameIdx + 4];
-      const pullupKey = allKeys[nameIdx + 6];
-      const runKey = allKeys[nameIdx + 8];
-      const remarksKey = allKeys[nameIdx + 10];
-
-      let eventFails = { 'Push-ups': 0, 'Sit-ups': 0, 'Pull-ups/Flex Arm Hang': 0, '3.2KM Run': 0 };
-
-      pftDataRows.forEach(row => {
-        let rowValues = Object.values(row).map(v => typeof v === 'string' ? v.trim().toUpperCase() : '');
-        if (rowValues.includes('1CL') || rowValues.includes('1ST CLASS') || 
-            rowValues.includes('2CL') || rowValues.includes('2ND CLASS') ||
-            rowValues.includes('3CL') || rowValues.includes('3RD CLASS')) return; // header
-
-        if (!remarksKey) return;
-        const val = (typeof row[remarksKey] === 'string' ? row[remarksKey] : '').trim().toUpperCase();
-        if (!val || val === 'REMARKS' || val === 'STATUS') return;
-
-        if (val.includes('PASSED') || val === 'P') {
-          pftPassed++;
-        } else if (val.includes('FAILED') || val === 'F') {
-          pftFailed++;
-        } else if (val !== '') {
-          pftOther++;
-        }
-
-        // Count event fails (only for cadets with actual scores)
-        const name = String(row[allKeys[nameIdx]] || '').trim();
-        if (name && name.toUpperCase() !== 'NAME') {
-          const pushups = parseFloat(row[pushupKey]) || 0;
-          const situps = parseFloat(row[situpKey]) || 0;
-          const pullups = parseFloat(row[pullupKey]) || 0;
-          const run = parseFloat(row[runKey]) || 0;
-          
-          // Assuming 0 means they didn't take it or failed. If they actually failed, score < 7.
-          if (pushups > 0 && pushups < 7.0) eventFails['Push-ups']++;
-          if (situps > 0 && situps < 7.0) eventFails['Sit-ups']++;
-          if (pullups > 0 && pullups < 7.0) eventFails['Pull-ups/Flex Arm Hang']++;
-          if (run > 0 && run < 7.0) eventFails['3.2KM Run']++;
+    const genderMap = {};
+    if (rosterRows && rosterRows.length > 0) {
+      rosterRows.forEach((row) => {
+        const surname = (row['SURNAME'] || '').trim().toUpperCase();
+        const gender = (row['GENDER'] || '').trim().toUpperCase();
+        if (surname && gender) {
+          genderMap[surname] = gender;
         }
       });
-      
-      const sortedFails = Object.entries(eventFails).sort((a, b) => b[1] - a[1]);
-      topFailedEvents = sortedFails.slice(0, 2);
     }
+
+    const mockParsed = parsePFTData(mockRows, genderMap);
+    const pft1Parsed = parsePFTData(pft1Rows, genderMap);
+    const pft2Parsed = parsePFTData(pft2Rows, genderMap);
+
+    // Determine which dataset is active (latest with data)
+    let activeData = mockParsed;
+    let activeRows = mockRows;
+    if (pft2Parsed && [...pft2Parsed.data.all.passed, ...pft2Parsed.data.all.failed, ...pft2Parsed.data.all.smc].length > 0) {
+      activeData = pft2Parsed;
+      activeRows = pft2Rows;
+    } else if (pft1Parsed && [...pft1Parsed.data.all.passed, ...pft1Parsed.data.all.failed, ...pft1Parsed.data.all.smc].length > 0) {
+      activeData = pft1Parsed;
+      activeRows = pft1Rows;
+    }
+
+    pftPassed = activeData.data.all.passed.length;
+    pftFailed = activeData.data.all.failed.length;
+    pftOther = activeData.data.all.smc.length + activeData.data.all.fad.length;
+
+    // Calculate top failed events from activeRows
+    if (activeRows && activeRows.length > 0) {
+      let allKeys = [];
+      for (let r of activeRows) {
+        const rKeys = Object.keys(r);
+        if (rKeys.length > allKeys.length) allKeys = rKeys;
+      }
+
+      let nameIdx = -1;
+      for (let i = 0; i < allKeys.length; i++) {
+        if (allKeys[i] && allKeys[i].trim().toUpperCase() === 'NAME') {
+          nameIdx = i; break;
+        }
+      }
+
+      if (nameIdx === -1) {
+        for (let r of activeRows) {
+          for (let i = 0; i < allKeys.length; i++) {
+            const val = typeof r[allKeys[i]] === 'string' ? r[allKeys[i]].trim().toUpperCase() : '';
+            if (val === 'NAME' || val.includes('1CL')) {
+              nameIdx = i;
+              break;
+            }
+          }
+          if (nameIdx !== -1) break;
+        }
+      }
+
+      if (nameIdx !== -1) {
+        const pushupKey = allKeys[nameIdx + 2];
+        const situpKey = allKeys[nameIdx + 4];
+        const pullupKey = allKeys[nameIdx + 6];
+        const runKey = allKeys[nameIdx + 8];
+
+        let eventFails = { 'Push-ups': 0, 'Sit-ups': 0, 'Pull-ups/Flex Arm Hang': 0, '3.2KM Run': 0 };
+
+        activeRows.forEach(row => {
+          let rowValues = Object.values(row).map(v => typeof v === 'string' ? v.trim().toUpperCase() : '');
+          if (rowValues.includes('1CL') || rowValues.includes('1ST CLASS') || 
+              rowValues.includes('2CL') || rowValues.includes('2ND CLASS') ||
+              rowValues.includes('3CL') || rowValues.includes('3RD CLASS')) return; // header
+
+          const name = String(row[allKeys[nameIdx]] || '').trim();
+          if (name && name.toUpperCase() !== 'NAME') {
+            const pushups = parseFloat(row[pushupKey]) || 0;
+            const situps = parseFloat(row[situpKey]) || 0;
+            const pullups = parseFloat(row[pullupKey]) || 0;
+            const run = parseFloat(row[runKey]) || 0;
+            
+            // Assuming 0 means they didn't take it or failed. If they actually failed, score < 7.
+            if (pushups > 0 && pushups < 7.0) eventFails['Push-ups']++;
+            if (situps > 0 && situps < 7.0) eventFails['Sit-ups']++;
+            if (pullups > 0 && pullups < 7.0) eventFails['Pull-ups/Flex Arm Hang']++;
+            if (run > 0 && run < 7.0) eventFails['3.2KM Run']++;
+          }
+        });
+        
+        const sortedFails = Object.entries(eventFails).sort((a, b) => b[1] - a[1]);
+        topFailedEvents = sortedFails.slice(0, 2);
+      }
+    }
+  } catch (error) {
+    console.error("Failed to fetch/parse PFT data for Eagle Eye:", error);
   }
 
   const metrics = {
