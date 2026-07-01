@@ -6,7 +6,6 @@ const formatMilitaryTime = (timeStr) => {
   if (!timeStr) return '—';
   const clean = String(timeStr).trim().toUpperCase();
   if (clean.endsWith('H')) return clean;
-  // Extract only digits
   const digits = clean.replace(/[^0-9]/g, '');
   if (digits.length === 3) {
     return '0' + digits + 'H';
@@ -30,6 +29,7 @@ export default function CCQBulletinClient({
 }) {
   const [time, setTime] = useState('');
   const [dateStr, setDateStr] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const updateTime = () => {
@@ -45,6 +45,14 @@ export default function CCQBulletinClient({
     return () => clearInterval(interval);
   }, []);
 
+  const getValue = (classPrefix, categorySuffix) => {
+    const match = (bestBest || []).find(b => b.category === `${classPrefix} ${categorySuffix}`);
+    return match ? match.value : '';
+  };
+
+  // Get most recent date from payload
+  const mostRecentDate = bestBest && bestBest.length > 0 ? (bestBest[0].date || '') : '';
+
   return (
     <div style={{
       color: 'var(--text-primary)',
@@ -52,7 +60,6 @@ export default function CCQBulletinClient({
       margin: '0 auto',
       padding: '1rem'
     }}>
-      {/* Dynamic styles to handle responsive 2-column layout (Left: SOC (2/3 width), Right: Guards & Best-Best (1/3 width)) */}
       <style dangerouslySetInnerHTML={{__html: `
         .ccq-grid {
           display: grid;
@@ -93,9 +100,30 @@ export default function CCQBulletinClient({
         .mono-font {
           font-family: monospace;
         }
+        .bestbest-btn {
+          background: var(--accent-gold);
+          color: #000;
+          font-weight: 700;
+          border: none;
+          padding: 0.65rem 1rem;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 0.85rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          margin-top: 1rem;
+          width: 100%;
+          transition: all 0.2s;
+        }
+        .bestbest-btn:hover {
+          background: #e5c158;
+          box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+        }
       `}} />
 
-      {/* HEADER SECTION WITH EMPHASIZED CLOCK */}
+      {/* HEADER SECTION */}
       <div style={{
         display: 'flex',
         flexWrap: 'wrap',
@@ -115,7 +143,6 @@ export default function CCQBulletinClient({
           </p>
         </div>
 
-        {/* Emphasized military style command clock */}
         <div style={{
           textAlign: 'center',
           background: 'rgba(212, 175, 55, 0.04)',
@@ -147,7 +174,7 @@ export default function CCQBulletinClient({
         </div>
       </div>
 
-      {/* TOP ROW: DUTY OFFICERS (OC / AOC) */}
+      {/* TOP ROW: DUTY OFFICERS */}
       <div className="command-card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
         <div style={{
           display: 'flex',
@@ -210,10 +237,10 @@ export default function CCQBulletinClient({
         </div>
       </div>
 
-      {/* REORGANIZED DASHBOARD GRID (SOC on left, Guards + Best-Best on right) */}
+      {/* DASHBOARD GRID */}
       <div className="ccq-grid">
         
-        {/* COLUMN 1 & 2: SCHEDULE OF CALLS (2/3 wider layout) */}
+        {/* COLUMN 1 & 2: SCHEDULE OF CALLS */}
         <div className="command-card" style={{ height: 'fit-content' }}>
           <div style={{
             display: 'flex',
@@ -263,10 +290,10 @@ export default function CCQBulletinClient({
           )}
         </div>
 
-        {/* COLUMN 3: STACKED RIGHT COLUMN (Guards + Best-Best) */}
+        {/* COLUMN 3: STACKED RIGHT COLUMN (Guards + Modal Button) */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
-          {/* Section A: DAILY GUARD DETAIL */}
+          {/* DAILY GUARD DETAIL CARD */}
           <div className="command-card" style={{ height: 'fit-content' }}>
             <div style={{
               display: 'flex',
@@ -314,56 +341,94 @@ export default function CCQBulletinClient({
                 ))}
               </div>
             )}
-          </div>
 
-          {/* Section B: BEST OF THE BEST */}
-          <div className="command-card" style={{ height: 'fit-content' }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              borderBottom: '1px solid var(--border-color)',
-              paddingBottom: '0.75rem',
-              marginBottom: '1rem'
-            }}>
-              <h2 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, textTransform: 'uppercase' }}>
-                🏆 Best of the Best
-              </h2>
-              <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                Updates at 1200H
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {bestBest.map((b, idx) => (
-                <div key={idx} style={{
-                  background: 'var(--bg-primary)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  padding: '0.9rem 1rem',
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}>
-                  <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '4px', background: 'linear-gradient(to bottom, var(--accent-gold), transparent)' }}></div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-                    {b.category}
-                  </div>
-                  <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '0.15rem' }}>
-                    {bestBestStale || !b.winner ? 'AWAITING SELECTION' : b.winner}
-                  </div>
-                  {b.room && !bestBestStale && (
-                    <div style={{ fontSize: '0.75rem', color: 'var(--accent-gold)', fontWeight: 600, marginTop: '0.1rem' }}>
-                      📍 Room {b.room}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+            {/* View Best-Best Modal Button */}
+            <button className="bestbest-btn" onClick={() => setIsModalOpen(true)}>
+              🏆 View Best-Best Awards
+            </button>
           </div>
 
         </div>
 
       </div>
+
+      {/* BEST BEST MODAL OVERLAY */}
+      {isModalOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.85)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 2000,
+          padding: '1rem',
+          backdropFilter: 'blur(5px)'
+        }}>
+          <div style={{
+            background: 'var(--bg-secondary)',
+            border: '2px solid var(--accent-gold)',
+            boxShadow: '0 0 25px rgba(212, 175, 55, 0.3)',
+            borderRadius: '12px',
+            padding: '1.75rem',
+            maxWidth: '700px',
+            width: '100%',
+            position: 'relative',
+            animation: 'fadeIn 0.2s ease-out'
+          }}>
+            {/* Close Button */}
+            <button 
+              style={{ position: 'absolute', top: '1rem', right: '1.25rem', background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '1.2rem', cursor: 'pointer' }}
+              onClick={() => setIsModalOpen(false)}
+            >
+              ✕
+            </button>
+
+            {/* Header */}
+            <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: 'var(--accent-gold)', textTransform: 'uppercase' }}>
+                🏆 Daily Best-Best Awards
+              </h3>
+              <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                Inspection Results for: {mostRecentDate || '—'} {bestBestStale && ' (AWAITING UPDATE)'}
+              </p>
+            </div>
+
+            {/* Grid Table */}
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid var(--border-color)', background: 'var(--bg-primary)' }}>
+                    <th style={{ padding: '0.75rem 0.5rem', fontWeight: 800 }}>CATEGORY</th>
+                    <th style={{ padding: '0.75rem 0.5rem', fontWeight: 800, color: 'var(--accent-gold)' }}>1CL</th>
+                    <th style={{ padding: '0.75rem 0.5rem', fontWeight: 800, color: 'var(--accent-gold)' }}>2CL</th>
+                    <th style={{ padding: '0.75rem 0.5rem', fontWeight: 800, color: 'var(--accent-gold)' }}>3CL</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { label: '🔒 Best Locker', suffix: 'Best Locker' },
+                    { label: '👟 Best Shoe Display', suffix: 'Best Shoe Display' },
+                    { label: '🛏️ Best Bunks', suffix: 'Best Bunks' },
+                    { label: '📚 Best Study Table', suffix: 'Best Study Table Display' },
+                    { label: '🏠 Best Room', suffix: 'Best Room' }
+                  ].map((cat, idx) => (
+                    <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <td style={{ padding: '0.75rem 0.5rem', fontWeight: 700 }}>{cat.label}</td>
+                      <td style={{ padding: '0.75rem 0.5rem' }}>{getValue('1CL', cat.suffix) || '—'}</td>
+                      <td style={{ padding: '0.75rem 0.5rem' }}>{getValue('2CL', cat.suffix) || '—'}</td>
+                      <td style={{ padding: '0.75rem 0.5rem' }}>{getValue('3CL', cat.suffix) || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

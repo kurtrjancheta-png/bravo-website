@@ -22,7 +22,6 @@ const POSITION_LABELS = [
 export default function CCQManagerClient() {
   const { adminUser, isLoaded } = useAuth();
   
-  // Apps Script URL (default deployed fallback)
   const scriptUrl = 'https://script.google.com/macros/s/AKfycbzl8cpIaWa5jk3a0fjYztuwotflL36rMjEGw83FeqFI-EA067WTzULacpUNIuznSqOAfg/exec';
 
   // Section 1: OC & AOC State
@@ -40,17 +39,13 @@ export default function CCQManagerClient() {
   const [fileBase64, setFileBase64] = useState('');
   const [fileName, setFileName] = useState('');
 
-  // Section 4: Daily Best Best State
-  const [bestLockerWinner, setBestLockerWinner] = useState('');
-  const [bestLockerRoom, setBestLockerRoom] = useState('');
-  const [bestShoeWinner, setBestShoeWinner] = useState('');
-  const [bestShoeRoom, setBestShoeRoom] = useState('');
-  const [bestBunksWinner, setBestBunksWinner] = useState('');
-  const [bestBunksRoom, setBestBunksRoom] = useState('');
-  const [bestTableWinner, setBestTableWinner] = useState('');
-  const [bestTableRoom, setBestTableRoom] = useState('');
-  const [bestRoomWinner, setBestRoomWinner] = useState('');
-  const [bestRoomRoom, setBestRoomRoom] = useState('');
+  // Section 4: Daily Best Best State (Class-divided)
+  const [bestState, setBestState] = useState({
+    '1CL_Locker': '', '1CL_Shoe': '', '1CL_Bunks': '', '1CL_Table': '', '1CL_Room': '',
+    '2CL_Locker': '', '2CL_Shoe': '', '2CL_Bunks': '', '2CL_Table': '', '2CL_Room': '',
+    '3CL_Locker': '', '3CL_Shoe': '', '3CL_Bunks': '', '3CL_Table': '', '3CL_Room': ''
+  });
+  const [bestClassTab, setBestClassTab] = useState('1CL');
   const [bestSubmitting, setBestSubmitting] = useState(false);
 
   // Unified publishing state
@@ -217,6 +212,26 @@ export default function CCQManagerClient() {
     }
   };
 
+  const buildBestPayload = () => {
+    return [
+      { category: '1CL Best Locker', value: bestState['1CL_Locker'] },
+      { category: '1CL Best Shoe Display', value: bestState['1CL_Shoe'] },
+      { category: '1CL Best Bunks', value: bestState['1CL_Bunks'] },
+      { category: '1CL Best Study Table Display', value: bestState['1CL_Table'] },
+      { category: '1CL Best Room', value: bestState['1CL_Room'] },
+      { category: '2CL Best Locker', value: bestState['2CL_Locker'] },
+      { category: '2CL Best Shoe Display', value: bestState['2CL_Shoe'] },
+      { category: '2CL Best Bunks', value: bestState['2CL_Bunks'] },
+      { category: '2CL Best Study Table Display', value: bestState['2CL_Table'] },
+      { category: '2CL Best Room', value: bestState['2CL_Room'] },
+      { category: '3CL Best Locker', value: bestState['3CL_Locker'] },
+      { category: '3CL Best Shoe Display', value: bestState['3CL_Shoe'] },
+      { category: '3CL Best Bunks', value: bestState['3CL_Bunks'] },
+      { category: '3CL Best Study Table Display', value: bestState['3CL_Table'] },
+      { category: '3CL Best Room', value: bestState['3CL_Room'] }
+    ];
+  };
+
   // Publish everything at once
   const handlePublishAll = async () => {
     setPublishAllSubmitting(true);
@@ -227,14 +242,6 @@ export default function CCQManagerClient() {
       name: guardNames[idx]
     }));
 
-    const bestPayload = [
-      { category: 'Best Locker', winner: bestLockerWinner, room: bestLockerRoom },
-      { category: 'Best Shoe Display', winner: bestShoeWinner, room: bestShoeRoom },
-      { category: 'Best Bunks', winner: bestBunksWinner, room: bestBunksRoom },
-      { category: 'Best Study Table Display', winner: bestTableWinner, room: bestTableRoom },
-      { category: 'Best Room', winner: bestRoomWinner, room: bestRoomRoom }
-    ];
-
     const payload = {
       ocName,
       aocName,
@@ -243,7 +250,7 @@ export default function CCQManagerClient() {
       fileData: fileBase64,
       fileName: fileName,
       mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      entries: bestPayload
+      entries: buildBestPayload()
     };
 
     try {
@@ -263,6 +270,13 @@ export default function CCQManagerClient() {
     } finally {
       setPublishAllSubmitting(false);
     }
+  };
+
+  const handleBestInputChange = (key, val) => {
+    setBestState(prev => ({
+      ...prev,
+      [key]: val
+    }));
   };
 
   // Auth gate check
@@ -292,7 +306,6 @@ export default function CCQManagerClient() {
   return (
     <div className="container-fluid py-4" style={{ color: 'var(--text-primary)', maxWidth: '1600px', margin: '0 auto' }}>
       
-      {/* Styles integrated with site design system */}
       <style dangerouslySetInnerHTML={{__html: `
         .manager-grid {
           display: grid;
@@ -392,6 +405,23 @@ export default function CCQManagerClient() {
           z-index: 1000;
           box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
         }
+        .class-tab {
+          flex: 1;
+          text-align: center;
+          padding: 0.4rem;
+          font-size: 0.8rem;
+          font-weight: 700;
+          border-radius: 4px;
+          cursor: pointer;
+          background: var(--bg-primary);
+          border: 1px solid var(--border-color);
+          color: var(--text-secondary);
+        }
+        .class-tab.active {
+          background: var(--accent-gold);
+          color: #000;
+          border-color: var(--accent-gold);
+        }
       `}} />
 
       {/* TOP HEADER */}
@@ -451,7 +481,7 @@ export default function CCQManagerClient() {
 
           {/* Section 1.2: Daily Best-Best */}
           <div className="manager-card">
-            <div className="manager-section-header">
+            <div className="manager-section-header" style={{ marginBottom: '0.75rem' }}>
               <h2 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, textTransform: 'uppercase' }}>
                 🏆 Best-Best Awards
               </h2>
@@ -460,48 +490,84 @@ export default function CCQManagerClient() {
               </span>
             </div>
 
-            {/* Best Locker */}
-            <div style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--accent-gold)' }}>🔒 Best Locker</span>
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.5rem', marginTop: '0.25rem' }}>
-                <input type="text" className="manager-input" style={{ marginBottom: 0 }} placeholder="Winner Name" value={bestLockerWinner} onChange={(e) => setBestLockerWinner(e.target.value)} />
-                <input type="text" className="manager-input" style={{ marginBottom: 0 }} placeholder="Rm" value={bestLockerRoom} onChange={(e) => setBestLockerRoom(e.target.value)} />
-              </div>
+            {/* Class Tabs Toggle */}
+            <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1.25rem' }}>
+              {['1CL', '2CL', '3CL'].map(cls => (
+                <div 
+                  key={cls} 
+                  className={`class-tab ${bestClassTab === cls ? 'active' : ''}`}
+                  onClick={() => setBestClassTab(cls)}
+                >
+                  {cls}
+                </div>
+              ))}
             </div>
 
-            {/* Best Shoe */}
-            <div style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--accent-gold)' }}>👟 Best Shoe Display</span>
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.5rem', marginTop: '0.25rem' }}>
-                <input type="text" className="manager-input" style={{ marginBottom: 0 }} placeholder="Winner Name" value={bestShoeWinner} onChange={(e) => setBestShoeWinner(e.target.value)} />
-                <input type="text" className="manager-input" style={{ marginBottom: 0 }} placeholder="Rm" value={bestShoeRoom} onChange={(e) => setBestShoeRoom(e.target.value)} />
+            {/* Tab Content */}
+            <div>
+              {/* Best Locker */}
+              <div style={{ marginBottom: '0.85rem' }}>
+                <label className="manager-input-label">🔒 Best Locker Winner</label>
+                <input 
+                  type="text" 
+                  className="manager-input" 
+                  style={{ marginBottom: 0 }} 
+                  placeholder="Winner Name" 
+                  value={bestState[`${bestClassTab}_Locker`]} 
+                  onChange={(e) => handleBestInputChange(`${bestClassTab}_Locker`, e.target.value)} 
+                />
               </div>
-            </div>
 
-            {/* Best Bunks */}
-            <div style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--accent-gold)' }}>🛏️ Best Bunks</span>
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.5rem', marginTop: '0.25rem' }}>
-                <input type="text" className="manager-input" style={{ marginBottom: 0 }} placeholder="Winner Name" value={bestBunksWinner} onChange={(e) => setBestBunksWinner(e.target.value)} />
-                <input type="text" className="manager-input" style={{ marginBottom: 0 }} placeholder="Rm" value={bestBunksRoom} onChange={(e) => setBestBunksRoom(e.target.value)} />
+              {/* Best Shoe Display */}
+              <div style={{ marginBottom: '0.85rem' }}>
+                <label className="manager-input-label">👟 Best Shoe Display Winner</label>
+                <input 
+                  type="text" 
+                  className="manager-input" 
+                  style={{ marginBottom: 0 }} 
+                  placeholder="Winner Name" 
+                  value={bestState[`${bestClassTab}_Shoe`]} 
+                  onChange={(e) => handleBestInputChange(`${bestClassTab}_Shoe`, e.target.value)} 
+                />
               </div>
-            </div>
 
-            {/* Best Study Table */}
-            <div style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--accent-gold)' }}>📚 Best Study Table</span>
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.5rem', marginTop: '0.25rem' }}>
-                <input type="text" className="manager-input" style={{ marginBottom: 0 }} placeholder="Winner Name" value={bestTableWinner} onChange={(e) => setBestTableWinner(e.target.value)} />
-                <input type="text" className="manager-input" style={{ marginBottom: 0 }} placeholder="Rm" value={bestTableRoom} onChange={(e) => setBestTableRoom(e.target.value)} />
+              {/* Best Bunks */}
+              <div style={{ marginBottom: '0.85rem' }}>
+                <label className="manager-input-label">🛏️ Best Bunks Winner</label>
+                <input 
+                  type="text" 
+                  className="manager-input" 
+                  style={{ marginBottom: 0 }} 
+                  placeholder="Winner Name" 
+                  value={bestState[`${bestClassTab}_Bunks`]} 
+                  onChange={(e) => handleBestInputChange(`${bestClassTab}_Bunks`, e.target.value)} 
+                />
               </div>
-            </div>
 
-            {/* Best Room */}
-            <div style={{ marginBottom: '1.25rem' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--accent-gold)' }}>🏠 Best Room</span>
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.5rem', marginTop: '0.25rem' }}>
-                <input type="text" className="manager-input" style={{ marginBottom: 0 }} placeholder="Winner Name" value={bestRoomWinner} onChange={(e) => setBestRoomWinner(e.target.value)} />
-                <input type="text" className="manager-input" style={{ marginBottom: 0 }} placeholder="Rm" value={bestRoomRoom} onChange={(e) => setBestRoomRoom(e.target.value)} />
+              {/* Best Study Table */}
+              <div style={{ marginBottom: '0.85rem' }}>
+                <label className="manager-input-label">📚 Best Study Table Winner</label>
+                <input 
+                  type="text" 
+                  className="manager-input" 
+                  style={{ marginBottom: 0 }} 
+                  placeholder="Winner Name" 
+                  value={bestState[`${bestClassTab}_Table`]} 
+                  onChange={(e) => handleBestInputChange(`${bestClassTab}_Table`, e.target.value)} 
+                />
+              </div>
+
+              {/* Best Room */}
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label className="manager-input-label">🏠 Best Room Number</label>
+                <input 
+                  type="text" 
+                  className="manager-input" 
+                  style={{ marginBottom: 0 }} 
+                  placeholder="e.g. RM 211" 
+                  value={bestState[`${bestClassTab}_Room`]} 
+                  onChange={(e) => handleBestInputChange(`${bestClassTab}_Room`, e.target.value)} 
+                />
               </div>
             </div>
 
@@ -509,16 +575,7 @@ export default function CCQManagerClient() {
               <button
                 className="manager-btn-gold"
                 disabled={bestSubmitting}
-                onClick={() => {
-                  const bestPayload = [
-                    { category: 'Best Locker', winner: bestLockerWinner, room: bestLockerRoom },
-                    { category: 'Best Shoe Display', winner: bestShoeWinner, room: bestShoeRoom },
-                    { category: 'Best Bunks', winner: bestBunksWinner, room: bestBunksRoom },
-                    { category: 'Best Study Table Display', winner: bestTableWinner, room: bestTableRoom },
-                    { category: 'Best Room', winner: bestRoomWinner, room: bestRoomRoom }
-                  ];
-                  handlePost('publishBestBest', { entries: bestPayload }, setBestSubmitting);
-                }}
+                onClick={() => handlePost('publishBestBest', { entries: buildBestPayload() }, setBestSubmitting)}
               >
                 {bestSubmitting ? 'Publishing...' : '🏆 Publish Best-Best'}
               </button>

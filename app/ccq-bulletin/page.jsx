@@ -111,38 +111,41 @@ export default async function CCQBulletinPage() {
   });
   const socStale = isStalePHT(socUpdatedAt, 0); // stale after midnight
 
-  // ── Parse Best-Best ───────────────────────────────────────────
-  const BEST_CATEGORIES = [
-    'Best Locker', 'Best Shoe Display', 'Best Bunks',
-    'Best Study Table Display', 'Best Room',
-  ];
-  const bestBestFiltered = (bestBestRaw || []).filter(r => {
-    const cat = safeGet(r, 'CATEGORY');
-    return cat && cat !== 'CATEGORY';
-  });
-  // Get the most recent date's entries
+  // ── Parse Best-Best (Column-Dated Layout) ────────────────────
+  let bestBest = [];
   let mostRecentDate = '';
-  let bestBestPostedAt = null;
-  for (const row of bestBestFiltered) {
-    const date = safeGet(row, 'DATE');
-    if (!mostRecentDate || date > mostRecentDate) mostRecentDate = date;
-  }
-  const bestBest = BEST_CATEGORIES.map(cat => {
-    const match = bestBestFiltered.find(r =>
-      safeGet(r, 'CATEGORY') === cat && safeGet(r, 'DATE') === mostRecentDate
-    );
-    if (match) {
-      const ts = safeGet(match, 'POSTED_AT');
-      if (!bestBestPostedAt && ts) bestBestPostedAt = ts;
+  let bestBestStale = true;
+
+  if (bestBestRaw && bestBestRaw.length > 0) {
+    const firstRow = bestBestRaw[0];
+    const dateKeys = Object.keys(firstRow).filter(k => k !== 'CATEGORY' && k !== '_sheetRowIndex');
+    
+    if (dateKeys.length > 0) {
+      mostRecentDate = dateKeys[dateKeys.length - 1]; // Last column is the most recent date
+      
+      bestBest = bestBestRaw.filter(r => {
+        const cat = safeGet(r, 'CATEGORY');
+        return cat && cat !== 'CATEGORY';
+      }).map(row => ({
+        category: safeGet(row, 'CATEGORY'),
+        value: safeGet(row, mostRecentDate)
+      }));
+
+      // Check if stale (PHT timezone comparison)
+      const phtOffset = 8 * 3600000;
+      const nowPHT = new Date(Date.now() + phtOffset);
+      const hourPHT = nowPHT.getUTCHours();
+      
+      const dayStr = String(nowPHT.getUTCDate()).padStart(2, '0');
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      const monthStr = monthNames[nowPHT.getUTCMonth()];
+      const yearStr = String(nowPHT.getUTCFullYear());
+      const todayPHTStr = `${dayStr} ${monthStr} ${yearStr}`;
+
+      const isToday = mostRecentDate.trim().toUpperCase() === todayPHTStr.toUpperCase();
+      bestBestStale = !isToday && hourPHT >= 12;
     }
-    return {
-      category: cat,
-      winner:   match ? safeGet(match, 'WINNER') : '',
-      room:     match ? safeGet(match, 'ROOM')   : '',
-      date:     mostRecentDate,
-    };
-  });
-  const bestBestStale = isStalePHT(bestBestPostedAt, 12); // stale after noon
+  }
 
   return (
     <CCQBulletinClient
