@@ -61,6 +61,7 @@ export default function CCQManagerClient({
   const [isUploading, setIsUploading] = useState(false);
   const [isLaunching, setIsLaunching] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [guardsAlertSubmitting, setGuardsAlertSubmitting] = useState(false);
 
   // Countdowns to reset times
   const [ocCountdown, setOcCountdown] = useState('');
@@ -101,6 +102,36 @@ export default function CCQManagerClient({
     const interval = setInterval(calculateCountdowns, 60000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleTriggerGuardsAlert = async () => {
+    const confirmBroadcast = window.confirm("Are you sure you want to broadcast the Incoming Barracks Guards Alert to all subscribed devices?");
+    if (!confirmBroadcast) return;
+
+    setGuardsAlertSubmitting(true);
+    try {
+      const res = await fetch('/api/web-push/broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: "ATTENTION",
+          body: "THE LIST OF INCOMING BARRACKS GUARDS HAS BEEN PUBLISHED. ALL CADETS WILL VERIFY THE LIST OF INCOMING GUARDS.",
+          url: "/?showIncomingGuards=true"
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(`Successfully triggered barracks guards verification alert! Broadcasted to ${data.sentCount} subscriber(s).`);
+      } else {
+        alert(`Failed to trigger alert: ${data.error || 'Unknown error'}`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to communicate with the broadcast service.");
+    } finally {
+      setGuardsAlertSubmitting(false);
+    }
+  };
 
   // Parse docx file using mammoth
   const handleFileChange = async (e) => {
@@ -836,9 +867,29 @@ export default function CCQManagerClient({
       <div className="sticky-footer">
         <div>
           <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800 }}>BRAVO CQ ACTION BOARD</h4>
-          <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Publish and sync all four bulletin sections simultaneously.</p>
+          <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Publish and sync all bulletin sections or broadcast alerts instantly.</p>
         </div>
-        <div>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <button
+            className="manager-btn-secondary"
+            style={{ 
+              fontSize: '0.9rem', 
+              padding: '0.75rem 1.5rem', 
+              border: '2px solid var(--accent-gold)', 
+              color: 'var(--accent-gold)', 
+              background: 'transparent', 
+              cursor: 'pointer', 
+              borderRadius: '8px', 
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.02em',
+              transition: 'all 0.2s'
+            }}
+            disabled={guardsAlertSubmitting}
+            onClick={handleTriggerGuardsAlert}
+          >
+            {guardsAlertSubmitting ? 'Triggering Alert...' : '📢 BROADCAST GUARDS ALERT'}
+          </button>
           <button
             className="manager-btn-gold"
             style={{ fontSize: '0.95rem', padding: '0.75rem 1.75rem', gap: '0.75rem' }}
