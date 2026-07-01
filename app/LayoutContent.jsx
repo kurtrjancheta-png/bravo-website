@@ -98,6 +98,8 @@ export default function LayoutContent({ children }) {
     navigator.serviceWorker.register('/sw.js')
       .then(async (reg) => {
         console.log('Service Worker registered successfully:', reg.scope);
+        // Force service worker check for updates on mount
+        reg.update().catch(err => console.warn('SW update check failed:', err));
         
         // Wait until service worker is ready
         const activeReg = await navigator.serviceWorker.ready;
