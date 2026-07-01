@@ -25,7 +25,7 @@ export default function CCQBulletinClient({
             🔔 CCQ Duty Bulletin
           </h1>
           <p className="text-secondary small mb-0">
-            Daily Duty Detail, Schedule of Conduct, and Inspection Winners
+            Daily Duty Detail, Schedule of Calls, and Inspection Winners
           </p>
         </div>
         
@@ -76,7 +76,7 @@ export default function CCQBulletinClient({
           className={`taskorg-tab-btn ${activeTab === 'soc' ? 'active' : ''}`}
           onClick={() => setActiveTab('soc')}
         >
-          📅 Schedule of Conduct
+          📅 Schedule of Calls
         </button>
         <button 
           className={`taskorg-tab-btn ${activeTab === 'best' ? 'active' : ''}`}
@@ -143,7 +143,7 @@ export default function CCQBulletinClient({
         <div className="pft-chart-card mb-4" style={{ animation: 'fadeIn 0.3s ease-out' }}>
           <div className="d-flex justify-content-between align-items-center mb-3 pb-2" style={{ borderBottom: '1px solid var(--border-color)' }}>
             <h2 className="h5 mb-0" style={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Schedule of Conduct (SOC)
+              Schedule of Calls (SOC)
             </h2>
             {socStale && (
               <span className="badge bg-danger" style={{ fontSize: '0.75rem' }}>
