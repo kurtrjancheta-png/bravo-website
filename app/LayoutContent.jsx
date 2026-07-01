@@ -1085,20 +1085,15 @@ export default function LayoutContent({ children }) {
                   {/* Visor / Peak */}
                   <path d="M15 40 C19 49, 45 49, 49 40 C44 44, 20 44, 15 40 Z" fill="#000000" />
                   {/* Gold PMA Insignia (Shield + Wings + Star) */}
-                  <g fill="#d4af37">
-                    {/* Star at the top */}
-                    <path d="M32 10.5 L34.5 15.5 L40 16.2 L36 20.2 L37 25.7 L32 23 L27 25.7 L28 20.2 L24 16.2 L29.5 15.5 Z" />
-                    {/* Connector between star and shield */}
-                    <rect x="30" y="21" width="4" height="4" />
-                    {/* Left Wing */}
-                    <path d="M27 25 C24 21, 16 21, 12 27 C8 32, 17 37, 21 35 C24 33, 27 31, 28 31 Z" />
-                    {/* Right Wing */}
-                    <path d="M37 25 C40 21, 48 21, 52 27 C56 32, 47 37, 43 35 C40 33, 37 31, 36 31 Z" />
-                    {/* Shield */}
-                    <path d="M26 24 C28.5 24, 35.5 24, 38 24 C38.5 30, 37.5 35, 32 38 C26.5 35, 25.5 30, 26 24 Z" />
-                  </g>
-                  {/* Center Sword Cutout (shows blue cloth #0f2a4a) */}
-                  <path d="M32 23 L35 26 L33.25 26 L33.25 34 L30.75 34 L30.75 26 L29 26 Z" fill="#0f2a4a" />
+                  {/* Wings */}
+                  <path d="M25 26 C28 24, 30 24, 30 27 L27 29 Z" fill="#d4af37"/>
+                  <path d="M39 26 C36 24, 34 24, 34 27 L37 29 Z" fill="#d4af37"/>
+                  {/* Shield */}
+                  <path d="M30 24 L34 24 L35 28 C35 31, 32 33, 32 33 C32 33, 29 31, 29 28 Z" fill="#d4af37"/>
+                  {/* Star */}
+                  <path d="M32 20.5 L33 22 L34.5 22 L33.2 23 L33.7 24.5 L32 23.5 L30.3 24.5 L30.8 23 L29.5 22 L31 22 Z" fill="#d4af37"/>
+                  {/* Sword detail */}
+                  <line x1="32" y1="24" x2="32" y2="31" stroke="#0f2a4a" stroke-width="1"/>
                 </svg>
               </div>
               <h2 style={{ margin: '0.5rem 0 0.25rem 0', fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
