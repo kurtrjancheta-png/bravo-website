@@ -43,6 +43,7 @@ function safeGet(row, ...keys) {
 }
 
 export default async function CCQBulletinPage() {
+  const now = new Date();
   // ── Fetch all sheets and external API endpoints in parallel ────
   const [ocAocRaw, guardsRaw, socRaw, bestBestRaw, raw1CL, raw2CL, raw3CL] = await Promise.all([
     getSheetData(CCQ_SHEET_ID, 'OC_AOC').catch(() => null),
