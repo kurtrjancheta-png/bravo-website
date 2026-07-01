@@ -37,13 +37,18 @@ export async function POST(req) {
       return NextResponse.json({ success: true, sentCount: 0, message: 'No registered subscribers found.' });
     }
 
-    // 2. Map rows to subscription objects
+    // 2. Map rows to subscription objects and deduplicate by endpoint
+    const seenEndpoints = new Set();
     const subscribers = rows
       .map(row => {
-        const endpoint = row['ENDPOINT'];
-        const p256dh = row['P256DH'];
-        const auth = row['AUTH'];
+        const endpoint = String(row['ENDPOINT'] || '').trim();
+        const p256dh = String(row['P256DH'] || '').trim();
+        const auth = String(row['AUTH'] || '').trim();
         if (endpoint && p256dh && auth) {
+          if (seenEndpoints.has(endpoint)) {
+            return null; // Skip duplicate
+          }
+          seenEndpoints.add(endpoint);
           return {
             endpoint,
             keys: { p256dh, auth }
