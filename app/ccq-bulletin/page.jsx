@@ -5,6 +5,10 @@ export const revalidate = 30;
 
 const CCQ_SHEET_ID = '1HhWc6ZAVjbpJT4EwyX0D6zJ4FBxh7jNPuRxqGLE-YT8';
 
+const SCRIPT_URL_1CL = 'https://script.google.com/macros/s/AKfycbwNVo5buoeHliZfJ17yLduSCMEPfoHkuvXNnAT8ed-wIs0lVE6ucpkvItNZN2zv0SbtTw/exec';
+const SCRIPT_URL_2CL = 'https://script.google.com/macros/s/AKfycbx9slx3s4GRQCnR98HrUmSfRvJnKfbWoHjLq2avXeoNqYCthhUlOS1iYP1t-ORb_zLL/exec';
+const SCRIPT_URL_3CL = 'https://script.google.com/macros/s/AKfycbxs0fmHK3QikUCYBTSnD_xuh7sVoXF5urCISgtQvGz5QJHiRF94e0ajx0XwSoZ09X-3tg/exec';
+
 // Check if data is stale based on PHT reset time
 // resetHourPHT: 0 = midnight, 9 = 9am, 12 = noon, 19 = 7pm
 function isStalePHT(updatedAtISO, resetHourPHT) {
@@ -39,12 +43,15 @@ function safeGet(row, ...keys) {
 }
 
 export default async function CCQBulletinPage() {
-  // ── Fetch all sheets in parallel ──────────────────────────────
-  const [ocAocRaw, guardsRaw, socRaw, bestBestRaw] = await Promise.all([
+  // ── Fetch all sheets and external API endpoints in parallel ────
+  const [ocAocRaw, guardsRaw, socRaw, bestBestRaw, raw1CL, raw2CL, raw3CL] = await Promise.all([
     getSheetData(CCQ_SHEET_ID, 'OC_AOC').catch(() => null),
     getSheetData(CCQ_SHEET_ID, 'GUARDS').catch(() => null),
     getSheetData(CCQ_SHEET_ID, 'SOC').catch(() => null),
     getSheetData(CCQ_SHEET_ID, 'BEST_BEST').catch(() => null),
+    fetch(SCRIPT_URL_1CL, { cache: 'no-store' }).then(r => r.json()).catch(() => null),
+    fetch(SCRIPT_URL_2CL, { cache: 'no-store' }).then(r => r.json()).catch(() => null),
+    fetch(SCRIPT_URL_3CL, { cache: 'no-store' }).then(r => r.json()).catch(() => null),
   ]);
 
   // ── Parse OC / AOC ────────────────────────────────────────────
@@ -147,6 +154,93 @@ export default async function CCQBulletinPage() {
     }
   }
 
+  // ── Parse Barracks Guards (from Manila time guardmount) ───────
+  const manilaStr = now.toLocaleString('en-US', { timeZone: 'Asia/Manila' });
+  const manilaNow = new Date(manilaStr);
+  const isBeforeGuardMount = (manilaNow.getHours() < 18) || (manilaNow.getHours() === 18 && manilaNow.getMinutes() < 30);
+  
+  const postedDate = new Date(manilaNow);
+  postedDate.setHours(0, 0, 0, 0);
+  if (isBeforeGuardMount) {
+    postedDate.setDate(postedDate.getDate() - 1);
+  }
+
+  const parseDateHeader = (header) => {
+    if (!header) return null;
+    const parts = header.split(' | ');
+    try {
+      const d = new Date(parts[0]);
+      if (isNaN(d.getTime())) return null;
+      return d;
+    } catch {
+      return null;
+    }
+  };
+
+  const getStatusFromColor1CL = (hex) => {
+    if (!hex) return 'OTHER';
+    if (hex === '#ffc000' || hex === '#ffa500' || hex === '#fbbc04' || hex === '#ff9900') return 'FI';
+    if (hex === '#00ff00' || hex === '#34a853') return 'SENTINEL';
+    return 'OTHER';
+  };
+
+  const getStatusFromColor2CL = (hex) => {
+    if (!hex) return 'OTHER';
+    if (hex === '#00ffff') return 'SENTINEL';
+    if (hex === '#b45f06' || hex === '#b87333' || hex === '#a67c00' || hex === '#bf9000') return 'AFI';
+    return 'OTHER';
+  };
+
+  const getStatusFromColor3CL = (hex) => {
+    if (!hex) return 'OTHER';
+    if (hex === '#000000' || hex === '#111111') return 'SENTINEL';
+    if (hex === '#ff0000' || hex === '#ea4335') return 'CCQ';
+    if (hex === '#4a86e8' || hex === '#4285f4' || hex === '#2b78e4') return 'ACCQ';
+    if (hex === '#00ffff' || hex === '#00b0f0') return 'AFI';
+    return 'OTHER';
+  };
+
+  const getActiveList = (rawList, getStatusFn) => {
+    const list = [];
+    (rawList || []).forEach(item => {
+      const d = parseDateHeader(item.dateHeader);
+      if (!d) return;
+      
+      const itemDateStr = d.toLocaleDateString('en-US', { timeZone: 'Asia/Manila' });
+      const itemObj = new Date(itemDateStr);
+      itemObj.setHours(0,0,0,0);
+      
+      if (itemObj.getTime() === postedDate.getTime()) {
+        const cleanName = (item.name || '').replace(' AS', '').trim();
+        const upper = cleanName.toUpperCase();
+        if (['FI', 'CCQ', 'ACCQ', 'AFI', 'SENTINEL', 'INTERIOR', 'NON POSTING', 'NON-POSTING', 'MHC', 'PLEBE DETAIL', 'SENTINEL (TOC)'].includes(upper)) return;
+        
+        const status = getStatusFn(item.color);
+        if (status !== 'OTHER') {
+          list.push({
+            name: cleanName,
+            status
+          });
+        }
+      }
+    });
+    return list;
+  };
+
+  const list1CL = getActiveList(raw1CL, getStatusFromColor1CL);
+  const list2CL = getActiveList(raw2CL, getStatusFromColor2CL);
+  const list3CL = getActiveList(raw3CL, getStatusFromColor3CL);
+
+  const allBarracks = [...list1CL, ...list2CL, ...list3CL];
+  
+  const barracksGuards = {
+    fi: allBarracks.filter(g => g.status === 'FI').map(g => g.name).join(', '),
+    afi: allBarracks.filter(g => g.status === 'AFI').map(g => g.name).join(', '),
+    ccq: allBarracks.filter(g => g.status === 'CCQ').map(g => g.name).join(', '),
+    accq: allBarracks.filter(g => g.status === 'ACCQ').map(g => g.name).join(', '),
+    sentinels: allBarracks.filter(g => g.status === 'SENTINEL').map(g => g.name)
+  };
+
   return (
     <CCQBulletinClient
       ocName={ocName}
@@ -158,6 +252,7 @@ export default async function CCQBulletinPage() {
       socStale={socStale}
       bestBest={bestBest}
       bestBestStale={bestBestStale}
+      barracksGuards={barracksGuards}
     />
   );
 }

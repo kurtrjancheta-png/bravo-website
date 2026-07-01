@@ -26,6 +26,7 @@ export default function CCQBulletinClient({
   socStale,
   bestBest,
   bestBestStale,
+  barracksGuards,
 }) {
   const [time, setTime] = useState('');
   const [dateStr, setDateStr] = useState('');
@@ -678,7 +679,10 @@ export default function CCQBulletinClient({
                 ⚠️ Awaiting Guard Posting
               </div>
             ) : (
-              <div className="guards-list">
+              <div className="guards-list" style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <div style={{ fontWeight: 800, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--accent-gold)', marginBottom: '0.2rem', opacity: 0.8 }}>
+                  Interior Guards Detail
+                </div>
                 {guards.map((g, idx) => (
                   <div key={idx} className="guard-row">
                     <div className="guard-info">
@@ -688,6 +692,41 @@ export default function CCQBulletinClient({
                     <span className="duty-badge">{g.code}</span>
                   </div>
                 ))}
+
+                <div style={{ fontWeight: 800, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--accent-gold)', marginTop: '0.8rem', marginBottom: '0.2rem', opacity: 0.8 }}>
+                  Barracks Guards Detail
+                </div>
+                {[
+                  { position: 'Cadet-in-Charge of Quarters', code: 'CCQ', name: barracksGuards?.ccq },
+                  { position: 'Assistant CCQ', code: 'ACCQ', name: barracksGuards?.accq },
+                  { position: 'Floor Inspector', code: 'FI', name: barracksGuards?.fi },
+                  { position: 'Assistant Floor Inspector', code: 'AFI', name: barracksGuards?.afi }
+                ].map((bg, idx) => (
+                  <div key={idx} className="guard-row" style={{ borderLeft: '3px solid var(--accent-gold)' }}>
+                    <div className="guard-info">
+                      <div className="guard-position">{bg.position}</div>
+                      <div className="guard-name">{bg.name || 'TBA'}</div>
+                    </div>
+                    <span className="duty-badge" style={{ background: 'rgba(212, 175, 55, 0.15)' }}>{bg.code}</span>
+                  </div>
+                ))}
+
+                {barracksGuards?.sentinels && barracksGuards.sentinels.length > 0 && (
+                  <>
+                    <div style={{ fontWeight: 800, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--accent-gold)', marginTop: '0.8rem', marginBottom: '0.2rem', opacity: 0.8 }}>
+                      Posted Sentinels
+                    </div>
+                    {barracksGuards.sentinels.map((name, sIdx) => (
+                      <div key={sIdx} className="guard-row" style={{ borderLeft: '3px solid #4285f4' }}>
+                        <div className="guard-info">
+                          <div className="guard-position">Sentinel #{sIdx + 1}</div>
+                          <div className="guard-name">{name}</div>
+                        </div>
+                        <span className="duty-badge" style={{ background: 'rgba(66, 133, 244, 0.15)', color: '#4285f4' }}>SENTINEL</span>
+                      </div>
+                    ))}
+                  </>
+                )}
               </div>
             )}
           </div>
