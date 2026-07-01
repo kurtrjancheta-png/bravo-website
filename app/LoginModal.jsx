@@ -24,7 +24,8 @@ const getCouncilTitle = (councilCode) => {
     'ATHLETIC': 'Athletic Officer',
     'TACO': 'Tactical Officer',
     'CO': 'Commanding Officer',
-    'EXO': 'Executive Officer'
+    'EXO': 'Executive Officer',
+    'CCQ': 'Cadet-in-Charge of Quarters'
   };
   // Remove all non-alphanumeric characters to avoid invisible space issues
   const code = String(councilCode).toUpperCase().replace(/[^A-Z0-9]/g, '');

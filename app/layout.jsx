@@ -6,12 +6,19 @@ export const metadata = {
   title: 'Bravo Bulls',
   description: 'Digital Bulletin Board System',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+    shortcut: '/logo.png',
+  },
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
+    statusBarStyle: 'black-translucent',
     title: 'Bravo Bulls',
+    startupImage: '/logo.png',
   },
 };
+
 
 export const viewport = {
   width: 'device-width',

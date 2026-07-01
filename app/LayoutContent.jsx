@@ -11,8 +11,12 @@ export default function LayoutContent({ children }) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+  const [splashFading, setSplashFading] = useState(false);
   const { adminUser, logout, isLoaded } = useAuth();
+
   const isCEIS = adminUser && (adminUser.council === 'S6' || String(adminUser.council || '').toUpperCase().includes('CEIS'));
+  const isCCQ = adminUser && (adminUser.council === 'CCQ' || isCEIS);
   const pathname = usePathname();
 
   // Push subscription state
@@ -39,7 +43,7 @@ export default function LayoutContent({ children }) {
     setOpenSections({
       exo: pathname.startsWith('/exo-') || pathname === '/disseminations/exo',
       fsgt: pathname === '/exo-punishment' || pathname === '/disseminations/fsgt',
-      s1: pathname === '/task-organization' || pathname === '/roster' || pathname === '/disposition' || pathname === '/signify-priv' || pathname === '/disseminations/s1',
+      s1: pathname === '/task-organization' || pathname === '/roster' || pathname === '/disposition' || pathname === '/signify-priv' || pathname === '/disseminations/s1' || pathname === '/ccq-bulletin' || pathname === '/ccq-manager' || pathname === '/s1/sick-call-tracker',
       s2: pathname.startsWith('/s2/') || pathname === '/disseminations/s2',
       s3: pathname === '/calendar-manager' || pathname === '/disseminations/s3',
       s6: pathname === '/cellphone-rack' || pathname === '/tablet-directory' || pathname === '/disseminations/s6',
@@ -59,6 +63,14 @@ export default function LayoutContent({ children }) {
       document.body.classList.add('dark-mode');
     }
   }, []);
+
+  // Splash screen auto-dismiss
+  useEffect(() => {
+    const fadeTimer = setTimeout(() => setSplashFading(true), 2200);
+    const hideTimer = setTimeout(() => setShowSplash(false), 2800);
+    return () => { clearTimeout(fadeTimer); clearTimeout(hideTimer); };
+  }, []);
+
 
   // Base64 helper to convert VAPID public key
   const urlBase64ToUint8Array = (base64String) => {
@@ -268,12 +280,35 @@ export default function LayoutContent({ children }) {
 
   return (
     <div className="app-container">
+
+      {/* Splash Screen */}
+      {showSplash && (
+        <div className={`splash-screen ${splashFading ? 'splash-fading' : ''}`}>
+          <div className="splash-smoke splash-smoke-1" />
+          <div className="splash-smoke splash-smoke-2" />
+          <div className="splash-smoke splash-smoke-3" />
+          <div className="splash-glow" />
+          <div className="splash-content">
+            <div className="splash-logo-wrap">
+              <div className="splash-logo-glow" />
+              <img src="/logo.png" alt="Bravo Bulls" className="splash-logo" />
+            </div>
+            <div className="splash-text">BRAVO BULLS</div>
+            <div className="splash-sub">Integrated Online BULLetin System</div>
+            <div className="splash-loader">
+              <div className="splash-loader-bar" />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Left Sidebar */}
       <aside className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <div className="logo-circle" style={{ padding: 0, overflow: 'hidden', background: 'transparent' }}>
             <img src="/logo.png" alt="Bravo Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
+
           <div>
             <div className="company-title">BRAVO BULL'S</div>
             <div className="company-subtitle">Integrated Online BULLetin System</div>
@@ -285,6 +320,14 @@ export default function LayoutContent({ children }) {
           <Link href="/" className={`nav-item ${pathname === '/' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
             <span style={{ marginRight: '10px' }}>🏠</span> Home Overview
           </Link>
+          <Link href="/ccq-bulletin" className={`nav-item ${pathname === '/ccq-bulletin' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+            <span style={{ marginRight: '10px' }}>📋</span> CCQ's Bulletin Board
+          </Link>
+          {isCCQ && (
+            <Link href="/ccq-manager" className={`nav-item ${pathname === '/ccq-manager' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', fontWeight: 800, color: 'var(--accent-color)' }}>
+              <span style={{ marginRight: '10px' }}>⚙️</span> CQ Bulletin Manager
+            </Link>
+          )}
           <Link href="/event-calendar" className={`nav-item ${pathname === '/event-calendar' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
             <span style={{ marginRight: '10px' }}>📅</span> Event Calendar
           </Link>
@@ -343,6 +386,14 @@ export default function LayoutContent({ children }) {
               <span className="dropdown-arrow">▼</span>
             </summary>
             <div style={{ marginLeft: '1.5rem', borderLeft: '1px solid var(--border-color)', paddingLeft: '0.5rem', marginTop: '0.25rem', marginBottom: '0.5rem' }}>
+              <Link href="/ccq-bulletin" className={`nav-item ${pathname === '/ccq-bulletin' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                CCQ Duty Bulletin
+              </Link>
+              {isCCQ && (
+                <Link href="/ccq-manager" className={`nav-item ${pathname === '/ccq-manager' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center', fontWeight: 800, color: 'var(--accent-color)' }}>
+                  CCQ Bulletin Manager
+                </Link>
+              )}
               <Link href="/task-organization" className={`nav-item ${pathname === '/task-organization' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
                 Task Organization
               </Link>
