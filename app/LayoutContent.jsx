@@ -1116,7 +1116,18 @@ export default function LayoutContent({ children }) {
                       color: 'var(--text-primary)',
                       lineHeight: 1.4
                     }}>
-                      {item.value}
+                      {item.value.includes(', ') ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginTop: '0.15rem' }}>
+                          {item.value.split(', ').map((name, sIdx) => (
+                            <div key={sIdx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <span style={{ color: 'var(--accent-gold)' }}>•</span>
+                              <span>{name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        item.value
+                      )}
                     </div>
                   </div>
                 ))}
