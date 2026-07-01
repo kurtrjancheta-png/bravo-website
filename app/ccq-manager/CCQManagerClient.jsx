@@ -205,7 +205,7 @@ export default function CCQManagerClient() {
         body: JSON.stringify({ scriptUrl, action: actionName, ...payload })
       });
       const data = await res.json();
-      if (!res.ok || !data.success) {
+      if (!res.ok || (data.status !== 'success' && !data.success)) {
         throw new Error(data.error || 'Failed to update Google Sheet.');
       }
       alert('Published successfully! Updates will appear shortly.');
@@ -253,7 +253,7 @@ export default function CCQManagerClient() {
         body: JSON.stringify({ scriptUrl, action: 'publishAll', ...payload })
       });
       const data = await res.json();
-      if (!res.ok || !data.success) {
+      if (!res.ok || (data.status !== 'success' && !data.success)) {
         throw new Error(data.error || 'Failed to batch update Google Sheets.');
       }
       alert('🚀 Daily CCQ Bulletin Board updated successfully!');
