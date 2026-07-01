@@ -80,6 +80,10 @@ Here is a summary of the accomplishments completed on the Bravo Company Website:
 - **EXO Tracker Parser**: Programmed a dynamic, parallel fetch routine fetching data from the three EXO Guard Posting Apps Scripts (1CL, 2CL, 3CL) and compiling the next day's incoming guard details.
 - **Premium Compilation Modal**: Built a premium glassmorphic modal overlay grouping incoming barracks details for the roles of **FI**, **AFI**, **CCQ**, **ACCQ**, and **SENTINELS** in a clean, scroll-safe layout.
 
+## 12. Manual guards alert trigger in CCQ Bulletin Manager
+- **Sticky Footer Action**: Embedded a custom gold-bordered button `📢 BROADCAST GUARDS ALERT` inside [CCQManagerClient.jsx](file:///C:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/ccq-manager/CCQManagerClient.jsx) right next to the "PUBLISH ALL BULLETIN UPDATES" button.
+- **Push Broadcast Trigger**: Clicking this button invokes the `/api/web-push/broadcast` API, enabling CCQs or S6 Admins to manually broadcast the verification alert to all subscribers at any hour with a single press.
+
 ---
 
 ### Verification & Deployment

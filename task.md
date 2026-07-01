@@ -54,3 +54,7 @@
 - [x] Programmed global query listener in LayoutContent.jsx that detects ?showIncomingGuards=true.
 - [x] Integrated automated class-divided Sheets parser fetching data from EXO Guard posting trackers.
 - [x] Developed clean, premium glassmorphism compiled guard detail Modal grouping FI, AFI, CCQ, ACCQ, and SENTINELS.
+
+# Manual Guards Alert Trigger Button
+- [x] Integrated a "📢 BROADCAST GUARDS ALERT" trigger button inside the CCQ Bulletin Manager's sticky footer in CCQManagerClient.jsx.
+- [x] Linked the button click to trigger the push notification immediately via the /api/web-push/broadcast endpoint.
