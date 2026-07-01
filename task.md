@@ -34,3 +34,8 @@
 - [x] Redirect S6/CEIS logins straight to the /ccq-manager route.
 - [x] Update access denied messages to guide both CCQ and CEIS credentials.
 - [x] Recenter and add inline padding to "UPLOADING TO BULLETIN..." and subtitle text within the uploading animation modal to prevent off-center layout wrapping on mobile screens.
+
+# Interactive SOC Duty Countdowns
+- [x] Implement timezone-independent countdown helper matching Asia/Manila (PHT) timezone.
+- [x] Add interactive onClick events to desktop table rows and mobile timeline cards in CCQBulletinClient.jsx.
+- [x] Build custom animated glassmorphism Toast overlay at page bottom to display remaining or elapsed time until First Call.

@@ -58,6 +58,13 @@ Here is a summary of the accomplishments completed on the Bravo Company Website:
   - Re-aligned the massive `UPLOADING TO BULLETIN...` header and the `Syncing data with the Google Sheets database.` paragraph text using `textAlign: 'center'`.
   - Added horizontal padding (`padding: '0 1.5rem'`) to prevent the text elements from running up against screen borders and wrapping unevenly on mobile viewports.
 
+## 8. Interactive SOC Duty Countdowns (Click Actions)
+- **Timezone-Independent Calculation**: Programmed a robust timezone translation function inside [CCQBulletinClient.jsx](file:///C:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/ccq-bulletin/CCQBulletinClient.jsx) to parse military time formats (e.g. `0420H`) and compare them to the current local date in the `Asia/Manila` (PHT) timezone, guaranteeing accurate results regardless of the user device's local clock timezone settings.
+- **Hover & Selection Feedback**:
+  - Desktop: Rows (`.soc-clickable-row`) now feature a smooth transition highlighting the background in golden tints (`rgba(212,175,55,0.06)`) on hover.
+  - Mobile: Timeline cards (`.soc-clickable-card`) scale up smoothly, glow gold on the borders, and display a subtle drop shadow on hover.
+- **Dynamic Glassmorphism Toast**: Rendered a premium fixed overlay Toast at the bottom center of the page. It automatically calculates and shows the remaining time (`Starts in Xh Ym (First Call)`) or elapsed time (`Passed Xh Ym ago`) of the clicked duty, fading out dynamically after 4 seconds.
+
 ---
 
 ### Verification & Deployment
