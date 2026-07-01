@@ -21,6 +21,17 @@ export async function GET(req) {
     
     const notificationsToSend = [];
 
+    // Trigger barracks guard list verification alert at exactly 9:30 PM PHT (2130H)
+    const currentHour = phTimeToday.getUTCHours(); 
+    const currentMinute = phTimeToday.getUTCMinutes();
+    if (currentHour === 21 && currentMinute === 30) {
+      notificationsToSend.push({
+        title: "ATTENTION",
+        body: "THE LIST OF INCOMING BARRACKS GUARDS HAS BEEN PUBLISHED. ALL CADETS WILL VERIFY THE LIST OF INCOMING GUARDS.",
+        url: "/?showIncomingGuards=true"
+      });
+    }
+
     // ── 1. FETCH & PROCESS CALENDAR EVENTS ────────────────────────
     try {
       const res = await fetch(CALENDAR_API_URL, { cache: 'no-store' });

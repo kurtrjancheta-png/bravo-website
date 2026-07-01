@@ -13,6 +13,9 @@ export default function LayoutContent({ children }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [splashFading, setSplashFading] = useState(false);
+  const [showIncomingModal, setShowIncomingModal] = useState(false);
+  const [incomingGuards, setIncomingGuards] = useState(null);
+  const [loadingGuards, setLoadingGuards] = useState(false);
   const { adminUser, logout, isLoaded } = useAuth();
 
   const isCEIS = adminUser && (adminUser.council === 'S6' || String(adminUser.council || '').toUpperCase().includes('CEIS'));
@@ -174,6 +177,159 @@ export default function LayoutContent({ children }) {
       return () => clearTimeout(timer);
     }
   }, [deferredPrompt, isIOS]);
+
+  // Handle incoming barracks guards query string trigger from notifications
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('showIncomingGuards') === 'true') {
+      setShowIncomingModal(true);
+      setLoadingGuards(true);
+      
+      // Clean query parameter from URL so it doesn't reopen on reload
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+
+      // Fetch and compile guards
+      const getIncomingGuards = async () => {
+        const SCRIPT_URL_1CL = 'https://script.google.com/macros/s/AKfycbwNVo5buoeHliZfJ17yLduSCMEPfoHkuvXNnAT8ed-wIs0lVE6ucpkvItNZN2zv0SbtTw/exec';
+        const SCRIPT_URL_2CL = 'https://script.google.com/macros/s/AKfycbx9slx3s4GRQCnR98HrUmSfRvJnKfbWoHjLq2avXeoNqYCthhUlOS1iYP1t-ORb_zLL/exec';
+        const SCRIPT_URL_3CL = 'https://script.google.com/macros/s/AKfycbxs0fmHK3QikUCYBTSnD_xuh7sVoXF5urCISgtQvGz5QJHiRF94e0ajx0XwSoZ09X-3tg/exec';
+
+        try {
+          const [res1, res2, res3] = await Promise.all([
+            fetch(SCRIPT_URL_1CL).then(r => r.ok ? r.json() : []),
+            fetch(SCRIPT_URL_2CL).then(r => r.ok ? r.json() : []),
+            fetch(SCRIPT_URL_3CL).then(r => r.ok ? r.json() : [])
+          ]);
+
+          const manilaNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+          // Check if before guard mount (6:30 PM PHT)
+          const isBeforeGuardMount = (manilaNow.getHours() < 18) || (manilaNow.getHours() === 18 && manilaNow.getMinutes() < 30);
+          const postedDate = new Date(manilaNow);
+          postedDate.setHours(0, 0, 0, 0);
+          if (isBeforeGuardMount) {
+            postedDate.setDate(postedDate.getDate() - 1);
+          }
+          const incomingDate = new Date(postedDate);
+          incomingDate.setDate(incomingDate.getDate() + 1);
+          const incomingTime = incomingDate.getTime();
+
+          const parseHdrDate = (hdr) => {
+            if (!hdr) return null;
+            const pts = hdr.split(' | ');
+            try {
+              const d = new Date(pts[0]);
+              if (isNaN(d.getTime())) return null;
+              return d;
+            } catch (e) { return null; }
+          };
+
+          const BLACKLIST = ['INTERIOR', 'SENTINEL', 'NON POSTING', 'NON-POSTING', 'FI', 'CCQ', 'ACCQ', 'MHC', 'AFI'];
+
+          const getStatus1CL = (color) => {
+            if (!color) return 'UNKNOWN';
+            if (color === '#ff0000' || color === '#ea4335') return 'INTERIOR';
+            if (color === '#ffc000' || color === '#ffa500' || color === '#fbbc04' || color === '#ff9900') return 'FLOOR INSPECTOR';
+            if (color === '#00ff00' || color === '#34a853') return 'SENTINEL';
+            return 'POSTED';
+          };
+
+          const getStatus2CL = (color) => {
+            if (!color) return 'UNKNOWN';
+            if (color === '#ffff00' || color === '#ffff01') return 'PLEBE DETAIL';
+            if (color === '#00ffff') return 'SENTINEL (TOC)';
+            if (color === '#ff00ff' || color === '#ff00fe') return 'INTERIOR';
+            if (color === '#b45f06' || color === '#b87333' || color === '#a67c00' || color === '#bf9000') return 'AFI';
+            return 'POSTED';
+          };
+
+          const getStatus3CL = (color) => {
+            if (!color) return 'UNKNOWN';
+            switch (color) {
+              case '#ff0000':
+              case '#ea4335': return 'CCQ';
+              case '#4a86e8':
+              case '#4285f4':
+              case '#2b78e4': return 'ACCQ';
+              case '#00ff00':
+              case '#34a853': return 'MHC';
+              case '#ff9900':
+              case '#ffa500':
+              case '#ffc000': return 'INTERIOR';
+              case '#00ffff':
+              case '#00b0f0': return 'AFI';
+              default: return 'POSTED';
+            }
+          };
+
+          const extractGuards = (list, getStatusFn) => {
+            const arr = [];
+            list.forEach(item => {
+              const name = (item.name || '').replace(' AS', '').trim();
+              if (BLACKLIST.includes(name.toUpperCase())) return;
+
+              const d = parseHdrDate(item.dateHeader);
+              if (!d) return;
+
+              const itemDateStr = d.toLocaleDateString('en-US', { timeZone: 'Asia/Manila' });
+              const itemObj = new Date(itemDateStr);
+              itemObj.setHours(0,0,0,0);
+
+              if (itemObj.getTime() === incomingTime) {
+                arr.push({ name, status: getStatusFn(item.color) });
+              }
+            });
+            return arr;
+          };
+
+          const guards1 = extractGuards(res1, getStatus1CL);
+          const guards2 = extractGuards(res2, getStatus2CL);
+          const guards3 = extractGuards(res3, getStatus3CL);
+
+          let fi = [];
+          let afi = [];
+          let ccq = [];
+          let accq = [];
+          let sentinels = [];
+
+          guards1.forEach(g => {
+            if (g.status === 'FLOOR INSPECTOR') fi.push(g.name);
+            else if (g.status === 'SENTINEL') sentinels.push(g.name);
+          });
+
+          guards2.forEach(g => {
+            if (g.status === 'AFI') afi.push(g.name);
+            else if (g.status === 'SENTINEL (TOC)') sentinels.push(g.name + ' (TOC)');
+          });
+
+          guards3.forEach(g => {
+            if (g.status === 'CCQ') ccq.push(g.name);
+            else if (g.status === 'ACCQ') accq.push(g.name);
+            else if (g.status === 'AFI') afi.push(g.name);
+            else if (g.status === 'SENTINEL') sentinels.push(g.name);
+          });
+
+          return {
+            date: incomingDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' }),
+            fi: fi.join(', ') || '—',
+            afi: afi.join(', ') || '—',
+            ccq: ccq.join(', ') || '—',
+            accq: accq.join(', ') || '—',
+            sentinels: sentinels.join(', ') || '—'
+          };
+        } catch (e) {
+          console.error(e);
+          return null;
+        }
+      };
+
+      getIncomingGuards().then(data => {
+        setIncomingGuards(data);
+        setLoadingGuards(false);
+      });
+    }
+  }, [pathname]);
 
   const handleInstallClick = async () => {
     if (isIOS) {
@@ -855,6 +1011,139 @@ export default function LayoutContent({ children }) {
       )}
 
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+
+      {/* INCOMING BARRACKS GUARDS MODAL OVERLAY */}
+      {showIncomingModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.85)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 99999,
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: 'var(--bg-secondary)',
+            border: '2px solid var(--accent-gold)',
+            boxShadow: '0 0 30px rgba(212, 175, 55, 0.25)',
+            borderRadius: '16px',
+            padding: '2rem',
+            maxWidth: '550px',
+            width: '100%',
+            position: 'relative',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            color: 'var(--text-primary)',
+            fontFamily: 'inherit'
+          }}>
+            {/* Close Button */}
+            <button 
+              style={{
+                position: 'absolute',
+                top: '1rem',
+                right: '1.25rem',
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-secondary)',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                transition: 'color 0.2s'
+              }}
+              onClick={() => setShowIncomingModal(false)}
+            >
+              ✕
+            </button>
+
+            {/* Title / Header */}
+            <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.8rem', marginBottom: '1.5rem', textAlign: 'center' }}>
+              <span style={{ fontSize: '2.5rem' }}>🛡️</span>
+              <h2 style={{ margin: '0.5rem 0 0.25rem 0', fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                INCOMING BARRACKS GUARDS
+              </h2>
+              {incomingGuards && (
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.02em', marginTop: '0.2rem' }}>
+                  Detail for {incomingGuards.date}
+                </div>
+              )}
+            </div>
+
+            {loadingGuards ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 1rem', gap: '1rem' }}>
+                <div style={{ width: '40px', height: '40px', border: '3px solid rgba(212, 175, 55, 0.2)', borderTopColor: 'var(--accent-gold)', borderRadius: '50%', animation: 'logoGlowPulse 1.5s infinite linear' }}></div>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 750 }}>Extracting incoming guard list...</span>
+              </div>
+            ) : incomingGuards ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {[
+                  { role: 'FI', value: incomingGuards.fi },
+                  { role: 'AFI', value: incomingGuards.afi },
+                  { role: 'CCQ', value: incomingGuards.ccq },
+                  { role: 'ACCQ', value: incomingGuards.accq },
+                  { role: 'SENTINELS', value: incomingGuards.sentinels }
+                ].map((item, idx) => (
+                  <div key={idx} style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.35rem',
+                    background: 'rgba(255, 255, 255, 0.02)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '10px',
+                    padding: '0.85rem 1.25rem'
+                  }}>
+                    <div style={{
+                      fontSize: '0.75rem',
+                      fontWeight: 900,
+                      color: 'var(--accent-gold)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}>
+                      {item.role}
+                    </div>
+                    <div style={{
+                      fontSize: '0.95rem',
+                      fontWeight: 700,
+                      color: 'var(--text-primary)',
+                      lineHeight: 1.4
+                    }}>
+                      {item.value}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-secondary)' }}>
+                ⚠️ Failed to load the incoming guards detail. Please check connection.
+              </div>
+            )}
+
+            <button 
+              onClick={() => setShowIncomingModal(false)}
+              style={{
+                width: '100%',
+                padding: '0.85rem',
+                background: 'var(--accent-gold)',
+                color: '#000000',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '0.9rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                boxShadow: '0 4px 15px rgba(212, 175, 55, 0.25)',
+                transition: 'all 0.2s',
+                marginTop: '1.75rem'
+              }}
+            >
+              GOT IT
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
