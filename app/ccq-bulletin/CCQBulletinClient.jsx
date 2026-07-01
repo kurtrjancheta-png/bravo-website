@@ -30,6 +30,93 @@ export default function CCQBulletinClient({
   const [time, setTime] = useState('');
   const [dateStr, setDateStr] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [toastTitle, setToastTitle] = useState('');
+  const [toastMsg, setToastMsg] = useState('');
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastTimeoutId, setToastTimeoutId] = useState(null);
+
+  const getTimeDifference = (timeStr) => {
+    if (!timeStr) return null;
+    const clean = String(timeStr).trim().toUpperCase();
+    const digits = clean.replace(/[^0-9]/g, '');
+    if (digits.length < 3) return null;
+    
+    let hours = 0;
+    let minutes = 0;
+    
+    if (digits.length === 3) {
+      hours = parseInt(digits.substring(0, 1), 10);
+      minutes = parseInt(digits.substring(1), 10);
+    } else if (digits.length >= 4) {
+      hours = parseInt(digits.substring(0, 2), 10);
+      minutes = parseInt(digits.substring(2, 4), 10);
+    }
+
+    const now = new Date();
+    
+    // Format to Asia/Manila (PHT) timezone parts
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Manila',
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+      hour12: false
+    });
+    
+    const parts = formatter.formatToParts(now);
+    const getPartVal = (type) => parseInt(parts.find(p => p.type === type).value, 10);
+    
+    const phtYear = getPartVal('year');
+    const phtMonth = getPartVal('month') - 1; // 0-indexed month
+    const phtDay = getPartVal('day');
+    const phtHour = getPartVal('hour');
+    const phtMinute = getPartVal('minute');
+    const phtSecond = getPartVal('second');
+
+    const nowPhtMs = Date.UTC(phtYear, phtMonth, phtDay, phtHour, phtMinute, phtSecond);
+    const targetPhtMs = Date.UTC(phtYear, phtMonth, phtDay, hours, minutes, 0);
+
+    return targetPhtMs - nowPhtMs;
+  };
+
+  const handleDutyClick = (duty) => {
+    if (!duty || !duty.time) return;
+    const diffMs = getTimeDifference(duty.time);
+    if (diffMs === null) return;
+
+    let message = '';
+    const cleanTitle = duty.activity;
+
+    if (diffMs > 0) {
+      const diffMins = Math.floor(diffMs / 60000);
+      const h = Math.floor(diffMins / 60);
+      const m = diffMins % 60;
+      message = `Starts in ${h > 0 ? `${h}h ` : ''}${m}m (First Call).`;
+    } else if (diffMs === 0) {
+      message = `It is now First Call!`;
+    } else {
+      const diffMins = Math.floor(Math.abs(diffMs) / 60000);
+      const h = Math.floor(diffMins / 60);
+      const m = diffMins % 60;
+      message = `Passed ${h > 0 ? `${h}h ` : ''}${m}m ago.`;
+    }
+
+    setToastTitle(cleanTitle);
+    setToastMsg(message);
+    setToastVisible(true);
+
+    if (toastTimeoutId) {
+      clearTimeout(toastTimeoutId);
+    }
+
+    const id = setTimeout(() => {
+      setToastVisible(false);
+    }, 4000);
+    setToastTimeoutId(id);
+  };
 
   useEffect(() => {
     const updateTime = () => {
@@ -430,6 +517,26 @@ export default function CCQBulletinClient({
             flex-direction: column;
           }
         }
+        
+        /* Interactive Schedule Hover & Clickable Styles */
+        .soc-clickable-row {
+          transition: background-color 0.2s ease;
+        }
+        .soc-clickable-row:hover {
+          background-color: rgba(212, 175, 55, 0.06) !important;
+        }
+        .soc-clickable-card {
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .soc-clickable-card:hover {
+          border-color: var(--accent-gold) !important;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(212, 175, 55, 0.08);
+        }
+        @keyframes toast-slide-up {
+          from { transform: translate(-50%, 20px); opacity: 0; }
+          to { transform: translate(-50%, 0); opacity: 1; }
+        }
       `}} />
 
       {/* HEADER SECTION */}
@@ -501,7 +608,12 @@ export default function CCQBulletinClient({
                   </thead>
                   <tbody>
                     {socRows.map((r, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <tr 
+                        key={i} 
+                        onClick={() => handleDutyClick(r)}
+                        className="soc-clickable-row"
+                        style={{ borderBottom: '1px solid var(--border-color)', cursor: 'pointer' }}
+                      >
                         <td className="mono-font" style={{ padding: '0.35rem 0.5rem', fontWeight: 800, color: 'var(--accent-gold)', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
                           {formatMilitaryTime(r.time)}
                         </td>
@@ -520,7 +632,11 @@ export default function CCQBulletinClient({
                   {socRows.map((r, i) => (
                     <div key={i} className="soc-timeline-item">
                       <div className="soc-timeline-dot"></div>
-                      <div className="soc-timeline-card">
+                      <div 
+                        className="soc-timeline-card soc-clickable-card"
+                        onClick={() => handleDutyClick(r)}
+                        style={{ cursor: 'pointer' }}
+                      >
                         <div className="soc-time-header">
                           <span className="soc-time-display">{formatMilitaryTime(r.time)}</span>
                         </div>
@@ -709,6 +825,40 @@ export default function CCQBulletinClient({
                 );
               })}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification for Duty Countdown */}
+      {toastVisible && (
+        <div style={{
+          position: 'fixed',
+          bottom: '2rem',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: 'rgba(15, 23, 42, 0.93)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid var(--accent-gold)',
+          borderRadius: '12px',
+          padding: '0.85rem 1.5rem',
+          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(212, 175, 55, 0.25)',
+          zIndex: 10000,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          color: '#fff',
+          maxWidth: '90%',
+          width: 'max-content',
+          animation: 'toast-slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+        }}>
+          <span style={{ fontSize: '1.25rem' }}>⏰</span>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{ fontWeight: 850, fontSize: '0.8rem', color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {toastTitle}
+            </span>
+            <span style={{ fontSize: '0.85rem', color: '#f1f5f9', marginTop: '0.15rem', fontWeight: 650 }}>
+              {toastMsg}
+            </span>
           </div>
         </div>
       )}
