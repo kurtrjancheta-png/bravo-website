@@ -238,7 +238,7 @@ export default function LayoutContent({ children }) {
           const getStatus2CL = (color) => {
             if (!color) return 'UNKNOWN';
             if (color === '#ffff00' || color === '#ffff01') return 'PLEBE DETAIL';
-            if (color === '#00ffff') return 'SENTINEL (TOC)';
+            if (color === '#00ffff' || color === '#00b0f0') return 'SENTINEL (TOC)';
             if (color === '#ff00ff' || color === '#ff00fe') return 'INTERIOR';
             if (color === '#b45f06' || color === '#b87333' || color === '#a67c00' || color === '#bf9000') return 'AFI';
             return 'POSTED';
@@ -259,6 +259,8 @@ export default function LayoutContent({ children }) {
               case '#ffc000': return 'INTERIOR';
               case '#00ffff':
               case '#00b0f0': return 'AFI';
+              case '#000000':
+              case '#111111': return 'SENTINEL';
               default: return 'POSTED';
             }
           };
@@ -294,20 +296,23 @@ export default function LayoutContent({ children }) {
           let sentinels = [];
 
           guards1.forEach(g => {
-            if (g.status === 'FLOOR INSPECTOR') fi.push(g.name);
-            else if (g.status === 'SENTINEL') sentinels.push(g.name);
+            const formatted = `1CL ${g.name} 'B' CO`;
+            if (g.status === 'FLOOR INSPECTOR') fi.push(formatted);
+            else if (g.status === 'SENTINEL') sentinels.push(formatted);
           });
 
           guards2.forEach(g => {
-            if (g.status === 'AFI') afi.push(g.name);
-            else if (g.status === 'SENTINEL (TOC)') sentinels.push(g.name + ' (TOC)');
+            const formatted = `2CL ${g.name} 'B' CO`;
+            if (g.status === 'AFI') afi.push(formatted);
+            else if (g.status === 'SENTINEL (TOC)') sentinels.push(formatted);
           });
 
           guards3.forEach(g => {
-            if (g.status === 'CCQ') ccq.push(g.name);
-            else if (g.status === 'ACCQ') accq.push(g.name);
-            else if (g.status === 'AFI') afi.push(g.name);
-            else if (g.status === 'SENTINEL') sentinels.push(g.name);
+            const formatted = `3CL ${g.name} 'B' CO`;
+            if (g.status === 'CCQ') ccq.push(formatted);
+            else if (g.status === 'ACCQ') accq.push(formatted);
+            else if (g.status === 'AFI') afi.push(formatted);
+            else if (g.status === 'SENTINEL') sentinels.push(formatted);
           });
 
           return {
@@ -1081,11 +1086,11 @@ export default function LayoutContent({ children }) {
             ) : incomingGuards ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {[
-                  { role: 'FI', value: incomingGuards.fi },
-                  { role: 'AFI', value: incomingGuards.afi },
-                  { role: 'CCQ', value: incomingGuards.ccq },
-                  { role: 'ACCQ', value: incomingGuards.accq },
-                  { role: 'SENTINELS', value: incomingGuards.sentinels }
+                  { role: 'incoming FI:', value: incomingGuards.fi },
+                  { role: 'incoming AFI:', value: incomingGuards.afi },
+                  { role: 'incoming CCQ:', value: incomingGuards.ccq },
+                  { role: 'incoming ACCQ:', value: incomingGuards.accq },
+                  { role: 'incoming Sentinels:', value: incomingGuards.sentinels }
                 ].map((item, idx) => (
                   <div key={idx} style={{
                     display: 'flex',
