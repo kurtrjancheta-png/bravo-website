@@ -109,7 +109,7 @@ export default async function CCQBulletinPage() {
       formation: safeGet(r, 'FORMATION'),
     };
   });
-  const socStale = isStalePHT(socUpdatedAt, 0); // stale after midnight
+  const socStale = false; // Never reset automatically at midnight
 
   // ── Parse Best-Best (Column-Dated Layout) ────────────────────
   let bestBest = [];

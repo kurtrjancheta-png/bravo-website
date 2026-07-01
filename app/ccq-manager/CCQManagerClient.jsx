@@ -51,10 +51,14 @@ export default function CCQManagerClient() {
   // Unified publishing state
   const [publishAllSubmitting, setPublishAllSubmitting] = useState(false);
 
+  // Rocket Upload Animation States
+  const [isUploading, setIsUploading] = useState(false);
+  const [isLaunching, setIsLaunching] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+
   // Countdowns to reset times
   const [ocCountdown, setOcCountdown] = useState('');
   const [guardsCountdown, setGuardsCountdown] = useState('');
-  const [socCountdown, setSocCountdown] = useState('');
   const [bestCountdown, setBestCountdown] = useState('');
 
   useEffect(() => {
@@ -81,10 +85,6 @@ export default function CCQManagerClient() {
       let guardsTarget = new Date(Date.UTC(y, m, d, 19 - 8, 0, 0, 0));
       if (nowPHT.getUTCHours() >= 19) guardsTarget = new Date(Date.UTC(y, m, d + 1, 19 - 8, 0, 0, 0));
       setGuardsCountdown(formatDiff(guardsTarget));
-
-      let socTarget = new Date(Date.UTC(y, m, d, 16, 0, 0, 0));
-      if (now >= socTarget) socTarget = new Date(Date.UTC(y, m, d + 1, 16, 0, 0, 0));
-      setSocCountdown(formatDiff(socTarget));
 
       let bestTarget = new Date(Date.UTC(y, m, d, 12 - 8, 0, 0, 0));
       if (nowPHT.getUTCHours() >= 12) bestTarget = new Date(Date.UTC(y, m, d + 1, 12 - 8, 0, 0, 0));
@@ -193,6 +193,8 @@ export default function CCQManagerClient() {
 
   const handlePost = async (actionName, payload, setSubmitting) => {
     setSubmitting(true);
+    setIsUploading(true);
+    setIsLaunching(false);
     try {
       const res = await fetch('/api/ccq/publish', {
         method: 'POST',
@@ -203,9 +205,22 @@ export default function CCQManagerClient() {
       if (!res.ok || (data.status !== 'success' && !data.success)) {
         throw new Error(data.error || 'Failed to update Google Sheet.');
       }
-      alert('Published successfully! Updates will appear shortly.');
+      
+      // Trigger rocket blastoff animation
+      setIsLaunching(true);
+      setTimeout(() => {
+        setIsUploading(false);
+        setIsLaunching(false);
+        setShowSuccessToast(true);
+        setTimeout(() => {
+          setShowSuccessToast(false);
+        }, 3000);
+      }, 800);
+
     } catch (err) {
       console.error(err);
+      setIsUploading(false);
+      setIsLaunching(false);
       alert(`Publish Failed: ${err.message}`);
     } finally {
       setSubmitting(false);
@@ -235,6 +250,8 @@ export default function CCQManagerClient() {
   // Publish everything at once
   const handlePublishAll = async () => {
     setPublishAllSubmitting(true);
+    setIsUploading(true);
+    setIsLaunching(false);
     
     const guardsPayload = POSITION_LABELS.map((p, idx) => ({
       position: p.label,
@@ -263,9 +280,22 @@ export default function CCQManagerClient() {
       if (!res.ok || (data.status !== 'success' && !data.success)) {
         throw new Error(data.error || 'Failed to batch update Google Sheets.');
       }
-      alert('🚀 Daily CCQ Bulletin Board updated successfully!');
+      
+      // Trigger rocket blastoff animation
+      setIsLaunching(true);
+      setTimeout(() => {
+        setIsUploading(false);
+        setIsLaunching(false);
+        setShowSuccessToast(true);
+        setTimeout(() => {
+          setShowSuccessToast(false);
+        }, 3000);
+      }, 800);
+
     } catch (err) {
       console.error(err);
+      setIsUploading(false);
+      setIsLaunching(false);
       alert(`Publish All Failed: ${err.message}`);
     } finally {
       setPublishAllSubmitting(false);
@@ -306,6 +336,71 @@ export default function CCQManagerClient() {
   return (
     <div className="container-fluid py-4" style={{ color: 'var(--text-primary)', maxWidth: '1600px', margin: '0 auto' }}>
       
+      {showSuccessToast && (
+        <div style={{
+          position: 'fixed', top: '40px', left: '50%', transform: 'translateX(-50%)',
+          background: '#10b981', color: '#fff', padding: '12px 24px', borderRadius: '100px',
+          fontWeight: 800, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '10px',
+          boxShadow: '0 10px 25px rgba(16, 185, 129, 0.4)', zIndex: 10000,
+          animation: 'slide-down 0.3s ease-out forwards'
+        }}>
+          <span>✅</span> CCQ BULLETIN UPDATED SUCCESSFULLY
+        </div>
+      )}
+
+      {isUploading && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)',
+          zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          color: '#fff'
+        }}>
+          <style dangerouslySetInnerHTML={{__html: `
+            @keyframes slide-down {
+              from { transform: translate(-50%, -20px); opacity: 0; }
+              to { transform: translate(-50%, 0); opacity: 1; }
+            }
+            @keyframes rocketShake {
+              0% { transform: translate(0, 0) rotate(0deg); }
+              25% { transform: translate(-2px, 2px) rotate(-2deg); }
+              50% { transform: translate(2px, -2px) rotate(2deg); }
+              75% { transform: translate(-2px, -2px) rotate(-1deg); }
+              100% { transform: translate(0, 0) rotate(0deg); }
+            }
+            @keyframes smokeParticles {
+              0% { transform: translateY(0) scale(1); opacity: 0.8; }
+              100% { transform: translateY(100px) scale(3); opacity: 0; }
+            }
+            @keyframes rocketBlastOff {
+              0% { transform: translateY(0) scale(1); }
+              15% { transform: translateY(20px) scale(0.9); }
+              100% { transform: translateY(-1500px) scale(0.5); opacity: 0; }
+            }
+          `}} />
+          <div style={{ position: 'relative', marginBottom: '3rem', display: 'flex', justifyContent: 'center' }}>
+            <div style={{
+              fontSize: '8rem',
+              animation: isLaunching ? 'rocketBlastOff 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards' : 'rocketShake 0.1s infinite',
+              filter: isLaunching ? 'drop-shadow(0 50px 40px rgba(239, 68, 68, 0.9))' : 'drop-shadow(0 30px 25px rgba(239, 68, 68, 0.6))',
+              position: 'relative',
+              zIndex: 2,
+              display: 'inline-block'
+            }}>
+              <div style={{ transform: 'rotate(-45deg)' }}>🚀</div>
+            </div>
+            {!isLaunching && (
+              <>
+                <div style={{ position: 'absolute', bottom: '-20px', left: '50%', transform: 'translateX(-50%)', width: '20px', height: '20px', background: '#cbd5e1', borderRadius: '50%', animation: 'smokeParticles 0.8s infinite ease-out', zIndex: 1 }}></div>
+                <div style={{ position: 'absolute', bottom: '-10px', left: '30%', transform: 'translateX(-50%)', width: '15px', height: '15px', background: '#94a3b8', borderRadius: '50%', animation: 'smokeParticles 0.9s infinite ease-out 0.2s', zIndex: 1 }}></div>
+                <div style={{ position: 'absolute', bottom: '-15px', left: '70%', transform: 'translateX(-50%)', width: '25px', height: '25px', background: '#e2e8f0', borderRadius: '50%', animation: 'smokeParticles 1s infinite ease-out 0.4s', zIndex: 1 }}></div>
+              </>
+            )}
+          </div>
+          <h2 style={{ margin: 0, fontWeight: 900, letterSpacing: '0.15em', fontSize: '2rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s', textTransform: 'uppercase' }}>UPLOADING TO BULLETIN...</h2>
+          <p style={{ color: '#94a3b8', fontStyle: 'italic', marginTop: '1rem', marginBottom: '0.2rem', fontSize: '1.1rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>Syncing data with the Google Sheets database.</p>
+        </div>
+      )}
+
       <style dangerouslySetInnerHTML={{__html: `
         .manager-grid {
           display: grid;
@@ -584,7 +679,7 @@ export default function CCQManagerClient() {
         </div>
 
         {/* COLUMN 2: INTERIOR GUARDS DETAIL */}
-        <div className="manager-card" style={{ height: 'fit-content' }}>
+        <div className="command-card" style={{ height: 'fit-content' }}>
           <div className="manager-section-header">
             <h2 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, textTransform: 'uppercase' }}>
               🛡️ Interior Guards Detail
@@ -637,14 +732,11 @@ export default function CCQManagerClient() {
         </div>
 
         {/* COLUMN 3: SCHEDULE OF CALLS */}
-        <div className="manager-card" style={{ height: 'fit-content' }}>
+        <div className="command-card" style={{ height: 'fit-content' }}>
           <div className="manager-section-header">
             <h2 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, textTransform: 'uppercase' }}>
               📅 Schedule of Calls
             </h2>
-            <span className="badge bg-secondary text-light" style={{ fontSize: '0.7rem' }}>
-              Expires: {socCountdown}
-            </span>
           </div>
 
           {/* Docx uploader */}
