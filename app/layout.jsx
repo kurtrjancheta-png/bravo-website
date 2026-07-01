@@ -7,15 +7,15 @@ export const metadata = {
   description: 'Digital Bulletin Board System',
   manifest: '/manifest.json',
   icons: {
-    icon: '/logo.png',
-    apple: '/logo.png',
-    shortcut: '/logo.png',
+    icon: '/logo-square.png',
+    apple: '/logo-square.png',
+    shortcut: '/logo-square.png',
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'Bravo Bulls',
-    startupImage: '/logo.png',
+    startupImage: '/logo-square.png',
   },
 };
 
