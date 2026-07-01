@@ -71,7 +71,7 @@ export default function CCQManagerClient() {
   const [bestCountdown, setBestCountdown] = useState('');
 
   // Accordion Sections Open State
-  const [openSection, setOpenSection] = useState('url'); // 'url', 'oc', 'guards', 'soc', 'best'
+  const [openSection, setOpenSection] = useState('oc'); // 'oc', 'guards', 'soc', 'best'
 
   useEffect(() => {
     const calculateCountdowns = () => {
@@ -344,31 +344,6 @@ export default function CCQManagerClient() {
           Publish & update the Bravo Company digital duty roster boards
         </p>
       </div>
-
-      {/* ── SECTION 0: APPS SCRIPT URL CONFIGURATION ── */}
-      <div className="accordion-header" onClick={() => setOpenSection(openSection === 'url' ? '' : 'url')}>
-        <span>⚙️ Apps Script Configuration</span>
-        <span>{openSection === 'url' ? '▲' : '▼'}</span>
-      </div>
-      {openSection === 'url' && (
-        <div className="accordion-content">
-          <label style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 600 }}>CCQ Google Apps Script Web App URL</label>
-          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
-            <input
-              type="text"
-              className="form-input"
-              style={{ marginTop: 0 }}
-              placeholder="https://script.google.com/macros/s/.../exec"
-              defaultValue={scriptUrl}
-              onChange={(e) => setScriptUrl(e.target.value)}
-            />
-            <button className="btn-gold" onClick={() => handleSaveUrl(scriptUrl)}>Save</button>
-          </div>
-          <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.5rem', marginBottom: 0 }}>
-            Ensure your deployed Apps Script web app is set to "Execute as: Me" and "Who has access: Anyone".
-          </p>
-        </div>
-      )}
 
       {/* ── SECTION 1: OC / AOC ── */}
       <div className="accordion-header" onClick={() => setOpenSection(openSection === 'oc' ? '' : 'oc')}>
