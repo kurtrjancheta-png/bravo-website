@@ -22,11 +22,10 @@ const POSITION_LABELS = [
 export default function CCQManagerClient() {
   const { adminUser, isLoaded } = useAuth();
   
-  // Script URL Configuration (persisted in localStorage for convenience)
   const [scriptUrl, setScriptUrl] = useState('');
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setScriptUrl(localStorage.getItem('ccq_script_url') || '');
+      setScriptUrl(localStorage.getItem('ccq_script_url') || 'https://script.google.com/macros/s/AKfycbzl8cpIaWa5jk3a0fjYztuwotflL36rMjEGw83FeqFI-EA067WTzULacpUNIuznSqOAfg/exec');
     }
   }, []);
 
