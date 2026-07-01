@@ -231,7 +231,7 @@ export default function CCQBulletinClient({
 
         .soc-timeline-item {
           position: relative;
-          margin-bottom: 1rem;
+          margin-bottom: 0.5rem;
         }
 
         .soc-timeline-item:last-child {
@@ -241,9 +241,9 @@ export default function CCQBulletinClient({
         .soc-timeline-dot {
           position: absolute;
           left: -1.5rem;
-          top: 0.55rem;
-          width: 10px;
-          height: 10px;
+          top: 0.45rem;
+          width: 8px;
+          height: 8px;
           border-radius: 50%;
           background: var(--border-color);
           border: 2px solid var(--bg-secondary);
@@ -260,11 +260,11 @@ export default function CCQBulletinClient({
           background: var(--bg-primary);
           border: 1px solid var(--border-color);
           border-radius: 8px;
-          padding: 0.65rem 0.9rem;
+          padding: 0.35rem 0.65rem;
           transition: all 0.2s ease;
           display: flex;
           flex-direction: column;
-          gap: 0.25rem;
+          gap: 0.15rem;
           position: relative;
         }
 
