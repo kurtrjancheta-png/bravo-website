@@ -37,13 +37,13 @@ export async function POST(req) {
 
       if (action === 'publishOCAOC') {
         notificationPayload = {
-          title: '💂‍♂️ Duty Officers Updated',
-          body: `Duty Officers of the Day have been updated. OC: ${payload.ocName || 'TBA'}, AOC: ${payload.aocName || 'TBA'}.`,
+          title: '💂‍♂️ OC/AOC Updated',
+          body: `OC: ${payload.ocName || 'TBA'}, AOC: ${payload.aocName || 'TBA'}`,
           url: '/ccq-bulletin'
         };
       } else if (action === 'publishGuards') {
         notificationPayload = {
-          title: '🛡️ Guards Detail Posted',
+          title: '🛡️ Interior Guard Detail Updated',
           body: 'The interior guards detail has been posted.',
           url: '/ccq-bulletin'
         };
@@ -56,13 +56,13 @@ export async function POST(req) {
       } else if (action === 'publishBestBest') {
         notificationPayload = {
           title: '🏆 Best-Best Awards Published',
-          body: 'Inspection winners for Locker, Shoe Display, Bunks, Study Table, and Room have been posted.',
+          body: 'The Best-Best have been publised.',
           url: '/ccq-bulletin'
         };
       } else if (action === 'publishAll') {
         notificationPayload = {
           title: '🔔 CCQ Daily Bulletin Updated',
-          body: 'The CCQ Bulletin Board has been updated for today: Duty Officers, Guards, and Schedule of Calls are live.',
+          body: 'The CCQ Bulletin Board has been updated for today.',
           url: '/ccq-bulletin'
         };
       }

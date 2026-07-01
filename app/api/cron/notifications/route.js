@@ -4,6 +4,15 @@ import { getSheetData } from '../../../../lib/googleSheets';
 const CALENDAR_API_URL = process.env.NEXT_PUBLIC_CALENDAR_API_URL || 'https://script.google.com/macros/s/AKfycbzajHQKzjp7rN9hVj6pSiPJkOP1An5wCrYKjU3mQCZgbyl5_G_ek21FEUabG87m4qJ9/exec';
 const CCQ_SPREADSHEET_ID = '1HhWc6ZAVjbpJT4EwyX0D6zJ4FBxh7jNPuRxqGLE-YT8';
 
+const cleanDutyName = (name) => {
+  if (!name) return '';
+  const str = String(name).trim();
+  if (str.toUpperCase().startsWith('FC')) {
+    return str.substring(2).trim();
+  }
+  return str;
+};
+
 export async function GET(req) {
   try {
     const now = new Date();
@@ -61,41 +70,42 @@ export async function GET(req) {
           const actDate = new Date(act.dateRaw);
           const diffMs = actDate.getTime() - now.getTime(); 
           const diffMins = Math.round(diffMs / 60000);
+          const cleanTitle = cleanDutyName(act.title);
 
           if (diffMins === 15) {
             notificationsToSend.push({
               title: `Uniform Call`,
-              body: `uniform call: ${act.title}`,
+              body: `Uniform for ${cleanTitle}`,
               url: '/event-calendar'
             });
           } else if (diffMins === 10) {
             notificationsToSend.push({
               title: `10 Mins to First Call`,
-              body: `IT is now 10 mins before first call for: ${act.title}`,
+              body: `It is Now 10 minutes before First call for: ${cleanTitle}`,
               url: '/event-calendar'
             });
           } else if (diffMins === 5) {
             notificationsToSend.push({
               title: `5 Mins to First Call`,
-              body: `IT is now 5 mins before first call for: ${act.title}`,
+              body: `It is Now 5 minutes before First call for: ${cleanTitle}`,
               url: '/event-calendar'
             });
           } else if (diffMins === 0) {
             notificationsToSend.push({
               title: `First Call`,
-              body: `it is now 1st call for: ${act.title}`,
+              body: `It is Now First call for: ${cleanTitle}`,
               url: '/event-calendar'
             });
           } else if (diffMins === -4) {
             notificationsToSend.push({
               title: `Attention Call`,
-              body: `It is now ATTENTION CALL for: ${act.title}`,
+              body: `It is Now ATTENTION CALL for: ${cleanTitle}`,
               url: '/event-calendar'
             });
           } else if (diffMins === -5) {
             notificationsToSend.push({
               title: `Assembly Call`,
-              body: `it is now ASSEMBLY CALL for: ${act.title}`,
+              body: `It is Now ASSEMBLY CALL for: ${cleanTitle}`,
               url: '/event-calendar'
             });
           }
@@ -152,16 +162,17 @@ export async function GET(req) {
 
           const diffMs = dutyTime.getTime() - now.getTime();
           const diffMins = Math.round(diffMs / 60000);
+          const activity = cleanDutyName(r['ACTIVITY']);
 
           if (diffMins === 0) {
-            announcements.firstCall.push({ activity: r['ACTIVITY'] });
+            announcements.firstCall.push({ activity });
           } else if (diffMins === 5) {
-            announcements.min5.push({ activity: r['ACTIVITY'] });
+            announcements.min5.push({ activity });
           } else if (diffMins === 10) {
-            announcements.min10.push({ activity: r['ACTIVITY'] });
+            announcements.min10.push({ activity });
           } else if (diffMins === 15) {
             announcements.uniformCall.push({ 
-              activity: r['ACTIVITY'], 
+              activity, 
               uniform: r['UNIFORM'], 
               formation: r['FORMATION'] 
             });
@@ -173,17 +184,17 @@ export async function GET(req) {
 
         if (announcements.firstCall.length > 0) {
           const duties = announcements.firstCall.map(a => a.activity).join(', ');
-          parts.push(`first call for ${duties}`);
+          parts.push(`First call for: ${duties}`);
         }
 
         if (announcements.min5.length > 0) {
           const duties = announcements.min5.map(a => a.activity).join(', ');
-          parts.push(`5 minutes before first call for ${duties}`);
+          parts.push(`5 minutes before First call for: ${duties}`);
         }
 
         if (announcements.min10.length > 0) {
           const duties = announcements.min10.map(a => a.activity).join(', ');
-          parts.push(`10 minutes before first call for ${duties}`);
+          parts.push(`10 minutes before First call for: ${duties}`);
         }
 
         if (announcements.uniformCall.length > 0) {
@@ -200,11 +211,11 @@ export async function GET(req) {
           parts.forEach((part, index) => {
             let prefix = '';
             if (index === 0) {
-              prefix = part.startsWith('Uniform for') ? '' : 'It is now ';
+              prefix = part.startsWith('Uniform for') ? '' : 'It is Now ';
             } else if (index === 1) {
-              prefix = part.startsWith('Uniform for') ? ' Likewise ' : ' Likewise it is now ';
+              prefix = part.startsWith('Uniform for') ? ' Likewise, ' : ' Likewise, it is Now ';
             } else {
-              prefix = part.startsWith('Uniform for') ? ' Furthermore ' : ' Furthermore it is now ';
+              prefix = part.startsWith('Uniform for') ? ' Furthermore, ' : ' Furthermore, it is Now ';
             }
             finalMessage += prefix + part + (part.endsWith('.') ? '' : '.');
           });
