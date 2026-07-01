@@ -35,7 +35,7 @@ export default function CCQBulletinClient({
     const updateTime = () => {
       const now = new Date();
       const options = { timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-      const dateOptions = { timeZone: 'Asia/Manila', weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+      const dateOptions = { timeZone: 'Asia/Manila', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
       setTime(now.toLocaleTimeString('en-US', options) + ' H');
       setDateStr(now.toLocaleDateString('en-US', dateOptions));
     };
@@ -75,106 +75,102 @@ export default function CCQBulletinClient({
           justify-content: space-between;
           align-items: center;
           border-bottom: 2px solid var(--border-color);
-          padding-bottom: 0.85rem;
-          margin-bottom: 1rem;
+          padding-bottom: 1rem;
+          margin-bottom: 1.5rem;
+          flex-wrap: wrap;
           gap: 1rem;
         }
 
-        .ccq-title-area h1 {
-          font-size: 1.75rem;
+        .ccq-header-title {
+          font-size: 1.8rem;
           font-weight: 900;
           margin: 0;
           text-transform: uppercase;
           letter-spacing: -0.02em;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
         }
 
-        .ccq-title-area p {
-          margin: 0.15rem 0 0 0;
+        .ccq-header-sub {
+          margin: 0.2rem 0 0 0;
           color: var(--text-secondary);
           font-size: 0.85rem;
         }
 
-        .ccq-time-card {
-          text-align: right;
-          background: rgba(212, 175, 55, 0.03);
-          border: 1px solid var(--accent-gold);
-          box-shadow: 0 0 12px rgba(212, 175, 55, 0.1);
-          padding: 0.4rem 1rem;
-          border-radius: 8px;
-          min-width: 170px;
+        .ccq-clock-box {
+          text-align: center;
+          background: rgba(212, 175, 55, 0.04);
+          border: 2px solid var(--accent-gold);
+          box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+          padding: 0.5rem 1.25rem;
+          border-radius: 10px;
+          min-width: 220px;
         }
 
-        .ccq-time-val {
+        .ccq-time-text {
           font-family: monospace;
-          font-size: 1.4rem;
+          font-size: 1.6rem;
           font-weight: 900;
           color: var(--accent-gold);
           letter-spacing: 0.05em;
+          text-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
         }
 
-        .ccq-date-val {
-          font-size: 0.7rem;
-          color: var(--text-secondary);
-          font-weight: 700;
+        .ccq-date-text {
+          font-size: 0.75rem;
+          color: var(--text-primary);
+          font-weight: 800;
           text-transform: uppercase;
-          letter-spacing: 0.03em;
+          letter-spacing: 0.05em;
+          margin-top: 0.15rem;
         }
 
-        /* Duty Officers Bar */
-        .ccq-officers-bar {
-          display: flex;
+        /* Top Row Duty Officers */
+        .ccq-officers-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 8px;
-          padding: 0.5rem 1rem;
-          margin-bottom: 1.25rem;
+          border-radius: 12px;
+          padding: 1rem 1.25rem;
+          margin-bottom: 1.5rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 1rem;
+        }
+
+        .ccq-officers-row {
+          display: flex;
           gap: 1.5rem;
+          flex-wrap: wrap;
           align-items: center;
         }
 
         .ccq-officer-item {
           display: flex;
           align-items: center;
-          gap: 0.4rem;
-          font-size: 0.8rem;
+          gap: 0.5rem;
+          font-size: 0.9rem;
         }
 
         .ccq-officer-label {
           color: var(--text-secondary);
-          font-weight: 800;
+          font-weight: 700;
+          font-size: 0.75rem;
           text-transform: uppercase;
-          font-size: 0.65rem;
           letter-spacing: 0.05em;
         }
 
         .ccq-officer-name {
-          font-weight: 700;
-          color: var(--text-primary);
-        }
-
-        .ccq-officer-name.oc-name {
+          font-weight: 800;
           color: var(--accent-gold);
         }
 
-        .stale-badge {
-          background: rgba(239, 68, 68, 0.1);
-          color: #ef4444;
-          padding: 0.15rem 0.4rem;
-          border-radius: 4px;
-          font-size: 0.65rem;
-          font-weight: 800;
-          text-transform: uppercase;
-        }
-
-        /* Main Grid */
+        /* Responsive Grid */
         .ccq-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 1.25rem;
+          gap: 1.5rem;
         }
+
         @media (min-width: 1024px) {
           .ccq-grid {
             grid-template-columns: 2fr 1fr;
@@ -187,6 +183,8 @@ export default function CCQBulletinClient({
           border-radius: 12px;
           padding: 1.25rem;
           box-shadow: var(--shadow-sm);
+          display: flex;
+          flex-direction: column;
         }
 
         .card-header-row {
@@ -378,165 +376,107 @@ export default function CCQBulletinClient({
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 0.4rem;
-          margin-top: 0.75rem;
+          gap: 0.5rem;
+          margin-top: 1rem;
           width: 100%;
           transition: all 0.2s;
         }
+
         .bestbest-btn:hover {
           background: #e5c158;
-          box-shadow: 0 0 10px rgba(212, 175, 55, 0.25);
+          box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
         }
 
-        /* Responsive optimizations for cellphone */
-        @media (max-width: 768px) {
-          .ccq-bulletin-container {
-            padding: 0.5rem;
-          }
+        .stale-badge {
+          background: rgba(239, 68, 68, 0.15);
+          color: #ef4444;
+          font-size: 0.65rem;
+          font-weight: 800;
+          padding: 0.15rem 0.4rem;
+          border-radius: 4px;
+        }
 
-          /* Collapse Header into minimalist layout */
-          .ccq-header-section {
-            flex-direction: row;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 0.4rem;
-            margin-bottom: 0.5rem;
-            gap: 0.5rem;
-          }
+        /* Desktop vs Mobile Toggles */
+        .soc-table-desktop {
+          display: block;
+        }
+        .soc-timeline-mobile {
+          display: none;
+        }
+        .modal-table-desktop {
+          display: table;
+          width: 100%;
+        }
+        .modal-list-mobile {
+          display: none;
+        }
 
-          .ccq-title-area h1 {
-            font-size: 1.15rem;
-            letter-spacing: -0.01em;
+        @media (max-width: 1023px) {
+          .soc-table-desktop {
+            display: none;
           }
-
-          .ccq-title-area p {
-            display: none; /* Hide subtitle completely on small phones */
+          .soc-timeline-mobile {
+            display: block;
           }
-
-          .ccq-time-card {
-            padding: 0.2rem 0.5rem;
-            min-width: 0;
-            border: 1px solid var(--accent-gold);
-            background: transparent;
-            box-shadow: none;
+        }
+        @media (max-width: 767px) {
+          .modal-table-desktop {
+            display: none;
           }
-
-          .ccq-time-val {
-            font-size: 0.9rem;
-          }
-
-          .ccq-date-val {
-            font-size: 0.55rem;
-          }
-
-          /* Compact status bar layout for duty officers */
-          .ccq-officers-bar {
-            padding: 0.4rem 0.6rem;
-            margin-bottom: 0.65rem;
-            gap: 0.4rem;
-            flex-direction: row;
-            justify-content: space-between;
-            border-radius: 6px;
-          }
-
-          .ccq-officer-item {
-            font-size: 0.7rem;
-            flex: 1 1 auto;
-            gap: 0.25rem;
-          }
-
-          .ccq-officer-label {
-            font-size: 0.55rem;
-          }
-
-          /* Minimise command cards padding and font sizes */
-          .command-card {
-            padding: 0.75rem !important;
-            border-radius: 8px !important;
-          }
-
-          .card-header-row {
-            padding-bottom: 0.4rem;
-            margin-bottom: 0.65rem;
-          }
-
-          .card-title {
-            font-size: 0.85rem;
-          }
-
-          /* Google Calendar Timeline layout */
-          .soc-timeline {
-            padding-left: 1rem;
-          }
-
-          .soc-timeline::before {
-            left: 2px;
-          }
-
-          .soc-timeline-dot {
-            left: -1.2rem;
-            top: 0.5rem;
-            width: 8px;
-            height: 8px;
-          }
-
-          .soc-timeline-card {
-            padding: 0.5rem 0.65rem;
-          }
-
-          .soc-time-display {
-            font-size: 0.8rem;
-          }
-
-          .soc-activity-title {
-            font-size: 0.8rem;
-          }
-
-          .soc-badge {
-            font-size: 0.6rem;
-            padding: 0.1rem 0.3rem;
+          .modal-list-mobile {
+            display: flex;
+            flex-direction: column;
           }
         }
       `}} />
 
-      {/* HEADER SECTION - ULTRA COMPACT */}
+      {/* HEADER SECTION */}
       <div className="ccq-header-section">
-        <div className="ccq-title-area">
-          <h1>🔔 CCQ Duty Board</h1>
-          <p>Bravo Company Integrated Online Bulletin</p>
+        <div>
+          <h1 className="ccq-header-title">🔔 CCQ Duty Bulletin</h1>
+          <p className="ccq-header-sub">Daily Duty Detail, Schedule of Calls, and Inspection Winners</p>
         </div>
 
-        <div className="ccq-time-card">
-          <div className="ccq-time-val">{time || '00:00:00 H'}</div>
-          <div className="ccq-date-val">{dateStr || 'LOADING DATE...'}</div>
+        <div className="ccq-clock-box">
+          <div className="ccq-time-text">{time || '00:00:00 H'}</div>
+          <div className="ccq-date-text">{dateStr || 'LOADING DATE...'}</div>
         </div>
       </div>
 
-      {/* COMPACT DUTY OFFICERS STATUS BAR */}
-      <div className="ccq-officers-bar">
-        <div className="ccq-officer-item">
-          <span className="ccq-officer-label">OC:</span>
-          <span className="ccq-officer-name oc-name">
-            {ocStale || !ocName ? 'TBA' : ocName}
+      {/* TOP ROW: DUTY OFFICERS */}
+      <div className="ccq-officers-card">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{ fontSize: '1.1rem' }}>💂‍♂️</span>
+          <span style={{ fontWeight: 800, textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '0.04em' }}>
+            Duty Officers:
           </span>
-          {ocStale && <span className="stale-badge" style={{ padding: '0.05rem 0.25rem', fontSize: '0.55rem' }}>STALE</span>}
         </div>
-        <div style={{ width: '1px', height: '12px', background: 'var(--border-color)' }}></div>
-        <div className="ccq-officer-item">
-          <span className="ccq-officer-label">AOC:</span>
-          <span className="ccq-officer-name">
-            {ocStale || !aocName ? 'TBA' : aocName}
-          </span>
+
+        <div className="ccq-officers-row">
+          <div className="ccq-officer-item">
+            <span className="ccq-officer-label">OC:</span>
+            <span className="ccq-officer-name">
+              {ocStale || !ocName ? 'TBA' : ocName}
+            </span>
+            {ocStale && <span className="stale-badge" style={{ padding: '0.05rem 0.25rem', fontSize: '0.55rem' }}>STALE</span>}
+          </div>
+          <div style={{ width: '1px', height: '12px', background: 'var(--border-color)' }}></div>
+          <div className="ccq-officer-item">
+            <span className="ccq-officer-label">AOC:</span>
+            <span className="ccq-officer-name">
+              {ocStale || !aocName ? 'TBA' : aocName}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* MAIN GRID */}
       <div className="ccq-grid">
         
-        {/* SCHEDULE OF CONDUCT - GOOGLE CALENDAR STYLE TIMELINE */}
+        {/* SCHEDULE OF CONDUCT CARD */}
         <div className="command-card" style={{ height: 'fit-content' }}>
           <div className="card-header-row">
-            <h2 className="card-title">📅 Schedule of Conduct</h2>
+            <h2 className="card-title">📅 Schedule of Calls</h2>
             <span className="card-meta-text">Resets at Midnight</span>
           </div>
 
@@ -545,34 +485,65 @@ export default function CCQBulletinClient({
               📭 No Schedule Posted for Today
             </div>
           ) : (
-            <div className="soc-timeline">
-              {socRows.map((r, i) => (
-                <div key={i} className="soc-timeline-item">
-                  <div className="soc-timeline-dot"></div>
-                  <div className="soc-timeline-card">
-                    <div className="soc-time-header">
-                      <span className="soc-time-display">{formatMilitaryTime(r.time)}</span>
-                    </div>
-                    <div className="soc-activity-title">{r.activity}</div>
-                    
-                    {(r.uniform || r.formation) && (
-                      <div className="soc-badge-row">
-                        {r.uniform && (
-                          <span className="soc-badge soc-badge-uniform">
-                            👔 {r.uniform}
-                          </span>
-                        )}
-                        {r.formation && (
-                          <span className="soc-badge soc-badge-formation">
-                            📢 {r.formation}
-                          </span>
+            <>
+              {/* Desktop Table View */}
+              <div className="soc-table-desktop" style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid var(--border-color)', opacity: 0.8 }}>
+                      <th style={{ padding: '0.4rem 0.5rem', fontWeight: 800, width: '100px' }}>TIME</th>
+                      <th style={{ padding: '0.4rem 0.5rem', fontWeight: 800 }}>ACTIVITY</th>
+                      <th style={{ padding: '0.4rem 0.5rem', fontWeight: 800, width: '22%' }}>UNIFORM</th>
+                      <th style={{ padding: '0.4rem 0.5rem', fontWeight: 800, width: '18%' }}>FORMATION</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {socRows.map((r, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                        <td className="mono-font" style={{ padding: '0.35rem 0.5rem', fontWeight: 800, color: 'var(--accent-gold)', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
+                          {formatMilitaryTime(r.time)}
+                        </td>
+                        <td style={{ padding: '0.35rem 0.5rem', color: 'var(--text-primary)', fontWeight: 500 }}>{r.activity}</td>
+                        <td style={{ padding: '0.35rem 0.5rem', color: 'var(--text-secondary)' }}>{r.uniform || '—'}</td>
+                        <td style={{ padding: '0.35rem 0.5rem', color: 'var(--text-primary)', fontWeight: 700 }}>{r.formation || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Timeline View */}
+              <div className="soc-timeline-mobile">
+                <div className="soc-timeline">
+                  {socRows.map((r, i) => (
+                    <div key={i} className="soc-timeline-item">
+                      <div className="soc-timeline-dot"></div>
+                      <div className="soc-timeline-card">
+                        <div className="soc-time-header">
+                          <span className="soc-time-display">{formatMilitaryTime(r.time)}</span>
+                        </div>
+                        <div className="soc-activity-title">{r.activity}</div>
+                        
+                        {(r.uniform || r.formation) && (
+                          <div className="soc-badge-row">
+                            {r.uniform && (
+                              <span className="soc-badge soc-badge-uniform">
+                                👔 {r.uniform}
+                              </span>
+                            )}
+                            {r.formation && (
+                              <span className="soc-badge soc-badge-formation">
+                                📢 {r.formation}
+                              </span>
+                            )}
+                          </div>
                         )}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            </>
           )}
         </div>
 
@@ -654,8 +625,38 @@ export default function CCQBulletinClient({
               </p>
             </div>
 
-            {/* List View for cellphones, clean layout */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {/* Desktop Table View */}
+            <div className="modal-table-desktop" style={{ overflowX: 'auto', marginBottom: '0.5rem' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid var(--border-color)', background: 'var(--bg-primary)' }}>
+                    <th style={{ padding: '0.5rem', fontWeight: 800 }}>CATEGORY</th>
+                    <th style={{ padding: '0.5rem', fontWeight: 800, color: 'var(--accent-gold)', width: '25%' }}>1CL</th>
+                    <th style={{ padding: '0.5rem', fontWeight: 800, color: 'var(--accent-gold)', width: '25%' }}>2CL</th>
+                    <th style={{ padding: '0.5rem', fontWeight: 800, color: 'var(--accent-gold)', width: '25%' }}>3CL</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { label: '🔒 Best Locker', suffix: 'Best Locker' },
+                    { label: '👟 Best Shoe Display', suffix: 'Best Shoe Display' },
+                    { label: '🛏️ Best Bunks', suffix: 'Best Bunks' },
+                    { label: '📚 Best Study Table', suffix: 'Best Study Table Display' },
+                    { label: '🏠 Best Room', suffix: 'Best Room' }
+                  ].map((cat, idx) => (
+                    <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <td style={{ padding: '0.5rem', fontWeight: 700 }}>{cat.label}</td>
+                      <td style={{ padding: '0.5rem' }}>{getValue('1CL', cat.suffix) || '—'}</td>
+                      <td style={{ padding: '0.5rem' }}>{getValue('2CL', cat.suffix) || '—'}</td>
+                      <td style={{ padding: '0.5rem' }}>{getValue('3CL', cat.suffix) || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile List View */}
+            <div className="modal-list-mobile" style={{ gap: '0.75rem' }}>
               {[
                 { label: '🔒 Best Locker', suffix: 'Best Locker' },
                 { label: '👟 Best Shoe Display', suffix: 'Best Shoe Display' },
@@ -664,11 +665,8 @@ export default function CCQBulletinClient({
                 { label: '🏠 Best Room', suffix: 'Best Room' }
               ].map((cat, idx) => {
                 const c1 = getValue('1CL', cat.suffix);
-                const c1r = getRoom('1CL', cat.suffix);
                 const c2 = getValue('2CL', cat.suffix);
-                const c2r = getRoom('2CL', cat.suffix);
                 const c3 = getValue('3CL', cat.suffix);
-                const c3r = getRoom('3CL', cat.suffix);
 
                 return (
                   <div key={idx} style={{
@@ -683,15 +681,15 @@ export default function CCQBulletinClient({
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.75rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>1CL:</span>
-                        <span style={{ fontWeight: 700 }}>{c1 || '—'}{c1r ? ` (Rm ${c1r})` : ''}</span>
+                        <span style={{ fontWeight: 700 }}>{c1 || '—'}</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>2CL:</span>
-                        <span style={{ fontWeight: 700 }}>{c2 || '—'}{c2r ? ` (Rm ${c2r})` : ''}</span>
+                        <span style={{ fontWeight: 700 }}>{c2 || '—'}</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>3CL:</span>
-                        <span style={{ fontWeight: 700 }}>{c3 || '—'}{c3r ? ` (Rm ${c3r})` : ''}</span>
+                        <span style={{ fontWeight: 700 }}>{c3 || '—'}</span>
                       </div>
                     </div>
                   </div>

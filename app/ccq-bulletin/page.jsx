@@ -118,10 +118,10 @@ export default async function CCQBulletinPage() {
 
   if (bestBestRaw && bestBestRaw.length > 0) {
     const firstRow = bestBestRaw[0];
-    const dateKeys = Object.keys(firstRow).filter(k => k !== 'CATEGORY' && k !== '_sheetRowIndex');
+    const dateKeys = Object.keys(firstRow).filter(k => k !== 'CATEGORY' && k !== '_sheetRowIndex' && !k.startsWith('Column'));
     
     if (dateKeys.length > 0) {
-      mostRecentDate = dateKeys[dateKeys.length - 1]; // Last column is the most recent date
+      mostRecentDate = dateKeys[dateKeys.length - 1]; // Last column that contains a date
       
       bestBest = bestBestRaw.filter(r => {
         const cat = safeGet(r, 'CATEGORY');
