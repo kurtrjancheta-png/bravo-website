@@ -1067,7 +1067,28 @@ export default function LayoutContent({ children }) {
 
             {/* Title / Header */}
             <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.8rem', marginBottom: '1.5rem', textAlign: 'center' }}>
-              <span style={{ fontSize: '2.5rem' }}>🛡️</span>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem' }}>
+                <svg width="60" height="60" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  {/* Crown top back */}
+                  <path d="M8 26 C8 15, 56 15, 56 26 L48 35 L16 35 Z" fill="#ffffff" />
+                  {/* Crown top cover */}
+                  <path d="M8 26 C8 14, 56 14, 56 26 C56 31, 8 31, 8 26 Z" fill="#ffffff" stroke="#d4af37" stroke-width="2"/>
+                  {/* Shadow/crease under crown top */}
+                  <path d="M12 28 C20 30, 44 30, 52 28" stroke="#cbd5e1" stroke-width="1.5" fill="none"/>
+                  {/* Black Band */}
+                  <path d="M14 33 C14 33, 32 35, 50 33 L48 40 C48 40, 32 42, 16 40 Z" fill="#111215" stroke="#d4af37" stroke-width="1"/>
+                  {/* Gold Cord / Chin strap */}
+                  <path d="M15 37 C24 40, 40 40, 49 37" stroke="#d4af37" stroke-width="2.5" fill="none"/>
+                  {/* Gold side strap buttons */}
+                  <circle cx="15.5" cy="37.5" r="2.5" fill="#d4af37" />
+                  <circle cx="48.5" cy="37.5" r="2.5" fill="#d4af37" />
+                  {/* Visor / Peak */}
+                  <path d="M15 40 C19 49, 45 49, 49 40 C44 44, 20 44, 15 40 Z" fill="#000000" />
+                  {/* Gold Badge (Eagle / Shield shape) */}
+                  <path d="M32 23 L35 27 L33 32 L31 32 L29 27 Z" fill="#d4af37" />
+                  <circle cx="32" cy="27" r="1.5" fill="#d4af37" />
+                </svg>
+              </div>
               <h2 style={{ margin: '0.5rem 0 0.25rem 0', fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 INCOMING BARRACKS GUARDS
               </h2>
