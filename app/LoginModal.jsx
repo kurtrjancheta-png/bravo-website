@@ -133,7 +133,10 @@ export default function LoginModal({ isOpen, onClose }) {
                   return council.toLowerCase();
                 };
                 let targetPath = `/disseminations/${getCouncilRoute(successData.council)}`;
-                if (String(successData.council).toUpperCase() === 'CCQ') {
+                const isCCQOrCEIS = String(successData.council).toUpperCase() === 'CCQ' || 
+                                    String(successData.council).toUpperCase() === 'S6' || 
+                                    String(successData.council).toUpperCase().includes('CEIS');
+                if (isCCQOrCEIS) {
                   targetPath = '/ccq-manager';
                 }
                 setShowSuccess(false);

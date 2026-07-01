@@ -19,32 +19,38 @@ const POSITION_LABELS = [
   { code: 'MOG',   label: 'Messenger of the Guard' }
 ];
 
-export default function CCQManagerClient() {
+export default function CCQManagerClient({
+  initialOcName = '',
+  initialAocName = '',
+  initialGuards = Array(13).fill(''),
+  initialSocRows = [],
+  initialBestState = {
+    '1CL_Locker': '', '1CL_Shoe': '', '1CL_Bunks': '', '1CL_Table': '', '1CL_Room': '',
+    '2CL_Locker': '', '2CL_Shoe': '', '2CL_Bunks': '', '2CL_Table': '', '2CL_Room': '',
+    '3CL_Locker': '', '3CL_Shoe': '', '3CL_Bunks': '', '3CL_Table': '', '3CL_Room': ''
+  }
+}) {
   const { adminUser, isLoaded } = useAuth();
   
   const scriptUrl = 'https://script.google.com/macros/s/AKfycbzl8cpIaWa5jk3a0fjYztuwotflL36rMjEGw83FeqFI-EA067WTzULacpUNIuznSqOAfg/exec';
 
   // Section 1: OC & AOC State
-  const [ocName, setOcName] = useState('');
-  const [aocName, setAocName] = useState('');
+  const [ocName, setOcName] = useState(initialOcName);
+  const [aocName, setAocName] = useState(initialAocName);
   const [ocSubmitting, setOcSubmitting] = useState(false);
 
   // Section 2: Interior Guards State
-  const [guardNames, setGuardNames] = useState(Array(13).fill(''));
+  const [guardNames, setGuardNames] = useState(initialGuards);
   const [guardsSubmitting, setGuardsSubmitting] = useState(false);
 
   // Section 3: Schedule of Calls State
-  const [socRows, setSocRows] = useState([]);
+  const [socRows, setSocRows] = useState(initialSocRows);
   const [socSubmitting, setSocSubmitting] = useState(false);
   const [fileBase64, setFileBase64] = useState('');
   const [fileName, setFileName] = useState('');
 
   // Section 4: Daily Best Best State (Class-divided)
-  const [bestState, setBestState] = useState({
-    '1CL_Locker': '', '1CL_Shoe': '', '1CL_Bunks': '', '1CL_Table': '', '1CL_Room': '',
-    '2CL_Locker': '', '2CL_Shoe': '', '2CL_Bunks': '', '2CL_Table': '', '2CL_Room': '',
-    '3CL_Locker': '', '3CL_Shoe': '', '3CL_Bunks': '', '3CL_Table': '', '3CL_Room': ''
-  });
+  const [bestState, setBestState] = useState(initialBestState);
   const [bestClassTab, setBestClassTab] = useState('1CL');
   const [bestSubmitting, setBestSubmitting] = useState(false);
 
@@ -325,8 +331,8 @@ export default function CCQManagerClient() {
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '2rem' }}>
         <div style={{ background: 'var(--bg-secondary)', border: '1px solid #ef4444', borderRadius: '12px', padding: '2.5rem', maxWidth: '500px', textAlign: 'center' }}>
           <h2 style={{ color: '#ef4444', marginTop: 0 }}>🚫 ACCESS DENIED</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-            Only the Cadet-in-Charge of Quarters (CCQ) can access this bulletin board manager page. Please log in as BravoCCQ.
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.5 }}>
+            Only the Cadet-in-Charge of Quarters (CCQ) or CEIS Officer can access this bulletin board manager page. Please log in as BravoCCQ or BravoCEIS.
           </p>
         </div>
       </div>
@@ -396,8 +402,8 @@ export default function CCQManagerClient() {
               </>
             )}
           </div>
-          <h2 style={{ margin: 0, fontWeight: 900, letterSpacing: '0.15em', fontSize: '2rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s', textTransform: 'uppercase' }}>UPLOADING TO BULLETIN...</h2>
-          <p style={{ color: '#94a3b8', fontStyle: 'italic', marginTop: '1rem', marginBottom: '0.2rem', fontSize: '1.1rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s' }}>Syncing data with the Google Sheets database.</p>
+          <h2 style={{ margin: 0, fontWeight: 900, letterSpacing: '0.15em', fontSize: '2rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s', textTransform: 'uppercase', textAlign: 'center', padding: '0 1.5rem' }}>UPLOADING TO BULLETIN...</h2>
+          <p style={{ color: '#94a3b8', fontStyle: 'italic', marginTop: '1rem', marginBottom: '0.2rem', fontSize: '1.1rem', opacity: isLaunching ? 0 : 1, transition: 'opacity 0.2s', textAlign: 'center', padding: '0 1.5rem' }}>Syncing data with the Google Sheets database.</p>
         </div>
       )}
 
