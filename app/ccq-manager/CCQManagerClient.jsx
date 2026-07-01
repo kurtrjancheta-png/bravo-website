@@ -888,7 +888,7 @@ export default function CCQManagerClient({
             disabled={guardsAlertSubmitting}
             onClick={handleTriggerGuardsAlert}
           >
-            {guardsAlertSubmitting ? 'Triggering Alert...' : '📢 BROADCAST GUARDS ALERT'}
+            {guardsAlertSubmitting ? 'Triggering Alert...' : '📢 NOTIFY INCOMING GUARDS'}
           </button>
           <button
             className="manager-btn-gold"
