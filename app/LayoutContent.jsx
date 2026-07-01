@@ -1069,24 +1069,31 @@ export default function LayoutContent({ children }) {
             <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.8rem', marginBottom: '1.5rem', textAlign: 'center' }}>
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem' }}>
                 <svg width="60" height="60" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Crown top back */}
-                  <path d="M8 26 C8 15, 56 15, 56 26 L48 35 L16 35 Z" fill="#ffffff" />
-                  {/* Crown top cover */}
-                  <path d="M8 26 C8 14, 56 14, 56 26 C56 31, 8 31, 8 26 Z" fill="#ffffff" stroke="#d4af37" stroke-width="2"/>
+                  {/* Crown top back (Blue cloth) */}
+                  <path d="M8 26 C8 15, 56 15, 56 26 L48 35 L16 35 Z" fill="#0f2a4a" />
+                  {/* Crown top cover (Blue cloth) */}
+                  <path d="M8 26 C8 14, 56 14, 56 26 C56 31, 8 31, 8 26 Z" fill="#0f2a4a" stroke="#1b365d" stroke-width="2"/>
                   {/* Shadow/crease under crown top */}
-                  <path d="M12 28 C20 30, 44 30, 52 28" stroke="#cbd5e1" stroke-width="1.5" fill="none"/>
-                  {/* Black Band */}
-                  <path d="M14 33 C14 33, 32 35, 50 33 L48 40 C48 40, 32 42, 16 40 Z" fill="#111215" stroke="#d4af37" stroke-width="1"/>
-                  {/* Gold Cord / Chin strap */}
-                  <path d="M15 37 C24 40, 40 40, 49 37" stroke="#d4af37" stroke-width="2.5" fill="none"/>
+                  <path d="M12 28 C20 30, 44 30, 52 28" stroke="#000000" stroke-width="1.5" fill="none" opacity="0.3"/>
+                  {/* Black Band / Lining */}
+                  <path d="M14 33 C14 33, 32 35, 50 33 L48 40 C48 40, 32 42, 16 40 Z" fill="#000000" stroke="#000000" stroke-width="1"/>
+                  {/* Black Strap */}
+                  <path d="M15 37 C24 39.5, 40 39.5, 49 37" stroke="#000000" stroke-width="2.5" fill="none"/>
                   {/* Gold side strap buttons */}
                   <circle cx="15.5" cy="37.5" r="2.5" fill="#d4af37" />
                   <circle cx="48.5" cy="37.5" r="2.5" fill="#d4af37" />
                   {/* Visor / Peak */}
                   <path d="M15 40 C19 49, 45 49, 49 40 C44 44, 20 44, 15 40 Z" fill="#000000" />
-                  {/* Gold Badge (Eagle / Shield shape) */}
-                  <path d="M32 23 L35 27 L33 32 L31 32 L29 27 Z" fill="#d4af37" />
-                  <circle cx="32" cy="27" r="1.5" fill="#d4af37" />
+                  {/* Gold PMA Insignia (Shield + Wings + Star) */}
+                  {/* Wings */}
+                  <path d="M25 26 C28 24, 30 24, 30 27 L27 29 Z" fill="#d4af37"/>
+                  <path d="M39 26 C36 24, 34 24, 34 27 L37 29 Z" fill="#d4af37"/>
+                  {/* Shield */}
+                  <path d="M30 24 L34 24 L35 28 C35 31, 32 33, 32 33 C32 33, 29 31, 29 28 Z" fill="#d4af37"/>
+                  {/* Star */}
+                  <path d="M32 20.5 L33 22 L34.5 22 L33.2 23 L33.7 24.5 L32 23.5 L30.3 24.5 L30.8 23 L29.5 22 L31 22 Z" fill="#d4af37"/>
+                  {/* Sword detail */}
+                  <line x1="32" y1="24" x2="32" y2="31" stroke="#0f2a4a" stroke-width="1"/>
                 </svg>
               </div>
               <h2 style={{ margin: '0.5rem 0 0.25rem 0', fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
