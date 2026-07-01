@@ -229,7 +229,7 @@ export default function CCQManagerClient() {
 
   return (
     <div style={{ backgroundColor: '#111416', color: '#e2e8f0', minHeight: '100vh', padding: '2rem 1.5rem', fontFamily: 'Inter, sans-serif' }}>
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{__html: `
         .accordion-header {
           background: #22282c;
           border: 1px solid #2e353b;
@@ -301,7 +301,7 @@ export default function CCQManagerClient() {
         .btn-secondary:hover {
           background: #3c454d;
         }
-      `}</style>
+      `}} />
 
       {/* TOP HEADER */}
       <div style={{ borderBottom: '2px solid #2e353b', paddingBottom: '1.5rem', marginBottom: '2rem' }}>
