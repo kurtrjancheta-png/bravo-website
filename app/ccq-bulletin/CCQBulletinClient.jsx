@@ -127,19 +127,20 @@ export default function CCQBulletinClient({
         .ccq-officers-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
+          border-left: 5px solid var(--accent-gold);
           border-radius: 12px;
-          padding: 1rem 1.25rem;
+          padding: 1.25rem 1.75rem;
           margin-bottom: 1.5rem;
           display: flex;
           justify-content: space-between;
           align-items: center;
           flex-wrap: wrap;
-          gap: 1rem;
+          gap: 1.5rem;
         }
 
         .ccq-officers-row {
           display: flex;
-          gap: 1.5rem;
+          gap: 2.5rem;
           flex-wrap: wrap;
           align-items: center;
         }
@@ -147,21 +148,22 @@ export default function CCQBulletinClient({
         .ccq-officer-item {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
-          font-size: 0.9rem;
+          gap: 0.75rem;
         }
 
         .ccq-officer-label {
           color: var(--text-secondary);
-          font-weight: 700;
-          font-size: 0.75rem;
+          font-weight: 850;
+          font-size: 0.95rem;
           text-transform: uppercase;
           letter-spacing: 0.05em;
         }
 
         .ccq-officer-name {
-          font-weight: 800;
+          font-weight: 900;
           color: var(--accent-gold);
+          font-size: 1.35rem;
+          letter-spacing: 0.02em;
         }
 
         /* Responsive Grid */
@@ -547,34 +549,45 @@ export default function CCQBulletinClient({
           )}
         </div>
 
-        {/* COLUMN 2: GUARDS DETAIL */}
-        <div className="command-card" style={{ height: 'fit-content' }}>
-          <div className="card-header-row">
-            <h2 className="card-title">🛡️ Guard Postings</h2>
-            <span className="card-meta-text">Resets at 1900H</span>
+        {/* COLUMN 2: GUARDS DETAIL & AWARDS BUTTON */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div className="command-card" style={{ height: 'fit-content' }}>
+            <div className="card-header-row">
+              <h2 className="card-title">🛡️ Guard Postings</h2>
+              <span className="card-meta-text">Resets at 1900H</span>
+            </div>
+
+            {guardsStale || !guards.some(g => g.name) ? (
+              <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                ⚠️ Awaiting Guard Posting
+              </div>
+            ) : (
+              <div className="guards-list">
+                {guards.map((g, idx) => (
+                  <div key={idx} className="guard-row">
+                    <div className="guard-info">
+                      <div className="guard-position">{g.position}</div>
+                      <div className="guard-name">{g.name || 'UNPOSTED'}</div>
+                    </div>
+                    <span className="duty-badge">{g.code}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {guardsStale || !guards.some(g => g.name) ? (
-            <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-              ⚠️ Awaiting Guard Posting
-            </div>
-          ) : (
-            <div className="guards-list">
-              {guards.map((g, idx) => (
-                <div key={idx} className="guard-row">
-                  <div className="guard-info">
-                    <div className="guard-position">{g.position}</div>
-                    <div className="guard-name">{g.name || 'UNPOSTED'}</div>
-                  </div>
-                  <span className="duty-badge">{g.code}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <button className="bestbest-btn" onClick={() => setIsModalOpen(true)}>
-            🏆 View Best-Best Awards
-          </button>
+          {/* Standalone Best-Best button card */}
+          <div className="command-card" style={{ 
+            height: 'fit-content', 
+            padding: '1rem', 
+            border: '1px solid var(--accent-gold)', 
+            background: 'rgba(212, 175, 55, 0.03)',
+            boxShadow: '0 0 15px rgba(212, 175, 55, 0.08)'
+          }}>
+            <button className="bestbest-btn" style={{ margin: 0 }} onClick={() => setIsModalOpen(true)}>
+              🏆 View Best-Best Awards
+            </button>
+          </div>
         </div>
 
       </div>
