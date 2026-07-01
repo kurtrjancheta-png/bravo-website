@@ -48,3 +48,9 @@
 # Push Notification Deduplication
 - [x] Analyzed database subscription sheets and identified duplicate endpoint registrations.
 - [x] Added dynamic endpoint filtering and deduplication logic inside broadcast/route.js using a Set to filter out duplicate subscriber endpoints before dispatching push notifications.
+
+# 9:30 PM Incoming Guards Notification & Compilation Modal
+- [x] Scheduled automatic daily broadcast at exactly 9:30 PM PHT in notifications/route.js to alert all cadets to verify incoming guards list.
+- [x] Programmed global query listener in LayoutContent.jsx that detects ?showIncomingGuards=true.
+- [x] Integrated automated class-divided Sheets parser fetching data from EXO Guard posting trackers.
+- [x] Developed clean, premium glassmorphism compiled guard detail Modal grouping FI, AFI, CCQ, ACCQ, and SENTINELS.

@@ -74,6 +74,12 @@ Here is a summary of the accomplishments completed on the Bravo Company Website:
 - **Root Cause**: Investigated the subscriber database sheet and confirmed that when a user registers or re-enables PWA alerts, it sometimes logs multiple identical endpoint entries in the `PUSH_SUBSCRIBERS` tab, causing the broadcast route to map and trigger multiple parallel push requests to the same device.
 - **On-The-Fly Deduplication**: Integrated a new `Set`-based filtration query inside the Next.js broadcast API [route.js](file:///C:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/api/web-push/broadcast/route.js). It screens and dedupes all target endpoints dynamically before sending payloads to Google/Mozilla push servers, ensuring a subscriber never receives more than one alert per broadcast.
 
+## 11. Automated 9:30 PM Barracks Guards Notifications & Compiled Modal
+- **Chron Daily Alert**: Configured a recurring check inside the cron route [route.js](file:///C:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/api/cron/notifications/route.js) that triggers at exactly 9:30 PM (2130H) Philippines Standard Time, broadcasting the custom barracks guards verification push notification message.
+- **Client-Side Query Trigger**: Implemented a global listener in the root layout [LayoutContent.jsx](file:///C:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/LayoutContent.jsx) that catches the URL query parameters (e.g. `?showIncomingGuards=true`) when clicking a push notification and cleans up the browser address bar dynamically.
+- **EXO Tracker Parser**: Programmed a dynamic, parallel fetch routine fetching data from the three EXO Guard Posting Apps Scripts (1CL, 2CL, 3CL) and compiling the next day's incoming guard details.
+- **Premium Compilation Modal**: Built a premium glassmorphic modal overlay grouping incoming barracks details for the roles of **FI**, **AFI**, **CCQ**, **ACCQ**, and **SENTINELS** in a clean, scroll-safe layout.
+
 ---
 
 ### Verification & Deployment
