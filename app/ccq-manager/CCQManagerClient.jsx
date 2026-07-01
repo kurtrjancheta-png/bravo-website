@@ -150,12 +150,45 @@ export default function CCQManagerClient() {
         }
       }
 
-      const rows = [];
-      const trElements = mainTable.querySelectorAll('tr');
+      const trElements = Array.from(mainTable.querySelectorAll('tr'));
+      const grid = [];
+      const activeRowSpans = [];
+
+      trElements.forEach((tr, rowIndex) => {
+        const rowCells = [];
+        const tdElements = Array.from(tr.querySelectorAll('td, th'));
+        
+        let tdIndex = 0;
+        for (let colIndex = 0; colIndex < 4; colIndex++) {
+          if (activeRowSpans[colIndex] && activeRowSpans[colIndex].remaining > 0) {
+            rowCells[colIndex] = activeRowSpans[colIndex].value;
+            activeRowSpans[colIndex].remaining--;
+          } else {
+            const td = tdElements[tdIndex];
+            if (td) {
+              const text = td.textContent.trim();
+              const rowspan = parseInt(td.getAttribute('rowspan') || '1', 10);
+              rowCells[colIndex] = text;
+              
+              if (rowspan > 1) {
+                activeRowSpans[colIndex] = {
+                  remaining: rowspan - 1,
+                  value: text
+                };
+              }
+              tdIndex++;
+            } else {
+              rowCells[colIndex] = '';
+            }
+          }
+        }
+        grid.push(rowCells);
+      });
+
+      const parsedRows = [];
       let headerSkipped = false;
 
-      trElements.forEach(tr => {
-        const cells = Array.from(tr.querySelectorAll('td, th')).map(c => c.textContent.trim());
+      grid.forEach(cells => {
         if (!headerSkipped) {
           if (cells.some(c => c.toUpperCase().includes('TIME') || c.toUpperCase().includes('ACTIVITY'))) {
             headerSkipped = true;
@@ -163,8 +196,8 @@ export default function CCQManagerClient() {
           }
           headerSkipped = true;
         }
-        if (cells.length >= 2 && cells.some(c => c !== '')) {
-          rows.push({
+        if (cells.some(c => c !== '')) {
+          parsedRows.push({
             time: cells[0] || '',
             activity: cells[1] || '',
             uniform: cells[2] || '',
@@ -173,7 +206,7 @@ export default function CCQManagerClient() {
         }
       });
 
-      setSocRows(rows);
+      setSocRows(parsedRows);
     } catch (err) {
       console.error(err);
       alert('Error parsing .docx file. You can enter rows manually.');
