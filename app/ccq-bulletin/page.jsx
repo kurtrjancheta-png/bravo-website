@@ -1,7 +1,7 @@
 import { getSheetData } from '../../lib/googleSheets';
 import CCQBulletinClient from './CCQBulletinClient';
 
-export const revalidate = 30;
+export const dynamic = 'force-dynamic';
 
 const CCQ_SHEET_ID = '1HhWc6ZAVjbpJT4EwyX0D6zJ4FBxh7jNPuRxqGLE-YT8';
 

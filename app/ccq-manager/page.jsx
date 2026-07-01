@@ -1,6 +1,8 @@
 import CCQManagerClient from './CCQManagerClient';
 import { getSheetData } from '../../lib/googleSheets';
 
+export const dynamic = 'force-dynamic';
+
 const SPREADSHEET_ID = '1HhWc6ZAVjbpJT4EwyX0D6zJ4FBxh7jNPuRxqGLE-YT8';
 
 function safeGet(row, ...keys) {
