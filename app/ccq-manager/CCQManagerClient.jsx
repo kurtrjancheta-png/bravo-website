@@ -215,21 +215,24 @@ export default function CCQManagerClient() {
 
   const handlePost = async (actionName, payload, setSubmitting) => {
     if (!scriptUrl) {
-      alert('Please configure your CCQ Apps Script URL first!');
+      alert('CCQ Apps Script URL is not configured!');
       return;
     }
     setSubmitting(true);
     try {
-      await fetch(scriptUrl, {
+      const res = await fetch('/api/ccq/publish', {
         method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: actionName, ...payload })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scriptUrl, action: actionName, ...payload })
       });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to publish data to Google Sheet.');
+      }
       alert('Published successfully! (Updates should appear on the bulletin shortly)');
     } catch (err) {
       console.error(err);
-      alert('Error communicating with Google Sheets. Please confirm script URL is correct.');
+      alert(`Publish Failed: ${err.message}`);
     } finally {
       setSubmitting(false);
     }
