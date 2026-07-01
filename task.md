@@ -44,3 +44,7 @@
 - [x] Configured custom Cache-Control headers in next.config.mjs to prevent the browser from caching sw.js and manifest.json.
 - [x] Added reg.update() on client mount in LayoutContent.jsx to force service worker update checks on every application visit.
 - [x] Bumped CACHE_NAME in sw.js to bravo-offline-cache-v6 to force active clients to clear out their cached pages and retrieve the latest code.
+
+# Push Notification Deduplication
+- [x] Analyzed database subscription sheets and identified duplicate endpoint registrations.
+- [x] Added dynamic endpoint filtering and deduplication logic inside broadcast/route.js using a Set to filter out duplicate subscriber endpoints before dispatching push notifications.

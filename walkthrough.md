@@ -70,6 +70,10 @@ Here is a summary of the accomplishments completed on the Bravo Company Website:
 - **Immediate Service Worker Update checks**: Updated the registration lifecycle inside [LayoutContent.jsx](file:///C:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/LayoutContent.jsx) to invoke `reg.update()`. This forces the client browser to verify the service worker status on every single page visit rather than waiting for the default 24-hour cycle.
 - **Evicted Stale Page Caches**: Bumped the service worker's `CACHE_NAME` to `bravo-offline-cache-v6` in [sw.js](file:///C:/Users/kurtr/Downloads/BRAVO%20WEBSITE/public/sw.js) to trigger cache eviction. This will completely wipe out old, cached HTML page copies on client phones/laptops and load the fresh layouts immediately.
 
+## 10. Push Notification Duplicate Filtering
+- **Root Cause**: Investigated the subscriber database sheet and confirmed that when a user registers or re-enables PWA alerts, it sometimes logs multiple identical endpoint entries in the `PUSH_SUBSCRIBERS` tab, causing the broadcast route to map and trigger multiple parallel push requests to the same device.
+- **On-The-Fly Deduplication**: Integrated a new `Set`-based filtration query inside the Next.js broadcast API [route.js](file:///C:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/api/web-push/broadcast/route.js). It screens and dedupes all target endpoints dynamically before sending payloads to Google/Mozilla push servers, ensuring a subscriber never receives more than one alert per broadcast.
+
 ---
 
 ### Verification & Deployment
