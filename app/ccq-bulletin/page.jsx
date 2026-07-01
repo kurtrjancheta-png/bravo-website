@@ -201,7 +201,7 @@ export default async function CCQBulletinPage() {
     return 'OTHER';
   };
 
-  const getActiveList = (rawList, getStatusFn) => {
+  const getActiveList = (rawList, getStatusFn, cadetClass) => {
     const list = [];
     (rawList || []).forEach(item => {
       const d = parseDateHeader(item.dateHeader);
@@ -220,7 +220,8 @@ export default async function CCQBulletinPage() {
         if (status !== 'OTHER') {
           list.push({
             name: cleanName,
-            status
+            status,
+            cadetClass
           });
         }
       }
@@ -228,18 +229,24 @@ export default async function CCQBulletinPage() {
     return list;
   };
 
-  const list1CL = getActiveList(raw1CL, getStatusFromColor1CL);
-  const list2CL = getActiveList(raw2CL, getStatusFromColor2CL);
-  const list3CL = getActiveList(raw3CL, getStatusFromColor3CL);
+  const list1CL = getActiveList(raw1CL, getStatusFromColor1CL, '1CL');
+  const list2CL = getActiveList(raw2CL, getStatusFromColor2CL, '2CL');
+  const list3CL = getActiveList(raw3CL, getStatusFromColor3CL, '3CL');
 
   const allBarracks = [...list1CL, ...list2CL, ...list3CL];
   
+  const fiObj = allBarracks.find(g => g.status === 'FI');
+  const afiObj = allBarracks.find(g => g.status === 'AFI');
+  const ccqObj = allBarracks.find(g => g.status === 'CCQ');
+  const accqObj = allBarracks.find(g => g.status === 'ACCQ');
+  const sentinelsList = allBarracks.filter(g => g.status === 'SENTINEL');
+
   const barracksGuards = {
-    fi: allBarracks.filter(g => g.status === 'FI').map(g => g.name).join(', '),
-    afi: allBarracks.filter(g => g.status === 'AFI').map(g => g.name).join(', '),
-    ccq: allBarracks.filter(g => g.status === 'CCQ').map(g => g.name).join(', '),
-    accq: allBarracks.filter(g => g.status === 'ACCQ').map(g => g.name).join(', '),
-    sentinels: allBarracks.filter(g => g.status === 'SENTINEL').map(g => g.name)
+    fi: fiObj ? `${fiObj.cadetClass} ${fiObj.name} 'B' CO` : '',
+    afi: afiObj ? `${afiObj.cadetClass} ${afiObj.name} 'B' CO` : '',
+    ccq: ccqObj ? `${ccqObj.cadetClass} ${ccqObj.name} 'B' CO` : '',
+    accq: accqObj ? `${accqObj.cadetClass} ${accqObj.name} 'B' CO` : '',
+    sentinels: sentinelsList.map(g => `${g.cadetClass} ${g.name} 'B' CO`)
   };
 
   return (

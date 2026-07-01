@@ -697,10 +697,10 @@ export default function CCQBulletinClient({
                   Barracks Guards Detail
                 </div>
                 {[
-                  { position: 'Cadet-in-Charge of Quarters', code: 'CCQ', name: barracksGuards?.ccq },
-                  { position: 'Assistant CCQ', code: 'ACCQ', name: barracksGuards?.accq },
                   { position: 'Floor Inspector', code: 'FI', name: barracksGuards?.fi },
-                  { position: 'Assistant Floor Inspector', code: 'AFI', name: barracksGuards?.afi }
+                  { position: 'Assistant Floor Inspector', code: 'AFI', name: barracksGuards?.afi },
+                  { position: 'Cadet-in-Charge of Quarters', code: 'CCQ', name: barracksGuards?.ccq },
+                  { position: 'Assistant Cadet-in-Charge of Quarters', code: 'ACCQ', name: barracksGuards?.accq }
                 ].map((bg, idx) => (
                   <div key={idx} className="guard-row" style={{ borderLeft: '3px solid var(--accent-gold)' }}>
                     <div className="guard-info">
@@ -716,15 +716,19 @@ export default function CCQBulletinClient({
                     <div style={{ fontWeight: 800, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--accent-gold)', marginTop: '0.8rem', marginBottom: '0.2rem', opacity: 0.8 }}>
                       Posted Sentinels
                     </div>
-                    {barracksGuards.sentinels.map((name, sIdx) => (
-                      <div key={sIdx} className="guard-row" style={{ borderLeft: '3px solid #4285f4' }}>
-                        <div className="guard-info">
-                          <div className="guard-position">Sentinel #{sIdx + 1}</div>
-                          <div className="guard-name">{name}</div>
+                    {barracksGuards.sentinels.map((name, sIdx) => {
+                      const ordinals = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th'];
+                      const ordLabel = ordinals[sIdx] || `${sIdx + 1}th`;
+                      return (
+                        <div key={sIdx} className="guard-row" style={{ borderLeft: '3px solid #4285f4' }}>
+                          <div className="guard-info">
+                            <div className="guard-position">{ordLabel}</div>
+                            <div className="guard-name">{name}</div>
+                          </div>
+                          <span className="duty-badge" style={{ background: 'rgba(66, 133, 244, 0.15)', color: '#4285f4' }}>SENTINEL</span>
                         </div>
-                        <span className="duty-badge" style={{ background: 'rgba(66, 133, 244, 0.15)', color: '#4285f4' }}>SENTINEL</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </>
                 )}
               </div>
