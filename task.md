@@ -39,3 +39,8 @@
 - [x] Implement timezone-independent countdown helper matching Asia/Manila (PHT) timezone.
 - [x] Add interactive onClick events to desktop table rows and mobile timeline cards in CCQBulletinClient.jsx.
 - [x] Build custom animated glassmorphism Toast overlay at page bottom to display remaining or elapsed time until First Call.
+
+# PWA Cache Invalidation & Notification Redirection Fixes
+- [x] Configured custom Cache-Control headers in next.config.mjs to prevent the browser from caching sw.js and manifest.json.
+- [x] Added reg.update() on client mount in LayoutContent.jsx to force service worker update checks on every application visit.
+- [x] Bumped CACHE_NAME in sw.js to bravo-offline-cache-v6 to force active clients to clear out their cached pages and retrieve the latest code.

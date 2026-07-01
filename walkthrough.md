@@ -65,6 +65,11 @@ Here is a summary of the accomplishments completed on the Bravo Company Website:
   - Mobile: Timeline cards (`.soc-clickable-card`) scale up smoothly, glow gold on the borders, and display a subtle drop shadow on hover.
 - **Dynamic Glassmorphism Toast**: Rendered a premium fixed overlay Toast at the bottom center of the page. It automatically calculates and shows the remaining time (`Starts in Xh Ym (First Call)`) or elapsed time (`Passed Xh Ym ago`) of the clicked duty, fading out dynamically after 4 seconds.
 
+## 9. PWA Cache Invalidation & Direct Redirection Fixes
+- **Cache-Control Headers**: Programmed custom `Cache-Control` header routes in [next.config.mjs](file:///C:/Users/kurtr/Downloads/BRAVO%20WEBSITE/next.config.mjs) specifically targeting `/sw.js` and `/manifest.json` to prevent browsers from caching these files at the network level.
+- **Immediate Service Worker Update checks**: Updated the registration lifecycle inside [LayoutContent.jsx](file:///C:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/LayoutContent.jsx) to invoke `reg.update()`. This forces the client browser to verify the service worker status on every single page visit rather than waiting for the default 24-hour cycle.
+- **Evicted Stale Page Caches**: Bumped the service worker's `CACHE_NAME` to `bravo-offline-cache-v6` in [sw.js](file:///C:/Users/kurtr/Downloads/BRAVO%20WEBSITE/public/sw.js) to trigger cache eviction. This will completely wipe out old, cached HTML page copies on client phones/laptops and load the fresh layouts immediately.
+
 ---
 
 ### Verification & Deployment
