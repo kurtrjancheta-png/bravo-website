@@ -33,6 +33,7 @@ export default function CCQBulletinClient({
   const [dateStr, setDateStr] = useState('');
   const [weather, setWeather] = useState(null);
   const [loadingWeather, setLoadingWeather] = useState(true);
+  const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
 
   const getWeatherDetails = (code) => {
     switch (code) {
@@ -61,17 +62,40 @@ export default function CCQBulletinClient({
   useEffect(() => {
     const fetchWeather = async () => {
       try {
-        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=16.3609&longitude=120.6197&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code&timezone=Asia%2FManila');
+        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=16.3609&longitude=120.6197&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code&hourly=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,precipitation_probability&timezone=Asia%2FManila&forecast_days=1');
         if (res.ok) {
           const data = await res.json();
           if (data.current) {
             const details = getWeatherDetails(data.current.weather_code);
+            
+            let hourlyForecasts = [];
+            if (data.hourly && data.hourly.time) {
+              hourlyForecasts = data.hourly.time.map((t, idx) => {
+                const timeVal = new Date(t);
+                const hour = timeVal.getHours();
+                const ampm = hour >= 12 ? 'PM' : 'AM';
+                const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+                const timeString = `${displayHour}:00 ${ampm}`;
+                const itemDetails = getWeatherDetails(data.hourly.weather_code[idx]);
+                return {
+                  time: timeString,
+                  temp: data.hourly.temperature_2m[idx],
+                  feelsLike: data.hourly.apparent_temperature[idx],
+                  humidity: data.hourly.relative_humidity_2m[idx],
+                  precipProb: data.hourly.precipitation_probability[idx],
+                  label: itemDetails.label,
+                  icon: itemDetails.icon
+                };
+              });
+            }
+
             setWeather({
               temp: data.current.temperature_2m,
               feelsLike: data.current.apparent_temperature,
               humidity: data.current.relative_humidity_2m,
               label: details.label,
-              icon: details.icon
+              icon: details.icon,
+              hourly: hourlyForecasts
             });
           }
         }
@@ -253,11 +277,13 @@ export default function CCQBulletinClient({
           min-height: 70px;
           box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
           transition: all 0.25s ease;
+          cursor: pointer;
         }
         
         .ccq-weather-box:hover {
-          border-color: rgba(212, 175, 55, 0.4);
-          box-shadow: 0 4px 20px rgba(212, 175, 55, 0.05);
+          border-color: var(--accent-gold);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(212, 175, 55, 0.12);
         }
 
         .weather-location {
@@ -662,7 +688,7 @@ export default function CCQBulletinClient({
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           {/* Real-time Weather of PMA, Baguio City */}
           {!loadingWeather && weather && (
-            <div className="ccq-weather-box">
+            <div className="ccq-weather-box" onClick={() => setIsWeatherModalOpen(true)}>
               <span style={{ fontSize: '2.2rem', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))' }}>
                 {weather.icon}
               </span>
@@ -1153,6 +1179,130 @@ export default function CCQBulletinClient({
             <span style={{ fontSize: '0.85rem', color: '#f1f5f9', marginTop: '0.15rem', fontWeight: 650 }}>
               {toastMsg}
             </span>
+          </div>
+        </div>
+      )}
+
+      {/* Hourly Weather Forecast Modal */}
+      {isWeatherModalOpen && weather && weather.hourly && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.85)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 99999,
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: 'var(--bg-secondary)',
+            border: '2px solid var(--accent-gold)',
+            boxShadow: '0 0 35px rgba(212, 175, 55, 0.25)',
+            borderRadius: '16px',
+            padding: '2rem',
+            maxWidth: '550px',
+            width: '100%',
+            position: 'relative',
+            maxHeight: '85vh',
+            display: 'flex',
+            flexDirection: 'column',
+            color: 'var(--text-primary)',
+            fontFamily: 'inherit'
+          }}>
+            {/* Close Button */}
+            <button 
+              style={{
+                position: 'absolute',
+                top: '1rem',
+                right: '1.25rem',
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-secondary)',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                transition: 'color 0.2s',
+                zIndex: 10
+              }}
+              onClick={() => setIsWeatherModalOpen(false)}
+            >
+              ✕
+            </button>
+
+            {/* Title / Header */}
+            <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.8rem', marginBottom: '1.2rem', textAlign: 'center' }}>
+              <span style={{ fontSize: '2.5rem' }}>🌦️</span>
+              <h2 style={{ margin: '0.5rem 0 0.25rem 0', fontSize: '1.3rem', fontWeight: 900, color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Baguio Hourly Forecast
+              </h2>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 750, textTransform: 'uppercase', letterSpacing: '0.02em', marginTop: '0.2rem' }}>
+                📍 Fort Del Pilar, PMA
+              </div>
+            </div>
+
+            {/* Hourly Scrollable List */}
+            <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.6rem', paddingRight: '0.25rem' }}>
+              {weather.hourly.map((item, idx) => (
+                <div key={idx} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '10px',
+                  padding: '0.75rem 1rem',
+                  gap: '1rem'
+                }}>
+                  {/* Left Column: Time & Icon */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: '120px' }}>
+                    <span style={{ fontSize: '1.6rem' }}>{item.icon}</span>
+                    <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)' }}>{item.time}</span>
+                  </div>
+
+                  {/* Middle Column: Label / Status */}
+                  <div style={{ flex: 1, fontSize: '0.78rem', fontWeight: 700, color: 'var(--accent-gold)', textTransform: 'uppercase', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                    {item.label}
+                  </div>
+
+                  {/* Right Column: Temperature & Precip Prob */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', textAlign: 'right' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontFamily: 'monospace', fontSize: '0.85rem', fontWeight: 900 }}>{item.temp}°C</span>
+                      <span style={{ fontSize: '0.62rem', color: 'var(--text-secondary)' }}>Feels {item.feelsLike}°C</span>
+                    </div>
+                    {item.precipProb > 0 && (
+                      <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#60a5fa', background: 'rgba(96, 165, 250, 0.1)', padding: '0.2rem 0.4rem', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                        💧 {item.precipProb}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button 
+              onClick={() => setIsWeatherModalOpen(false)}
+              style={{
+                width: '100%',
+                padding: '0.85rem',
+                background: 'var(--accent-gold)',
+                color: '#000000',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '0.9rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                boxShadow: '0 4px 15px rgba(212, 175, 55, 0.25)',
+                transition: 'all 0.2s',
+                marginTop: '1.25rem'
+              }}
+            >
+              CLOSE FORECAST
+            </button>
           </div>
         </div>
       )}

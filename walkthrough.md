@@ -89,7 +89,25 @@ Here is a summary of the accomplishments completed on the Bravo Company Website:
 - **Weather State Parsing**: Implemented dynamic code translation mapping WMO weather codes to descriptive labels and representative weather emojis. Calculates Celsius temperature, apparent feels-like temperature, and relative humidity.
 - **Premium Glassmorphic Layout**: Positioned the weather card directly to the left of the military clock in the header of [CCQBulletinClient.jsx](file:///C:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/ccq-bulletin/CCQBulletinClient.jsx) with custom hover glow transitions and fully responsive mobile auto-wrapping.
 
+## 14. Schedule of Calls (SOC) Changes Modal, Manager Toggles, and Automatic Broadcasts
+- **Automatic Change Tracking & Grammar Conditioning**:
+  - Implemented a parser in [route.js](file:///c:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/api/ccq/publish/route.js) that monitors manual or uploaded SOC changes (added, cancelled, time changed, place changed, and uniform changed).
+  - Generates grammatical announcements using requested phrases (*Likewise*, *Furthermore*, *Moreover*) and formatting (e.g. *Changes of Schedule: First Call for [duty] is moved to: [time]*, *Changes of Schedule: At [time], First Call for [new duty], Uniform is: [uniform], and formation is: [location]*).
+  - Automatically broadcasts these changes as web push notifications immediately upon publishing.
+- **Cancellation Strike-through**:
+  - Updated [CCQBulletinClient.jsx](file:///c:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/ccq-bulletin/CCQBulletinClient.jsx) and [CCQManagerClient.jsx](file:///c:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/ccq-manager/CCQManagerClient.jsx) to support cancellation states. Toggling the `❌` button marks a duty as cancelled rather than deleting it.
+  - Cancelled duties are rendered with a premium red-tinted background, lowered opacity, and a clean line-through text strikeout.
+- **Manager Change Toggles**:
+  - Added three compact toggle buttons (`🕒` Time, `📍` Place, `👔` Uniform) to the left of each duty row inside the CCQ Manager panel. CCQs can precisely mark which facets of a duty changed.
+  - Renamed the "+ Add Row" button to `➕ Add New Duty` which marks the created duty with the new duty announcement structure.
+- **Public Changes Modal**:
+  - Integrated a `📋 Changes` button inside the Schedule of Calls card header on the public bulletin board.
+  - Clicking it opens a beautiful glassmorphic modal listing all today's compiled schedule changes split into clean, readable bullet points.
+- **Database & Backend Persistence**:
+  - Updated Google Apps Script [CCQBulletinAppScript.gs](file:///C:/Users/kurtr/.gemini/antigravity/brain/85ce47f2-823b-401b-b03d-5b88a47f6f41/CCQBulletinAppScript.gs) to store the extended properties (`IS_CANCELLED`, `IS_CHANGED`, `IS_ADDED`, `CHANGE_TYPE_TIME`, etc.) in the `SOC` sheet.
+  - Created a new `SOC_CHANGES` sheet inside the spreadsheet database to persist the compiled changes text for instant public retrieval.
+
 ---
 
 ### Verification & Deployment
-- All files have been staged, committed, and successfully pushed to the remote repository `main` branch.
+- All files have been updated, successfully verified via production builds, and saved.
