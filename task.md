@@ -64,3 +64,9 @@
 - [x] Map WMO weather codes to beautiful custom icons and text labels.
 - [x] Implement responsive weather box CSS styling inside CCQBulletinClient.jsx.
 - [x] Inject weather card layout to the left of the clock box.
+
+# Weather Card Clickable Hourly Forecast Modal
+- [x] Expanded open-meteo API URL query to request hourly forecast parameter.
+- [x] Map the 24 hourly periods to local time strings, weather descriptions, temps, apparent feels-like temps, and precipitation probabilities.
+- [x] Created isWeatherModalOpen state hook and bound onClick handler to weather card.
+- [x] Built gorgeous glassmorphic scrollable hourly forecast modal overlay at page bottom.
