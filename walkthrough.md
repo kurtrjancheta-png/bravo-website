@@ -84,6 +84,11 @@ Here is a summary of the accomplishments completed on the Bravo Company Website:
 - **Sticky Footer Action**: Embedded a custom gold-bordered button `📢 BROADCAST GUARDS ALERT` inside [CCQManagerClient.jsx](file:///C:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/ccq-manager/CCQManagerClient.jsx) right next to the "PUBLISH ALL BULLETIN UPDATES" button.
 - **Push Broadcast Trigger**: Clicking this button invokes the `/api/web-push/broadcast` API, enabling CCQs or S6 Admins to manually broadcast the verification alert to all subscribers at any hour with a single press.
 
+## 13. Real-Time PMA Baguio Weather Integration
+- **Keyless Meteorological fetch**: Connected the CCQ bulletin interface to the Open-Meteo API using exact latitude/longitude coordinates (`16.3609° N, 120.6197° E`) for the Philippine Military Academy (PMA), Fort Del Pilar, Baguio City.
+- **Weather State Parsing**: Implemented dynamic code translation mapping WMO weather codes to descriptive labels and representative weather emojis. Calculates Celsius temperature, apparent feels-like temperature, and relative humidity.
+- **Premium Glassmorphic Layout**: Positioned the weather card directly to the left of the military clock in the header of [CCQBulletinClient.jsx](file:///C:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/ccq-bulletin/CCQBulletinClient.jsx) with custom hover glow transitions and fully responsive mobile auto-wrapping.
+
 ---
 
 ### Verification & Deployment

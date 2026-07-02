@@ -60,7 +60,7 @@
 - [x] Linked the button click to trigger the push notification immediately via the /api/web-push/broadcast endpoint.
 
 # Real-Time Weather Card Integration
-- [/] Add weather state variables and Open-Meteo fetch hook to CCQBulletinClient.jsx.
-- [ ] Map WMO weather codes to beautiful custom icons and text labels.
-- [ ] Implement responsive weather box CSS styling inside CCQBulletinClient.jsx.
-- [ ] Inject weather card layout to the left of the clock box.
+- [x] Add weather state variables and Open-Meteo fetch hook to CCQBulletinClient.jsx.
+- [x] Map WMO weather codes to beautiful custom icons and text labels.
+- [x] Implement responsive weather box CSS styling inside CCQBulletinClient.jsx.
+- [x] Inject weather card layout to the left of the clock box.

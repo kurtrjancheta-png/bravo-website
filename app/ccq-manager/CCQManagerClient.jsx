@@ -49,6 +49,26 @@ export default function CCQManagerClient({
   const [fileBase64, setFileBase64] = useState('');
   const [fileName, setFileName] = useState('');
 
+  const toggleChangeType = (idx, type) => {
+    const next = [...socRows];
+    const row = next[idx];
+    if (type === 'time') {
+      row.changeTypeTime = !row.changeTypeTime;
+    } else if (type === 'place') {
+      row.changeTypePlace = !row.changeTypePlace;
+    } else if (type === 'uniform') {
+      row.changeTypeUniform = !row.changeTypeUniform;
+    }
+    row.isChanged = !!(row.changeTypeTime || row.changeTypePlace || row.changeTypeUniform);
+    setSocRows(next);
+  };
+
+  const toggleCancelRow = (idx) => {
+    const next = [...socRows];
+    next[idx].isCancelled = !next[idx].isCancelled;
+    setSocRows(next);
+  };
+
   // Section 4: Daily Best Best State (Class-divided)
   const [bestState, setBestState] = useState(initialBestState);
   const [bestClassTab, setBestClassTab] = useState('1CL');
@@ -814,34 +834,101 @@ export default function CCQManagerClient({
                   <th style={{ padding: '0.4rem' }}>ACTIVITY</th>
                   <th style={{ padding: '0.4rem' }}>UNIFORM</th>
                   <th style={{ padding: '0.4rem' }}>FORMATION</th>
-                  <th style={{ padding: '0.4rem', width: '30px' }}></th>
+                  <th style={{ padding: '0.4rem', width: '140px' }}>CHANGES / CANCEL</th>
                 </tr>
               </thead>
               <tbody>
                 {socRows.map((row, idx) => (
-                  <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <tr key={idx} style={{ 
+                    borderBottom: '1px solid var(--border-color)',
+                    opacity: row.isCancelled ? 0.5 : 1,
+                    background: row.isCancelled ? 'rgba(239, 68, 68, 0.02)' : (row.isAdded ? 'rgba(212, 175, 55, 0.02)' : 'transparent')
+                  }}>
                     <td style={{ padding: '0.2rem' }}>
-                      <input type="text" className="manager-input" style={{ marginBottom: 0, padding: '0.3rem' }} value={row.time} onChange={(e) => {
+                      <input type="text" className="manager-input" style={{ marginBottom: 0, padding: '0.3rem', textDecoration: row.isCancelled ? 'line-through' : 'none' }} value={row.time} onChange={(e) => {
                         const next = [...socRows]; next[idx].time = e.target.value; setSocRows(next);
                       }} />
                     </td>
                     <td style={{ padding: '0.2rem' }}>
-                      <input type="text" className="manager-input" style={{ marginBottom: 0, padding: '0.3rem' }} value={row.activity} onChange={(e) => {
+                      <input type="text" className="manager-input" style={{ marginBottom: 0, padding: '0.3rem', textDecoration: row.isCancelled ? 'line-through' : 'none' }} value={row.activity} onChange={(e) => {
                         const next = [...socRows]; next[idx].activity = e.target.value; setSocRows(next);
                       }} />
                     </td>
                     <td style={{ padding: '0.2rem' }}>
-                      <input type="text" className="manager-input" style={{ marginBottom: 0, padding: '0.3rem' }} value={row.uniform} onChange={(e) => {
+                      <input type="text" className="manager-input" style={{ marginBottom: 0, padding: '0.3rem', textDecoration: row.isCancelled ? 'line-through' : 'none' }} value={row.uniform} onChange={(e) => {
                         const next = [...socRows]; next[idx].uniform = e.target.value; setSocRows(next);
                       }} />
                     </td>
                     <td style={{ padding: '0.2rem' }}>
-                      <input type="text" className="manager-input" style={{ marginBottom: 0, padding: '0.3rem' }} value={row.formation} onChange={(e) => {
+                      <input type="text" className="manager-input" style={{ marginBottom: 0, padding: '0.3rem', textDecoration: row.isCancelled ? 'line-through' : 'none' }} value={row.formation} onChange={(e) => {
                         const next = [...socRows]; next[idx].formation = e.target.value; setSocRows(next);
                       }} />
                     </td>
-                    <td style={{ padding: '0.2rem', textAlign: 'center' }}>
-                      <button className="manager-btn-secondary" style={{ padding: '0.25rem', borderColor: 'transparent', color: '#ef4444' }} onClick={() => setSocRows(socRows.filter((_, rIdx) => rIdx !== idx))}>
+                    <td style={{ padding: '0.2rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                      {/* Change Toggles */}
+                      <button 
+                        onClick={() => toggleChangeType(idx, 'time')}
+                        style={{
+                          padding: '0.2rem 0.35rem',
+                          fontSize: '0.65rem',
+                          background: row.changeTypeTime ? 'var(--accent-gold)' : 'rgba(255, 255, 255, 0.05)',
+                          color: row.changeTypeTime ? '#000000' : 'var(--text-secondary)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          marginRight: '0.2rem'
+                        }}
+                        title="Time Change"
+                      >
+                        🕒
+                      </button>
+                      <button 
+                        onClick={() => toggleChangeType(idx, 'place')}
+                        style={{
+                          padding: '0.2rem 0.35rem',
+                          fontSize: '0.65rem',
+                          background: row.changeTypePlace ? 'var(--accent-gold)' : 'rgba(255, 255, 255, 0.05)',
+                          color: row.changeTypePlace ? '#000000' : 'var(--text-secondary)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          marginRight: '0.2rem'
+                        }}
+                        title="Place/Formation Change"
+                      >
+                        📍
+                      </button>
+                      <button 
+                        onClick={() => toggleChangeType(idx, 'uniform')}
+                        style={{
+                          padding: '0.2rem 0.35rem',
+                          fontSize: '0.65rem',
+                          background: row.changeTypeUniform ? 'var(--accent-gold)' : 'rgba(255, 255, 255, 0.05)',
+                          color: row.changeTypeUniform ? '#000000' : 'var(--text-secondary)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          marginRight: '0.4rem'
+                        }}
+                        title="Uniform Change"
+                      >
+                        👔
+                      </button>
+
+                      {/* Cancel Toggle */}
+                      <button 
+                        onClick={() => toggleCancelRow(idx)}
+                        style={{
+                          padding: '0.2rem 0.35rem',
+                          fontSize: '0.65rem',
+                          background: row.isCancelled ? '#ef4444' : 'rgba(255, 255, 255, 0.05)',
+                          color: row.isCancelled ? '#ffffff' : '#ef4444',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '4px',
+                          cursor: 'pointer'
+                        }}
+                        title={row.isCancelled ? "Uncancel Duty" : "Cancel Duty"}
+                      >
                         ❌
                       </button>
                     </td>
@@ -852,8 +939,8 @@ export default function CCQManagerClient({
           </div>
 
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <button className="manager-btn-secondary" onClick={() => setSocRows([...socRows, { time: '', activity: '', uniform: '', formation: '' }])}>
-              ➕ Add Row
+            <button className="manager-btn-secondary" onClick={() => setSocRows([...socRows, { time: '', activity: '', uniform: '', formation: '', isAdded: true }])}>
+              ➕ Add New Duty
             </button>
             <button className="manager-btn-gold" disabled={socSubmitting} onClick={() => handlePost('publishSOC', { rows: socRows, fileData: fileBase64, fileName: fileName }, setSocSubmitting)}>
               {socSubmitting ? 'Publishing...' : '📅 Publish Calls List'}
