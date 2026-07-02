@@ -115,7 +115,24 @@ Here is a summary of the accomplishments completed on the Bravo Company Website:
   - The Google Apps Script automatically inserts a new sheet named `CHANGELOG` in the spreadsheet (if it doesn't already exist) and appends a row containing `TIMESTAMP`, `DUTY`, `CHANGE_TYPE`, `NEW_VALUE`, and `ANNOUNCEMENT_TEXT`.
   - The local manager's table updates instantly to highlight the change state in real-time.
 
+## 17. S4 Logistics Inventory Dashboard
+- **Sidebar Dropdown Navigation**: Converted the single "S4 Logistics" link in the left sidebar of [LayoutContent.jsx](file:///c:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/LayoutContent.jsx) into a collapsible details dropdown menu containing:
+  - **Inventory Dashboard** (linking to `/s4-inventory`)
+  - **Disseminations** (linking to `/disseminations/s4`)
+- **Server-Side Side-by-Side Sheet Parser**:
+  - Implemented data extraction in [page.jsx](file:///c:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/s4-inventory/page.jsx) pulling live inventory rows from Google Sheets.
+  - Parsed three separate tables placed side-by-side (`Electronics & Appliances`, `Furniture`, `Miscellaneous`).
+  - Implemented dynamic fallback tracking that resolves merged spreadsheet category header values.
+- **Logistics KPI Cards**:
+  - Created key metrics displaying total company items quantity, overall operational readiness rate (usable/complete vs faulty), and category stock density.
+- **Interactive Multi-Level Filtering**:
+  - Created global search and dropdown selection filters for category types, condition status, and specific locations parsed from sheet remarks (e.g. Clubroom, EI Room, Stockroom, CQ Station).
+- **Dark-Themed Grid Layout**:
+  - Added custom icons matching item types, glowing color-coded condition badges (green for Complete/Usable, red for Faulty), and specific tags for locations.
+  - Added a premium gold edit action button for authorized S4 Logistics Admins to manage the sheet directly in Google Drive.
+
 ---
 
 ### Verification & Deployment
 - All files have been updated, successfully verified via production builds, and saved.
+

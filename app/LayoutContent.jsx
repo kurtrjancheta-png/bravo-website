@@ -38,6 +38,7 @@ export default function LayoutContent({ children }) {
     s1: false,
     s2: false,
     s3: false,
+    s4: false,
     s6: false,
     athletic: false,
   });
@@ -49,6 +50,7 @@ export default function LayoutContent({ children }) {
       s1: pathname === '/task-organization' || pathname === '/roster' || pathname === '/disposition' || pathname === '/signify-priv' || pathname === '/disseminations/s1' || pathname === '/ccq-bulletin' || pathname === '/ccq-manager' || pathname === '/s1/sick-call-tracker',
       s2: pathname.startsWith('/s2/') || pathname === '/disseminations/s2',
       s3: pathname === '/calendar-manager' || pathname === '/disseminations/s3',
+      s4: pathname === '/s4-inventory' || pathname === '/disseminations/s4',
       s6: pathname === '/cellphone-rack' || pathname === '/tablet-directory' || pathname === '/disseminations/s6',
       athletic: pathname === '/pft-tracker' || pathname === '/disseminations/athletic'
     });
@@ -608,7 +610,20 @@ export default function LayoutContent({ children }) {
               </Link>
             </div>
           </details>
-          <Link href="/disseminations/s4" id="nav-s4" className={`nav-item ${pathname === '/disseminations/s4' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>📦</span> S4 Logistics</Link>
+          <details className="nav-item-group" style={{ cursor: 'pointer' }} open={openSections.s4} onToggle={(e) => toggleSection('s4', e.target.open)}>
+            <summary id="nav-s4" className="nav-item" style={{ display: 'flex', alignItems: 'center' }}>
+              <span style={{ marginRight: '10px' }}>📦</span> S4 Logistics
+              <span className="dropdown-arrow">▼</span>
+            </summary>
+            <div style={{ marginLeft: '1.5rem', borderLeft: '1px solid var(--border-color)', paddingLeft: '0.5rem', marginTop: '0.25rem', marginBottom: '0.5rem' }}>
+              <Link href="/s4-inventory" className={`nav-item ${pathname === '/s4-inventory' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                Inventory Dashboard
+              </Link>
+              <Link href="/disseminations/s4" className={`nav-item ${pathname === '/disseminations/s4' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                Disseminations
+              </Link>
+            </div>
+          </details>
           <Link href="/disseminations/s5" id="nav-s5" className={`nav-item ${pathname === '/disseminations/s5' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>📊</span> S5 Plans & Programs</Link>
           
           <details className="nav-item-group" style={{ cursor: 'pointer' }} open={openSections.s6} onToggle={(e) => toggleSection('s6', e.target.open)}>
