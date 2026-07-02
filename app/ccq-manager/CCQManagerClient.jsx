@@ -640,6 +640,12 @@ export default function CCQManagerClient({
           align-items: center;
           z-index: 1000;
           box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+          transition: left 0.2s ease;
+        }
+        @media (min-width: 1024px) {
+          .sticky-footer {
+            left: 280px; /* Offset for desktop sidebar width */
+          }
         }
         .class-tab {
           flex: 1;
