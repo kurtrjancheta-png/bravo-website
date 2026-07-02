@@ -566,16 +566,17 @@ export default function CCQBulletinClient({
           <div className="ccq-officer-item">
             <span className="ccq-officer-label">OC:</span>
             <span className="ccq-officer-name">
-              {ocStale || !ocName ? 'TBA' : ocName}
+              {!ocName ? 'TBA' : ocName}
             </span>
-            {ocStale && <span className="stale-badge" style={{ padding: '0.05rem 0.25rem', fontSize: '0.55rem' }}>STALE</span>}
+            {ocStale && ocName && <span className="stale-badge" style={{ padding: '0.15rem 0.4rem', fontSize: '0.65rem', background: '#eab308', color: '#000000', borderRadius: '4px', fontWeight: 'bold', marginLeft: '0.5rem' }}>OUTDATED</span>}
           </div>
           <div style={{ width: '1px', height: '12px', background: 'var(--border-color)' }}></div>
           <div className="ccq-officer-item">
             <span className="ccq-officer-label">AOC:</span>
             <span className="ccq-officer-name">
-              {ocStale || !aocName ? 'TBA' : aocName}
+              {!aocName ? 'TBA' : aocName}
             </span>
+            {ocStale && aocName && <span className="stale-badge" style={{ padding: '0.15rem 0.4rem', fontSize: '0.65rem', background: '#eab308', color: '#000000', borderRadius: '4px', fontWeight: 'bold', marginLeft: '0.5rem' }}>OUTDATED</span>}
           </div>
         </div>
       </div>
