@@ -554,7 +554,7 @@ export default function CCQManagerClient({
             grid-template-columns: 1fr 1.2fr 1.5fr;
           }
         }
-        .manager-card {
+        .manager-card, .command-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
           border-radius: 12px;
@@ -910,14 +910,14 @@ export default function CCQManagerClient({
           </div>
 
           {/* Interactive grid list */}
-          <div style={{ maxHeight: '420px', overflowY: 'auto', marginBottom: '1.25rem' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+          <div style={{ maxHeight: '420px', overflowY: 'auto', overflowX: 'auto', width: '100%', marginBottom: '1.25rem' }}>
+            <table style={{ width: '100%', minWidth: '650px', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--border-color)', background: 'var(--bg-primary)' }}>
-                  <th style={{ padding: '0.4rem' }}>TIME</th>
-                  <th style={{ padding: '0.4rem' }}>ACTIVITY</th>
-                  <th style={{ padding: '0.4rem' }}>UNIFORM</th>
-                  <th style={{ padding: '0.4rem' }}>FORMATION</th>
+                  <th style={{ padding: '0.4rem', width: '80px' }}>TIME</th>
+                  <th style={{ padding: '0.4rem', minWidth: '150px' }}>ACTIVITY</th>
+                  <th style={{ padding: '0.4rem', minWidth: '120px' }}>UNIFORM</th>
+                  <th style={{ padding: '0.4rem', minWidth: '120px' }}>FORMATION</th>
                   <th style={{ padding: '0.4rem', width: '140px' }}>CHANGES / CANCEL</th>
                 </tr>
               </thead>
