@@ -94,7 +94,28 @@ Here is a summary of the accomplishments completed on the Bravo Company Website:
 - **Hourly Forecast compilation**: Mapped WMO weather codes, Celsius temperatures, feels-like coordinates, and precipitation probabilities (rain indicators) into individual hour objects.
 - **Scenic Forecast Modal**: Tapping the weather card opens a premium glassmorphic dialog. It renders a clean scrolling timeline presenting the hourly weather conditions in Baguio City for the day, closing cleanly with an gold accent close button.
 
+## 15. Schedule of Calls (SOC) Changes Modal, Manager Toggles, and Automatic Broadcasts
+- **Automatic Change Tracking & Grammar Conditioning**:
+  - Implemented a parser in [route.js](file:///c:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/api/ccq/publish/route.js) that monitors manual or uploaded SOC changes (added, cancelled, time changed, place changed, and uniform changed).
+  - Generates grammatical announcements using requested phrases (*Likewise*, *Furthermore*, *Moreover*) and formatting (e.g. *Changes of Schedule: First Call for [duty] is moved to: [time]*, *Changes of Schedule: At [time], First Call for [new duty], Uniform is: [uniform], and formation is: [location]*).
+  - Automatically broadcasts these changes as web push notifications immediately upon publishing.
+- **Cancellation Strike-through**:
+  - Updated [CCQBulletinClient.jsx](file:///c:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/ccq-bulletin/CCQBulletinClient.jsx) and [CCQManagerClient.jsx](file:///c:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/ccq-manager/CCQManagerClient.jsx) to support cancellation states. Toggling the `❌` button marks a duty as cancelled rather than deleting it.
+  - Cancelled duties are rendered with a premium red-tinted background, lowered opacity, and a clean line-through text strikeout.
+- **Public Changes Modal**:
+  - Integrated a `📋 Changes` button inside the Schedule of Calls card header on the public bulletin board.
+  - Clicking it opens a beautiful glassmorphic modal listing all today's compiled schedule changes split into clean, readable bullet points.
+
+## 16. Permanent Changelog Sheet Persistence with Interactive Prompts
+- **Interactive Prompts for Changes**:
+  - Updated [CCQManagerClient.jsx](file:///c:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/ccq-manager/CCQManagerClient.jsx) so that clicking the `🕒`, `📍`, or `👔` change buttons next to any duty row opens a modal overlay.
+  - The modal dynamically requests the user to input the new time, formation place, or uniform value (pre-populating the input with the current value).
+- **Changelog sheet writing**:
+  - Clicking "Submit Changes" inside the modal calls a dedicated Apps Script endpoint `addChangelog`.
+  - The Google Apps Script automatically inserts a new sheet named `CHANGELOG` in the spreadsheet (if it doesn't already exist) and appends a row containing `TIMESTAMP`, `DUTY`, `CHANGE_TYPE`, `NEW_VALUE`, and `ANNOUNCEMENT_TEXT`.
+  - The local manager's table updates instantly to highlight the change state in real-time.
+
 ---
 
 ### Verification & Deployment
-- All files have been staged, committed, and successfully pushed to the remote repository `main` branch.
+- All files have been updated, successfully verified via production builds, and saved.

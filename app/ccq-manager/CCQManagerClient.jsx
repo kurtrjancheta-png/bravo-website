@@ -49,18 +49,97 @@ export default function CCQManagerClient({
   const [fileBase64, setFileBase64] = useState('');
   const [fileName, setFileName] = useState('');
 
-  const toggleChangeType = (idx, type) => {
-    const next = [...socRows];
-    const row = next[idx];
-    if (type === 'time') {
-      row.changeTypeTime = !row.changeTypeTime;
-    } else if (type === 'place') {
-      row.changeTypePlace = !row.changeTypePlace;
-    } else if (type === 'uniform') {
-      row.changeTypeUniform = !row.changeTypeUniform;
+  // States for the Modal asking what the changes are
+  const [isEditChangeModalOpen, setIsEditChangeModalOpen] = useState(false);
+  const [editRowIndex, setEditRowIndex] = useState(null);
+  const [editChangeType, setEditChangeType] = useState('');
+  const [editNewValue, setEditNewValue] = useState('');
+  const [editSubmitting, setEditSubmitting] = useState(false);
+
+  const openChangeModal = (idx, type) => {
+    const row = socRows[idx];
+    setEditRowIndex(idx);
+    setEditChangeType(type);
+    
+    let val = '';
+    if (type === 'time') val = row.time || '';
+    else if (type === 'place') val = row.formation || '';
+    else if (type === 'uniform') val = row.uniform || '';
+    
+    setEditNewValue(val);
+    setIsEditChangeModalOpen(true);
+  };
+
+  const submitChangeLogEntry = async () => {
+    if (editRowIndex === null) return;
+    setEditSubmitting(true);
+    
+    const row = socRows[editRowIndex];
+    let changeTypeLabel = '';
+    let announcement = '';
+    
+    const formatDutyName = (name) => {
+      return (name || '').replace(/^(first\s+call\s+for\s+)/i, '').trim();
+    };
+
+    if (editChangeType === 'time') {
+      changeTypeLabel = 'TIME';
+      announcement = `Changes of Schedule: First Call for ${formatDutyName(row.activity)} is moved to: ${editNewValue}`;
+    } else if (editChangeType === 'place') {
+      changeTypeLabel = 'FORMATION';
+      announcement = `Changes of formation: Formation for: ${formatDutyName(row.activity)} is moved to: ${editNewValue}`;
+    } else if (editChangeType === 'uniform') {
+      changeTypeLabel = 'UNIFORM';
+      announcement = `Uniform for: ${formatDutyName(row.activity)} is changed to: ${editNewValue}`;
     }
-    row.isChanged = !!(row.changeTypeTime || row.changeTypePlace || row.changeTypeUniform);
-    setSocRows(next);
+
+    try {
+      const payload = {
+        scriptUrl,
+        action: 'addChangelog',
+        duty: row.activity || '',
+        changeType: changeTypeLabel,
+        newValue: editNewValue,
+        announcementText: announcement
+      };
+      
+      const res = await fetch('/api/ccq/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok || (data.status !== 'success' && !data.success)) {
+        throw new Error(data.error || 'Failed to add changelog.');
+      }
+      
+      // Update local state
+      const next = [...socRows];
+      const targetRow = next[editRowIndex];
+      
+      if (editChangeType === 'time') {
+        targetRow.time = editNewValue;
+        targetRow.changeTypeTime = true;
+      } else if (editChangeType === 'place') {
+        targetRow.formation = editNewValue;
+        targetRow.changeTypePlace = true;
+      } else if (editChangeType === 'uniform') {
+        targetRow.uniform = editNewValue;
+        targetRow.changeTypeUniform = true;
+      }
+      
+      targetRow.isChanged = true;
+      setSocRows(next);
+      
+      setIsEditChangeModalOpen(false);
+      setEditRowIndex(null);
+      setEditChangeType('');
+      setEditNewValue('');
+    } catch (err) {
+      alert(`Error submitting changes: ${err.message}`);
+    } finally {
+      setEditSubmitting(false);
+    }
   };
 
   const toggleCancelRow = (idx) => {
@@ -865,9 +944,8 @@ export default function CCQManagerClient({
                       }} />
                     </td>
                     <td style={{ padding: '0.2rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                      {/* Change Toggles */}
                       <button 
-                        onClick={() => toggleChangeType(idx, 'time')}
+                        onClick={() => openChangeModal(idx, 'time')}
                         style={{
                           padding: '0.2rem 0.35rem',
                           fontSize: '0.65rem',
@@ -883,7 +961,7 @@ export default function CCQManagerClient({
                         🕒
                       </button>
                       <button 
-                        onClick={() => toggleChangeType(idx, 'place')}
+                        onClick={() => openChangeModal(idx, 'place')}
                         style={{
                           padding: '0.2rem 0.35rem',
                           fontSize: '0.65rem',
@@ -899,7 +977,7 @@ export default function CCQManagerClient({
                         📍
                       </button>
                       <button 
-                        onClick={() => toggleChangeType(idx, 'uniform')}
+                        onClick={() => openChangeModal(idx, 'uniform')}
                         style={{
                           padding: '0.2rem 0.35rem',
                           fontSize: '0.65rem',
@@ -987,6 +1065,84 @@ export default function CCQManagerClient({
           </button>
         </div>
       </div>
+
+      {/* CHANGE LOG ENTRY REQUEST MODAL OVERLAY */}
+      {isEditChangeModalOpen && editRowIndex !== null && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.85)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 2000,
+          padding: '0.5rem',
+          backdropFilter: 'blur(5px)'
+        }}>
+          <div style={{
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--accent-gold)',
+            boxShadow: '0 0 20px rgba(212, 175, 55, 0.25)',
+            borderRadius: '12px',
+            padding: '1.5rem',
+            maxWidth: '450px',
+            width: '100%',
+            position: 'relative'
+          }}>
+            {/* Header */}
+            <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1.25rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--accent-gold)', textTransform: 'uppercase' }}>
+                ✏️ Edit {editChangeType.toUpperCase()} Change
+              </h3>
+              <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                Duty: <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{socRows[editRowIndex]?.activity}</span>
+              </p>
+            </div>
+
+            {/* Input Form */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
+              <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase' }}>
+                Specify the new {editChangeType}:
+              </label>
+              <input 
+                type="text" 
+                className="manager-input" 
+                value={editNewValue} 
+                onChange={(e) => setEditNewValue(e.target.value)} 
+                placeholder={`Enter new ${editChangeType}...`}
+                style={{ width: '100%', boxSizing: 'border-box' }}
+                autoFocus
+              />
+            </div>
+
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+              <button 
+                className="manager-btn-secondary" 
+                onClick={() => {
+                  setIsEditChangeModalOpen(false);
+                  setEditRowIndex(null);
+                  setEditChangeType('');
+                  setEditNewValue('');
+                }}
+                disabled={editSubmitting}
+              >
+                Cancel
+              </button>
+              <button 
+                className="manager-btn-gold" 
+                onClick={submitChangeLogEntry}
+                disabled={editSubmitting || !editNewValue.trim()}
+              >
+                {editSubmitting ? 'Saving...' : 'Submit Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
