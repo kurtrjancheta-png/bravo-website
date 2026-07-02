@@ -45,14 +45,15 @@ function safeGet(row, ...keys) {
 export default async function CCQBulletinPage() {
   const now = new Date();
   // ── Fetch all sheets and external API endpoints in parallel ────
-  const [ocAocRaw, guardsRaw, socRaw, bestBestRaw, raw1CL, raw2CL, raw3CL] = await Promise.all([
+  const [ocAocRaw, guardsRaw, socRaw, bestBestRaw, raw1CL, raw2CL, raw3CL, socChangesRaw] = await Promise.all([
     getSheetData(CCQ_SHEET_ID, 'OC_AOC').catch(() => null),
     getSheetData(CCQ_SHEET_ID, 'GUARDS').catch(() => null),
     getSheetData(CCQ_SHEET_ID, 'SOC').catch(() => null),
     getSheetData(CCQ_SHEET_ID, 'BEST_BEST').catch(() => null),
-    fetch(SCRIPT_URL_1CL, { cache: 'no-store' }).then(r => r.json()).catch(() => null),
-    fetch(SCRIPT_URL_2CL, { cache: 'no-store' }).then(r => r.json()).catch(() => null),
-    fetch(SCRIPT_URL_3CL, { cache: 'no-store' }).then(r => r.json()).catch(() => null),
+    fetch(SCRIPT_URL_1CL, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch(SCRIPT_URL_2CL, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch(SCRIPT_URL_3CL, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null),
+    getSheetData(CCQ_SHEET_ID, 'SOC_CHANGES').catch(() => null),
   ]);
 
   // ── Parse OC / AOC ────────────────────────────────────────────
@@ -111,13 +112,31 @@ export default async function CCQBulletinPage() {
   }).map(r => {
     if (!socUpdatedAt) socUpdatedAt = safeGet(r, 'UPDATED_AT') || null;
     return {
-      time:      safeGet(r, 'TIME'),
-      activity:  safeGet(r, 'ACTIVITY'),
-      uniform:   safeGet(r, 'UNIFORM'),
-      formation: safeGet(r, 'FORMATION'),
+      time:              safeGet(r, 'TIME'),
+      activity:          safeGet(r, 'ACTIVITY'),
+      uniform:           safeGet(r, 'UNIFORM'),
+      formation:         safeGet(r, 'FORMATION'),
+      isCancelled:       safeGet(r, 'IS_CANCELLED') === 'true',
+      isChanged:         safeGet(r, 'IS_CHANGED') === 'true',
+      isAdded:           safeGet(r, 'IS_ADDED') === 'true',
+      changeTypeTime:    safeGet(r, 'CHANGE_TYPE_TIME') === 'true',
+      changeTypePlace:   safeGet(r, 'CHANGE_TYPE_PLACE') === 'true',
+      changeTypeUniform: safeGet(r, 'CHANGE_TYPE_UNIFORM') === 'true',
     };
   });
   const socStale = false; // Never reset automatically at midnight
+
+  // ── Parse SOC Changes Text ────────────────────────────────────
+  let socChangesText = '';
+  if (socChangesRaw && socChangesRaw.length > 0) {
+    // skip header if any
+    const firstRowText = safeGet(socChangesRaw[0], 'CHANGES_TEXT');
+    if (firstRowText !== 'CHANGES_TEXT') {
+      socChangesText = firstRowText;
+    } else if (socChangesRaw.length > 1) {
+      socChangesText = safeGet(socChangesRaw[1], 'CHANGES_TEXT');
+    }
+  }
 
   // ── Parse Best-Best (Column-Dated Layout) ────────────────────
   let bestBest = [];
@@ -261,6 +280,7 @@ export default async function CCQBulletinPage() {
       bestBest={bestBest}
       bestBestStale={bestBestStale}
       barracksGuards={barracksGuards}
+      socChangesText={socChangesText}
     />
   );
 }

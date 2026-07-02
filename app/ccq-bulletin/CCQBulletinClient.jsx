@@ -27,10 +27,68 @@ export default function CCQBulletinClient({
   bestBest,
   bestBestStale,
   barracksGuards,
+  socChangesText,
 }) {
   const [time, setTime] = useState('');
   const [dateStr, setDateStr] = useState('');
+  const [weather, setWeather] = useState(null);
+  const [loadingWeather, setLoadingWeather] = useState(true);
+
+  const getWeatherDetails = (code) => {
+    switch (code) {
+      case 0: return { label: 'Clear Sky', icon: '☀️' };
+      case 1: return { label: 'Mainly Clear', icon: '🌤️' };
+      case 2: return { label: 'Partly Cloudy', icon: '⛅' };
+      case 3: return { label: 'Overcast', icon: '☁️' };
+      case 45:
+      case 48: return { label: 'Foggy', icon: '🌫️' };
+      case 51:
+      case 53:
+      case 55: return { label: 'Drizzle', icon: '🌧️' };
+      case 61:
+      case 63:
+      case 65: return { label: 'Rainy', icon: '🌧️' };
+      case 80:
+      case 81:
+      case 82: return { label: 'Rain Showers', icon: '🌦️' };
+      case 95:
+      case 96:
+      case 99: return { label: 'Thunderstorm', icon: '⛈️' };
+      default: return { label: 'Cloudy', icon: '☁️' };
+    }
+  };
+
+  useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=16.3609&longitude=120.6197&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code&timezone=Asia%2FManila');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.current) {
+            const details = getWeatherDetails(data.current.weather_code);
+            setWeather({
+              temp: data.current.temperature_2m,
+              feelsLike: data.current.apparent_temperature,
+              humidity: data.current.relative_humidity_2m,
+              label: details.label,
+              icon: details.icon
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch Baguio weather:', err);
+      } finally {
+        setLoadingWeather(false);
+      }
+    };
+
+    fetchWeather();
+    const interval = setInterval(fetchWeather, 600000); // 10 minutes
+    return () => clearInterval(interval);
+  }, []);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isChangesModalOpen, setIsChangesModalOpen] = useState(false);
   const [toastTitle, setToastTitle] = useState('');
   const [toastMsg, setToastMsg] = useState('');
   const [toastVisible, setToastVisible] = useState(false);
@@ -181,6 +239,60 @@ export default function CCQBulletinClient({
           margin: 0.2rem 0 0 0;
           color: var(--text-secondary);
           font-size: 0.85rem;
+        }
+
+        .ccq-weather-box {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid var(--border-color);
+          padding: 0.5rem 1.25rem;
+          border-radius: 10px;
+          min-width: 240px;
+          min-height: 70px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+          transition: all 0.25s ease;
+        }
+        
+        .ccq-weather-box:hover {
+          border-color: rgba(212, 175, 55, 0.4);
+          box-shadow: 0 4px 20px rgba(212, 175, 55, 0.05);
+        }
+
+        .weather-location {
+          font-size: 0.62rem;
+          font-weight: 900;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .weather-temp {
+          font-family: monospace;
+          font-size: 1.4rem;
+          font-weight: 900;
+          color: var(--text-primary);
+          line-height: 1.2;
+        }
+
+        .weather-details {
+          display: flex;
+          flex-direction: column;
+          gap: 0.05rem;
+        }
+
+        .weather-desc {
+          font-size: 0.8rem;
+          font-weight: 750;
+          color: var(--accent-gold);
+          text-transform: uppercase;
+        }
+
+        .weather-meta {
+          font-size: 0.68rem;
+          color: var(--text-secondary);
+          font-weight: 650;
         }
 
         .ccq-clock-box {
@@ -547,9 +659,33 @@ export default function CCQBulletinClient({
           <p className="ccq-header-sub">Daily Duty Detail, Schedule of Calls, and Inspection Winners</p>
         </div>
 
-        <div className="ccq-clock-box">
-          <div className="ccq-time-text">{time || '00:00:00 H'}</div>
-          <div className="ccq-date-text">{dateStr || 'LOADING DATE...'}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          {/* Real-time Weather of PMA, Baguio City */}
+          {!loadingWeather && weather && (
+            <div className="ccq-weather-box">
+              <span style={{ fontSize: '2.2rem', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))' }}>
+                {weather.icon}
+              </span>
+              <div className="weather-details">
+                <div className="weather-location">📍 Fort Del Pilar, Baguio</div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', marginTop: '0.1rem' }}>
+                  <span className="weather-temp">{weather.temp}°C</span>
+                  <span className="weather-meta" style={{ fontSize: '0.65rem' }}>(Feels {weather.feelsLike}°C)</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.1rem' }}>
+                  <span className="weather-desc">{weather.label}</span>
+                  <span style={{ color: 'var(--border-color)', fontSize: '0.75rem' }}>|</span>
+                  <span className="weather-meta">💧 {weather.humidity}% RH</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Clock Box */}
+          <div className="ccq-clock-box">
+            <div className="ccq-time-text">{time || '00:00:00 H'}</div>
+            <div className="ccq-date-text">{dateStr || 'LOADING DATE...'}</div>
+          </div>
         </div>
       </div>
 
@@ -586,8 +722,28 @@ export default function CCQBulletinClient({
         
         {/* SCHEDULE OF CONDUCT CARD */}
         <div className="command-card" style={{ height: 'fit-content' }}>
-          <div className="card-header-row">
-            <h2 className="card-title">📅 Schedule of Calls</h2>
+          <div className="card-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <h2 className="card-title" style={{ margin: 0 }}>📅 Schedule of Calls</h2>
+              <button 
+                onClick={() => setIsChangesModalOpen(true)}
+                style={{
+                  background: 'rgba(212, 175, 55, 0.15)',
+                  border: '1px solid var(--accent-gold)',
+                  color: 'var(--accent-gold)',
+                  borderRadius: '4px',
+                  padding: '0.15rem 0.5rem',
+                  fontSize: '0.65rem',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em'
+                }}
+              >
+                📋 Changes
+              </button>
+            </div>
             <span className="card-meta-text">Resets at Midnight</span>
           </div>
 
@@ -609,12 +765,18 @@ export default function CCQBulletinClient({
                     </tr>
                   </thead>
                   <tbody>
-                    {socRows.map((r, i) => (
+                     {socRows.map((r, i) => (
                       <tr 
                         key={i} 
                         onClick={() => handleDutyClick(r)}
                         className="soc-clickable-row"
-                        style={{ borderBottom: '1px solid var(--border-color)', cursor: 'pointer' }}
+                        style={{ 
+                          borderBottom: '1px solid var(--border-color)', 
+                          cursor: 'pointer',
+                          textDecoration: r.isCancelled ? 'line-through' : 'none',
+                          opacity: r.isCancelled ? 0.45 : 1,
+                          backgroundColor: r.isCancelled ? 'rgba(239, 68, 68, 0.03)' : 'transparent'
+                        }}
                       >
                         <td className="mono-font" style={{ padding: '0.35rem 0.5rem', fontWeight: 800, color: 'var(--accent-gold)', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
                           {formatMilitaryTime(r.time)}
@@ -637,7 +799,13 @@ export default function CCQBulletinClient({
                       <div 
                         className="soc-timeline-card soc-clickable-card"
                         onClick={() => handleDutyClick(r)}
-                        style={{ cursor: 'pointer' }}
+                        style={{ 
+                          cursor: 'pointer',
+                          textDecoration: r.isCancelled ? 'line-through' : 'none',
+                          opacity: r.isCancelled ? 0.45 : 1,
+                          backgroundColor: r.isCancelled ? 'rgba(239, 68, 68, 0.03)' : 'var(--bg-secondary)',
+                          borderLeft: r.isCancelled ? '3px solid #ef4444' : '3px solid var(--accent-gold)'
+                        }}
                       >
                         <div className="soc-time-header">
                           <span className="soc-time-display">{formatMilitaryTime(r.time)}</span>
@@ -869,6 +1037,88 @@ export default function CCQBulletinClient({
                 );
               })}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* SCHEDULE OF CALLS CHANGES MODAL OVERLAY */}
+      {isChangesModalOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.85)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 2000,
+          padding: '0.5rem',
+          backdropFilter: 'blur(5px)'
+        }}>
+          <div style={{
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--accent-gold)',
+            boxShadow: '0 0 20px rgba(212, 175, 55, 0.25)',
+            borderRadius: '12px',
+            padding: '1.5rem',
+            maxWidth: '550px',
+            width: '100%',
+            position: 'relative',
+            maxHeight: '90vh',
+            overflowY: 'auto'
+          }}>
+            {/* Close Button */}
+            <button 
+              style={{ position: 'absolute', top: '0.75rem', right: '1rem', background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '1.25rem', cursor: 'pointer' }}
+              onClick={() => setIsChangesModalOpen(false)}
+            >
+              ✕
+            </button>
+
+            {/* Header */}
+            <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1.25rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--accent-gold)', textTransform: 'uppercase' }}>
+                📋 Schedule Changes
+              </h3>
+            </div>
+
+            {/* Content */}
+            {!socChangesText ? (
+              <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-secondary)' }}>
+                ℹ️ No changes have been posted for today's schedule.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                  {socChangesText.split(/\.\s*(?:Likewise,\s*|Furthermore,\s*|Moreover,\s*)?/).map(s => s.trim()).filter(s => s.length > 0).map((sentence, idx) => (
+                    <div key={idx} style={{ 
+                      display: 'flex', 
+                      gap: '0.75rem', 
+                      background: 'rgba(212, 175, 55, 0.03)', 
+                      border: '1px solid var(--border-color)', 
+                      borderRadius: '8px', 
+                      padding: '0.75rem 1rem',
+                      alignItems: 'flex-start'
+                    }}>
+                      <span style={{ color: 'var(--accent-gold)', fontSize: '1rem', lineHeight: 1 }}>•</span>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)', lineHeight: 1.4 }}>
+                        {sentence}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <button 
+              className="bestbest-btn" 
+              style={{ marginTop: '1.5rem' }} 
+              onClick={() => setIsChangesModalOpen(false)}
+            >
+              Close
+            </button>
           </div>
         </div>
       )}

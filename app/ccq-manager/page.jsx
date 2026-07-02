@@ -55,10 +55,16 @@ export default async function CCQManagerPage() {
     const act  = safeGet(r, 'ACTIVITY');
     return (time || act) && time !== 'TIME';
   }).map(r => ({
-    time:      safeGet(r, 'TIME'),
-    activity:  safeGet(r, 'ACTIVITY'),
-    uniform:   safeGet(r, 'UNIFORM'),
-    formation: safeGet(r, 'FORMATION'),
+    time:              safeGet(r, 'TIME'),
+    activity:          safeGet(r, 'ACTIVITY'),
+    uniform:           safeGet(r, 'UNIFORM'),
+    formation:         safeGet(r, 'FORMATION'),
+    isCancelled:       safeGet(r, 'IS_CANCELLED') === 'true',
+    isChanged:         safeGet(r, 'IS_CHANGED') === 'true',
+    isAdded:           safeGet(r, 'IS_ADDED') === 'true',
+    changeTypeTime:    safeGet(r, 'CHANGE_TYPE_TIME') === 'true',
+    changeTypePlace:   safeGet(r, 'CHANGE_TYPE_PLACE') === 'true',
+    changeTypeUniform: safeGet(r, 'CHANGE_TYPE_UNIFORM') === 'true',
   }));
 
   // Parse Best-Best (Class-divided)

@@ -1,5 +1,20 @@
 import { NextResponse } from 'next/server';
 
+const formatDutyName = (name) => {
+  return (name || '').replace(/^(first\s+call\s+for\s+)/i, '').trim();
+};
+
+const compileAnnouncements = (list) => {
+  if (list.length === 0) return '';
+  let text = list[0];
+  if (list.length > 1) text += `. Likewise, ${list[1]}`;
+  if (list.length > 2) text += `. Furthermore, ${list[2]}`;
+  for (let i = 3; i < list.length; i++) {
+    text += `. Moreover, ${list[i]}`;
+  }
+  return text;
+};
+
 export async function POST(req) {
   try {
     const body = await req.json();
@@ -9,12 +24,36 @@ export async function POST(req) {
       return NextResponse.json({ success: false, error: 'Apps Script URL is missing.' }, { status: 400 });
     }
 
+    let finalPayload = { ...payload };
+    if (action === 'publishSOC' || action === 'publishAll') {
+      const announcements = [];
+      const rows = payload.rows || [];
+      rows.forEach(row => {
+        if (row.isCancelled || row.isCancelled === 'true') {
+          announcements.push(`Changes of Schedule: First Call for ${formatDutyName(row.activity)} is CANCELLED`);
+        } else if (row.isAdded || row.isAdded === 'true') {
+          announcements.push(`Changes of Schedule: At ${row.time}, First Call for ${row.activity}, Uniform is: ${row.uniform}, and formation is: ${row.formation}`);
+        } else if (row.isChanged || row.isChanged === 'true') {
+          if (row.changeTypeTime || row.changeTypeTime === 'true') {
+            announcements.push(`Changes of Schedule: First Call for ${formatDutyName(row.activity)} is moved to: ${row.time}`);
+          }
+          if (row.changeTypePlace || row.changeTypePlace === 'true') {
+            announcements.push(`Changes of formation: Formation for: ${formatDutyName(row.activity)} is moved to: ${row.formation}`);
+          }
+          if (row.changeTypeUniform || row.changeTypeUniform === 'true') {
+            announcements.push(`Uniform for: ${formatDutyName(row.activity)} is changed to: ${row.uniform}`);
+          }
+        }
+      });
+      finalPayload.changesText = compileAnnouncements(announcements);
+    }
+
     const response = await fetch(scriptUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ action, ...payload }),
+      body: JSON.stringify({ action, ...finalPayload }),
     });
 
     if (!response.ok) {
@@ -50,7 +89,7 @@ export async function POST(req) {
       } else if (action === 'publishSOC') {
         notificationPayload = {
           title: '📅 Schedule of Calls Updated',
-          body: 'A new Schedule of Calls has been uploaded for today.',
+          body: finalPayload.changesText || 'A new Schedule of Calls has been uploaded for today.',
           url: '/ccq-bulletin'
         };
       } else if (action === 'publishBestBest') {
@@ -62,7 +101,7 @@ export async function POST(req) {
       } else if (action === 'publishAll') {
         notificationPayload = {
           title: '🔔 CCQ Daily Bulletin Updated',
-          body: 'The CCQ Bulletin Board has been updated for today.',
+          body: finalPayload.changesText || 'The CCQ Bulletin Board has been updated for today.',
           url: '/ccq-bulletin'
         };
       }
