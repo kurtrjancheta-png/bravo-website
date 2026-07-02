@@ -9,8 +9,7 @@ import InfiniteSlider from './components/InfiniteSlider';
 const EMOJIS = {
   love: '❤️',
   like: '👍',
-  salute: '🫡',
-  laugh: '😂'
+  salute: '🫡'
 };
 
 // Deterministic seed reactions based on card ID & content
@@ -26,6 +25,34 @@ const getInitialReactions = (cardId, content) => {
     salute: Math.abs((hash >> 4) % 3),
     laugh: Math.abs((hash >> 6) % 2)
   };
+};
+
+const parseEventCalendarDate = (dateStr) => {
+  if (!dateStr) return null;
+  const s = String(dateStr).trim();
+  let dateObj = null;
+  
+  if (s.includes('Date(')) {
+    const match = s.match(/Date\((\d+),(\d+),(\d+)\)/);
+    if (match) {
+      dateObj = new Date(parseInt(match[1], 10), parseInt(match[2], 10), parseInt(match[3], 10));
+    }
+  } else {
+    const parsed = new Date(s);
+    if (!isNaN(parsed.getTime())) {
+      dateObj = parsed;
+    }
+  }
+
+  if (dateObj) {
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    return {
+      month: months[dateObj.getMonth()],
+      day: dateObj.getDate(),
+      year: dateObj.getFullYear()
+    };
+  }
+  return null;
 };
 
 const getCouncilMetadata = (councilId) => {
@@ -574,6 +601,147 @@ export default function AnnouncementsGrid({ disseminations }) {
               const truncatedText = displayBody && displayBody.length > 180 ? displayBody.substring(0, 180).trim() + '...' : displayBody;
               const cardReactions = reactionsState[cardId] || { love: 0, like: 0, salute: 0, laugh: 0 };
               const cardUserReactions = userReactionsState[cardId] || { love: false, like: false, salute: false, laugh: false };
+
+              if (cardType === 'ACTIVITY') {
+                const calendarDate = parseEventCalendarDate(card['EVENT DATE']);
+                return (
+                  <div
+                    key={cardId}
+                    onClick={() => setSelectedAnnouncement(card)}
+                    style={{
+                      background: 'rgba(30, 41, 59, 0.45)',
+                      borderRadius: '16px',
+                      border: '1px solid #ef4444',
+                      borderTop: '8px solid #ef4444',
+                      padding: '1rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(239, 68, 68, 0.05)',
+                      transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
+                      position: 'relative',
+                      width: '100%',
+                      flexShrink: 0,
+                      boxSizing: 'border-box'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = '#ff6b6b';
+                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(239, 68, 68, 0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = '#ef4444';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.05)';
+                    }}
+                  >
+                    <h2 style={{
+                      color: '#ef4444',
+                      fontFamily: "'Oswald', sans-serif",
+                      fontSize: '1.25rem',
+                      fontWeight: 800,
+                      margin: '0 0 0.75rem 0',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}>
+                      ACTIVITY
+                    </h2>
+                    
+                    <p style={{
+                      fontSize: '0.9rem',
+                      color: '#f8fafc',
+                      lineHeight: '1.5',
+                      margin: '0 0 0.75rem 0',
+                      whiteSpace: 'pre-wrap'
+                    }}>
+                      {truncatedText}
+                    </p>
+
+                    <div style={{ borderTop: '1px dashed rgba(255, 255, 255, 0.15)', margin: '0.75rem 0' }} />
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                      <span style={{
+                        background: 'rgba(239, 68, 68, 0.15)',
+                        color: '#ef4444',
+                        border: '1px solid rgba(239, 68, 68, 0.25)',
+                        fontSize: '0.72rem',
+                        fontWeight: 800,
+                        padding: '0.35rem 0.85rem',
+                        borderRadius: '9999px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em'
+                      }}>
+                        FOR STRICT COMPLIANCE
+                      </span>
+                      {calendarDate && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          border: '2px solid #ef4444',
+                          borderRadius: '10px',
+                          overflow: 'hidden',
+                          fontSize: '0.75rem',
+                          fontWeight: 'bold',
+                          height: '28px'
+                        }}>
+                          <div style={{
+                            background: '#ef4444',
+                            color: '#fff',
+                            padding: '0 0.5rem',
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            textTransform: 'uppercase'
+                          }}>
+                            {calendarDate.month}
+                          </div>
+                          <div style={{
+                            background: '#0f172a',
+                            color: '#fff',
+                            padding: '0 0.75rem',
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            fontSize: '0.95rem',
+                            fontWeight: 900
+                          }}>
+                            {calendarDate.day}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', margin: '0.75rem 0' }} />
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                        Date Announced: {card['DATE ANNOUNCED'] || ''}
+                      </span>
+                      {adminUser && (
+                        <button
+                          onClick={(e) => handleFollowUp(card, e)}
+                          disabled={isBroadcasting}
+                          style={{
+                            padding: '0.3rem 0.75rem',
+                            fontSize: '0.72rem',
+                            fontWeight: 'bold',
+                            backgroundColor: 'transparent',
+                            border: '1px solid var(--accent-gold)',
+                            color: 'var(--accent-gold)',
+                            borderRadius: '6px',
+                            cursor: isBroadcasting ? 'not-allowed' : 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '3px'
+                          }}
+                        >
+                          📢 {isBroadcasting ? 'Sending...' : 'Follow Up'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+
+              // Otherwise render the default card style
               return (
                 <div
                   key={cardId}
@@ -708,6 +876,144 @@ export default function AnnouncementsGrid({ disseminations }) {
             const truncatedText = displayBody && displayBody.length > 180 ? displayBody.substring(0, 180).trim() + '...' : displayBody;
             const cardReactions = reactionsState[cardId] || { love: 0, like: 0, salute: 0, laugh: 0 };
             const cardUserReactions = userReactionsState[cardId] || { love: false, like: false, salute: false, laugh: false };
+            if (cardType === 'ACTIVITY') {
+              const calendarDate = parseEventCalendarDate(card['EVENT DATE']);
+              return (
+                <div
+                  key={cardId}
+                  onClick={() => setSelectedAnnouncement(card)}
+                  style={{
+                    background: 'rgba(30, 41, 59, 0.45)',
+                    borderRadius: '16px',
+                    border: '1px solid #ef4444',
+                    borderTop: '8px solid #ef4444',
+                    padding: '1.5rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 12px rgba(239, 68, 68, 0.05)',
+                    transition: 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, border-color 0.3s ease',
+                    position: 'relative'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.borderColor = '#ff6b6b';
+                    e.currentTarget.style.boxShadow = '0 12px 24px rgba(239, 68, 68, 0.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.borderColor = '#ef4444';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.05)';
+                  }}
+                >
+                  <h2 style={{
+                    color: '#ef4444',
+                    fontFamily: "'Oswald', sans-serif",
+                    fontSize: '1.3rem',
+                    fontWeight: 800,
+                    margin: '0 0 1rem 0',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
+                  }}>
+                    ACTIVITY
+                  </h2>
+                  
+                  <p style={{
+                    fontSize: '0.95rem',
+                    color: '#f8fafc',
+                    lineHeight: '1.5',
+                    margin: '0 0 1.25rem 0',
+                    whiteSpace: 'pre-wrap'
+                  }}>
+                    {truncatedText}
+                  </p>
+
+                  <div style={{ borderTop: '1px dashed rgba(255, 255, 255, 0.15)', margin: '1rem 0' }} />
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <span style={{
+                      background: 'rgba(239, 68, 68, 0.15)',
+                      color: '#ef4444',
+                      border: '1px solid rgba(239, 68, 68, 0.25)',
+                      fontSize: '0.72rem',
+                      fontWeight: 800,
+                      padding: '0.4rem 1rem',
+                      borderRadius: '9999px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.04em'
+                    }}>
+                      FOR STRICT COMPLIANCE
+                    </span>
+                    {calendarDate && (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        border: '2px solid #ef4444',
+                        borderRadius: '10px',
+                        overflow: 'hidden',
+                        fontSize: '0.75rem',
+                        fontWeight: 'bold',
+                        height: '28px'
+                      }}>
+                        <div style={{
+                          background: '#ef4444',
+                          color: '#fff',
+                          padding: '0 0.5rem',
+                          height: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          textTransform: 'uppercase'
+                        }}>
+                          {calendarDate.month}
+                        </div>
+                        <div style={{
+                          background: '#0f172a',
+                          color: '#fff',
+                          padding: '0 0.75rem',
+                          height: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          fontSize: '0.95rem',
+                          fontWeight: 900
+                        }}>
+                          {calendarDate.day}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', margin: '1rem 0 1rem 0' }} />
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                      Date Announced: {card['DATE ANNOUNCED'] || ''}
+                    </span>
+                    {adminUser && (
+                      <button
+                        onClick={(e) => handleFollowUp(card, e)}
+                        disabled={isBroadcasting}
+                        style={{
+                          padding: '0.3rem 0.75rem',
+                          fontSize: '0.72rem',
+                          fontWeight: 'bold',
+                          backgroundColor: 'transparent',
+                          border: '1px solid var(--accent-gold)',
+                          color: 'var(--accent-gold)',
+                          borderRadius: '6px',
+                          cursor: isBroadcasting ? 'not-allowed' : 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '3px'
+                        }}
+                      >
+                        📢 {isBroadcasting ? 'Sending...' : 'Follow Up'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            }
+
             return (
               <div
                 key={cardId}
@@ -743,7 +1049,7 @@ export default function AnnouncementsGrid({ disseminations }) {
                       <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '18px', height: '18px', borderRadius: '50%', background: 'var(--accent-gold)', color: '#ffffff', fontSize: '9px', fontWeight: 900, marginRight: '6px' }}>B</span>
                       <span style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-secondary)' }}>{councilInfo.label}</span>
                     </div>
-                    {adminUser && (<button onClick={(e) => handleFollowUp(card, e)} disabled={isBroadcasting} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(212,175,55,0.1)', border: '1px solid var(--accent-gold)', color: 'var(--accent-gold-dark)', borderRadius: '6px', cursor: isBroadcasting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>📢 {isBroadcasting ? 'Sending...' : 'Follow Up'}</button>)}
+                    {adminUser && (<button onClick={(e) => handleFollowUp(card, e)} disabled={isBroadcasting} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(212, 175, 55, 0.1)', border: '1px solid var(--accent-gold)', color: 'var(--accent-gold-dark)', borderRadius: '6px', cursor: isBroadcasting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>📢 {isBroadcasting ? 'Sending...' : 'Follow Up'}</button>)}
                   </div>
                   <div style={{ display: 'flex', gap: '0.35rem' }}>
                     {Object.entries(EMOJIS).map(([key, emoji]) => { const count = cardReactions[key] || 0; const hasReacted = cardUserReactions[key]; return (<button key={key} onClick={(e) => toggleReaction(cardId, key, e)} style={{ display: 'flex', alignItems: 'center', gap: '3px', background: hasReacted ? 'rgba(212,175,55,0.15)' : 'rgba(0,0,0,0.03)', border: hasReacted ? '1px solid var(--accent-gold)' : '1px solid transparent', padding: '0.2rem 0.45rem', borderRadius: '12px', cursor: 'pointer', fontSize: '0.75rem' }}><span>{emoji}</span><span style={{ fontWeight: 800, color: hasReacted ? 'var(--accent-gold-dark)' : 'var(--text-secondary)' }}>{count}</span></button>); })}
