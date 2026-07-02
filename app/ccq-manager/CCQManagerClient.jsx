@@ -94,13 +94,33 @@ export default function CCQManagerClient({
     }
 
     try {
+      // 1. Build updated rows state
+      const next = socRows.map((r, i) => {
+        if (i !== editRowIndex) return r;
+        const targetRow = { ...r };
+        if (editChangeType === 'time') {
+          targetRow.time = editNewValue;
+          targetRow.changeTypeTime = true;
+        } else if (editChangeType === 'place') {
+          targetRow.formation = editNewValue;
+          targetRow.changeTypePlace = true;
+        } else if (editChangeType === 'uniform') {
+          targetRow.uniform = editNewValue;
+          targetRow.changeTypeUniform = true;
+        }
+        targetRow.isChanged = true;
+        return targetRow;
+      });
+
+      // 2. Post payload containing updatedRows
       const payload = {
         scriptUrl,
         action: 'addChangelog',
         duty: row.activity || '',
         changeType: changeTypeLabel,
         newValue: editNewValue,
-        announcementText: announcement
+        announcementText: announcement,
+        updatedRows: next
       };
       
       const res = await fetch('/api/ccq/publish', {
@@ -113,22 +133,7 @@ export default function CCQManagerClient({
         throw new Error(data.error || 'Failed to add changelog.');
       }
       
-      // Update local state
-      const next = [...socRows];
-      const targetRow = next[editRowIndex];
-      
-      if (editChangeType === 'time') {
-        targetRow.time = editNewValue;
-        targetRow.changeTypeTime = true;
-      } else if (editChangeType === 'place') {
-        targetRow.formation = editNewValue;
-        targetRow.changeTypePlace = true;
-      } else if (editChangeType === 'uniform') {
-        targetRow.uniform = editNewValue;
-        targetRow.changeTypeUniform = true;
-      }
-      
-      targetRow.isChanged = true;
+      // 3. Update local state
       setSocRows(next);
       
       setIsEditChangeModalOpen(false);

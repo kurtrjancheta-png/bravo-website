@@ -25,9 +25,9 @@ export async function POST(req) {
     }
 
     let finalPayload = { ...payload };
-    if (action === 'publishSOC' || action === 'publishAll') {
+    if (action === 'publishSOC' || action === 'publishAll' || action === 'addChangelog') {
       const announcements = [];
-      const rows = payload.rows || [];
+      const rows = (action === 'addChangelog' ? payload.updatedRows : payload.rows) || [];
       rows.forEach(row => {
         if (row.isCancelled || row.isCancelled === 'true') {
           announcements.push(`Changes of Schedule: First Call for ${formatDutyName(row.activity)} is CANCELLED`);
@@ -102,6 +102,12 @@ export async function POST(req) {
         notificationPayload = {
           title: '🔔 CCQ Daily Bulletin Updated',
           body: finalPayload.changesText || 'The CCQ Bulletin Board has been updated for today.',
+          url: '/ccq-bulletin'
+        };
+      } else if (action === 'addChangelog') {
+        notificationPayload = {
+          title: '🚨 Schedule Change',
+          body: payload.announcementText || 'The Schedule of Calls has been changed.',
           url: '/ccq-bulletin'
         };
       }
