@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { logActivity } from '../../../lib/logger';
+import { logActivity } from '../../../../lib/logger';
 
 export async function POST(req) {
   logActivity(req, 'Logout', 'User logged out.');
