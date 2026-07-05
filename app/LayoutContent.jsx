@@ -975,7 +975,7 @@ export default function LayoutContent({ children }) {
                     style={{ cursor: 'pointer', padding: '0.35rem 1rem', background: '#fef2f2', color: '#b91c1c', borderColor: '#fecaca', whiteSpace: 'nowrap' }}
                     title={`Logged in as ${adminUser.username} (${adminUser.council})`}
                   >
-                    LOG OUT ({adminUser.council})
+                    {adminUser.council === 'CADET' ? `LOG OUT (${adminUser.username})` : `LOG OUT (${adminUser.council})`}
                   </div>
                 ) : (
                   <div 
