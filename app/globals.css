@@ -2127,7 +2127,7 @@ tbody tr:hover {
   gap: 1.25rem;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .cadets-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -2135,13 +2135,20 @@ tbody tr:hover {
 
 @media (min-width: 1024px) {
   .cadets-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
 @media (min-width: 1280px) {
   .cadets-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
   }
 }
+
+@media (min-width: 1440px) {
+  .cadets-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
 

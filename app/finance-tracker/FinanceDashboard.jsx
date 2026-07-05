@@ -277,39 +277,53 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
     });
   }, [currentCadets, searchQuery, statusFilter, selectedMonthIdx]);
 
-  // 3. Global Stats Calculations for 1CL to 3CL Cadets Combined
+  // 3. Class-by-Class & Combined Stats Calculations for 1CL to 3CL
   const currentMonthName = MONTH_NAMES[selectedMonthIdx];
-  const globalTrackerStats = useMemo(() => {
-    let totalCdtCount = 0;
-    let totalCoyCount = 0;
-    let paidCdtCount = 0;
-    let paidCoyCount = 0;
-    let coyApplicableCount = 0;
+  const classTrackerStats = useMemo(() => {
+    const stats = {};
+    let totalCdtCountCombined = 0;
+    let paidCdtCountCombined = 0;
+    let paidCoyCountCombined = 0;
+    let coyApplicableCountCombined = 0;
 
-    // Aggregate across 1CL, 2CL, and 3CL trackers
     ['1CL', '2CL', '3CL'].forEach(className => {
+      let totalCdtCount = 0;
+      let paidCdtCount = 0;
+      let paidCoyCount = 0;
+      let coyApplicableCount = 0;
+
       const cadets = parsedTrackers[className] || [];
       cadets.forEach(c => {
         const p = c.payments[selectedMonthIdx];
         if (!p) return;
         
         totalCdtCount++;
+        totalCdtCountCombined++;
         if (p.cdtStatus === 'PAID') {
           paidCdtCount++;
+          paidCdtCountCombined++;
         }
         
         if (p.hasCoy) {
           coyApplicableCount++;
+          coyApplicableCountCombined++;
           if (p.coyStatus === 'PAID') {
             paidCoyCount++;
+            paidCoyCountCombined++;
           }
         }
       });
+
+      stats[className] = {
+        cdtPct: totalCdtCount > 0 ? Math.round((paidCdtCount / totalCdtCount) * 100) : 0,
+        coyPct: coyApplicableCount > 0 ? Math.round((paidCoyCount / coyApplicableCount) * 100) : 0
+      };
     });
 
     return {
-      cdtPct: totalCdtCount > 0 ? Math.round((paidCdtCount / totalCdtCount) * 100) : 0,
-      coyPct: coyApplicableCount > 0 ? Math.round((paidCoyCount / coyApplicableCount) * 100) : 0
+      classes: stats,
+      combinedCdtPct: totalCdtCountCombined > 0 ? Math.round((paidCdtCountCombined / totalCdtCountCombined) * 100) : 0,
+      combinedCoyPct: coyApplicableCountCombined > 0 ? Math.round((paidCoyCountCombined / coyApplicableCountCombined) * 100) : 0
     };
   }, [parsedTrackers, selectedMonthIdx]);
 
@@ -465,14 +479,30 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginTop: '0.2rem' }}>
             <span style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-              {globalTrackerStats.coyPct}%
+              {classTrackerStats.combinedCoyPct}%
             </span>
             <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 700 }}>Collected</span>
           </div>
-          <div style={{ width: '100%', height: '8px', background: 'var(--border-color)', borderRadius: '6px', overflow: 'hidden', marginTop: '0.1rem' }}>
-            <div style={{ width: `${globalTrackerStats.coyPct}%`, height: '100%', background: 'linear-gradient(90deg, #568f76, #3b7a57)', borderRadius: '6px' }}></div>
+          
+          {/* Divided Progress Bars */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginTop: '0.25rem', width: '100%' }}>
+            {['1CL', '2CL', '3CL'].map(cls => {
+              const pct = classTrackerStats.classes[cls]?.coyPct || 0;
+              return (
+                <div key={cls} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                    <span>{cls}</span>
+                    <span>{pct}%</span>
+                  </div>
+                  <div style={{ width: '100%', height: '5px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #568f76, #3b7a57)', borderRadius: '4px' }}></div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
+          
+          <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 500, marginTop: '0.25rem' }}>
             1CL to 3CL for {currentMonthName}
           </span>
         </div>
@@ -485,14 +515,30 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginTop: '0.2rem' }}>
             <span style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-              {globalTrackerStats.cdtPct}%
+              {classTrackerStats.combinedCdtPct}%
             </span>
             <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 700 }}>Collected</span>
           </div>
-          <div style={{ width: '100%', height: '8px', background: 'var(--border-color)', borderRadius: '6px', overflow: 'hidden', marginTop: '0.1rem' }}>
-            <div style={{ width: `${globalTrackerStats.cdtPct}%`, height: '100%', background: 'linear-gradient(90deg, #c5a880, #a08155)', borderRadius: '6px' }}></div>
+          
+          {/* Divided Progress Bars */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginTop: '0.25rem', width: '100%' }}>
+            {['1CL', '2CL', '3CL'].map(cls => {
+              const pct = classTrackerStats.classes[cls]?.cdtPct || 0;
+              return (
+                <div key={cls} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                    <span>{cls}</span>
+                    <span>{pct}%</span>
+                  </div>
+                  <div style={{ width: '100%', height: '5px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #c5a880, #a08155)', borderRadius: '4px' }}></div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
+
+          <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 500, marginTop: '0.25rem' }}>
             1CL to 3CL for {currentMonthName}
           </span>
         </div>
