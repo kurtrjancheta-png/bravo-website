@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
+import { logActivity } from '../../../lib/logger';
 
 const APPS_SCRIPT_URL = process.env.CELLPHONE_APPS_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycby_bRO_-U_zXj79oXeKZVlKVV7y1w1XA94M9-bYUwy1BvToEt_E-dahL9W5wj7poMPU/exec';
 
 export async function POST(req) {
   try {
     const changes = await req.json();
+    logActivity(req, 'Smartphone Rack Update', { count: changes.length });
 
     // Normalize status to strictly match Google Sheets Data Validation rules
     changes.forEach(c => {

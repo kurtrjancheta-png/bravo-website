@@ -3,14 +3,17 @@ import { promises as fs } from 'fs';
 import path from 'path';
 
 import { getSessionUser } from '../../../../lib/session';
+import { logActivity } from '../../../../lib/logger';
 
 export async function POST(req) {
   try {
     const user = getSessionUser(req);
     if (!user) {
+      logActivity(req, 'Unauthorized Access Attempt', { path: '/api/s2/reports' });
       return NextResponse.json({ success: false, error: 'Unauthorized: Session authentication required.' }, { status: 401 });
     }
     const data = await req.json();
+    logActivity(req, 'S2 Report Submission', { reportType: data.type || 'intelligence' });
     
     // The Apps Script Web App URL
     const APPS_SCRIPT_URL = process.env.APPS_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbzl4NI5OPfQ_fwe1jbfEHGkBeO8ZeI1wKVJXwt7-tJgmJsfFNXGTNWftEiYeMIxZY0/exec";

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import webpush from 'web-push';
 import { getSheetData } from '../../../../lib/googleSheets';
+import { logActivity } from '../../../../lib/logger';
 
 const PUSH_APPS_SCRIPT_URL = process.env.PUSH_APPS_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbwqZ-placeholder-url/exec';
 
@@ -19,10 +20,12 @@ export async function POST(req) {
   try {
     const user = getSessionUser(req);
     if (!user || user.role !== 'ADMIN') {
+      logActivity(req, 'Unauthorized Access Attempt', { path: '/api/web-push/broadcast' });
       return NextResponse.json({ success: false, error: 'Unauthorized: Admin privileges required.' }, { status: 403 });
     }
 
     const { title, body, url, image } = await req.json();
+    logActivity(req, 'Broadcast Push Alert', { title, body });
 
     if (!title || !body) {
       return NextResponse.json({ success: false, error: 'Missing title or body parameters.' }, { status: 400 });

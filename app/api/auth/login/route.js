@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSheetData } from '../../../../lib/googleSheets';
+import { logActivity } from '../../../../lib/logger';
 import crypto from 'crypto';
 
 const CREDENTIALS_SHEET_ID = '1swr5eI5C8HUleLD28wr1Ax_VJ26l8DAKE-GfEzzltRc';
@@ -87,6 +88,7 @@ export async function POST(req) {
     }
 
     if (userSession) {
+      logActivity(req, 'Login Success', { username: userSession.username, role: userSession.role });
       const encryptedValue = encryptSession(userSession);
       const isProduction = process.env.NODE_ENV === 'production';
       
@@ -101,6 +103,7 @@ export async function POST(req) {
       return response;
     }
 
+    logActivity(req, 'Login Failure', { attemptedUsername: username });
     return NextResponse.json({ success: false, error: 'Invalid username or password' }, { status: 401 });
   } catch (err) {
     console.error('Login API error:', err);

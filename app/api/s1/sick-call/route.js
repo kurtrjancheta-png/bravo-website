@@ -1,14 +1,16 @@
 import { NextResponse } from 'next/server';
-
+import { logActivity } from '../../../../lib/logger';
 import { getSessionUser } from '../../../../lib/session';
 
 export async function POST(req) {
   try {
     const user = getSessionUser(req);
     if (!user) {
+      logActivity(req, 'Unauthorized Access Attempt', { path: '/api/s1/sick-call' });
       return NextResponse.json({ success: false, error: 'Unauthorized: Session authentication required.' }, { status: 401 });
     }
     const data = await req.json();
+    logActivity(req, 'S1 Sick Call Action', { cadetName: data.cadetName, action: data.action || 'update' });
     
     // The Apps Script Web App URL
     // We expect the user to set this in their environment, or replace this string.

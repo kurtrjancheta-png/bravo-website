@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
+import { logActivity } from '../../../lib/logger';
 
-export async function POST() {
+export async function POST(req) {
+  logActivity(req, 'Logout', 'User logged out.');
   const response = NextResponse.json({ success: true });
   response.cookies.set('bravo_session', '', {
     httpOnly: true,
@@ -10,8 +12,8 @@ export async function POST() {
   return response;
 }
 
-export async function GET() {
-  // Allow GET request for easier redirection/logout links if needed
+export async function GET(req) {
+  logActivity(req, 'Logout', 'User logged out (via GET).');
   const response = NextResponse.json({ success: true });
   response.cookies.set('bravo_session', '', {
     httpOnly: true,

@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
+import { logActivity } from '../../../lib/logger';
 
 const APPS_SCRIPT_URL = process.env.TABLET_APPS_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbwl6oUM2ELkDw3xdC4ADLKahlcjBNslJTTEL__qY78ribpe8KzjVG86VoVPrenRG1iR/exec';
 
 export async function POST(req) {
   try {
     const changes = await req.json();
+    logActivity(req, 'Tablet Directory Update', { count: changes.length });
 
     if (!APPS_SCRIPT_URL) {
       console.warn('TABLET_APPS_SCRIPT_URL is not defined.');

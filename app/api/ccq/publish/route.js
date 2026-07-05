@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { logActivity } from '../../../../lib/logger';
+import { getSessionUser } from '../../../../lib/session';
 
 const formatDutyName = (name) => {
   return (name || '').replace(/^(first\s+call\s+for\s+)/i, '').trim();
@@ -15,17 +17,17 @@ const compileAnnouncements = (list) => {
   return text;
 };
 
-import { getSessionUser } from '../../../../lib/session';
-
 export async function POST(req) {
   try {
     const user = getSessionUser(req);
     if (!user || (user.council !== 'CCQ' && user.council !== 'S6' && user.role !== 'ADMIN')) {
+      logActivity(req, 'Unauthorized Access Attempt', { path: '/api/ccq/publish' });
       return NextResponse.json({ success: false, error: 'Unauthorized administrative access.' }, { status: 403 });
     }
 
     const body = await req.json();
     const { scriptUrl, action, ...payload } = body;
+    logActivity(req, `CCQ Publish Action: ${action}`, { action });
     
     if (!scriptUrl) {
       return NextResponse.json({ success: false, error: 'Apps Script URL is missing.' }, { status: 400 });
