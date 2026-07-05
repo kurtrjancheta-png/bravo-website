@@ -78,7 +78,7 @@ export default function LayoutContent({ children }) {
     setOpenSections({
       exo: pathname.startsWith('/exo-') || pathname === '/disseminations/exo',
       fsgt: pathname === '/exo-punishment' || pathname === '/disseminations/fsgt',
-      s1: pathname === '/task-organization' || pathname === '/roster' || pathname === '/disposition' || pathname === '/signify-priv' || pathname === '/disseminations/s1' || pathname === '/ccq-bulletin' || pathname === '/ccq-manager' || pathname === '/s1/sick-call-tracker',
+      s1: pathname === '/task-organization' || pathname === '/roster' || pathname === '/disposition' || pathname === '/signify-priv' || pathname === '/disseminations/s1' || pathname === '/s1/sick-call-tracker',
       s2: pathname.startsWith('/s2/') || pathname === '/disseminations/s2',
       s3: pathname === '/calendar-manager' || pathname === '/disseminations/s3',
       s4: pathname === '/s4-inventory' || pathname === '/disseminations/s4',
@@ -106,6 +106,68 @@ export default function LayoutContent({ children }) {
     const hideTimer = setTimeout(() => setShowSplash(false), 2800);
     return () => { clearTimeout(fadeTimer); clearTimeout(hideTimer); };
   }, []);
+
+  // Mobile swipe gesture to open/close sidebar
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+
+    const handleTouchStart = (e) => {
+      if (window.innerWidth >= 1024) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchEndX = touchStartX;
+      touchEndY = touchStartY;
+    };
+
+    const handleTouchMove = (e) => {
+      if (window.innerWidth >= 1024) return;
+      touchEndX = e.touches[0].clientX;
+      touchEndY = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = () => {
+      if (window.innerWidth >= 1024) return;
+
+      const diffX = touchEndX - touchStartX;
+      const diffY = touchEndY - touchStartY;
+
+      // Minimum swipe distance of 50px, and primarily horizontal
+      if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+        if (diffX > 0) {
+          // Swipe from left to right (open drawer)
+          // Starting from within 60px of the left screen boundary
+          if (touchStartX < 60 && !isMobileMenuOpen) {
+            setIsMobileMenuOpen(true);
+          }
+        } else {
+          // Swipe from right to left (close drawer)
+          if (isMobileMenuOpen) {
+            setIsMobileMenuOpen(false);
+          }
+        }
+      }
+
+      touchStartX = 0;
+      touchStartY = 0;
+      touchEndX = 0;
+      touchEndY = 0;
+    };
+
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isMobileMenuOpen]);
 
 
   // Base64 helper to convert VAPID public key
@@ -857,14 +919,6 @@ export default function LayoutContent({ children }) {
               <span className="dropdown-arrow">▼</span>
             </summary>
             <div style={{ marginLeft: '1.5rem', borderLeft: '1px solid var(--border-color)', paddingLeft: '0.5rem', marginTop: '0.25rem', marginBottom: '0.5rem' }}>
-              <Link href="/ccq-bulletin" className={`nav-item ${pathname === '/ccq-bulletin' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
-                CCQ Duty Bulletin
-              </Link>
-              {isCCQ && (
-                <Link href="/ccq-manager" className={`nav-item ${pathname === '/ccq-manager' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center', fontWeight: 800, color: 'var(--accent-color)' }}>
-                  CCQ Bulletin Manager
-                </Link>
-              )}
               <Link href="/task-organization" className={`nav-item ${pathname === '/task-organization' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
                 Task Organization
               </Link>
