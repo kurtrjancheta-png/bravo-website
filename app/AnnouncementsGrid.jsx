@@ -715,7 +715,7 @@ export default function AnnouncementsGrid({ disseminations }) {
                       <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                         Date Announced: {card['DATE ANNOUNCED'] || ''}
                       </span>
-                      {adminUser && (
+                      {adminUser && adminUser.role === 'ADMIN' && (
                         <button
                           onClick={(e) => handleFollowUp(card, e)}
                           disabled={isBroadcasting}
@@ -801,7 +801,7 @@ export default function AnnouncementsGrid({ disseminations }) {
                           {councilInfo.label}
                         </span>
                       </div>
-                      {adminUser && (
+                      {adminUser && adminUser.role === 'ADMIN' && (
                         <button
                           onClick={(e) => handleFollowUp(card, e)}
                           disabled={isBroadcasting}
@@ -988,7 +988,7 @@ export default function AnnouncementsGrid({ disseminations }) {
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                       Date Announced: {card['DATE ANNOUNCED'] || ''}
                     </span>
-                    {adminUser && (
+                    {adminUser && adminUser.role === 'ADMIN' && (
                       <button
                         onClick={(e) => handleFollowUp(card, e)}
                         disabled={isBroadcasting}
@@ -1049,7 +1049,7 @@ export default function AnnouncementsGrid({ disseminations }) {
                       <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '18px', height: '18px', borderRadius: '50%', background: 'var(--accent-gold)', color: '#ffffff', fontSize: '9px', fontWeight: 900, marginRight: '6px' }}>B</span>
                       <span style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-secondary)' }}>{councilInfo.label}</span>
                     </div>
-                    {adminUser && (<button onClick={(e) => handleFollowUp(card, e)} disabled={isBroadcasting} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(212, 175, 55, 0.1)', border: '1px solid var(--accent-gold)', color: 'var(--accent-gold-dark)', borderRadius: '6px', cursor: isBroadcasting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>📢 {isBroadcasting ? 'Sending...' : 'Follow Up'}</button>)}
+                    {adminUser && adminUser.role === 'ADMIN' && (<button onClick={(e) => handleFollowUp(card, e)} disabled={isBroadcasting} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(212, 175, 55, 0.1)', border: '1px solid var(--accent-gold)', color: 'var(--accent-gold-dark)', borderRadius: '6px', cursor: isBroadcasting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>📢 {isBroadcasting ? 'Sending...' : 'Follow Up'}</button>)}
                   </div>
                   <div style={{ display: 'flex', gap: '0.35rem' }}>
                     {Object.entries(EMOJIS).map(([key, emoji]) => { const count = cardReactions[key] || 0; const hasReacted = cardUserReactions[key]; return (<button key={key} onClick={(e) => toggleReaction(cardId, key, e)} style={{ display: 'flex', alignItems: 'center', gap: '3px', background: hasReacted ? 'rgba(212,175,55,0.15)' : 'rgba(0,0,0,0.03)', border: hasReacted ? '1px solid var(--accent-gold)' : '1px solid transparent', padding: '0.2rem 0.45rem', borderRadius: '12px', cursor: 'pointer', fontSize: '0.75rem' }}><span>{emoji}</span><span style={{ fontWeight: 800, color: hasReacted ? 'var(--accent-gold-dark)' : 'var(--text-secondary)' }}>{count}</span></button>); })}

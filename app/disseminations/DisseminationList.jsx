@@ -382,7 +382,7 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
         <div>
           <strong>Date Announced:</strong> {dateAnnounced || 'N/A'}
         </div>
-        {!isArchived && adminUser && (
+        {!isArchived && adminUser && adminUser.role === 'ADMIN' && (
           <button
             onClick={handleFollowUp}
             disabled={isBroadcasting}
@@ -411,7 +411,7 @@ function DisseminationCard({ card, style, sheetName, isArchived }) {
             📢 {isBroadcasting ? 'Sending...' : 'Follow Up'}
           </button>
         )}
-        {isArchived && adminUser && (
+        {isArchived && adminUser && adminUser.role === 'ADMIN' && (
           <button
             onClick={handleReannounce}
             disabled={isBroadcasting}
