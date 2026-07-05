@@ -391,8 +391,16 @@ export default function LayoutContent({ children }) {
 
   // Request browser permission and save subscription details
   const subscribeUser = async () => {
+    const isIosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+    if (isIosDevice && !isStandalone) {
+      alert('Notification alerts on iPhone/iOS require installing the app first.\n\nPlease install the app (tap Share 📤 -> Add to Home Screen ➕), launch it from your home screen, and try enabling alerts again.');
+      return;
+    }
+
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      alert('Push notifications are not supported in this browser.');
+      alert('Push notifications are not supported in this browser or private browsing mode.');
       return;
     }
 
@@ -787,6 +795,16 @@ export default function LayoutContent({ children }) {
           <Link href="/leaderboards" className={`nav-item ${pathname === '/leaderboards' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
             <span style={{ marginRight: '10px' }}>🏆</span> Leaderboards
           </Link>
+          <div 
+            onClick={() => {
+              setIsSettingsModalOpen(true);
+              setIsMobileMenuOpen(false);
+            }}
+            className="nav-item"
+            style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+          >
+            <span style={{ marginRight: '10px' }}>⚙️</span> Settings
+          </div>
         </div>
 
         <div className="nav-section">
