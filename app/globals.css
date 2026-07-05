@@ -84,6 +84,7 @@ a {
   position: fixed;
   height: 100vh;
   overflow-y: auto;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-header {
@@ -200,6 +201,29 @@ details[open] > summary .dropdown-arrow {
   background-color: var(--bg-primary);
   overflow-x: hidden;
   width: 100%;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sidebar Collapse on Desktop */
+.sidebar-collapsed .sidebar {
+  transform: translateX(-100%);
+  box-shadow: none !important;
+}
+
+.sidebar-collapsed .main-wrapper {
+  margin-left: 0 !important;
+}
+
+.desktop-sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 1024px) {
+  .desktop-sidebar-toggle {
+    display: none !important;
+  }
 }
 
 /* Topbar */

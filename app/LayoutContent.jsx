@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import AutoRefresh from './AutoRefresh';
@@ -42,6 +42,30 @@ export default function LayoutContent({ children }) {
     s6: false,
     athletic: false,
   });
+
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const autoHideTimerRef = useRef(null);
+
+  const resetAutoHideTimer = () => {
+    if (autoHideTimerRef.current) {
+      clearTimeout(autoHideTimerRef.current);
+    }
+    if (typeof window !== 'undefined' && window.innerWidth > 1024 && !isSidebarCollapsed && !isHovered) {
+      autoHideTimerRef.current = setTimeout(() => {
+        setIsSidebarCollapsed(true);
+      }, 10000); // 10 seconds
+    }
+  };
+
+  useEffect(() => {
+    resetAutoHideTimer();
+    return () => {
+      if (autoHideTimerRef.current) {
+        clearTimeout(autoHideTimerRef.current);
+      }
+    };
+  }, [isSidebarCollapsed, isHovered]);
 
   useEffect(() => {
     setOpenSections({
@@ -444,7 +468,7 @@ export default function LayoutContent({ children }) {
   };
 
   return (
-    <div className="app-container">
+    <div className={`app-container ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
 
       {/* Splash Screen */}
       {showSplash && (
@@ -468,16 +492,46 @@ export default function LayoutContent({ children }) {
       )}
 
       {/* Left Sidebar */}
-      <aside className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
-        <div className="sidebar-header">
-          <div className="logo-circle" style={{ padding: 0, overflow: 'hidden', background: 'transparent' }}>
-            <img src="/logo.png" alt="Bravo Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+      <aside 
+        className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onMouseMove={resetAutoHideTimer}
+      >
+        <div className="sidebar-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', boxSizing: 'border-box' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden' }}>
+            <div className="logo-circle" style={{ padding: 0, overflow: 'hidden', background: 'transparent', flexShrink: 0 }}>
+              <img src="/logo.png" alt="Bravo Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            </div>
+            <div style={{ overflow: 'hidden' }}>
+              <div className="company-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>BRAVO BULL'S</div>
+              <div className="company-subtitle" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Integrated Online BULLetin System</div>
+            </div>
           </div>
-
-          <div>
-            <div className="company-title">BRAVO BULL'S</div>
-            <div className="company-subtitle">Integrated Online BULLetin System</div>
-          </div>
+          <button 
+            className="desktop-sidebar-toggle"
+            onClick={() => setIsSidebarCollapsed(true)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              fontSize: '1rem',
+              padding: '0.25rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '4px',
+              transition: 'background-color 0.2s',
+              marginLeft: '0.5rem',
+              flexShrink: 0
+            }}
+            title="Collapse Sidebar"
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            ◀
+          </button>
         </div>
 
         <div className="nav-section">
@@ -1202,6 +1256,60 @@ export default function LayoutContent({ children }) {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Floating Expand Sidebar Button & Hover Edge Trigger */}
+      {isSidebarCollapsed && (
+        <>
+          <button 
+            className="desktop-sidebar-toggle"
+            onClick={() => setIsSidebarCollapsed(false)}
+            style={{
+              position: 'fixed',
+              left: '16px',
+              top: '12px',
+              zIndex: 9999,
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '10px',
+              width: '40px',
+              height: '40px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--text-primary)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+              fontSize: '1.2rem',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+            title="Expand Sidebar"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--border-color)';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            ☰
+          </button>
+          <div 
+            style={{
+              position: 'fixed',
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: '12px',
+              zIndex: 9998,
+              background: 'transparent',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={() => setIsSidebarCollapsed(false)}
+            title="Hover to show sidebar"
+          />
+        </>
       )}
     </div>
   );
