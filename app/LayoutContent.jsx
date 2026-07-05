@@ -49,6 +49,7 @@ export default function LayoutContent({ children }) {
     s6: false,
     athletic: false,
     s10: false,
+    s8: false,
   });
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -85,7 +86,8 @@ export default function LayoutContent({ children }) {
       s4: pathname === '/s4-inventory' || pathname === '/disseminations/s4',
       s6: pathname === '/cellphone-rack' || pathname === '/tablet-directory' || pathname === '/disseminations/s6',
       athletic: pathname === '/pft-tracker' || pathname === '/disseminations/athletic',
-      s10: pathname === '/finance-tracker' || pathname === '/disseminations/s10'
+      s10: pathname === '/finance-tracker' || pathname === '/disseminations/s10',
+      s8: pathname === '/academic-tracker' || pathname === '/disseminations/s8'
     });
     setIsMobileMenuOpen(false); // Close mobile drawer when route changes
   }, [pathname]);
@@ -1024,7 +1026,20 @@ export default function LayoutContent({ children }) {
           </details>
 
           <Link href="/disseminations/s7" id="nav-s7" className={`nav-item ${pathname === '/disseminations/s7' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>🤝</span> S7 Civil-Military</Link>
-          <Link href="/disseminations/s8" id="nav-s8" className={`nav-item ${pathname === '/disseminations/s8' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>📚</span> S8 Education & Training / Academic Council</Link>
+          <details className="nav-item-group" style={{ cursor: 'pointer' }} open={openSections.s8} onToggle={(e) => toggleSection('s8', e.target.open)}>
+            <summary id="nav-s8" className="nav-item" style={{ display: 'flex', alignItems: 'center' }}>
+              <span style={{ marginRight: '10px' }}>📚</span> Academic Council
+              <span className="dropdown-arrow">▼</span>
+            </summary>
+            <div style={{ marginLeft: '1.5rem', borderLeft: '1px solid var(--border-color)', paddingLeft: '0.5rem', marginTop: '0.25rem', marginBottom: '0.5rem' }}>
+              <Link href="/academic-tracker" className={`nav-item ${pathname === '/academic-tracker' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                Academic Tracker
+              </Link>
+              <Link href="/disseminations/s8" className={`nav-item ${pathname === '/disseminations/s8' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                Disseminations
+              </Link>
+            </div>
+          </details>
           <details className="nav-item-group" style={{ cursor: 'pointer' }} open={openSections.s10} onToggle={(e) => toggleSection('s10', e.target.open)}>
             <summary id="nav-s10" className="nav-item" style={{ display: 'flex', alignItems: 'center' }}>
               <span style={{ marginRight: '10px' }}>💰</span> Finance Council

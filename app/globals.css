@@ -219,6 +219,11 @@ details[open] > summary .dropdown-arrow {
   padding-left: 80px;
 }
 
+.sidebar-collapsed .section-header {
+  padding-left: 60px;
+}
+
+
 .desktop-sidebar-toggle {
   display: flex;
   align-items: center;
@@ -497,7 +502,9 @@ details[open] > summary .dropdown-arrow {
 /* Section Titles */
 .section-header {
   margin-bottom: 1.5rem;
+  transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 
 .section-title {
   font-size: 1.2rem;
