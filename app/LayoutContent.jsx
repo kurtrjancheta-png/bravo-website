@@ -602,7 +602,7 @@ export default function LayoutContent({ children }) {
                 type="text"
                 value={loginUsername}
                 onChange={(e) => setLoginUsername(e.target.value)}
-                placeholder="e.g. C27011"
+                placeholder=""
                 required
                 style={{
                   width: '100%',
