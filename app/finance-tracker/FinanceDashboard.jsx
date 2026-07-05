@@ -587,7 +587,7 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                 No cadets match your search filters.
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
+              <div className="cadets-grid">
                 {filteredCadets.map((cadet, index) => {
                   const paymentInfo = cadet.payments[selectedMonthIdx];
                   return (
