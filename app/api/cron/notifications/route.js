@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSheetData } from '../../../../lib/googleSheets';
+import { broadcastNotification } from '../../../../lib/pushBroadcast.js';
 
 const CALENDAR_API_URL = process.env.NEXT_PUBLIC_CALENDAR_API_URL || 'https://script.google.com/macros/s/AKfycbzajHQKzjp7rN9hVj6pSiPJkOP1An5wCrYKjU3mQCZgbyl5_G_ek21FEUabG87m4qJ9/exec';
 const CCQ_SPREADSHEET_ID = '1HhWc6ZAVjbpJT4EwyX0D6zJ4FBxh7jNPuRxqGLE-YT8';
@@ -246,14 +247,7 @@ export async function GET(req) {
     let pushSuccess = 0;
     for (const payload of notificationsToSend) {
       try {
-        const hostname = req.nextUrl?.origin || 'http://localhost:3000';
-        const pushUrl = `${hostname}/api/web-push/broadcast`;
-        
-        await fetch(pushUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+        await broadcastNotification(payload);
         pushSuccess++;
       } catch (err) {
         console.error('Failed to trigger push for payload', payload, err);

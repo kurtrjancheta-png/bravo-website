@@ -48,6 +48,7 @@ export default function LayoutContent({ children }) {
     s4: false,
     s6: false,
     athletic: false,
+    s10: false,
   });
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -83,7 +84,8 @@ export default function LayoutContent({ children }) {
       s3: pathname === '/calendar-manager' || pathname === '/disseminations/s3',
       s4: pathname === '/s4-inventory' || pathname === '/disseminations/s4',
       s6: pathname === '/cellphone-rack' || pathname === '/tablet-directory' || pathname === '/disseminations/s6',
-      athletic: pathname === '/pft-tracker' || pathname === '/disseminations/athletic'
+      athletic: pathname === '/pft-tracker' || pathname === '/disseminations/athletic',
+      s10: pathname === '/finance-tracker' || pathname === '/disseminations/s10'
     });
     setIsMobileMenuOpen(false); // Close mobile drawer when route changes
   }, [pathname]);
@@ -204,6 +206,10 @@ export default function LayoutContent({ children }) {
         const sub = await activeReg.pushManager.getSubscription();
         if (sub) {
           setIsSubscribed(true);
+        } else if (Notification.permission === 'granted') {
+          // Auto-subscribe if notification permission is already allowed
+          console.log('Notification permission is already granted. Subscribing in background...');
+          subscribeUser({ silent: true });
         } else if (Notification.permission !== 'denied') {
           // Show prompt banner after a 3 second delay
           const timer = setTimeout(() => setShowBanner(true), 3000);
@@ -452,17 +458,22 @@ export default function LayoutContent({ children }) {
   };
 
   // Request browser permission and save subscription details
-  const subscribeUser = async () => {
+  const subscribeUser = async (options = {}) => {
+    const { silent = false } = options;
     const isIosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
     if (isIosDevice && !isStandalone) {
-      alert('Notification alerts on iPhone/iOS require installing the app first.\n\nPlease install the app (tap Share 📤 -> Add to Home Screen ➕), launch it from your home screen, and try enabling alerts again.');
+      if (!silent) {
+        alert('Notification alerts on iPhone/iOS require installing the app first.\n\nPlease install the app (tap Share 📤 -> Add to Home Screen ➕), launch it from your home screen, and try enabling alerts again.');
+      }
       return;
     }
 
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      alert('Push notifications are not supported in this browser or private browsing mode.');
+      if (!silent) {
+        alert('Push notifications are not supported in this browser or private browsing mode.');
+      }
       return;
     }
 
@@ -472,14 +483,18 @@ export default function LayoutContent({ children }) {
       // Fallback to verified key if environment variable isn't injected in the client bundle
       const publicVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "BO9Q7iN7CAdgbkHAL5NlRSY1_PutOA6cxH8ovFBTmAMul4MUcIVWY5lE2Rg6REA_nf2FMIg27f87DqAzuAgu5QU";
       if (!publicVapidKey) {
-        alert('Public VAPID key is missing.');
+        if (!silent) {
+          alert('Public VAPID key is missing.');
+        }
         return;
       }
 
       // 1. Explicitly request permission first to trigger native browser prompts reliably
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
-        alert('Notification permission was not granted. Please enable notifications in your browser settings to receive alerts.');
+        if (!silent) {
+          alert('Notification permission was not granted. Please enable notifications in your browser settings to receive alerts.');
+        }
         return;
       }
 
@@ -516,16 +531,20 @@ export default function LayoutContent({ children }) {
       if (data.success) {
         setIsSubscribed(true);
         setShowBanner(false);
-        alert('Dissemination alerts enabled successfully!');
+        if (!silent) {
+          alert('Dissemination alerts enabled successfully!');
+        }
       } else {
         throw new Error(data.error || 'Failed to save subscription.');
       }
     } catch (error) {
       console.error('Push subscription failed:', error);
-      if (error.message && error.message.includes('push service error')) {
-        alert('Could not enable alerts: Registration failed (push service error). \n\nTip: Click the lock icon in your address bar, reset/clear the site permissions, refresh the page, and try again.');
-      } else {
-        alert('Could not enable alerts: ' + error.message);
+      if (!silent) {
+        if (error.message && error.message.includes('push service error')) {
+          alert('Could not enable alerts: Registration failed (push service error). \n\nTip: Click the lock icon in your address bar, reset/clear the site permissions, refresh the page, and try again.');
+        } else {
+          alert('Could not enable alerts: ' + error.message);
+        }
       }
     }
   };
@@ -1006,7 +1025,20 @@ export default function LayoutContent({ children }) {
 
           <Link href="/disseminations/s7" id="nav-s7" className={`nav-item ${pathname === '/disseminations/s7' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>🤝</span> S7 Civil-Military</Link>
           <Link href="/disseminations/s8" id="nav-s8" className={`nav-item ${pathname === '/disseminations/s8' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>📚</span> S8 Education & Training / Academic Council</Link>
-          <Link href="/disseminations/s10" id="nav-s10" className={`nav-item ${pathname === '/disseminations/s10' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}><span style={{ marginRight: '10px' }}>💰</span> S10 Finance</Link>
+          <details className="nav-item-group" style={{ cursor: 'pointer' }} open={openSections.s10} onToggle={(e) => toggleSection('s10', e.target.open)}>
+            <summary id="nav-s10" className="nav-item" style={{ display: 'flex', alignItems: 'center' }}>
+              <span style={{ marginRight: '10px' }}>💰</span> Finance Council
+              <span className="dropdown-arrow">▼</span>
+            </summary>
+            <div style={{ marginLeft: '1.5rem', borderLeft: '1px solid var(--border-color)', paddingLeft: '0.5rem', marginTop: '0.25rem', marginBottom: '0.5rem' }}>
+              <Link href="/finance-tracker" className={`nav-item ${pathname === '/finance-tracker' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                Finance Tracker
+              </Link>
+              <Link href="/disseminations/s10" className={`nav-item ${pathname === '/disseminations/s10' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                Disseminations
+              </Link>
+            </div>
+          </details>
           
           <details className="nav-item-group" style={{ cursor: 'pointer' }} open={openSections.athletic} onToggle={(e) => toggleSection('athletic', e.target.open)}>
             <summary id="nav-athletic" className="nav-item" style={{ display: 'flex', alignItems: 'center' }}>

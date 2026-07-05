@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { logActivity } from '../../../../lib/logger';
 import { getSessionUser } from '../../../../lib/session';
+import { broadcastNotification } from '../../../../lib/pushBroadcast.js';
 
 const formatDutyName = (name) => {
   return (name || '').replace(/^(first\s+call\s+for\s+)/i, '').trim();
@@ -123,12 +124,7 @@ export async function POST(req) {
 
       if (notificationPayload) {
         try {
-          const hostname = req.nextUrl?.origin || 'http://localhost:3000';
-          await fetch(`${hostname}/api/web-push/broadcast`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(notificationPayload)
-          });
+          await broadcastNotification(notificationPayload);
         } catch (pushErr) {
           console.error('Failed to trigger push notification broadcast:', pushErr);
         }

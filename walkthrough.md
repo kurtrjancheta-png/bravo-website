@@ -131,8 +131,16 @@ Here is a summary of the accomplishments completed on the Bravo Company Website:
   - Added custom icons matching item types, glowing color-coded condition badges (green for Complete/Usable, red for Faulty), and specific tags for locations.
   - Added a premium gold edit action button for authorized S4 Logistics Admins to manage the sheet directly in Google Drive.
 
+## 18. Push Notification System Authorization & Background Auto-Registration Fixes
+- **Server-to-Server Internal Broadcast Bypassed 403**:
+  - Extracted the core notification delivery engine (VAPID key configuration, subscriber listing, deduplication, Apple/Google/Mozilla push dispatch, and expired endpoint pruning) into a standalone module [pushBroadcast.js](file:///c:/Users/kurtr/Downloads/BRAVO%20WEBSITE/lib/pushBroadcast.js).
+  - Refactored the `/api/web-push/broadcast` HTTP route handler [route.js](file:///c:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/api/web-push/broadcast/route.js) to import and call `broadcastNotification`.
+  - Updated both the CCQ publishing route [route.js](file:///c:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/api/ccq/publish/route.js) and the automated cron notification engine [route.js](file:///c:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/api/cron/notifications/route.js) to call the `broadcastNotification` helper directly on the server instead of sending localhost HTTP fetch requests. This resolves the `403 Forbidden` error caused by missing session authentication cookies during automated or server-side broadcasts.
+- **Client-Side Background Auto-Subscription**:
+  - Refactored `subscribeUser` in [LayoutContent.jsx](file:///c:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/LayoutContent.jsx) to support an optional `{ silent: true }` parameter, suppressing all user-facing success or failure alert boxes.
+  - Added background auto-subscription logic in the service worker registration `useEffect` check: if the browser already has notification permission granted (`Notification.permission === 'granted'`) but no active subscription is registered, it automatically creates the push subscription and uploads it to the database silently, ensuring active subscribers do not fall out of the system.
+
 ---
 
 ### Verification & Deployment
 - All files have been updated, successfully verified via production builds, and saved.
-
