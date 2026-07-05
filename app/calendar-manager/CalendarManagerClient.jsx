@@ -275,7 +275,7 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
 
     setIsUploadingFile(true);
     try {
-      const { encryptBytes } = await import('../lib/crypto');
+      const { encryptBytes } = await import('../../lib/crypto');
       const arrayBuffer = await new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result);
