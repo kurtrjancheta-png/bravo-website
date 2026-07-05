@@ -2,8 +2,14 @@ import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 
+import { getSessionUser } from '../../../../lib/session';
+
 export async function POST(req) {
   try {
+    const user = getSessionUser(req);
+    if (!user) {
+      return NextResponse.json({ success: false, error: 'Unauthorized: Session authentication required.' }, { status: 401 });
+    }
     const data = await req.json();
     
     // The Apps Script Web App URL

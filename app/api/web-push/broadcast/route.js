@@ -13,8 +13,15 @@ if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   );
 }
 
+import { getSessionUser } from '../../../../lib/session';
+
 export async function POST(req) {
   try {
+    const user = getSessionUser(req);
+    if (!user || user.role !== 'ADMIN') {
+      return NextResponse.json({ success: false, error: 'Unauthorized: Admin privileges required.' }, { status: 403 });
+    }
+
     const { title, body, url, image } = await req.json();
 
     if (!title || !body) {
