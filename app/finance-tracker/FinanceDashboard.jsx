@@ -590,7 +590,6 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
                 {filteredCadets.map((cadet, index) => {
                   const paymentInfo = cadet.payments[selectedMonthIdx];
-
                   return (
                     <motion.div 
                       key={cadet.name}
@@ -600,23 +599,24 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                       transition={{ duration: 0.2, delay: Math.min(index * 0.015, 0.2) }}
                       className="info-card finance-card-hover"
                       style={{
-                        padding: '1.15rem',
+                        padding: '0.75rem 1rem',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         background: 'var(--bg-secondary)',
                         border: '1px solid var(--border-color)',
-                        borderRadius: '12px',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                        borderRadius: '10px',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                        gap: '0.75rem'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                         {/* Cadet Image */}
-                        <div style={{ width: '42px', height: '42px', borderRadius: '50%', overflow: 'hidden', background: '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--border-color)' }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '50%', overflow: 'hidden', background: '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid var(--border-color)', flexShrink: 0 }}>
                           {cadet.imageUrl ? (
                             <img src={cadet.imageUrl} alt={cadet.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           ) : (
-                            <span style={{ fontSize: '0.85rem', color: '#9ca3af', fontWeight: 'bold' }}>
+                            <span style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 'bold' }}>
                               {cadet.name.substring(0, 2)}
                             </span>
                           )}
@@ -624,47 +624,43 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
 
                         {/* Cadet Info */}
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+                          <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
                             {cadet.name}
                           </span>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
                             {selectedClass} Cadet
                           </span>
                         </div>
                       </div>
 
-                      {/* Payment Badges */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', alignItems: 'flex-end' }}>
-                        
-                        {/* CDT Fund Badge */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.05em' }}>CDT</span>
+                      {/* Payment Badges & History link side-by-side */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                        <div style={{ display: 'flex', gap: '0.4rem' }}>
+                          
+                          {/* CDT Fund Badge */}
                           <span style={{
-                            fontSize: '0.75rem',
+                            fontSize: '0.7rem',
                             fontWeight: 700,
-                            padding: '2px 8px',
-                            borderRadius: '5px',
-                            background: paymentInfo.cdtStatus === 'PAID' ? 'rgba(16, 185, 129, 0.12)' : (paymentInfo.cdtStatus === 'PARTIAL' ? 'rgba(245, 158, 11, 0.12)' : 'rgba(239, 68, 68, 0.12)'),
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            background: paymentInfo.cdtStatus === 'PAID' ? 'rgba(16, 185, 129, 0.1)' : (paymentInfo.cdtStatus === 'PARTIAL' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(239, 68, 68, 0.1)'),
                             color: paymentInfo.cdtStatus === 'PAID' ? '#10b981' : (paymentInfo.cdtStatus === 'PARTIAL' ? '#f59e0b' : '#ef4444'),
-                            border: `1px solid ${paymentInfo.cdtStatus === 'PAID' ? 'rgba(16, 185, 129, 0.3)' : (paymentInfo.cdtStatus === 'PARTIAL' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)')}`
+                            border: `1px solid ${paymentInfo.cdtStatus === 'PAID' ? 'rgba(16, 185, 129, 0.2)' : (paymentInfo.cdtStatus === 'PARTIAL' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)')}`
                           }}>
-                            ₱{paymentInfo.cdtPaid}
+                            CDT: ₱{paymentInfo.cdtPaid}
                           </span>
-                        </div>
 
-                        {/* COY Fund Badge */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.05em' }}>COY</span>
+                          {/* COY Fund Badge */}
                           <span style={{
-                            fontSize: '0.75rem',
+                            fontSize: '0.7rem',
                             fontWeight: 700,
-                            padding: '2px 8px',
-                            borderRadius: '5px',
-                            background: paymentInfo.coyStatus === 'PAID' ? 'rgba(16, 185, 129, 0.12)' : (paymentInfo.coyStatus === 'PARTIAL' ? 'rgba(245, 158, 11, 0.12)' : (paymentInfo.coyStatus === 'N/A' ? 'rgba(156, 163, 175, 0.12)' : 'rgba(239, 68, 68, 0.12)')),
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            background: paymentInfo.coyStatus === 'PAID' ? 'rgba(16, 185, 129, 0.1)' : (paymentInfo.coyStatus === 'PARTIAL' ? 'rgba(245, 158, 11, 0.1)' : (paymentInfo.coyStatus === 'N/A' ? 'rgba(156, 163, 175, 0.1)' : 'rgba(239, 68, 68, 0.1)')),
                             color: paymentInfo.coyStatus === 'PAID' ? '#10b981' : (paymentInfo.coyStatus === 'PARTIAL' ? '#f59e0b' : (paymentInfo.coyStatus === 'N/A' ? '#9ca3af' : '#ef4444')),
-                            border: `1px solid ${paymentInfo.coyStatus === 'PAID' ? 'rgba(16, 185, 129, 0.3)' : (paymentInfo.coyStatus === 'PARTIAL' ? 'rgba(245, 158, 11, 0.3)' : (paymentInfo.coyStatus === 'N/A' ? 'rgba(156, 163, 175, 0.3)' : 'rgba(239, 68, 68, 0.3)'))}`
+                            border: `1px solid ${paymentInfo.coyStatus === 'PAID' ? 'rgba(16, 185, 129, 0.2)' : (paymentInfo.coyStatus === 'PARTIAL' ? 'rgba(245, 158, 11, 0.2)' : (paymentInfo.coyStatus === 'N/A' ? 'rgba(156, 163, 175, 0.2)' : 'rgba(239, 68, 68, 0.2)'))}`
                           }}>
-                            {paymentInfo.coyStatus === 'N/A' ? 'N/A' : `₱${paymentInfo.coyPaid}`}
+                            COY: {paymentInfo.coyStatus === 'N/A' ? 'N/A' : `₱${paymentInfo.coyPaid}`}
                           </span>
                         </div>
 
@@ -678,17 +674,16 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                             color: '#c5a880',
                             fontWeight: 700,
                             cursor: 'pointer',
-                            padding: '2px 0 0 0',
+                            padding: '4px',
                             textDecoration: 'underline',
                             transition: 'color 0.2s'
                           }}
                           onMouseEnter={(e) => e.target.style.color = '#dfc8a5'}
                           onMouseLeave={(e) => e.target.style.color = '#c5a880'}
                         >
-                          View History
+                          History
                         </button>
                       </div>
-
                     </motion.div>
                   );
                 })}
