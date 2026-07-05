@@ -326,82 +326,104 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
   const COLORS_PIE = ['#c5a880', '#568f76', '#a26262', '#5d6f8a'];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
       
-      {/* Page global styles injection to maximize layout */}
+      {/* Page global styles injection to maximize layout & scrollbars */}
       <style dangerouslySetInnerHTML={{ __html: `
         .main-content {
           max-width: 1600px !important;
         }
+        .finance-card-hover {
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .finance-card-hover:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.4);
+          border-color: rgba(197, 168, 128, 0.4) !important;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.02);
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.12);
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(197, 168, 128, 0.4);
+        }
       `}} />
 
       {/* 1. TOP OVERVIEW KPI CARDS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
         
-        {/* Coy Fund Collections KPI (Switched to 1st place) */}
-        <div className="info-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
+        {/* Coy Fund Collections KPI (1st place) */}
+        <div className="info-card finance-card-hover" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.65rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '14px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>COY FUND RATE</span>
-            <span style={{ fontSize: '1.25rem' }}>🏰</span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700, letterSpacing: '0.05em' }}>COY FUND RATE</span>
+            <span style={{ fontSize: '1.35rem' }}>🏰</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginTop: '0.2rem' }}>
+            <span style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
               {globalTrackerStats.coyPct}%
             </span>
-            <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 600 }}>Collected</span>
+            <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 700 }}>Collected</span>
           </div>
-          <div style={{ width: '100%', height: '6px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
-            <div style={{ width: `${globalTrackerStats.coyPct}%`, height: '100%', background: '#568f76', borderRadius: '4px' }}></div>
+          <div style={{ width: '100%', height: '8px', background: 'var(--border-color)', borderRadius: '6px', overflow: 'hidden', marginTop: '0.1rem' }}>
+            <div style={{ width: `${globalTrackerStats.coyPct}%`, height: '100%', background: 'linear-gradient(90deg, #568f76, #3b7a57)', borderRadius: '6px' }}></div>
           </div>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
             1CL to 3CL for {currentMonthName}
           </span>
         </div>
 
         {/* Cadet Fund Collections KPI (2nd place) */}
-        <div className="info-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
+        <div className="info-card finance-card-hover" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.65rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '14px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>CADET FUND RATE</span>
-            <span style={{ fontSize: '1.25rem' }}>🛡️</span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700, letterSpacing: '0.05em' }}>CADET FUND RATE</span>
+            <span style={{ fontSize: '1.35rem' }}>🛡️</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginTop: '0.2rem' }}>
+            <span style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
               {globalTrackerStats.cdtPct}%
             </span>
-            <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 600 }}>Collected</span>
+            <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 700 }}>Collected</span>
           </div>
-          <div style={{ width: '100%', height: '6px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
-            <div style={{ width: `${globalTrackerStats.cdtPct}%`, height: '100%', background: '#c5a880', borderRadius: '4px' }}></div>
+          <div style={{ width: '100%', height: '8px', background: 'var(--border-color)', borderRadius: '6px', overflow: 'hidden', marginTop: '0.1rem' }}>
+            <div style={{ width: `${globalTrackerStats.cdtPct}%`, height: '100%', background: 'linear-gradient(90deg, #c5a880, #a08155)', borderRadius: '6px' }}></div>
           </div>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
             1CL to 3CL for {currentMonthName}
           </span>
         </div>
 
-        {/* Net Cash Asset KPI (Switched to 3rd place) */}
-        <div className="info-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
+        {/* Net Cash Asset KPI (3rd place) */}
+        <div className="info-card finance-card-hover" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.65rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '14px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>NET CASH ASSETS</span>
-            <span style={{ fontSize: '1.25rem' }}>💰</span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700, letterSpacing: '0.05em' }}>NET CASH ASSETS</span>
+            <span style={{ fontSize: '1.35rem' }}>💰</span>
           </div>
-          <span style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+          <span style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '0.2rem', letterSpacing: '-0.02em' }}>
             ₱{activeMonthData ? activeMonthData.netAssets.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '0.00'}
           </span>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500, marginTop: '0.6rem' }}>
             As of latest active report ({balanceMonth})
           </span>
         </div>
 
         {/* Spend KPI (4th place) */}
-        <div className="info-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
+        <div className="info-card finance-card-hover" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.65rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '14px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>MONTHLY SPEND</span>
-            <span style={{ fontSize: '1.25rem' }}>💸</span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700, letterSpacing: '0.05em' }}>MONTHLY SPEND</span>
+            <span style={{ fontSize: '1.35rem' }}>💸</span>
           </div>
-          <span style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+          <span style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '0.2rem', letterSpacing: '-0.02em' }}>
             ₱{activeMonthData ? activeMonthData.totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '0.00'}
           </span>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500, marginTop: '0.6rem' }}>
             Total spent in {balanceMonth}
           </span>
         </div>
@@ -409,14 +431,14 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
       </div>
 
       {/* 2. SUB-TAB VIEW SELECTOR PILLS */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', paddingBottom: '1px', gap: '1.5rem' }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', paddingBottom: '1px', gap: '2rem' }}>
         <button 
           onClick={() => setActiveTab('tracker')}
           style={{
             background: 'none',
             border: 'none',
-            padding: '0.75rem 0.5rem',
-            fontSize: '1rem',
+            padding: '0.75rem 0.25rem',
+            fontSize: '1.05rem',
             fontWeight: 700,
             cursor: 'pointer',
             color: activeTab === 'tracker' ? 'var(--text-primary)' : 'var(--text-secondary)',
@@ -431,8 +453,8 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
           style={{
             background: 'none',
             border: 'none',
-            padding: '0.75rem 0.5rem',
-            fontSize: '1rem',
+            padding: '0.75rem 0.25rem',
+            fontSize: '1.05rem',
             fontWeight: 700,
             cursor: 'pointer',
             color: activeTab === 'balance' ? 'var(--text-primary)' : 'var(--text-secondary)',
@@ -452,25 +474,26 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             
             {/* Filter controls row */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', background: 'var(--bg-secondary)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', alignItems: 'center', background: 'var(--bg-secondary)', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
               
               {/* Class Selection */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>CLASS</span>
-                <div style={{ display: 'flex', gap: '0.35rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.05em' }}>CLASS</span>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
                   {['1CL', '2CL', '3CL'].map(cls => (
                     <button
                       key={cls}
                       onClick={() => { setSelectedClass(cls); setStatusFilter('all'); }}
                       style={{
-                        padding: '0.4rem 0.8rem',
-                        borderRadius: '6px',
+                        padding: '0.45rem 1rem',
+                        borderRadius: '8px',
                         fontSize: '0.85rem',
-                        fontWeight: 600,
+                        fontWeight: 700,
                         cursor: 'pointer',
-                        border: selectedClass === cls ? 'none' : '1px solid var(--border-color)',
-                        background: selectedClass === cls ? '#1e293b' : 'var(--bg-primary)',
-                        color: selectedClass === cls ? '#ffffff' : 'var(--text-secondary)',
+                        border: selectedClass === cls ? '1px solid #c5a880' : '1px solid var(--border-color)',
+                        background: selectedClass === cls ? 'rgba(197, 168, 128, 0.12)' : 'var(--bg-primary)',
+                        color: selectedClass === cls ? '#c5a880' : 'var(--text-secondary)',
+                        transition: 'all 0.2s'
                       }}
                     >
                       {cls}
@@ -480,19 +503,21 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
               </div>
 
               {/* Month Selector */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>MONTH</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.05em' }}>MONTH</span>
                 <select
                   value={selectedMonthIdx}
                   onChange={(e) => setSelectedMonthIdx(parseInt(e.target.value))}
                   style={{
-                    padding: '0.45rem 1rem',
-                    borderRadius: '6px',
+                    padding: '0.45rem 1.25rem',
+                    borderRadius: '8px',
                     fontSize: '0.85rem',
+                    fontWeight: 600,
                     background: 'var(--bg-primary)',
                     color: 'var(--text-primary)',
                     border: '1px solid var(--border-color)',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    outline: 'none'
                   }}
                 >
                   {MONTH_NAMES.map((name, idx) => (
@@ -502,19 +527,21 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
               </div>
 
               {/* Status Filter */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>STATUS</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.05em' }}>STATUS</span>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                   style={{
-                    padding: '0.45rem 1rem',
-                    borderRadius: '6px',
+                    padding: '0.45rem 1.25rem',
+                    borderRadius: '8px',
                     fontSize: '0.85rem',
+                    fontWeight: 600,
                     background: 'var(--bg-primary)',
                     color: 'var(--text-primary)',
                     border: '1px solid var(--border-color)',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    outline: 'none'
                   }}
                 >
                   <option value="all">All Cadets</option>
@@ -526,21 +553,25 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
               </div>
 
               {/* Search Box */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1, minWidth: '180px' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>SEARCH SURNAME</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1, minWidth: '220px' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.05em' }}>SEARCH SURNAME</span>
                 <input 
                   type="text"
                   placeholder="Type surname..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   style={{
-                    padding: '0.45rem 1rem',
-                    borderRadius: '6px',
+                    padding: '0.45rem 1.25rem',
+                    borderRadius: '8px',
                     fontSize: '0.85rem',
                     background: 'var(--bg-primary)',
                     color: 'var(--text-primary)',
                     border: '1px solid var(--border-color)',
+                    outline: 'none',
+                    transition: 'border-color 0.2s'
                   }}
+                  onFocus={(e) => e.target.style.borderColor = '#c5a880'}
+                  onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
                 />
               </div>
 
@@ -548,15 +579,15 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
 
             {/* Cadet checklist grid */}
             {currentCadets.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+              <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-secondary)', background: 'var(--bg-secondary)', border: '1px dashed var(--border-color)', borderRadius: '12px' }}>
                 No cadets configured in the sheet for this class yet.
               </div>
             ) : filteredCadets.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+              <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-secondary)', background: 'var(--bg-secondary)', border: '1px dashed var(--border-color)', borderRadius: '12px' }}>
                 No cadets match your search filters.
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
                 {filteredCadets.map((cadet, index) => {
                   const paymentInfo = cadet.payments[selectedMonthIdx];
 
@@ -566,25 +597,26 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                       layout
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.3) }}
-                      className="info-card"
+                      transition={{ duration: 0.2, delay: Math.min(index * 0.015, 0.2) }}
+                      className="info-card finance-card-hover"
                       style={{
-                        padding: '1rem',
+                        padding: '1.15rem',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         background: 'var(--bg-secondary)',
                         border: '1px solid var(--border-color)',
-                        borderRadius: '10px'
+                        borderRadius: '12px',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
                         {/* Cadet Image */}
-                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', background: '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--border-color)' }}>
+                        <div style={{ width: '42px', height: '42px', borderRadius: '50%', overflow: 'hidden', background: '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--border-color)' }}>
                           {cadet.imageUrl ? (
                             <img src={cadet.imageUrl} alt={cadet.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           ) : (
-                            <span style={{ fontSize: '0.8rem', color: '#9ca3af', fontWeight: 'bold' }}>
+                            <span style={{ fontSize: '0.85rem', color: '#9ca3af', fontWeight: 'bold' }}>
                               {cadet.name.substring(0, 2)}
                             </span>
                           )}
@@ -592,45 +624,45 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
 
                         {/* Cadet Info */}
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                          <span style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
                             {cadet.name}
                           </span>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
                             {selectedClass} Cadet
                           </span>
                         </div>
                       </div>
 
                       {/* Payment Badges */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', alignItems: 'flex-end' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', alignItems: 'flex-end' }}>
                         
                         {/* CDT Fund Badge */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)' }}>CDT:</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.05em' }}>CDT</span>
                           <span style={{
                             fontSize: '0.75rem',
                             fontWeight: 700,
-                            padding: '1px 6px',
-                            borderRadius: '4px',
-                            background: paymentInfo.cdtStatus === 'PAID' ? 'rgba(16, 185, 129, 0.15)' : (paymentInfo.cdtStatus === 'PARTIAL' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)'),
+                            padding: '2px 8px',
+                            borderRadius: '5px',
+                            background: paymentInfo.cdtStatus === 'PAID' ? 'rgba(16, 185, 129, 0.12)' : (paymentInfo.cdtStatus === 'PARTIAL' ? 'rgba(245, 158, 11, 0.12)' : 'rgba(239, 68, 68, 0.12)'),
                             color: paymentInfo.cdtStatus === 'PAID' ? '#10b981' : (paymentInfo.cdtStatus === 'PARTIAL' ? '#f59e0b' : '#ef4444'),
-                            border: `1px solid ${paymentInfo.cdtStatus === 'PAID' ? '#10b981' : (paymentInfo.cdtStatus === 'PARTIAL' ? '#f59e0b' : '#ef4444')}`
+                            border: `1px solid ${paymentInfo.cdtStatus === 'PAID' ? 'rgba(16, 185, 129, 0.3)' : (paymentInfo.cdtStatus === 'PARTIAL' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)')}`
                           }}>
                             ₱{paymentInfo.cdtPaid}
                           </span>
                         </div>
 
                         {/* COY Fund Badge */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)' }}>COY:</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.05em' }}>COY</span>
                           <span style={{
                             fontSize: '0.75rem',
                             fontWeight: 700,
-                            padding: '1px 6px',
-                            borderRadius: '4px',
-                            background: paymentInfo.coyStatus === 'PAID' ? 'rgba(16, 185, 129, 0.15)' : (paymentInfo.coyStatus === 'PARTIAL' ? 'rgba(245, 158, 11, 0.15)' : (paymentInfo.coyStatus === 'N/A' ? 'rgba(156, 163, 175, 0.15)' : 'rgba(239, 68, 68, 0.15)')),
+                            padding: '2px 8px',
+                            borderRadius: '5px',
+                            background: paymentInfo.coyStatus === 'PAID' ? 'rgba(16, 185, 129, 0.12)' : (paymentInfo.coyStatus === 'PARTIAL' ? 'rgba(245, 158, 11, 0.12)' : (paymentInfo.coyStatus === 'N/A' ? 'rgba(156, 163, 175, 0.12)' : 'rgba(239, 68, 68, 0.12)')),
                             color: paymentInfo.coyStatus === 'PAID' ? '#10b981' : (paymentInfo.coyStatus === 'PARTIAL' ? '#f59e0b' : (paymentInfo.coyStatus === 'N/A' ? '#9ca3af' : '#ef4444')),
-                            border: `1px solid ${paymentInfo.coyStatus === 'PAID' ? '#10b981' : (paymentInfo.coyStatus === 'PARTIAL' ? '#f59e0b' : (paymentInfo.coyStatus === 'N/A' ? '#9ca3af' : '#ef4444'))}`
+                            border: `1px solid ${paymentInfo.coyStatus === 'PAID' ? 'rgba(16, 185, 129, 0.3)' : (paymentInfo.coyStatus === 'PARTIAL' ? 'rgba(245, 158, 11, 0.3)' : (paymentInfo.coyStatus === 'N/A' ? 'rgba(156, 163, 175, 0.3)' : 'rgba(239, 68, 68, 0.3)'))}`
                           }}>
                             {paymentInfo.coyStatus === 'N/A' ? 'N/A' : `₱${paymentInfo.coyPaid}`}
                           </span>
@@ -642,13 +674,16 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                           style={{
                             background: 'none',
                             border: 'none',
-                            fontSize: '0.7rem',
+                            fontSize: '0.75rem',
                             color: '#c5a880',
                             fontWeight: 700,
                             cursor: 'pointer',
                             padding: '2px 0 0 0',
-                            textDecoration: 'underline'
+                            textDecoration: 'underline',
+                            transition: 'color 0.2s'
                           }}
+                          onMouseEnter={(e) => e.target.style.color = '#dfc8a5'}
+                          onMouseLeave={(e) => e.target.style.color = '#c5a880'}
                         >
                           View History
                         </button>
@@ -664,10 +699,10 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
 
         {/* B. MONTHLY BALANCE SHEETS TAB */}
         {activeTab === 'balance' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
             
             {/* Month select row */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem', background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
               {activeBalanceMonths.length === 0 ? (
                 <div style={{ padding: '0.5rem', color: 'var(--text-secondary)' }}>No active balance sheets loaded yet.</div>
               ) : (
@@ -676,15 +711,15 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                     key={mName}
                     onClick={() => setBalanceMonth(mName)}
                     style={{
-                      padding: '0.4rem 0.9rem',
-                      borderRadius: '6px',
+                      padding: '0.45rem 1.15rem',
+                      borderRadius: '8px',
                       fontSize: '0.85rem',
                       fontWeight: 700,
                       cursor: 'pointer',
                       border: 'none',
-                      background: balanceMonth === mName ? '#1e293b' : 'transparent',
-                      color: balanceMonth === mName ? '#ffffff' : 'var(--text-secondary)',
-                      transition: 'all 0.15s ease'
+                      background: balanceMonth === mName ? '#c5a880' : 'transparent',
+                      color: balanceMonth === mName ? '#1e293b' : 'var(--text-secondary)',
+                      transition: 'all 0.2s ease-in-out'
                     }}
                   >
                     {mName}
@@ -694,7 +729,7 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
             </div>
 
             {activeMonthData && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
                 
                 {/* Visual grid - Left Assets/Liabilities, Right Expenses */}
                 <div className="finance-grid">
@@ -707,12 +742,12 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                       </h2>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'var(--bg-secondary)', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', background: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '14px', border: '1px solid var(--border-color)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                       <div>
-                        <h4 style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>CURRENT ASSETS</h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <h4 style={{ fontSize: '0.75rem', fontWeight: 800, color: '#c5a880', marginBottom: '0.75rem', letterSpacing: '0.08em' }}>CURRENT ASSETS</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                           {activeMonthData.assets.map((asset, i) => (
-                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: '4px' }}>
+                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.92rem', borderBottom: '1px solid rgba(255,255,255,0.04)', paddingBottom: '6px' }}>
                               <span style={{ color: 'var(--text-primary)' }}>{asset.name}</span>
                               <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
                                 ₱{asset.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
@@ -724,10 +759,10 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
 
                       {activeMonthData.liabilities.length > 0 && (
                         <div>
-                          <h4 style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>LIABILITIES</h4>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                          <h4 style={{ fontSize: '0.75rem', fontWeight: 800, color: '#ef4444', marginBottom: '0.75rem', letterSpacing: '0.08em' }}>LIABILITIES</h4>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                             {activeMonthData.liabilities.map((liab, i) => (
-                              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: '4px' }}>
+                              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.92rem', borderBottom: '1px solid rgba(255,255,255,0.04)', paddingBottom: '6px' }}>
                                 <span style={{ color: 'var(--text-primary)' }}>{liab.name}</span>
                                 <span style={{ fontWeight: 700, color: '#ef4444' }}>
                                   ₱{liab.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
@@ -738,21 +773,21 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                         </div>
                       )}
 
-                      <div style={{ marginTop: '1rem', borderTop: '2px solid var(--border-color)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <div style={{ marginTop: '1rem', borderTop: '2px solid var(--border-color)', paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem' }}>
-                          <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>Total Assets:</span>
+                          <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>Total Assets:</span>
                           <span style={{ fontWeight: 800, color: '#10b981' }}>
                             ₱{activeMonthData.totalAssets.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                           </span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem' }}>
-                          <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>Total Liabilities:</span>
+                          <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>Total Liabilities:</span>
                           <span style={{ fontWeight: 800, color: '#ef4444' }}>
                             ₱{activeMonthData.totalLiabilities.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                           </span>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', background: 'rgba(255,255,255,0.02)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-color)', marginTop: '0.25rem' }}>
-                          <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>Net Cash Assets:</span>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '1.15rem', background: 'rgba(197, 168, 128, 0.04)', padding: '12px 16px', borderRadius: '10px', border: '1px solid rgba(197, 168, 128, 0.25)', marginTop: '0.5rem' }}>
+                          <span style={{ fontWeight: 800, color: '#c5a880', letterSpacing: '-0.01em' }}>Net Cash Assets</span>
                           <span style={{ fontWeight: 900, color: 'var(--text-primary)' }}>
                             ₱{activeMonthData.netAssets.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                           </span>
@@ -768,14 +803,16 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                       <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                         💸 Monthly Expenses
                       </h2>
-                      <span style={{ fontSize: '0.9rem', background: '#c0392b', padding: '2px 8px', borderRadius: '4px', color: '#fff', fontWeight: 'bold' }}>
-                        Total: ₱{activeMonthData.totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                      <span style={{ fontSize: '0.85rem', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '3px 10px', borderRadius: '6px', color: '#f87171', fontWeight: 800 }}>
+                        Total: ₱{activeMonthData.totalExpenses.toLocaleString('en-US')}
                       </span>
                     </div>
 
-                    <div style={{ maxHeight: '350px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.50rem', paddingRight: '4px' }}>
+                    <div className="custom-scrollbar" style={{ maxHeight: '370px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.65rem', paddingRight: '6px' }}>
                       {activeMonthData.expenses.length === 0 ? (
-                        <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem' }}>No expenses recorded for this month.</div>
+                        <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '3rem', background: 'var(--bg-secondary)', borderRadius: '12px', border: '1px dashed var(--border-color)' }}>
+                          No expenses recorded for this month.
+                        </div>
                       ) : (
                         activeMonthData.expenses.map((exp, idx) => (
                           <div 
@@ -785,18 +822,20 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                               justifyContent: 'space-between',
                               alignItems: 'center',
                               background: 'var(--bg-secondary)',
-                              padding: '0.75rem 1rem',
-                              borderRadius: '8px',
+                              padding: '0.85rem 1.15rem',
+                              borderRadius: '10px',
                               border: '1px solid var(--border-color)'
                             }}
                           >
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-                              <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{exp.item}</span>
-                              <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-                                {exp.date} • Spent by {exp.by}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                              <span style={{ fontSize: '0.92rem', fontWeight: 'bold', color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+                                {exp.item}
+                              </span>
+                              <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                                {exp.date} &bull; Spent by {exp.by}
                               </span>
                             </div>
-                            <span style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                            <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                               ₱{exp.amount.toLocaleString('en-US')}
                             </span>
                           </div>
@@ -808,11 +847,11 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                 </div>
 
                 {/* 4. CHARTS SECTIONS (Desktop/Laptop Optimized) */}
-                <div className="finance-grid" style={{ marginTop: '1rem' }}>
+                <div className="finance-grid" style={{ marginTop: '1.5rem' }}>
                   
                   {/* Category Breakdown Pie Chart */}
-                  <div className="pft-chart-card" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '1.25rem', borderRadius: '12px', height: '360px', display: 'flex', flexDirection: 'column' }}>
-                    <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1rem' }}>
+                  <div className="pft-chart-card" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '1.5rem', borderRadius: '14px', height: '380px', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1.25rem', letterSpacing: '-0.01em' }}>
                       Pie Chart: Expense Categories ({balanceMonth})
                     </h3>
                     {expenseChartData.length === 0 ? (
@@ -827,8 +866,8 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                               data={expenseChartData}
                               cx="50%"
                               cy="45%"
-                              innerRadius={60}
-                              outerRadius={90}
+                              innerRadius={65}
+                              outerRadius={95}
                               paddingAngle={4}
                               dataKey="value"
                             >
@@ -837,31 +876,46 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                               ))}
                             </Pie>
                             <Tooltip formatter={(value) => `₱${value.toLocaleString()}`} />
-                            <Legend verticalAlign="bottom" height={36} />
+                            <Legend verticalAlign="bottom" height={36} iconType="circle" />
                           </PieChart>
                         </ResponsiveContainer>
+                        
+                        {/* Premium Donut Center Hole Text Indicator */}
+                        <div style={{
+                          position: 'absolute',
+                          top: '41%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          textAlign: 'center',
+                          pointerEvents: 'none'
+                        }}>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', letterSpacing: '0.05em' }}>TOTAL SPENT</span>
+                          <span style={{ fontSize: '1.2rem', color: 'var(--text-primary)', fontWeight: 900, marginTop: '2px', display: 'block' }}>
+                            ₱{activeMonthData.totalExpenses.toLocaleString('en-US')}
+                          </span>
+                        </div>
                       </div>
                     )}
                   </div>
 
                   {/* Monthly Budget vs Expenses Line Chart */}
-                  <div className="pft-chart-card" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '1.25rem', borderRadius: '12px', height: '360px', display: 'flex', flexDirection: 'column' }}>
-                    <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1rem' }}>
+                  <div className="pft-chart-card" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '1.5rem', borderRadius: '14px', height: '380px', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1.25rem', letterSpacing: '-0.01em' }}>
                       Line Chart: Budget vs Expenses Over Time
                     </h3>
                     <div style={{ flex: 1, width: '100%', height: '100%' }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart
                           data={monthlyTrendData}
-                          margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+                          margin={{ top: 10, right: 15, left: -5, bottom: 0 }}
                         >
-                          <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                          <XAxis dataKey="month" tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} />
-                          <YAxis tickFormatter={(val) => `₱${val/1000}k`} tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} />
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                          <XAxis dataKey="month" tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 500 }} />
+                          <YAxis tickFormatter={(val) => `₱${val/1000}k`} tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 500 }} />
                           <Tooltip formatter={(value) => `₱${value.toLocaleString()}`} />
-                          <Legend />
-                          <Line type="monotone" dataKey="Budget" stroke="#10b981" strokeWidth={3} activeDot={{ r: 8 }} />
-                          <Line type="monotone" dataKey="Expenses" stroke="#ef4444" strokeWidth={3} activeDot={{ r: 8 }} />
+                          <Legend iconType="circle" />
+                          <Line type="monotone" name="Total Budget" dataKey="Budget" stroke="#10b981" strokeWidth={3} activeDot={{ r: 7 }} dot={{ strokeWidth: 2, r: 4 }} />
+                          <Line type="monotone" name="Total Expenses" dataKey="Expenses" stroke="#ef4444" strokeWidth={3} activeDot={{ r: 7 }} dot={{ strokeWidth: 2, r: 4 }} />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
@@ -885,18 +939,19 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
             left: 0,
             width: '100%',
             height: '100%',
-            background: 'rgba(0,0,0,0.7)',
+            background: 'rgba(0, 0, 0, 0.75)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 999,
-            padding: '1rem'
+            padding: '1rem',
+            backdropFilter: 'blur(4px)'
           }}>
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.15 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
               style={{
                 width: '100%',
                 maxWidth: '650px',
@@ -904,7 +959,7 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                 borderRadius: '16px',
                 border: '1px solid var(--border-color)',
                 overflow: 'hidden',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6)'
               }}
             >
               {/* Modal Header */}
@@ -912,25 +967,25 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: '1.25rem',
+                padding: '1.25rem 1.5rem',
                 borderBottom: '1px solid var(--border-color)',
                 background: 'rgba(255,255,255,0.01)'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <div style={{ width: '45px', height: '45px', borderRadius: '50%', overflow: 'hidden', background: '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                  <div style={{ width: '46px', height: '46px', borderRadius: '50%', overflow: 'hidden', background: '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--border-color)' }}>
                     {selectedCadet.imageUrl ? (
                       <img src={selectedCadet.imageUrl} alt={selectedCadet.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
-                      <span style={{ fontSize: '0.9rem', color: '#9ca3af', fontWeight: 'bold' }}>
+                      <span style={{ fontSize: '0.95rem', color: '#9ca3af', fontWeight: 'bold' }}>
                         {selectedCadet.name.substring(0, 2)}
                       </span>
                     )}
                   </div>
                   <div>
-                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', margin: 0, color: 'var(--text-primary)' }}>
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: 'bold', margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
                       {selectedCadet.name}
                     </h3>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
                       12-Month Finance Ledger ({selectedClass})
                     </span>
                   </div>
@@ -941,33 +996,37 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                   style={{
                     background: 'none',
                     border: 'none',
-                    fontSize: '1.5rem',
+                    fontSize: '1.75rem',
                     color: 'var(--text-secondary)',
                     cursor: 'pointer',
-                    padding: '0.25rem'
+                    padding: '0.25rem',
+                    lineHeight: 1,
+                    transition: 'color 0.2s'
                   }}
+                  onMouseEnter={(e) => e.target.style.color = 'var(--text-primary)'}
+                  onMouseLeave={(e) => e.target.style.color = 'var(--text-secondary)'}
                 >
                   &times;
                 </button>
               </div>
 
               {/* Modal Body */}
-              <div style={{ padding: '1.5rem', maxHeight: '450px', overflowY: 'auto' }}>
+              <div className="custom-scrollbar" style={{ padding: '1.5rem', maxHeight: '420px', overflowY: 'auto' }}>
                 
                 {/* Special collections (Coy Night) */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--border-color)', marginBottom: '1.25rem' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>Special Collections: Coy Night</span>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>One-time collection for company night events</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '10px', border: '1px solid var(--border-color)', marginBottom: '1.5rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <span style={{ fontSize: '0.88rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>Special Collections: Coy Night</span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 500 }}>One-time collection for company night events</span>
                   </div>
                   <span style={{
-                    fontSize: '0.85rem',
-                    fontWeight: 'bold',
-                    padding: '3px 8px',
-                    borderRadius: '4px',
-                    background: selectedCadet.coyNight >= 500 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                    fontSize: '0.78rem',
+                    fontWeight: 800,
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    background: selectedCadet.coyNight >= 500 ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
                     color: selectedCadet.coyNight >= 500 ? '#10b981' : '#ef4444',
-                    border: `1px solid ${selectedCadet.coyNight >= 500 ? '#10b981' : '#ef4444'}`
+                    border: `1px solid ${selectedCadet.coyNight >= 500 ? 'rgba(16, 185, 129, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`
                   }}>
                     {selectedCadet.coyNight >= 500 ? 'Paid ₱500' : 'Unpaid'}
                   </span>
@@ -975,7 +1034,7 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
 
                 {/* Ledger Grid */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr', padding: '0.25rem 0.5rem', borderBottom: '1px solid var(--border-color)', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.05em' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr', padding: '0.35rem 0.5rem', borderBottom: '1.5px solid var(--border-color)', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.08em' }}>
                     <span>MONTH</span>
                     <span style={{ textAlign: 'center' }}>CADET FUND (400)</span>
                     <span style={{ textAlign: 'center' }}>COY FUND (300)</span>
@@ -987,9 +1046,9 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                       style={{
                         display: 'grid',
                         gridTemplateColumns: '1.5fr 1fr 1fr',
-                        padding: '0.5rem',
+                        padding: '0.65rem 0.5rem',
                         alignItems: 'center',
-                        fontSize: '0.85rem',
+                        fontSize: '0.88rem',
                         borderBottom: '1px solid rgba(255,255,255,0.03)'
                       }}
                     >
@@ -998,11 +1057,11 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                       {/* Cadet Fund paid */}
                       <div style={{ display: 'flex', justifyContent: 'center' }}>
                         <span style={{
-                          fontSize: '0.75rem',
+                          fontSize: '0.78rem',
                           fontWeight: 700,
-                          padding: '1px 8px',
-                          borderRadius: '4px',
-                          background: p.cdtStatus === 'PAID' ? 'rgba(16, 185, 129, 0.12)' : (p.cdtStatus === 'PARTIAL' ? 'rgba(245, 158, 11, 0.12)' : 'rgba(239, 68, 68, 0.12)'),
+                          padding: '2px 10px',
+                          borderRadius: '5px',
+                          background: p.cdtStatus === 'PAID' ? 'rgba(16, 185, 129, 0.1)' : (p.cdtStatus === 'PARTIAL' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(239, 68, 68, 0.1)'),
                           color: p.cdtStatus === 'PAID' ? '#10b981' : (p.cdtStatus === 'PARTIAL' ? '#f59e0b' : '#ef4444'),
                         }}>
                           ₱{p.cdtPaid}
@@ -1013,17 +1072,17 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                       <div style={{ display: 'flex', justifyContent: 'center' }}>
                         {p.hasCoy ? (
                           <span style={{
-                            fontSize: '0.75rem',
+                            fontSize: '0.78rem',
                             fontWeight: 700,
-                            padding: '1px 8px',
-                            borderRadius: '4px',
-                            background: p.coyStatus === 'PAID' ? 'rgba(16, 185, 129, 0.12)' : (p.coyStatus === 'PARTIAL' ? 'rgba(245, 158, 11, 0.12)' : 'rgba(239, 68, 68, 0.12)'),
+                            padding: '2px 10px',
+                            borderRadius: '5px',
+                            background: p.coyStatus === 'PAID' ? 'rgba(16, 185, 129, 0.1)' : (p.coyStatus === 'PARTIAL' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(239, 68, 68, 0.1)'),
                             color: p.coyStatus === 'PAID' ? '#10b981' : (p.coyStatus === 'PARTIAL' ? '#f59e0b' : '#ef4444'),
                           }}>
                             ₱{p.coyPaid}
                           </span>
                         ) : (
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontStyle: 'italic', fontWeight: 500 }}>
                             N/A
                           </span>
                         )}
@@ -1036,7 +1095,7 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
 
               {/* Modal Footer */}
               <div style={{
-                padding: '1rem 1.5rem',
+                padding: '1.15rem 1.5rem',
                 borderTop: '1px solid var(--border-color)',
                 background: 'rgba(255,255,255,0.01)',
                 display: 'flex',
@@ -1045,15 +1104,18 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                 <button
                   onClick={() => setSelectedCadet(null)}
                   style={{
-                    padding: '0.4rem 1.2rem',
-                    borderRadius: '6px',
+                    padding: '0.5rem 1.4rem',
+                    borderRadius: '8px',
                     fontSize: '0.85rem',
-                    fontWeight: 'bold',
+                    fontWeight: 700,
                     background: '#1e293b',
                     color: '#ffffff',
                     border: 'none',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    transition: 'background 0.2s'
                   }}
+                  onMouseEnter={(e) => e.target.style.background = '#334155'}
+                  onMouseLeave={(e) => e.target.style.background = '#1e293b'}
                 >
                   Close
                 </button>
