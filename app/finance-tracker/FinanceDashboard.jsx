@@ -10,8 +10,8 @@ import {
   Tooltip, 
   Legend, 
   ResponsiveContainer,
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid
@@ -20,6 +20,13 @@ import {
 const MONTH_NAMES = [
   'MAY', 'JUNE', 'JULY', 'AUG', 'SEPT', 'OCT', 'NOV', 'DEC', 'JAN', 'FEB', 'MAR', 'APR'
 ];
+
+const CLASS_MAP = {
+  '2027': '1CL',
+  '2028': '2CL',
+  '2029': '3CL',
+  '2030': '4CL'
+};
 
 export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) {
   const [activeTab, setActiveTab] = useState('tracker'); // 'tracker' or 'balance'
@@ -187,7 +194,8 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
         });
 
         // Resolve profile image
-        const imgUrl = getCadetImageUrl(name, '', '', className);
+        const mappedClassName = CLASS_MAP[className] || className;
+        const imgUrl = getCadetImageUrl(name, '', '', mappedClassName);
 
         return {
           name,
@@ -197,7 +205,8 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
         };
       }).filter(Boolean);
 
-      data[className] = cadets;
+      const targetKey = CLASS_MAP[className] || className;
+      data[targetKey] = cadets;
     });
 
     return data;
@@ -230,38 +239,41 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
     });
   }, [currentCadets, searchQuery, statusFilter, selectedMonthIdx]);
 
-  // 3. Stats Calculations for KPIs
+  // 3. Global Stats Calculations for 1CL to 3CL Cadets Combined
   const currentMonthName = MONTH_NAMES[selectedMonthIdx];
-  const trackerStats = useMemo(() => {
-    if (currentCadets.length === 0) return { cdtPct: 0, coyPct: 0, unpaidCount: 0 };
-    
-    let cdtPaidCount = 0;
-    let coyPaidCount = 0;
-    let unpaidCount = 0;
+  const globalTrackerStats = useMemo(() => {
+    let totalCdtCount = 0;
+    let totalCoyCount = 0;
+    let paidCdtCount = 0;
+    let paidCoyCount = 0;
     let coyApplicableCount = 0;
 
-    currentCadets.forEach(c => {
-      const p = c.payments[selectedMonthIdx];
-      const isCdtPaid = p.cdtStatus === 'PAID';
-      const isCoyPaid = p.coyStatus === 'PAID' || p.coyStatus === 'N/A';
-
-      if (isCdtPaid) cdtPaidCount++;
-      if (p.hasCoy) {
-        coyApplicableCount++;
-        if (p.coyStatus === 'PAID') coyPaidCount++;
-      }
-      
-      if (!isCdtPaid || (!isCoyPaid && p.hasCoy)) {
-        unpaidCount++;
-      }
+    // Aggregate across 1CL, 2CL, and 3CL trackers
+    ['1CL', '2CL', '3CL'].forEach(className => {
+      const cadets = parsedTrackers[className] || [];
+      cadets.forEach(c => {
+        const p = c.payments[selectedMonthIdx];
+        if (!p) return;
+        
+        totalCdtCount++;
+        if (p.cdtStatus === 'PAID') {
+          paidCdtCount++;
+        }
+        
+        if (p.hasCoy) {
+          coyApplicableCount++;
+          if (p.coyStatus === 'PAID') {
+            paidCoyCount++;
+          }
+        }
+      });
     });
 
     return {
-      cdtPct: Math.round((cdtPaidCount / currentCadets.length) * 100),
-      coyPct: coyApplicableCount > 0 ? Math.round((coyPaidCount / coyApplicableCount) * 100) : 100,
-      unpaidCount
+      cdtPct: totalCdtCount > 0 ? Math.round((paidCdtCount / totalCdtCount) * 100) : 0,
+      coyPct: coyApplicableCount > 0 ? Math.round((paidCoyCount / coyApplicableCount) * 100) : 0
     };
-  }, [currentCadets, selectedMonthIdx]);
+  }, [parsedTrackers, selectedMonthIdx]);
 
   // Get current active balance sheet month details
   const activeMonthData = parsedMonths[balanceMonth] || null;
@@ -295,48 +307,78 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
       .filter(item => item.value > 0);
   }, [activeMonthData]);
 
-  // Collection rates over time for the bar chart
-  const collectionsHistoryChartData = useMemo(() => {
-    // Collect stats from MAY, JUNE, etc. dynamically
+  // Monthly Budget vs Expenses over time (for the Line Graph)
+  const monthlyTrendData = useMemo(() => {
     const data = [];
-    MONTH_NAMES.forEach((mName, mIdx) => {
-      // Find if we have records for this month
-      let totalCdtPaid = 0;
-      let totalCoyPaid = 0;
-      let totalExpected = 0;
-
-      // Count across all classes (1CL, 2CL, 3CL)
-      let classesWithData = 0;
-      Object.entries(parsedTrackers).forEach(([className, cadets]) => {
-        if (cadets.length === 0) return;
-        classesWithData++;
-        cadets.forEach(c => {
-          const p = c.payments[mIdx];
-          totalCdtPaid += p.cdtPaid;
-          totalCoyPaid += p.coyPaid;
-        });
-      });
-
-      if (classesWithData > 0 && (totalCdtPaid > 0 || totalCoyPaid > 0)) {
+    MONTH_NAMES.forEach(mName => {
+      const monthData = parsedMonths[mName];
+      if (monthData) {
         data.push({
           month: mName,
-          'Cadet Fund': totalCdtPaid,
-          'Company Fund': totalCoyPaid
+          Budget: monthData.totalAssets,
+          Expenses: monthData.totalExpenses
         });
       }
     });
     return data;
-  }, [parsedTrackers]);
+  }, [parsedMonths]);
 
   const COLORS_PIE = ['#c5a880', '#568f76', '#a26262', '#5d6f8a'];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       
+      {/* Page global styles injection to maximize layout */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        .main-content {
+          max-width: 1600px !important;
+        }
+      `}} />
+
       {/* 1. TOP OVERVIEW KPI CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
         
-        {/* Net Cash Asset KPI */}
+        {/* Coy Fund Collections KPI (Switched to 1st place) */}
+        <div className="info-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>COY FUND RATE</span>
+            <span style={{ fontSize: '1.25rem' }}>🏰</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+            <span style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+              {globalTrackerStats.coyPct}%
+            </span>
+            <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 600 }}>Collected</span>
+          </div>
+          <div style={{ width: '100%', height: '6px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
+            <div style={{ width: `${globalTrackerStats.coyPct}%`, height: '100%', background: '#568f76', borderRadius: '4px' }}></div>
+          </div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+            1CL to 3CL for {currentMonthName}
+          </span>
+        </div>
+
+        {/* Cadet Fund Collections KPI (2nd place) */}
+        <div className="info-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>CADET FUND RATE</span>
+            <span style={{ fontSize: '1.25rem' }}>🛡️</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+            <span style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+              {globalTrackerStats.cdtPct}%
+            </span>
+            <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 600 }}>Collected</span>
+          </div>
+          <div style={{ width: '100%', height: '6px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
+            <div style={{ width: `${globalTrackerStats.cdtPct}%`, height: '100%', background: '#c5a880', borderRadius: '4px' }}></div>
+          </div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+            1CL to 3CL for {currentMonthName}
+          </span>
+        </div>
+
+        {/* Net Cash Asset KPI (Switched to 3rd place) */}
         <div className="info-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>NET CASH ASSETS</span>
@@ -350,47 +392,7 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
           </span>
         </div>
 
-        {/* Cadet Fund Collections KPI */}
-        <div className="info-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>CADET FUND RATE</span>
-            <span style={{ fontSize: '1.25rem' }}>🛡️</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-              {trackerStats.cdtPct}%
-            </span>
-            <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 600 }}>Collected</span>
-          </div>
-          <div style={{ width: '100%', height: '6px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
-            <div style={{ width: `${trackerStats.cdtPct}%`, height: '100%', background: '#c5a880', borderRadius: '4px' }}></div>
-          </div>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-            {selectedClass} for {currentMonthName}
-          </span>
-        </div>
-
-        {/* Coy Fund Collections KPI */}
-        <div className="info-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>COY FUND RATE</span>
-            <span style={{ fontSize: '1.25rem' }}>🏰</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-              {trackerStats.coyPct}%
-            </span>
-            <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 600 }}>Collected</span>
-          </div>
-          <div style={{ width: '100%', height: '6px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
-            <div style={{ width: `${trackerStats.coyPct}%`, height: '100%', background: '#568f76', borderRadius: '4px' }}></div>
-          </div>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-            {selectedClass} for {currentMonthName}
-          </span>
-        </div>
-
-        {/* Spend KPI */}
+        {/* Spend KPI (4th place) */}
         <div className="info-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>MONTHLY SPEND</span>
@@ -557,8 +559,6 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
                 {filteredCadets.map((cadet, index) => {
                   const paymentInfo = cadet.payments[selectedMonthIdx];
-                  const cdtPaid = paymentInfo.cdtStatus === 'PAID';
-                  const coyPaid = paymentInfo.coyStatus === 'PAID' || paymentInfo.coyStatus === 'N/A';
 
                   return (
                     <motion.div 
@@ -697,7 +697,7 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                 
                 {/* Visual grid - Left Assets/Liabilities, Right Expenses */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
+                <div className="finance-grid">
                   
                   {/* Assets & Liabilities list */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -807,8 +807,8 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
 
                 </div>
 
-                {/* 4. CHARTS SECTIONS */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', marginTop: '1rem' }}>
+                {/* 4. CHARTS SECTIONS (Desktop/Laptop Optimized) */}
+                <div className="finance-grid" style={{ marginTop: '1rem' }}>
                   
                   {/* Category Breakdown Pie Chart */}
                   <div className="pft-chart-card" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '1.25rem', borderRadius: '12px', height: '360px', display: 'flex', flexDirection: 'column' }}>
@@ -844,15 +844,15 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                     )}
                   </div>
 
-                  {/* Collections Bar Chart */}
+                  {/* Monthly Budget vs Expenses Line Chart */}
                   <div className="pft-chart-card" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '1.25rem', borderRadius: '12px', height: '360px', display: 'flex', flexDirection: 'column' }}>
                     <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1rem' }}>
-                      Bar Chart: Collections Over Time (All Classes)
+                      Line Chart: Budget vs Expenses Over Time
                     </h3>
                     <div style={{ flex: 1, width: '100%', height: '100%' }}>
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={collectionsHistoryChartData}
+                        <LineChart
+                          data={monthlyTrendData}
                           margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
@@ -860,46 +860,13 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                           <YAxis tickFormatter={(val) => `₱${val/1000}k`} tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} />
                           <Tooltip formatter={(value) => `₱${value.toLocaleString()}`} />
                           <Legend />
-                          <Bar dataKey="Cadet Fund" fill="#c5a880" radius={[4, 4, 0, 0]} />
-                          <Bar dataKey="Company Fund" fill="#568f76" radius={[4, 4, 0, 0]} />
-                        </BarChart>
+                          <Line type="monotone" dataKey="Budget" stroke="#10b981" strokeWidth={3} activeDot={{ r: 8 }} />
+                          <Line type="monotone" dataKey="Expenses" stroke="#ef4444" strokeWidth={3} activeDot={{ r: 8 }} />
+                        </LineChart>
                       </ResponsiveContainer>
                     </div>
                   </div>
 
-                </div>
-
-                {/* 5. SIGNATURE BLOCKS */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '2rem', padding: '1.5rem', background: 'rgba(255,255,255,0.01)', border: '1px dashed var(--border-color)', borderRadius: '12px', marginTop: '1rem' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxWidth: '300px' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.05em' }}>PREPARED BY</span>
-                    <pre style={{
-                      fontFamily: 'inherit',
-                      fontSize: '0.85rem',
-                      color: 'var(--text-primary)',
-                      whiteSpace: 'pre-wrap',
-                      margin: 0,
-                      fontWeight: 600,
-                      lineHeight: '1.4'
-                    }}>
-                      {activeMonthData.preparedBy.replace('Prepared by:', '').trim()}
-                    </pre>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxWidth: '350px' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.05em' }}>NOTED BY</span>
-                    <pre style={{
-                      fontFamily: 'inherit',
-                      fontSize: '0.85rem',
-                      color: 'var(--text-primary)',
-                      whiteSpace: 'pre-wrap',
-                      margin: 0,
-                      fontWeight: 600,
-                      lineHeight: '1.4'
-                    }}>
-                      {activeMonthData.notedBy.replace('Noted by:', '').trim() || 'JETHRO C. OLAVIDEZ\nLCDR, PN\nBravo Company Tactical Officer'}
-                    </pre>
-                  </div>
                 </div>
 
               </div>
