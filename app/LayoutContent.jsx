@@ -33,6 +33,7 @@ export default function LayoutContent({ children }) {
   const [isSubscribed, setIsSubscribed] = useState(false);
 
   // PWA Install Prompt state
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isIOS, setIsIOS] = useState(false);
@@ -1004,8 +1005,8 @@ export default function LayoutContent({ children }) {
             ☰
           </button>
           <span className="mobile-header-title">BRAVO CO.</span>
-          <button className="mobile-theme-btn" onClick={toggleDarkMode} style={{ color: 'inherit' }}>
-            {isDarkMode ? '☀️' : '⚙️'}
+          <button className="mobile-theme-btn" onClick={() => setIsSettingsModalOpen(true)} style={{ color: 'inherit' }}>
+            ⚙️
           </button>
         </header>
 
@@ -1019,7 +1020,13 @@ export default function LayoutContent({ children }) {
               <div className="badge-outline">
                 <div className="live-indicator"></div> LIVE FEED
               </div>
-              <div className="badge-outline">
+              <div 
+                className="badge-outline" 
+                onClick={() => setIsSettingsModalOpen(true)}
+                style={{ cursor: 'pointer', transition: 'all 0.2s', border: '1px solid var(--accent-gold)' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(212, 175, 55, 0.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
                 ⚙️ SETTINGS
               </div>
             </div>
@@ -1552,6 +1559,166 @@ export default function LayoutContent({ children }) {
             title="Hover to show sidebar"
           />
         </>
+      )}
+
+      {/* Premium Settings Modal */}
+      {isSettingsModalOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.75)',
+          backdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 99999,
+          padding: '1.25rem',
+          animation: 'fadeIn 0.2s ease-out'
+        }}
+        onClick={() => setIsSettingsModalOpen(false)}
+        >
+          <div style={{
+            backgroundColor: 'var(--card-bg)',
+            border: '1px solid var(--accent-gold)',
+            borderRadius: '24px',
+            padding: '2rem 1.5rem',
+            width: '100%',
+            maxWidth: '400px',
+            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(212, 175, 55, 0.15)',
+            display: 'flex',
+            flexDirection: 'column',
+            position: 'relative',
+            animation: 'scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }}
+          onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button 
+              onClick={() => setIsSettingsModalOpen(false)}
+              style={{
+                position: 'absolute',
+                top: '1.25rem',
+                right: '1.25rem',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: 'none',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}
+            >
+              ✕
+            </button>
+
+            <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              ⚙️ System Settings
+            </h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%' }}>
+              
+              {/* Setting 1: Theme Mode */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)' }}>
+                <div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>Dark Mode Theme</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>Enable dark background theme</div>
+                </div>
+                <button
+                  onClick={toggleDarkMode}
+                  style={{
+                    padding: '0.4rem 1rem',
+                    borderRadius: '20px',
+                    border: '1px solid var(--border-color)',
+                    background: isDarkMode ? 'var(--accent-gold)' : 'rgba(255, 255, 255, 0.03)',
+                    color: isDarkMode ? '#000000' : 'var(--text-primary)',
+                    fontSize: '0.78rem',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {isDarkMode ? '🌙 Dark' : '☀️ Light'}
+                </button>
+              </div>
+
+              {/* Setting 2: Push Notifications */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>Bulletin Alerts</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: 1.3 }}>
+                      Receive screen notifications for new announcements.
+                    </div>
+                  </div>
+                  <span style={{
+                    fontSize: '0.7rem',
+                    fontWeight: 'bold',
+                    padding: '0.2rem 0.5rem',
+                    borderRadius: '8px',
+                    background: isSubscribed ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                    color: isSubscribed ? '#22c55e' : '#ef4444',
+                    border: isSubscribed ? '1px solid #22c55e' : '1px solid #ef4444'
+                  }}>
+                    {isSubscribed ? 'ENABLED' : 'DISABLED'}
+                  </span>
+                </div>
+                
+                {!isSubscribed && (
+                  <button
+                    onClick={async () => {
+                      await subscribeUser();
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '0.65rem',
+                      background: 'linear-gradient(135deg, #d4af37 0%, #b45309 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '0.8rem',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 8px rgba(212, 175, 55, 0.2)',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    🔔 Enable Alerts
+                  </button>
+                )}
+              </div>
+
+            </div>
+
+            <button 
+              onClick={() => setIsSettingsModalOpen(false)}
+              style={{
+                width: '100%',
+                padding: '0.85rem',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '12px',
+                fontSize: '0.9rem',
+                fontWeight: 'bold',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                marginTop: '2rem'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'}
+            >
+              CLOSE
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
