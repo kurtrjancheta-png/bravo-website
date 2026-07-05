@@ -560,7 +560,15 @@ export default function LayoutContent({ children }) {
               });
               const data = await res.json();
               if (data.success && data.user) {
+                setShowSplash(true);
+                setSplashFading(false);
                 login(data.user);
+                setTimeout(() => {
+                  setSplashFading(true);
+                }, 2200);
+                setTimeout(() => {
+                  setShowSplash(false);
+                }, 2800);
               } else {
                 setLoginError(data.error || 'Invalid credentials');
               }
@@ -1309,7 +1317,16 @@ export default function LayoutContent({ children }) {
         </div>
       )}
 
-      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+        onLoginSuccess={() => {
+          setShowSplash(true);
+          setSplashFading(false);
+          setTimeout(() => setSplashFading(true), 2200);
+          setTimeout(() => setShowSplash(false), 2800);
+        }}
+      />
 
       {/* INCOMING BARRACKS GUARDS MODAL OVERLAY */}
       {showIncomingModal && (

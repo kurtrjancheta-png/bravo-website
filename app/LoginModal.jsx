@@ -31,7 +31,7 @@ const getCouncilTitle = (councilCode) => {
   return map[code] || `${councilCode} Officer`;
 };
 
-export default function LoginModal({ isOpen, onClose }) {
+export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -142,6 +142,9 @@ export default function LoginModal({ isOpen, onClose }) {
                                     String(successData.council).toUpperCase().includes('CEIS');
                 if (isCCQOrCEIS) {
                   targetPath = '/ccq-manager';
+                }
+                if (onLoginSuccess) {
+                  onLoginSuccess();
                 }
                 setShowSuccess(false);
                 setSuccessData(null);
