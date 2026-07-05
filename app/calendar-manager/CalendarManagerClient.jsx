@@ -275,36 +275,42 @@ export default function CalendarManagerClient({ initialActivities = [], birthday
 
     setIsUploadingFile(true);
     try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64Data = reader.result.split(',')[1];
-        
-        const payload = {
-          action: 'uploadFile',
-          filename: file.name,
-          mimeType: file.type,
-          base64Data: base64Data
-        };
+      const { encryptBytes } = await import('../lib/crypto');
+      const arrayBuffer = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsArrayBuffer(file);
+      });
 
-        const res = await fetch(apiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        
-        if (data.success && data.url) {
-          setFormData(prev => ({ ...prev, [fieldName]: data.url }));
-        } else {
-          alert('Failed to upload file: ' + (data.error || 'Unknown error'));
-        }
-        setIsUploadingFile(false);
+      const encryptedBytes = await encryptBytes(arrayBuffer);
+      
+      let binary = '';
+      const len = encryptedBytes.byteLength;
+      for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(encryptedBytes[i]);
+      }
+      const base64Data = window.btoa(binary);
+      
+      const payload = {
+        action: 'uploadFile',
+        filename: `[ENC]_${file.name}`,
+        mimeType: 'application/octet-stream',
+        base64Data: base64Data
       };
-      reader.onerror = () => {
-        alert('Failed to read file locally');
-        setIsUploadingFile(false);
-      };
-      reader.readAsDataURL(file);
+
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      
+      if (data.success && data.url) {
+        setFormData(prev => ({ ...prev, [fieldName]: data.url }));
+      } else {
+        alert('Failed to upload file: ' + (data.error || 'Unknown error'));
+      }
+      setIsUploadingFile(false);
     } catch (err) {
       alert(`Upload error: ${err.message}`);
       setIsUploadingFile(false);

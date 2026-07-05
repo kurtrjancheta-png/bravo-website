@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { validateLogin } from '../lib/adminLogin';
 import { useAuth } from './AuthContext';
 
 const getCouncilTitle = (councilCode) => {
@@ -50,11 +49,16 @@ export default function LoginModal({ isOpen, onClose }) {
     setLoading(true);
 
     try {
-      const result = await validateLogin(username, password);
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const result = await res.json();
       
-      if (result.success) {
-        login({ username: result.username, council: result.council });
-        setSuccessData(result);
+      if (result.success && result.user) {
+        login(result.user);
+        setSuccessData(result.user);
         setShowSuccess(true);
       } else {
         setError(result.error || 'Invalid credentials');

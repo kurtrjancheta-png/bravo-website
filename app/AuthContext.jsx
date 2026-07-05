@@ -9,16 +9,32 @@ export function AuthProvider({ children }) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Check localStorage on mount
-    const storedUser = localStorage.getItem('bravo_admin_user');
-    if (storedUser) {
+    async function checkSession() {
       try {
-        setAdminUser(JSON.parse(storedUser));
+        const res = await fetch('/api/auth/session');
+        const data = await res.json();
+        if (data.success && data.user) {
+          setAdminUser(data.user);
+          localStorage.setItem('bravo_admin_user', JSON.stringify(data.user));
+        } else {
+          setAdminUser(null);
+          localStorage.removeItem('bravo_admin_user');
+        }
       } catch (e) {
-        localStorage.removeItem('bravo_admin_user');
+        // Fallback to offline localStorage if offline / network error
+        const storedUser = localStorage.getItem('bravo_admin_user');
+        if (storedUser) {
+          try {
+            setAdminUser(JSON.parse(storedUser));
+          } catch (err) {
+            localStorage.removeItem('bravo_admin_user');
+          }
+        }
+      } finally {
+        setIsLoaded(true);
       }
     }
-    setIsLoaded(true);
+    checkSession();
   }, []);
 
   const login = (userData) => {
@@ -26,9 +42,14 @@ export function AuthProvider({ children }) {
     localStorage.setItem('bravo_admin_user', JSON.stringify(userData));
   };
 
-  const logout = () => {
+  const logout = async () => {
     setAdminUser(null);
     localStorage.removeItem('bravo_admin_user');
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {
+      console.error('Failed to logout on server:', e);
+    }
   };
 
   return (

@@ -16,7 +16,13 @@ export default function LayoutContent({ children }) {
   const [showIncomingModal, setShowIncomingModal] = useState(false);
   const [incomingGuards, setIncomingGuards] = useState(null);
   const [loadingGuards, setLoadingGuards] = useState(false);
-  const { adminUser, logout, isLoaded } = useAuth();
+  const { adminUser, login, logout, isLoaded } = useAuth();
+
+  // Secure gating login form states
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
 
   const isCEIS = adminUser && (adminUser.council === 'S6' || String(adminUser.council || '').toUpperCase().includes('CEIS'));
   const isCCQ = adminUser && (adminUser.council === 'CCQ' || isCEIS);
@@ -466,6 +472,225 @@ export default function LayoutContent({ children }) {
       document.body.classList.remove('dark-mode');
     }
   };
+
+  if (isLoaded && !adminUser && !showSplash) {
+    return (
+      <div className="login-gate-container" style={{
+        minHeight: '100vh',
+        width: '100vw',
+        background: '#0a0d0f',
+        backgroundImage: 'radial-gradient(circle at 50% 30%, #151e24 0%, #0a0d0f 100%)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '2rem',
+        boxSizing: 'border-box',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Subtle background smoke */}
+        <div className="splash-smoke splash-smoke-1" style={{ opacity: 0.1 }} />
+        <div className="splash-smoke splash-smoke-2" style={{ opacity: 0.1 }} />
+        
+        <div className="login-card-wrapper" style={{
+          backgroundColor: '#111518',
+          border: '2px solid var(--accent-gold)',
+          boxShadow: '0 0 40px rgba(212, 175, 55, 0.15), 0 20px 25px -5px rgba(0, 0, 0, 0.5)',
+          borderRadius: '24px',
+          padding: '3rem 2.5rem',
+          width: '100%',
+          maxWidth: '420px',
+          position: 'relative',
+          zIndex: 10,
+          textAlign: 'center',
+          boxSizing: 'border-box'
+        }}>
+          {/* Logo */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+            <div style={{
+              width: '90px',
+              height: '90px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(212, 175, 55, 0.05)',
+              border: '2px solid var(--accent-gold)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 0 20px rgba(212, 175, 55, 0.1)'
+            }}>
+              <img src="/logo.png" alt="Bravo Logo" style={{ width: '70px', height: '70px', objectFit: 'contain' }} />
+            </div>
+          </div>
+
+          <h2 style={{
+            fontFamily: "'Oswald', sans-serif",
+            fontSize: '1.8rem',
+            fontWeight: '900',
+            color: '#ffffff',
+            margin: '0 0 0.25rem 0',
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            background: 'linear-gradient(135deg, #ffffff 0%, #d4af37 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}>
+            BRAVO COMPANY
+          </h2>
+          <div style={{
+            fontSize: '0.78rem',
+            fontWeight: '800',
+            color: 'var(--text-secondary)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.15em',
+            marginBottom: '2rem'
+          }}>
+            SECURE ACCESS SYSTEM
+          </div>
+
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            setLoginError('');
+            setLoginLoading(true);
+            try {
+              const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: loginUsername, password: loginPassword })
+              });
+              const data = await res.json();
+              if (data.success && data.user) {
+                login(data.user);
+              } else {
+                setLoginError(data.error || 'Invalid credentials');
+              }
+            } catch (err) {
+              setLoginError('Authentication failed. Please try again.');
+            } finally {
+              setLoginLoading(false);
+            }
+          }} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', textAlign: 'left' }}>
+            
+            {loginError && (
+              <div style={{
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid #ef4444',
+                color: '#ef4444',
+                padding: '0.75rem 1rem',
+                borderRadius: '8px',
+                fontSize: '0.82rem',
+                fontWeight: '700',
+                textAlign: 'center'
+              }}>
+                ⚠️ {loginError}
+              </div>
+            )}
+
+            <div>
+              <label style={{
+                display: 'block',
+                fontSize: '0.72rem',
+                fontWeight: '900',
+                color: 'var(--text-secondary)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                marginBottom: '0.5rem'
+              }}>
+                USERNAME / SERIAL NUMBER
+              </label>
+              <input
+                type="text"
+                value={loginUsername}
+                onChange={(e) => setLoginUsername(e.target.value)}
+                placeholder="e.g. C27011"
+                required
+                style={{
+                  width: '100%',
+                  padding: '0.85rem 1rem',
+                  backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  color: '#ffffff',
+                  fontSize: '0.95rem',
+                  fontFamily: 'monospace',
+                  boxSizing: 'border-box',
+                  outline: 'none',
+                  transition: 'border-color 0.2s'
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{
+                display: 'block',
+                fontSize: '0.72rem',
+                fontWeight: '900',
+                color: 'var(--text-secondary)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                marginBottom: '0.5rem'
+              }}>
+                SECURE PASSWORD
+              </label>
+              <input
+                type="password"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  padding: '0.85rem 1rem',
+                  backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  color: '#ffffff',
+                  fontSize: '0.95rem',
+                  boxSizing: 'border-box',
+                  outline: 'none',
+                  transition: 'border-color 0.2s'
+                }}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loginLoading}
+              style={{
+                width: '100%',
+                padding: '1rem',
+                background: 'linear-gradient(135deg, #d4af37 0%, #b45309 100%)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '0.9rem',
+                fontWeight: '900',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                cursor: loginLoading ? 'not-allowed' : 'pointer',
+                boxShadow: '0 4px 15px rgba(212, 175, 55, 0.2)',
+                transition: 'transform 0.1s, opacity 0.2s',
+                marginTop: '0.5rem'
+              }}
+            >
+              {loginLoading ? 'AUTHENTICATING...' : 'ACCESS PORTAL'}
+            </button>
+          </form>
+        </div>
+
+        <div style={{
+          position: 'absolute',
+          bottom: '1.5rem',
+          fontSize: '0.7rem',
+          color: 'rgba(255,255,255,0.2)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          textAlign: 'center'
+        }}>
+          Authorized Personnel Only &bull; All Access is Logged
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`app-container ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>

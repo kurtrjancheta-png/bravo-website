@@ -36,6 +36,12 @@
 - [x] Recenter and add inline padding to "UPLOADING TO BULLETIN..." and subtitle text within the uploading animation modal to prevent off-center layout wrapping on mobile screens.
 
 # Interactive SOC Duty Countdowns
+- [x] Implement Server-Side Authentication API (/api/auth/login and /api/auth/session)
+- [x] Update AuthContext.jsx to fetch and store secure sessions
+- [x] Build Full-Screen Login Gate in LayoutContent.jsx
+- [x] Implement File Encryption Utility (lib/crypto.js)
+- [x] Integrate File Encryption/Decryption in Admin upload flows
+- [x] Run build checks & verify functionality First Call.
 - [x] Implement timezone-independent countdown helper matching Asia/Manila (PHT) timezone.
 - [x] Add interactive onClick events to desktop table rows and mobile timeline cards in CCQBulletinClient.jsx.
 - [x] Build custom animated glassmorphism Toast overlay at page bottom to display remaining or elapsed time until First Call.

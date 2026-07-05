@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "../AuthContext";
+import { encryptBytes } from "../../lib/crypto";
 
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbynZfRwktqV30Wf4Np3oRWAdeWu02JQkfN6zZNQnV2Vk9tEy_h-Dps9js5ZKXJbjvGcPg/exec";
 
@@ -50,7 +51,6 @@ export default function CouncilAdminForms({ councilName }) {
   const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
-      // Check total file size (limit to 10MB to avoid overwhelming base64 conversion / apps script limits)
       const totalSize = files.reduce((acc, file) => acc + file.size, 0);
       if (totalSize > 10 * 1024 * 1024) {
         alert("Total file size exceeds 10MB limit.");
@@ -60,15 +60,27 @@ export default function CouncilAdminForms({ councilName }) {
       
       const processedFiles = [];
       for (const file of files) {
-        const base64String = await new Promise((resolve) => {
+        // Read file as ArrayBuffer
+        const arrayBuffer = await new Promise((resolve) => {
           const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result.split(',')[1]);
-          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result);
+          reader.readAsArrayBuffer(file);
         });
+
+        // Encrypt the array buffer
+        const encryptedBytes = await encryptBytes(arrayBuffer);
+        
+        // Convert encrypted bytes to base64 string
+        let binary = '';
+        const len = encryptedBytes.byteLength;
+        for (let i = 0; i < len; i++) {
+          binary += String.fromCharCode(encryptedBytes[i]);
+        }
+        const base64String = window.btoa(binary);
         
         processedFiles.push({
-          fileName: file.name,
-          mimeType: file.type,
+          fileName: `[ENC]_${file.name}`,
+          mimeType: 'application/octet-stream',
           fileData: base64String
         });
       }
