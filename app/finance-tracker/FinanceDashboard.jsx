@@ -14,7 +14,11 @@ import {
   Line,
   XAxis,
   YAxis,
-  CartesianGrid
+  CartesianGrid,
+  BarChart,
+  Bar,
+  AreaChart,
+  Area
 } from 'recharts';
 
 const MONTH_NAMES = [
@@ -28,14 +32,48 @@ const CLASS_MAP = {
   '2030': '4CL'
 };
 
+const COLORS_PIE = ['#c5a880', '#568f76', '#a26262', '#5d6f8a'];
+
+// Glassmorphism Tooltip Component
+const CustomTooltip = ({ active, payload, label, formatter }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div style={{
+        background: 'rgba(15, 23, 42, 0.85)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(197, 168, 128, 0.25)',
+        padding: '0.75rem 1rem',
+        borderRadius: '8px',
+        boxShadow: '0 15px 30px -10px rgba(0, 0, 0, 0.5)'
+      }}>
+        <p style={{ margin: 0, fontWeight: 700, fontSize: '0.85rem', color: '#c5a880', marginBottom: '0.35rem', letterSpacing: '0.02em' }}>{label}</p>
+        {payload.map((p, idx) => (
+          <p key={idx} style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-primary)', display: 'flex', justifyContent: 'space-between', gap: '1.25rem', alignItems: 'center' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: p.color || p.fill }}></span>
+              {p.name}:
+            </span>
+            <span style={{ fontWeight: 800, color: p.color || p.fill }}>
+              {formatter ? formatter(p.value) : `₱${p.value.toLocaleString()}`}
+            </span>
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) {
-  const [activeTab, setActiveTab] = useState('tracker'); // 'tracker' or 'balance'
+  const [activeTab, setActiveTab] = useState('tracker'); // 'tracker', 'balance', 'analytics'
   const [selectedClass, setSelectedClass] = useState('1CL'); // '1CL', '2CL', '3CL'
   const [selectedMonthIdx, setSelectedMonthIdx] = useState(1); // Default to June (index 1) since May Coy wasn't collected
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'unpaid_any', 'unpaid_coy', 'unpaid_cdt', 'paid_both'
   const [selectedCadet, setSelectedCadet] = useState(null); // For history modal
   const [balanceMonth, setBalanceMonth] = useState('JUNE'); // Default active month for balance sheet
+  const [analyticsMonthIdx, setAnalyticsMonthIdx] = useState(1); // Default active month for analytics tab
+  const [activeIndexDonut, setActiveIndexDonut] = useState(null); // For interactive donut chart hover
 
   // 1. Parse Monthly Balance Sheets
   const parsedMonths = useMemo(() => {
@@ -278,9 +316,13 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
   // Get current active balance sheet month details
   const activeMonthData = parsedMonths[balanceMonth] || null;
 
-  // Grouped expenses for the charts
-  const expenseChartData = useMemo(() => {
-    if (!activeMonthData || !activeMonthData.expenses) return [];
+  // Analytics tab selected month details
+  const analyticsMonthName = MONTH_NAMES[analyticsMonthIdx];
+  const analyticsMonthData = parsedMonths[analyticsMonthName] || null;
+
+  // Grouped expenses for the donut chart (Analytics page)
+  const analyticsExpenseChartData = useMemo(() => {
+    if (!analyticsMonthData || !analyticsMonthData.expenses) return [];
 
     const categories = {
       'Coy Night / Food': 0,
@@ -289,7 +331,7 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
       'Others': 0
     };
 
-    activeMonthData.expenses.forEach(e => {
+    analyticsMonthData.expenses.forEach(e => {
       const desc = e.item.toLowerCase();
       if (desc.includes('beef') || desc.includes('pork') || desc.includes('lettuce') || desc.includes('softdrinks') || desc.includes('food') || desc.includes('night')) {
         categories['Coy Night / Food'] += e.amount;
@@ -302,10 +344,16 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
       }
     });
 
+    const total = Object.values(categories).reduce((sum, val) => sum + val, 0);
+
     return Object.entries(categories)
-      .map(([name, value]) => ({ name, value }))
+      .map(([name, value]) => ({
+        name,
+        value,
+        percentage: total > 0 ? Math.round((value / total) * 100) : 0
+      }))
       .filter(item => item.value > 0);
-  }, [activeMonthData]);
+  }, [analyticsMonthData]);
 
   // Monthly Budget vs Expenses over time (for the Line Graph)
   const monthlyTrendData = useMemo(() => {
@@ -323,7 +371,56 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
     return data;
   }, [parsedMonths]);
 
-  const COLORS_PIE = ['#c5a880', '#568f76', '#a26262', '#5d6f8a'];
+  // Cumulative Net Assets growth trend data over time (Area Graph)
+  const netAssetsTrendData = useMemo(() => {
+    const data = [];
+    MONTH_NAMES.forEach(mName => {
+      const monthData = parsedMonths[mName];
+      if (monthData) {
+        data.push({
+          month: mName,
+          'Net Cash Assets': monthData.netAssets
+        });
+      }
+    });
+    return data;
+  }, [parsedMonths]);
+
+  // Comparative bar chart showing Cadet vs Company collections for selected month
+  const collectionsProgressData = useMemo(() => {
+    let cdtCollected = 0;
+    let coyCollected = 0;
+    let cdtExpected = 0;
+    let coyExpected = 0;
+
+    Object.values(parsedTrackers).forEach(cadets => {
+      cadets.forEach(c => {
+        const p = c.payments[analyticsMonthIdx];
+        if (!p) return;
+        
+        cdtExpected += 400;
+        cdtCollected += p.cdtPaid;
+
+        if (p.hasCoy) {
+          coyExpected += 300;
+          coyCollected += p.coyPaid;
+        }
+      });
+    });
+
+    return [
+      {
+        name: 'Cadet Fund (₱400/cdt)',
+        Collected: cdtCollected,
+        Pending: Math.max(0, cdtExpected - cdtCollected)
+      },
+      {
+        name: 'Company Fund (₱300/cdt)',
+        Collected: coyCollected,
+        Pending: Math.max(0, coyExpected - coyCollected)
+      }
+    ];
+  }, [parsedTrackers, analyticsMonthIdx]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
@@ -462,7 +559,23 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
             transition: 'all 0.2s ease-in-out'
           }}
         >
-          📊 Monthly Balance Sheets
+          🏦 Monthly Balance Sheets
+        </button>
+        <button 
+          onClick={() => setActiveTab('analytics')}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: '0.75rem 0.25rem',
+            fontSize: '1.05rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+            color: activeTab === 'analytics' ? 'var(--text-primary)' : 'var(--text-secondary)',
+            borderBottom: activeTab === 'analytics' ? '3px solid #c5a880' : '3px solid transparent',
+            transition: 'all 0.2s ease-in-out'
+          }}
+        >
+          📈 Financial Analytics
         </button>
       </div>
 
@@ -841,41 +954,97 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
 
                 </div>
 
-                {/* 4. CHARTS SECTIONS (Desktop/Laptop Optimized) */}
-                <div className="finance-grid" style={{ marginTop: '1.5rem' }}>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* C. VISUAL ANALYTICS TAB */}
+        {activeTab === 'analytics' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+            
+            {/* Month select row for analytics tab */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', background: 'var(--bg-secondary)', padding: '0.75rem 1.25rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.05em' }}>ANALYZE MONTH:</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {activeBalanceMonths.map(mName => {
+                  const mIdx = MONTH_NAMES.indexOf(mName);
+                  return (
+                    <button
+                      key={mName}
+                      onClick={() => setAnalyticsMonthIdx(mIdx)}
+                      style={{
+                        padding: '0.4rem 1rem',
+                        borderRadius: '6px',
+                        fontSize: '0.85rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        border: 'none',
+                        background: analyticsMonthIdx === mIdx ? '#c5a880' : 'transparent',
+                        color: analyticsMonthIdx === mIdx ? '#1e293b' : 'var(--text-secondary)',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {mName}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* analyticsMonthData exists */}
+            {analyticsMonthData && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+                
+                {/* Row 1: Interactive Donut Chart & Progress Categorization Bars */}
+                <div className="finance-grid">
                   
-                  {/* Category Breakdown Pie Chart */}
-                  <div className="pft-chart-card" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '1.5rem', borderRadius: '14px', height: '380px', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                    <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1.25rem', letterSpacing: '-0.01em' }}>
-                      Pie Chart: Expense Categories ({balanceMonth})
+                  {/* Premium Donut Visualizer */}
+                  <div className="pft-chart-card" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '1.75rem', borderRadius: '16px', height: '420px', display: 'flex', flexDirection: 'column', position: 'relative', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>🍩 Expense Categories Breakdowns</span>
+                      <span style={{ fontSize: '0.85rem', color: '#c5a880' }}>{analyticsMonthName}</span>
                     </h3>
-                    {expenseChartData.length === 0 ? (
+                    
+                    {analyticsExpenseChartData.length === 0 ? (
                       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
-                        No chart data available
+                        No spend items recorded this month
                       </div>
                     ) : (
                       <div style={{ flex: 1, position: 'relative', width: '100%', height: '100%' }}>
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
                             <Pie
-                              data={expenseChartData}
+                              data={analyticsExpenseChartData}
                               cx="50%"
                               cy="45%"
-                              innerRadius={65}
-                              outerRadius={95}
+                              innerRadius={75}
+                              outerRadius={105}
                               paddingAngle={4}
                               dataKey="value"
+                              onMouseEnter={(_, idx) => setActiveIndexDonut(idx)}
+                              onMouseLeave={() => setActiveIndexDonut(null)}
                             >
-                              {expenseChartData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS_PIE[index % COLORS_PIE.length]} />
+                              {analyticsExpenseChartData.map((entry, index) => (
+                                <Cell 
+                                  key={`cell-${index}`} 
+                                  fill={COLORS_PIE[index % COLORS_PIE.length]}
+                                  style={{
+                                    filter: activeIndexDonut === index ? 'drop-shadow(0px 8px 12px rgba(197, 168, 128, 0.45))' : 'none',
+                                    transform: activeIndexDonut === index ? 'scale(1.03)' : 'scale(1)',
+                                    transformOrigin: '50% 45%',
+                                    transition: 'all 0.2s ease-out',
+                                    cursor: 'pointer'
+                                  }}
+                                />
                               ))}
                             </Pie>
-                            <Tooltip formatter={(value) => `₱${value.toLocaleString()}`} />
+                            <Tooltip content={<CustomTooltip />} />
                             <Legend verticalAlign="bottom" height={36} iconType="circle" />
                           </PieChart>
                         </ResponsiveContainer>
-                        
-                        {/* Premium Donut Center Hole Text Indicator */}
+
+                        {/* Centered Donut Label */}
                         <div style={{
                           position: 'absolute',
                           top: '41%',
@@ -884,34 +1053,163 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
                           textAlign: 'center',
                           pointerEvents: 'none'
                         }}>
-                          <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', letterSpacing: '0.05em' }}>TOTAL SPENT</span>
-                          <span style={{ fontSize: '1.2rem', color: 'var(--text-primary)', fontWeight: 900, marginTop: '2px', display: 'block' }}>
-                            ₱{activeMonthData.totalExpenses.toLocaleString('en-US')}
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', letterSpacing: '0.05em' }}>
+                            {activeIndexDonut !== null ? analyticsExpenseChartData[activeIndexDonut].name.toUpperCase() : 'TOTAL SPEND'}
+                          </span>
+                          <span style={{ fontSize: '1.35rem', color: '#c5a880', fontWeight: 900, marginTop: '2px', display: 'block', letterSpacing: '-0.02em' }}>
+                            ₱{activeIndexDonut !== null ? analyticsExpenseChartData[activeIndexDonut].value.toLocaleString() : analyticsMonthData.totalExpenses.toLocaleString()}
                           </span>
                         </div>
                       </div>
                     )}
                   </div>
 
-                  {/* Monthly Budget vs Expenses Line Chart */}
-                  <div className="pft-chart-card" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '1.5rem', borderRadius: '14px', height: '380px', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                    <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1.25rem', letterSpacing: '-0.01em' }}>
-                      Line Chart: Budget vs Expenses Over Time
+                  {/* Horizontal Category Progress Bars */}
+                  <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '1.75rem', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '1.5rem', justifyContent: 'center', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}>
+                    <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+                      <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>Spend Allocation List</h3>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '0.2rem 0 0 0' }}>Percentage distribution of month's expenses</p>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                      {analyticsExpenseChartData.length === 0 ? (
+                        <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem' }}>No data available</div>
+                      ) : (
+                        analyticsExpenseChartData.map((item, idx) => {
+                          const color = COLORS_PIE[idx % COLORS_PIE.length];
+                          const isActive = activeIndexDonut === idx;
+                          return (
+                            <div 
+                              key={item.name}
+                              onMouseEnter={() => setActiveIndexDonut(idx)}
+                              onMouseLeave={() => setActiveIndexDonut(null)}
+                              style={{ 
+                                display: 'flex', 
+                                flexDirection: 'column', 
+                                gap: '0.45rem',
+                                padding: '0.5rem',
+                                borderRadius: '8px',
+                                background: isActive ? 'rgba(255,255,255,0.02)' : 'transparent',
+                                border: isActive ? '1px solid rgba(197,168,128,0.2)' : '1px solid transparent',
+                                transition: 'all 0.2s',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
+                                <span style={{ fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: color }}></span>
+                                  {item.name}
+                                </span>
+                                <span style={{ fontWeight: 800, color: '#c5a880' }}>
+                                  ₱{item.value.toLocaleString()} ({item.percentage}%)
+                                </span>
+                              </div>
+                              <div style={{ width: '100%', height: '8px', background: 'var(--border-color)', borderRadius: '6px', overflow: 'hidden' }}>
+                                <motion.div 
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${item.percentage}%` }}
+                                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                                  style={{ height: '100%', background: color, borderRadius: '6px' }}
+                                ></motion.div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Row 2: Budget vs Expenses AreaChart & Cumulative Net Assets AreaChart */}
+                <div className="finance-grid">
+                  
+                  {/* Budget vs Expenses AreaChart (Upgrade) */}
+                  <div className="pft-chart-card" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '1.75rem', borderRadius: '16px', height: '400px', display: 'flex', flexDirection: 'column', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1.25rem' }}>
+                      📈 Budget vs Expenses Trend
                     </h3>
                     <div style={{ flex: 1, width: '100%', height: '100%' }}>
                       <ResponsiveContainer width="100%" height="100%">
-                        <LineChart
+                        <AreaChart
                           data={monthlyTrendData}
                           margin={{ top: 10, right: 15, left: -5, bottom: 0 }}
                         >
-                          <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                          <XAxis dataKey="month" tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 500 }} />
-                          <YAxis tickFormatter={(val) => `₱${val/1000}k`} tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 500 }} />
-                          <Tooltip formatter={(value) => `₱${value.toLocaleString()}`} />
+                          <defs>
+                            <linearGradient id="colorBudget" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
+                              <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                            </linearGradient>
+                            <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2}/>
+                              <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.06} />
+                          <XAxis dataKey="month" tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 600 }} />
+                          <YAxis tickFormatter={(val) => `₱${val/1000}k`} tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 600 }} />
+                          <Tooltip content={<CustomTooltip />} />
                           <Legend iconType="circle" />
-                          <Line type="monotone" name="Total Budget" dataKey="Budget" stroke="#10b981" strokeWidth={3} activeDot={{ r: 7 }} dot={{ strokeWidth: 2, r: 4 }} />
-                          <Line type="monotone" name="Total Expenses" dataKey="Expenses" stroke="#ef4444" strokeWidth={3} activeDot={{ r: 7 }} dot={{ strokeWidth: 2, r: 4 }} />
-                        </LineChart>
+                          <Area type="monotone" name="Total Budget" dataKey="Budget" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorBudget)" dot={{ strokeWidth: 2, r: 4 }} activeDot={{ r: 6 }} />
+                          <Area type="monotone" name="Total Expenses" dataKey="Expenses" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorExpenses)" dot={{ strokeWidth: 2, r: 4 }} activeDot={{ r: 6 }} />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* Net Assets Growth Trend AreaChart (New Visualizer) */}
+                  <div className="pft-chart-card" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '1.75rem', borderRadius: '16px', height: '400px', display: 'flex', flexDirection: 'column', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1.25rem' }}>
+                      💰 Net Cash Assets Growth Trend
+                    </h3>
+                    <div style={{ flex: 1, width: '100%', height: '100%' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart
+                          data={netAssetsTrendData}
+                          margin={{ top: 10, right: 15, left: -5, bottom: 0 }}
+                        >
+                          <defs>
+                            <linearGradient id="colorNetAssets" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#c5a880" stopOpacity={0.25}/>
+                              <stop offset="95%" stopColor="#c5a880" stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.06} />
+                          <XAxis dataKey="month" tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 600 }} />
+                          <YAxis tickFormatter={(val) => `₱${val/1000}k`} tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 600 }} />
+                          <Tooltip content={<CustomTooltip />} />
+                          <Legend iconType="circle" />
+                          <Area type="monotone" name="Net Cash Assets" dataKey="Net Cash Assets" stroke="#c5a880" strokeWidth={3} fillOpacity={1} fill="url(#colorNetAssets)" dot={{ strokeWidth: 2, r: 4 }} activeDot={{ r: 6 }} />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Row 3: Cadet vs Company collections progress (Bar Chart) */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem' }}>
+                  
+                  {/* Collections comparative progress */}
+                  <div className="pft-chart-card" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '1.75rem', borderRadius: '16px', height: '380px', display: 'flex', flexDirection: 'column', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>📊 Collections Efficiency & Progress</span>
+                      <span style={{ fontSize: '0.85rem', color: '#c5a880' }}>All Classes for {analyticsMonthName}</span>
+                    </h3>
+                    <div style={{ flex: 1, width: '100%', height: '100%' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={collectionsProgressData}
+                          margin={{ top: 10, right: 15, left: -5, bottom: 0 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.06} />
+                          <XAxis dataKey="name" tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 600 }} />
+                          <YAxis tickFormatter={(val) => `₱${val/1000}k`} tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 600 }} />
+                          <Tooltip content={<CustomTooltip />} />
+                          <Legend iconType="circle" />
+                          <Bar name="Collected" dataKey="Collected" stackId="a" fill="#10b981" radius={[4, 4, 0, 0]} />
+                          <Bar name="Pending / Uncollected" dataKey="Pending" stackId="a" fill="#ef4444" opacity={0.25} radius={[4, 4, 0, 0]} />
+                        </BarChart>
                       </ResponsiveContainer>
                     </div>
                   </div>
