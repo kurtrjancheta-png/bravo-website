@@ -184,7 +184,7 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
       const pointsA = Math.abs(a.totalPoints);
       const pointsB = Math.abs(b.totalPoints);
       if (pointsA !== pointsB) {
-        return pointsA - pointsB;
+        return pointsB - pointsA;
       }
       return a.name.localeCompare(b.name);
     });
