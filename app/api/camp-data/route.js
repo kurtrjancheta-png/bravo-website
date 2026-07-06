@@ -185,7 +185,7 @@ export async function GET(request) {
         reasons: [
           hasAcademicDeficiency ? `Academic Deficiency (${c.academics.subjects.join(', ')})` : null,
           hasFailedPFT ? 'Failed PFT Event' : null,
-          hasSMCPFT ? 'Physical SMC Status' : null,
+          hasSMCPFT ? "SMC (Strongman's Club - under 8.5 PFT average requirement)" : null,
           hasActivePunishments ? `Active Punishment (${c.character.status})` : null
         ].filter(Boolean)
       };
