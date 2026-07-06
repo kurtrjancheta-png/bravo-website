@@ -1772,6 +1772,26 @@ tbody tr:hover {
   .flex-mobile-wrap {
     flex-wrap: wrap !important;
   }
+
+  /* Override for expanded detail row in tables on mobile */
+  .mobile-card-table tr.expanded-detail-row {
+    display: block !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .mobile-card-table td.expanded-detail-cell {
+    display: block !important;
+    width: 100% !important;
+    padding: 0 !important;
+    padding-left: 0 !important;
+    text-align: left !important;
+  }
+  .mobile-card-table td.expanded-detail-cell:before {
+    display: none !important;
+  }
 }
 
 /* Hide mobile header on desktop */
@@ -2158,4 +2178,82 @@ tbody tr:hover {
   }
 }
 
+/* Academic Deficiency Tracker Mobile Styling */
+@media (max-width: 768px) {
+  .academic-tracker-container {
+    gap: 1rem !important;
+  }
 
+  /* 2 columns for metric cards on mobile to avoid long vertical stacks */
+  .academic-metrics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+
+  .academic-metric-card {
+    padding: 0.6rem !important;
+    border-radius: 8px !important;
+  }
+
+  .academic-metric-card .pft-insight-label span {
+    font-size: 0.7rem !important;
+  }
+
+  .academic-metric-card .pft-insight-label span[style*="fontSize: 1.5rem"],
+  .academic-metric-card .pft-insight-label span[style*="fontSize: '1.5rem'"] {
+    font-size: 1rem !important;
+  }
+
+  .academic-metric-card .pft-insight-val {
+    margin: 0.25rem 0 !important;
+  }
+
+  .academic-metric-card .pft-insight-val span {
+    font-size: 1.25rem !important;
+  }
+
+  .academic-metric-card .pft-insight-val span[style*="fontSize: 0.95rem"],
+  .academic-metric-card .pft-insight-val span[style*="fontSize: '0.95rem'"] {
+    font-size: 0.7rem !important;
+  }
+
+  .academic-metric-card .pft-insight-desc {
+    font-size: 0.6rem !important;
+    line-height: 1.1 !important;
+    margin-top: 0 !important;
+  }
+
+  /* Charts layout and height on mobile */
+  .academic-charts-grid {
+    gap: 1rem !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .academic-chart-card {
+    padding: 0.75rem !important;
+    height: 260px !important;
+    border-radius: 8px !important;
+  }
+
+  .academic-chart-card .pft-chart-title {
+    font-size: 0.85rem !important;
+    margin-bottom: 0.75rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+
+  /* Table styling values */
+  .mobile-card-table td {
+    padding-left: 38% !important; 
+    font-size: 0.8rem !important;
+  }
+
+  .mobile-card-table td:before {
+    width: 32% !important;
+    font-size: 0.65rem !important;
+  }
+
+  /* Align content correctly on mobile */
+  .mobile-card-table td div[style*="display: flex"] {
+    justify-content: flex-end !important;
+  }
+}

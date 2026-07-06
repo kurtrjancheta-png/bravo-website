@@ -239,7 +239,7 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
   }, [expandedCadet, initialHistoryLogs, activeClass, updateDate]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+    <div className="academic-tracker-container" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       
       {/* 1. Header Control Panel */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1rem 1.5rem', boxShadow: 'var(--shadow-sm)' }}>
@@ -295,10 +295,10 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
       )}
 
       {/* 2. Metrics Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
+      <div className="academic-metrics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
         
         {/* Metric 1 */}
-        <div className="pft-insight-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', boxShadow: 'var(--shadow-sm)', position: 'relative', overflow: 'hidden' }}>
+        <div className="pft-insight-card academic-metric-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', boxShadow: 'var(--shadow-sm)', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, height: '4px', width: '100%', background: '#3b82f6' }}></div>
           <div className="pft-insight-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>DEFICIENT CADETS</span>
@@ -315,7 +315,7 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
         </div>
 
         {/* Metric 2 */}
-        <div className="pft-insight-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', boxShadow: 'var(--shadow-sm)', position: 'relative', overflow: 'hidden' }}>
+        <div className="pft-insight-card academic-metric-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', boxShadow: 'var(--shadow-sm)', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, height: '4px', width: '100%', background: '#f59e0b' }}></div>
           <div className="pft-insight-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>MULTI-SUBJECT DEFICIENT</span>
@@ -330,7 +330,7 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
         </div>
 
         {/* Metric 3 */}
-        <div className="pft-insight-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', boxShadow: 'var(--shadow-sm)', position: 'relative', overflow: 'hidden' }}>
+        <div className="pft-insight-card academic-metric-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', boxShadow: 'var(--shadow-sm)', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, height: '4px', width: '100%', background: '#ef4444' }}></div>
           <div className="pft-insight-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>HIGH RISK ACADS</span>
@@ -345,7 +345,7 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
         </div>
 
         {/* Metric 4 */}
-        <div className="pft-insight-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', boxShadow: 'var(--shadow-sm)', position: 'relative', overflow: 'hidden' }}>
+        <div className="pft-insight-card academic-metric-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', boxShadow: 'var(--shadow-sm)', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, height: '4px', width: '100%', background: '#10b981' }}></div>
           <div className="pft-insight-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>MOST DEFICIENT SUBJ</span>
@@ -364,10 +364,10 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
       </div>
 
       {/* 3. Analytics Charts Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
+      <div className="academic-charts-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))', gap: '2rem' }}>
         
         {/* Trend line graph */}
-        <div className="pft-chart-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', boxShadow: 'var(--shadow-sm)', display: 'flex', flexDirection: 'column', height: '360px' }}>
+        <div className="pft-chart-card academic-chart-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', boxShadow: 'var(--shadow-sm)', display: 'flex', flexDirection: 'column', height: '360px' }}>
           <h3 className="pft-chart-title" style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
             📈 Class Deficiency Trend Over Time
           </h3>
@@ -412,7 +412,7 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
         </div>
 
         {/* Subject-wise count bar chart */}
-        <div className="pft-chart-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', boxShadow: 'var(--shadow-sm)', display: 'flex', flexDirection: 'column', height: '360px' }}>
+        <div className="pft-chart-card academic-chart-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', boxShadow: 'var(--shadow-sm)', display: 'flex', flexDirection: 'column', height: '360px' }}>
           <h3 className="pft-chart-title" style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
             📊 Deficiencies Count by Subject
           </h3>
@@ -514,11 +514,11 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
                         }}
                         className="hover-row-effect"
                       >
-                        <td style={{ padding: '14px 16px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{cadet.no}</td>
-                        <td style={{ padding: '14px 16px', fontWeight: 600, color: cadet.isDeficient ? '#f43f5e' : 'var(--text-primary)', fontSize: '0.95rem' }}>
+                        <td data-label="NO" style={{ padding: '14px 16px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{cadet.no}</td>
+                        <td data-label="NAME" style={{ padding: '14px 16px', fontWeight: 600, color: cadet.isDeficient ? '#f43f5e' : 'var(--text-primary)', fontSize: '0.95rem' }}>
                           {cadet.name}
                         </td>
-                        <td style={{ padding: '14px 16px' }}>
+                        <td data-label="STATUS" style={{ padding: '14px 16px' }}>
                           {cadet.isDeficient ? (
                             <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
                               {isHighRisk && (
@@ -543,7 +543,7 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
                             </span>
                           )}
                         </td>
-                        <td style={{ padding: '14px 16px' }}>
+                        <td data-label="DEFICIENCIES" style={{ padding: '14px 16px' }}>
                           {cadet.isDeficient ? (
                             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                               {Object.entries(cadet.deficiencies).map(([subj, val]) => (
@@ -571,7 +571,7 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
                             <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>No deficiency points recorded</span>
                           )}
                         </td>
-                        <td style={{ padding: '14px 16px', textAlign: 'right', color: 'var(--accent-gold)', fontSize: '0.8rem', fontWeight: 600 }}>
+                        <td data-label="ACTION" style={{ padding: '14px 16px', textAlign: 'right', color: 'var(--accent-gold)', fontSize: '0.8rem', fontWeight: 600 }}>
                           {isExpanded ? 'CLOSE DETAIL ▲' : 'VIEW DETAILS ▼'}
                         </td>
                       </tr>
@@ -579,8 +579,8 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
                       {/* Expandable historical panel for this cadet */}
                       <AnimatePresence>
                         {isExpanded && (
-                          <tr>
-                            <td colSpan={5} style={{ padding: 0 }}>
+                          <tr className="expanded-detail-row">
+                            <td className="expanded-detail-cell" colSpan={5} style={{ padding: 0 }}>
                               <motion.div
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
