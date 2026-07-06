@@ -2181,7 +2181,25 @@ tbody tr:hover {
 /* Academic Deficiency Tracker Mobile Styling */
 @media (max-width: 768px) {
   .academic-tracker-container {
-    gap: 1rem !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Compact header control panel */
+  .academic-header-panel {
+    padding: 0.6rem 0.8rem !important;
+    gap: 0.5rem !important;
+    border-radius: 8px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .academic-header-panel > div {
+    justify-content: space-between !important;
+  }
+
+  .academic-header-panel button {
+    padding: 0.4rem 0.8rem !important;
+    font-size: 0.8rem !important;
   }
 
   /* 2 columns for metric cards on mobile to avoid long vertical stacks */
@@ -2191,65 +2209,84 @@ tbody tr:hover {
   }
 
   .academic-metric-card {
-    padding: 0.6rem !important;
+    padding: 0.5rem 0.75rem !important;
     border-radius: 8px !important;
   }
 
   .academic-metric-card .pft-insight-label span {
-    font-size: 0.7rem !important;
+    font-size: 0.65rem !important;
   }
 
   .academic-metric-card .pft-insight-label span[style*="fontSize: 1.5rem"],
   .academic-metric-card .pft-insight-label span[style*="fontSize: '1.5rem'"] {
-    font-size: 1rem !important;
+    font-size: 0.95rem !important;
   }
 
   .academic-metric-card .pft-insight-val {
-    margin: 0.25rem 0 !important;
+    margin: 0.15rem 0 !important;
   }
 
   .academic-metric-card .pft-insight-val span {
-    font-size: 1.25rem !important;
+    font-size: 1.15rem !important;
   }
 
   .academic-metric-card .pft-insight-val span[style*="fontSize: 0.95rem"],
   .academic-metric-card .pft-insight-val span[style*="fontSize: '0.95rem'"] {
-    font-size: 0.7rem !important;
+    font-size: 0.65rem !important;
   }
 
   .academic-metric-card .pft-insight-desc {
-    font-size: 0.6rem !important;
+    font-size: 0.55rem !important;
     line-height: 1.1 !important;
     margin-top: 0 !important;
   }
 
   /* Charts layout and height on mobile */
   .academic-charts-grid {
-    gap: 1rem !important;
+    gap: 0.75rem !important;
     grid-template-columns: 1fr !important;
   }
 
   .academic-chart-card {
-    padding: 0.75rem !important;
-    height: 260px !important;
+    padding: 0.5rem 0.75rem !important;
+    height: 210px !important;
     border-radius: 8px !important;
   }
 
   .academic-chart-card .pft-chart-title {
-    font-size: 0.85rem !important;
-    margin-bottom: 0.75rem !important;
-    padding-bottom: 0.25rem !important;
+    font-size: 0.8rem !important;
+    margin-bottom: 0.5rem !important;
+    padding-bottom: 0.2rem !important;
   }
 
-  /* Table styling values */
+  /* Compact Cadet Table on Mobile */
+  .mobile-card-table td[data-label="NO"] {
+    display: none !important;
+  }
+
   .mobile-card-table td {
-    padding-left: 38% !important; 
-    font-size: 0.8rem !important;
+    padding: 0.4rem 0.5rem !important;
+    padding-left: 36% !important; 
+    font-size: 0.75rem !important;
+    min-height: unset !important;
+    border-bottom: 1px solid rgba(128,128,128,0.06) !important;
   }
 
   .mobile-card-table td:before {
-    width: 32% !important;
+    top: 0.4rem !important;
+    left: 0.75rem !important;
+    width: 30% !important;
     font-size: 0.65rem !important;
+  }
+
+  /* Expanded personal details container */
+  .expanded-detail-cell {
+    padding: 0.5rem !important;
+  }
+
+  .academic-cadet-trajectory-container {
+    height: 140px !important;
+    margin-top: 0.5rem !important;
   }
 
   /* Align content correctly on mobile */

@@ -242,7 +242,7 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
     <div className="academic-tracker-container" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       
       {/* 1. Header Control Panel */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1rem 1.5rem', boxShadow: 'var(--shadow-sm)' }}>
+      <div className="academic-header-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1rem 1.5rem', boxShadow: 'var(--shadow-sm)' }}>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           {classesList.map(cls => (
             <button
@@ -613,7 +613,7 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
                                   </div>
 
                                   {/* Trajectory chart */}
-                                  <div style={{ height: '220px', display: 'flex', flexDirection: 'column' }}>
+                                  <div className="academic-cadet-trajectory-container" style={{ height: '220px', display: 'flex', flexDirection: 'column' }}>
                                     <h5 style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 600 }}>
                                       📈 Deficiency Trajectory (Points Magnitude)
                                     </h5>
