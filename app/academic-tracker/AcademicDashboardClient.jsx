@@ -486,7 +486,7 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
         {/* The List of Cadets */}
         <div className="table-container" style={{ width: '100%', overflowX: 'auto' }}>
           {filteredCadets.length > 0 ? (
-            <table className="mobile-card-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table className="mobile-card-table academic-cadet-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--border-color)', textAlign: 'left' }}>
                   <th style={{ padding: '12px 16px', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>NO</th>

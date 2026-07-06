@@ -2260,28 +2260,69 @@ tbody tr:hover {
   }
 
   /* Compact Cadet Table on Mobile */
-  .mobile-card-table td[data-label="NO"] {
+  .academic-cadet-table tbody tr:not(.expanded-detail-row) {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    grid-template-rows: auto auto !important;
+    gap: 0.35rem 0.5rem !important;
+    padding: 0.5rem 0.75rem !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    margin-bottom: 0.5rem !important;
+    background: var(--card-bg) !important;
+    align-items: center !important;
+  }
+
+  .academic-cadet-table td {
+    padding: 0 !important;
+    border: none !important;
+    min-height: unset !important;
+    text-align: left !important;
+    width: auto !important;
+    display: block !important;
+    border-bottom: none !important;
+  }
+
+  .academic-cadet-table td:before {
     display: none !important;
   }
 
-  .mobile-card-table td {
-    padding: 0.4rem 0.5rem !important;
-    padding-left: 36% !important; 
-    font-size: 0.75rem !important;
-    min-height: unset !important;
-    border-bottom: 1px solid rgba(128,128,128,0.06) !important;
+  .academic-cadet-table td[data-label="NO"],
+  .academic-cadet-table td[data-label="ACTION"] {
+    display: none !important;
   }
 
-  .mobile-card-table td:before {
-    top: 0.4rem !important;
-    left: 0.75rem !important;
-    width: 30% !important;
-    font-size: 0.65rem !important;
+  .academic-cadet-table td[data-label="NAME"] {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    font-size: 0.9rem !important;
+  }
+
+  .academic-cadet-table td[data-label="STATUS"] {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+  }
+
+  .academic-cadet-table td[data-label="DEFICIENCIES"] {
+    grid-column: 1 / span 2 !important;
+    grid-row: 2 !important;
   }
 
   /* Expanded personal details container */
-  .expanded-detail-cell {
+  .academic-cadet-table tr.expanded-detail-row {
+    display: block !important;
+    background: transparent !important;
+    border: none !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .academic-cadet-table td.expanded-detail-cell {
+    display: block !important;
+    width: 100% !important;
     padding: 0.5rem !important;
+    background: transparent !important;
   }
 
   .academic-cadet-trajectory-container {
@@ -2290,7 +2331,11 @@ tbody tr:hover {
   }
 
   /* Align content correctly on mobile */
-  .mobile-card-table td div[style*="display: flex"] {
+  .academic-cadet-table td div[style*="display: flex"] {
+    justify-content: flex-start !important;
+  }
+
+  .academic-cadet-table td[data-label="STATUS"] div[style*="display: flex"] {
     justify-content: flex-end !important;
   }
 }
