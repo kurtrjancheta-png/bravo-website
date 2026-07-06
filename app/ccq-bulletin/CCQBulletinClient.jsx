@@ -942,6 +942,39 @@ export default function CCQBulletinClient({
         
         {/* COLUMN 1: SOC & NEXT DUTY */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          
+          {/* NEXT DUTY CARD */}
+          <div className="ccq-next-duty-card" onClick={() => handleDutyClick(nextDutyObj)}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '1.1rem' }}>⏰</span>
+              <span style={{ fontWeight: 800, textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '0.04em' }}>
+                NEXT DUTY:
+              </span>
+            </div>
+
+            <div className="ccq-next-duty-content">
+              {nextDutyObj ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+                  <span className="ccq-next-duty-name">
+                    {nextDutyObj.activity}
+                  </span>
+                  <div className="ccq-next-duty-divider"></div>
+                  <span className="ccq-next-duty-time">
+                    {formatMilitaryTime(nextDutyObj.time)}
+                  </span>
+                  <div className="ccq-next-duty-divider"></div>
+                  <span className="ccq-next-duty-countdown">
+                    {nextDutyRemainingStr}
+                  </span>
+                </div>
+              ) : (
+                <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>
+                  No upcoming duties scheduled
+                </span>
+              )}
+            </div>
+          </div>
+
           {/* SCHEDULE OF CONDUCT CARD */}
           <div className="command-card" style={{ height: 'fit-content' }}>
           <div className="card-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1125,38 +1158,6 @@ export default function CCQBulletinClient({
               </div>
             </>
           )}
-          </div>
-
-          {/* NEXT DUTY CARD */}
-          <div className="ccq-next-duty-card" onClick={() => handleDutyClick(nextDutyObj)}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1.1rem' }}>⏰</span>
-              <span style={{ fontWeight: 800, textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '0.04em' }}>
-                NEXT DUTY:
-              </span>
-            </div>
-
-            <div className="ccq-next-duty-content">
-              {nextDutyObj ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
-                  <span className="ccq-next-duty-name">
-                    {nextDutyObj.activity}
-                  </span>
-                  <div className="ccq-next-duty-divider"></div>
-                  <span className="ccq-next-duty-time">
-                    {formatMilitaryTime(nextDutyObj.time)}
-                  </span>
-                  <div className="ccq-next-duty-divider"></div>
-                  <span className="ccq-next-duty-countdown">
-                    {nextDutyRemainingStr}
-                  </span>
-                </div>
-              ) : (
-                <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>
-                  No upcoming duties scheduled
-                </span>
-              )}
-            </div>
           </div>
         </div>
 

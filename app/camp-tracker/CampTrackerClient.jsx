@@ -150,8 +150,8 @@ export default function CampTrackerClient() {
     if (smcCount > 0) {
       list.push({
         type: 'physical',
-        title: `Review SMC status medical logs`,
-        text: `${smcCount} cadets are currently on SMC (Sick in Quarters/Medical) status. Ensure their physical restrictions are noted.`,
+        title: `Strongman's Club (SMC) Monitoring`,
+        text: `${smcCount} cadets did not reach the 8.5 PFT average requirement and are in the Strongman's Club (SMC). They are ineligible for privileges until they reach 8.5 average in the next PFT.`,
         priority: 'medium'
       });
     }
@@ -213,7 +213,7 @@ export default function CampTrackerClient() {
           <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>💪</div>
           <div className="metric-value">{(summary?.pftFailedCount || 0) + (summary?.pftSMCCount || 0)}</div>
           <div className="metric-label">PFT Failed / SMC Status</div>
-          <div className="metric-desc">{summary?.pftFailedCount || 0} Failed | {summary?.pftSMCCount || 0} SMC medical status</div>
+          <div className="metric-desc">{summary?.pftFailedCount || 0} Failed | {summary?.pftSMCCount || 0} Strongman's Club (SMC)</div>
         </motion.div>
 
         <motion.div 
@@ -389,11 +389,9 @@ export default function CampTrackerClient() {
             <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginRight: '0.5rem' }}>CAMP Filter:</span>
             {[
               { id: 'ALL', label: 'All Statuses' },
-              { id: 'ELIGIBLE', label: 'Eligible for Privilege' },
-              { id: 'INELIGIBLE', label: 'Ineligible' },
               { id: 'DEFICIENT', label: 'Academic Deficiencies' },
               { id: 'FAILED_PFT', label: 'Failed PFT' },
-              { id: 'SMC_PFT', label: 'PFT SMC' },
+              { id: 'SMC_PFT', label: "Strongman's Club (SMC)" },
               { id: 'TOURING_CONFINED', label: 'Active Punishment' }
             ].map((f) => (
               <button
@@ -427,14 +425,17 @@ export default function CampTrackerClient() {
                 <th style={{ textAlign: 'center' }}>A</th>
                 <th style={{ textAlign: 'center' }}>M</th>
                 <th style={{ textAlign: 'center' }}>P</th>
-                <th style={{ textAlign: 'center' }}>Priv Privilege</th>
-                <th style={{ textAlign: 'center' }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {filteredCadets.length > 0 ? (
                 filteredCadets.map((c, i) => (
-                  <tr key={i}>
+                  <tr 
+                    key={i} 
+                    onClick={() => setSelectedCadet(c)} 
+                    style={{ cursor: 'pointer' }}
+                    className="hover-row-clickable"
+                  >
                     <td data-label="Cadet Name">
                       <strong>{c.surname}</strong>
                       {c.firstName && <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginLeft: '6px' }}>{c.firstName}</span>}
@@ -490,41 +491,11 @@ export default function CampTrackerClient() {
                         </span>
                       )}
                     </td>
-
-                    {/* Privilege Status */}
-                    <td data-label="Priv Privilege" style={{ textAlign: 'center' }}>
-                      {c.eligibleForPrivilege ? (
-                        <span className="tag" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', fontWeight: 'bold' }}>
-                          ALLOWED
-                        </span>
-                      ) : (
-                        <span className="tag" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', fontWeight: 'bold' }}>
-                          BLOCKED
-                        </span>
-                      )}
-                    </td>
-
-                    <td data-label="Action" style={{ textAlign: 'center' }}>
-                      <button
-                        onClick={() => setSelectedCadet(c)}
-                        style={{
-                          background: 'rgba(255,255,255,0.08)',
-                          border: '1px solid var(--border-color)',
-                          color: 'var(--text-primary)',
-                          padding: '0.3rem 0.75rem',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                          fontSize: '0.8rem'
-                        }}
-                      >
-                        Details
-                      </button>
-                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '2rem' }}>
+                  <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '2rem' }}>
                     No cadets matched the filter criteria.
                   </td>
                 </tr>
@@ -717,9 +688,14 @@ export default function CampTrackerClient() {
                   </h4>
                   <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem' }}>
                     Status: <strong style={{ color: selectedCadet.physical.remarks === 'FAILED' ? '#ef4444' : selectedCadet.physical.remarks === 'SMC' ? '#f59e0b' : '#10b981' }}>
-                      {selectedCadet.physical.remarks}
+                      {selectedCadet.physical.remarks === 'SMC' ? "Strongman's Club (SMC)" : selectedCadet.physical.remarks}
                     </strong>
                   </p>
+                  {selectedCadet.physical.remarks === 'SMC' && (
+                    <p style={{ margin: '0.5rem 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                      Note: Cadet did not fail the PFT but did not reach the 8.5 average requirement. Currently under monitoring and ineligible for privileges.
+                    </p>
+                  )}
                   <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.9rem' }}>
                     Duty Category: <strong>{selectedCadet.physical.status}</strong>
                   </p>
