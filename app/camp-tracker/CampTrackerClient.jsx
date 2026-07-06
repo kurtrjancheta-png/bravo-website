@@ -450,7 +450,7 @@ export default function CampTrackerClient() {
                         </span>
                       ) : (
                         <span className="tag" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
-                          DUTY
+                          N/A
                         </span>
                       )}
                     </td>
