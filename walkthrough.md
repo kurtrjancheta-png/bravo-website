@@ -149,7 +149,14 @@ Here is a summary of the accomplishments completed on the Bravo Company Website:
 - **SSR Dark Mode Class**: Configured [layout.jsx](file:///c:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/layout.jsx) to add the `dark-mode` class directly to the HTML `<body>` by default. This ensures pages render in dark mode immediately during initial HTML loads and server-side rendering (SSR), completely eliminating light theme visual flashes.
 - **Default State and Preferences Initialization**: Updated the `isDarkMode` state inside [LayoutContent.jsx](file:///c:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/LayoutContent.jsx) to initialize as `true` and modified the startup `useEffect` hook to default to `true` (dark mode) if the user has not explicitly configured a preference in `localStorage`.
 
+- All files have been updated, successfully verified, and saved.
+
+## 21. Real-Time Next Duty Card
+- **Automated Time Calculations**: Implemented dynamic selection of the next upcoming duty from `socRows` based on time, automatically filtering out cancelled or un-timed activities.
+- **Premium Side-by-Side Presentation**: Added a gold-accented card directly below the Schedule of Calls (SOC) displaying the upcoming duty activity name on the left and a live-updating countdown (updated every second) on the right.
+- **Interactive Toasts**: Bound the card to the bulletin's glassmorphic toast notification component, enabling users to click the card and view the exact remaining or elapsed time instantly.
+
 ---
 
 ### Verification & Deployment
-- All files have been updated, successfully verified, and saved.
+- All files have been updated, successfully verified, committed, and pushed to trigger the automatic Vercel deployment.
