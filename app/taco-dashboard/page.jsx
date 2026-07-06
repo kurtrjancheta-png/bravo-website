@@ -8,7 +8,7 @@ export default async function TacODashboardPage() {
   // 1. Fetch Character Data (FSGT Touring)
   let fsgtData = [];
   try {
-    fsgtData = await getSheetData('1kdpf8pdHx2ETbfLqyJfyxcOnWGiz08JxI__FvJIRH3M', 'Sheet 1');
+    fsgtData = await getSheetData('1YfrsGwikWtcLLsXFodHL47Yy8JoYRpp54Dt3mrAVA14', 'CHARACTER (REPORTS)');
   } catch (error) {
     console.error("Failed to fetch FSGT touring data:", error);
   }
@@ -28,36 +28,39 @@ export default async function TacODashboardPage() {
 
   if (fsgtData && fsgtData.length > 0) {
     const keys = Object.keys(fsgtData[0]);
-    const k1 = keys[0];   // NO
-    const k2 = keys[1];   // RANK
-    const k3 = keys[2];   // LAST NAME
-    const k7 = keys[6];   // DEMERITS
-    const k8 = keys[7];   // CONFINED?
-    const k9 = keys[8];   // CONFINEMENT START
-    const k10 = keys[9];  // CONFINEMENT END
-    const k14 = keys[13]; // TOURING REMAINING
-    const k16_idx = keys[15]; // MERIT
+    const nameKey = keys.find(k => k.trim().toUpperCase() === 'NAME') || keys[1];
+    const statusKey = keys.find(k => k.trim().toUpperCase() === 'STATUS') || keys[2];
+    const demeritsKey = keys.find(k => k.trim().toUpperCase().includes('DEMERIT')) || keys[6];
+    const confinedKey = keys.find(k => k.trim().toUpperCase().includes('CONFINED')) || keys[7];
+    const startKey = keys.find(k => k.trim().toUpperCase() === 'START') || keys[8];
+    const endKey = keys.find(k => k.trim().toUpperCase() === 'END') || keys[9];
+    const remainingKey = keys.find(k => k.trim().toUpperCase() === 'REMAINING') || keys[13];
+    const classKey = keys.find(k => k.trim().toUpperCase().startsWith('CLASS')) || keys[4];
 
     const validRows = fsgtData.filter(row => {
-    const lastName = String(row[k3] || '').trim();
-    const rank = String(row[k2] || '').trim().toUpperCase();
-    // Include all rows with a valid cadet name that are not header rows
-    return lastName !== '' && lastName.toUpperCase() !== 'LAST NAME' && rank !== '' && rank !== 'RANK';
-  });
+      const activeVal = String(row[keys[0]] || '').trim().toUpperCase();
+      const lastName = String(row[nameKey] || '').trim();
+      return activeVal === 'ACTIVE' && lastName !== '' && lastName.toUpperCase() !== 'NAME';
+    });
 
     totalDelinquencies = validRows.length;
 
     const cadetMap = new Map();
     validRows.forEach(row => {
-      const name = String(row[k3]).trim();
-      const rank = String(row[k2]).trim();
+      const name = String(row[nameKey] || '').trim();
+      const rawClass = String(row[classKey] || '').trim().toUpperCase();
+      let rank = '3CL';
+      if (rawClass.includes('1') || rawClass.includes('1CL')) rank = '1CL';
+      else if (rawClass.includes('2') || rawClass.includes('2CL')) rank = '2CL';
+      else if (rawClass.includes('3') || rawClass.includes('3CL')) rank = '3CL';
+      else if (rawClass.includes('4') || rawClass.includes('4CL')) rank = '4CL';
 
-      // Confinement only counts when CONFINED?=Yes AND both start and end dates are filled
-      const confStart = row[k9] || null;
-      const confEnd = row[k10] || null;
-      const isConfined = String(row[k8] || '').toLowerCase() === 'yes'
-        && confStart && String(confStart).trim() !== ''
-        && confEnd && String(confEnd).trim() !== '';
+      const confStart = row[startKey] || null;
+      const confEnd = row[endKey] || null;
+      const statusVal = String(row[statusKey] || '').trim().toUpperCase();
+      
+      const isConfined = (String(row[confinedKey] || '').toLowerCase() === 'yes' || statusVal.includes('CONFINED'))
+        || (confStart && String(confStart).trim() !== '' && confEnd && String(confEnd).trim() !== '');
 
       if (!cadetMap.has(name)) {
         cadetMap.set(name, {
@@ -70,14 +73,21 @@ export default async function TacODashboardPage() {
       }
 
       const cadet = cadetMap.get(name);
-      cadet.totalDemerits += Number(row[k7]) || 0;
-      cadet.totalMerits += Number(row[k16_idx]) || 0;
-      cadet.totalTourRemaining += Number(row[k14]) || 0;
-      if (isConfined) cadet.isConfined = true;
+      cadet.totalDemerits += Number(row[demeritsKey]) || 0;
+      cadet.totalTourRemaining += Number(row[remainingKey]) || 0;
+      if (isConfined || statusVal.includes('CONFINED')) {
+        cadet.isConfined = true;
+      }
     });
 
     cadetMap.forEach(cadet => {
-      if (cadet.totalTourRemaining > 0) totalTouringCadets++;
+      if (cadet.totalTourRemaining > 0 || cadet.rank === 'UNKNOWN') {
+        // Fallback or positive remaining tour
+        totalTouringCadets++;
+      } else if (cadet.totalDemerits > 0 && !cadet.isConfined) {
+        totalTouringCadets++;
+      }
+      
       if (cadet.isConfined) totalConfinedCadets++;
       
       const accumulatedDemerits = Math.max(0, cadet.totalDemerits - cadet.totalMerits);

@@ -105,6 +105,29 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
     setErrorMsg('');
     
     try {
+      // Fetch CAMP data and verify eligibility
+      const campRes = await fetch('/api/camp-data');
+      if (campRes.ok) {
+        const campResult = await campRes.json();
+        const campCadets = campResult.cadets || [];
+        const nameUpper = fullName.trim().toUpperCase();
+        const serialUpper = serialNumber.trim().toUpperCase();
+
+        const cadet = campCadets.find(c => {
+          const isSerialMatch = serialUpper && c.serialNumber && c.serialNumber === serialUpper;
+          const isNameMatch = nameUpper && (nameUpper.includes(c.surname) || c.fullName.toUpperCase().includes(nameUpper));
+          return isSerialMatch || isNameMatch;
+        });
+
+        if (cadet) {
+          if (!cadet.eligibleForPrivilege) {
+            setStatus('error');
+            setErrorMsg(`Signifying Blocked: You are not allowed to signify for privilege. Reason: ${cadet.eligibilityChecks.reasons.join(', ')}`);
+            return;
+          }
+        }
+      }
+
       // Check for duplicates first
       const checkRes = await fetch(`/api/privilege-signees?sheetName=${encodeURIComponent(selectedPriv.sheetName)}`);
       if (checkRes.ok) {
