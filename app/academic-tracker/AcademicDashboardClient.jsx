@@ -181,9 +181,10 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
       const matchesFilter = filterMode === 'all' ? true : c.isDeficient;
       return matchesSearch && matchesFilter;
     }).sort((a, b) => {
-      // Prioritize higher deficiencies
-      if (b.deficienciesCount !== a.deficienciesCount) {
-        return b.deficienciesCount - a.deficienciesCount;
+      const pointsA = Math.abs(a.totalPoints);
+      const pointsB = Math.abs(b.totalPoints);
+      if (pointsA !== pointsB) {
+        return pointsA - pointsB;
       }
       return a.name.localeCompare(b.name);
     });
