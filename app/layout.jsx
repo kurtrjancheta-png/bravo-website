@@ -32,7 +32,7 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
+      <body className="dark-mode">
         <AuthProvider>
           <LayoutContent>
             {children}

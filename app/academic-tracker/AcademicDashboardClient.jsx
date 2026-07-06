@@ -69,7 +69,7 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
     const pct = Math.round((deficientCount / total) * 100);
 
     const multiSubject = cadetsList.filter(c => c.deficienciesCount >= 2).length;
-    const highRisk = cadetsList.filter(c => c.totalPoints <= -5.0 || c.deficienciesCount >= 3).length;
+    const highRisk = cadetsList.filter(c => Math.abs(c.totalPoints) > 10.0).length;
 
     // Calculate subject-wise count
     const subjectCounts = {};
@@ -333,14 +333,14 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
         <div className="pft-insight-card academic-metric-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', boxShadow: 'var(--shadow-sm)', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, height: '4px', width: '100%', background: '#ef4444' }}></div>
           <div className="pft-insight-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>HIGH RISK ACADS</span>
+            <span>HIGH / CRITICAL RISK</span>
             <span style={{ fontSize: '1.5rem' }}>🚨</span>
           </div>
           <div className="pft-insight-val" style={{ margin: '0.5rem 0' }}>
             <span style={{ fontSize: '2.25rem', fontWeight: 700, color: metrics.highRisk > 0 ? '#ef4444' : 'var(--text-primary)' }}>{metrics.highRisk}</span>
           </div>
           <div className="pft-insight-desc">
-            <span>Deficient in 3+ subjects or 5.0+ points</span>
+            <span>Deficient in 10+ points</span>
           </div>
         </div>
 
@@ -498,8 +498,6 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
               </thead>
               <tbody>
                 {filteredCadets.map((cadet) => {
-                  const isHighRisk = cadet.totalPoints <= -5.0 || cadet.deficienciesCount >= 3;
-                  const isMulti = cadet.deficienciesCount >= 2;
                   const isExpanded = expandedCadet && expandedCadet.name === cadet.name;
 
                   return (
@@ -519,25 +517,35 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
                           {cadet.name}
                         </td>
                         <td data-label="STATUS" style={{ padding: '14px 16px' }}>
-                          {cadet.isDeficient ? (
-                            <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-                              {isHighRisk && (
+                          {cadet.isDeficient ? (() => {
+                            const absPoints = Math.abs(cadet.totalPoints);
+                            if (absPoints > 20) {
+                              return (
+                                <span style={{ background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7', border: '1px solid rgba(168, 85, 247, 0.2)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700 }}>
+                                  💀 CRITICAL
+                                </span>
+                              );
+                            }
+                            if (absPoints > 10) {
+                              return (
                                 <span style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700 }}>
                                   🚨 HIGH RISK
                                 </span>
-                              )}
-                              {isMulti && !isHighRisk && (
+                              );
+                            }
+                            if (absPoints > 5) {
+                              return (
                                 <span style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700 }}>
-                                  ⚠️ MULTI-SUBJ
+                                  ⚠️ MODERATE
                                 </span>
-                              )}
-                              {!isHighRisk && !isMulti && (
-                                <span style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.2)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700 }}>
-                                  📚 DEFICIENT
-                                </span>
-                              )}
-                            </div>
-                          ) : (
+                              );
+                            }
+                            return (
+                              <span style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.2)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700 }}>
+                                📚 DEFICIENT
+                              </span>
+                            );
+                          })() : (
                             <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700 }}>
                               ✅ PROFICIENT
                             </span>

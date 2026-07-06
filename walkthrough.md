@@ -140,7 +140,16 @@ Here is a summary of the accomplishments completed on the Bravo Company Website:
   - Refactored `subscribeUser` in [LayoutContent.jsx](file:///c:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/LayoutContent.jsx) to support an optional `{ silent: true }` parameter, suppressing all user-facing success or failure alert boxes.
   - Added background auto-subscription logic in the service worker registration `useEffect` check: if the browser already has notification permission granted (`Notification.permission === 'granted'`) but no active subscription is registered, it automatically creates the push subscription and uploads it to the database silently, ensuring active subscribers do not fall out of the system.
 
+## 19. Mobile Navigation Swipe Gestures Optimization
+- **Expanded Swipe-Start Zone**: Increased the touch start coordinate threshold (`touchStartX`) from `60px` to `120px` from the left edge of the screen, allowing cellphone users to easily initiate the left-to-right swipe-open gesture even when using phone cases or edge-to-edge screens.
+- **Lowered Swipe Distance Threshold**: Lowered the minimum horizontal swipe distance from `50px` to `40px` to make the gesture more responsive and natural on small phone screens.
+- **Vertical Scroll Locking**: Configured the `touchmove` listener with `{ passive: false }` and added dynamic scroll locking (`e.preventDefault()`) when the user initiates a primarily horizontal swipe. This prevents the parent page from jumping or scrolling vertically while opening or closing the sidebar.
+
+## 20. Default Dark Theme Support
+- **SSR Dark Mode Class**: Configured [layout.jsx](file:///c:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/layout.jsx) to add the `dark-mode` class directly to the HTML `<body>` by default. This ensures pages render in dark mode immediately during initial HTML loads and server-side rendering (SSR), completely eliminating light theme visual flashes.
+- **Default State and Preferences Initialization**: Updated the `isDarkMode` state inside [LayoutContent.jsx](file:///c:/Users/kurtr/Downloads/BRAVO%20WEBSITE/app/LayoutContent.jsx) to initialize as `true` and modified the startup `useEffect` hook to default to `true` (dark mode) if the user has not explicitly configured a preference in `localStorage`.
+
 ---
 
 ### Verification & Deployment
-- All files have been updated, successfully verified via production builds, and saved.
+- All files have been updated, successfully verified, and saved.

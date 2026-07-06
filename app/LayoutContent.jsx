@@ -9,7 +9,7 @@ import { useAuth } from './AuthContext';
 
 export default function LayoutContent({ children }) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [splashFading, setSplashFading] = useState(false);
@@ -97,10 +97,14 @@ export default function LayoutContent({ children }) {
   };
 
   useEffect(() => {
-    const savedMode = localStorage.getItem('bravo_dark_mode') === 'true';
-    setIsDarkMode(savedMode);
-    if (savedMode) {
+    const savedMode = localStorage.getItem('bravo_dark_mode');
+    // Default to true (dark mode) if not previously set
+    const isDark = savedMode === null ? true : savedMode === 'true';
+    setIsDarkMode(isDark);
+    if (isDark) {
       document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
     }
   }, []);
 
@@ -132,6 +136,18 @@ export default function LayoutContent({ children }) {
       if (window.innerWidth >= 1024) return;
       touchEndX = e.touches[0].clientX;
       touchEndY = e.touches[0].clientY;
+
+      const diffX = touchEndX - touchStartX;
+      const diffY = touchEndY - touchStartY;
+
+      // Lock vertical scrolling if swiping horizontally to open/close the navigation sidebar
+      if (Math.abs(diffX) > 10 && Math.abs(diffX) > Math.abs(diffY)) {
+        const isSwipeToOpen = diffX > 0 && touchStartX < 120 && !isMobileMenuOpen;
+        const isSwipeToClose = diffX < 0 && isMobileMenuOpen;
+        if ((isSwipeToOpen || isSwipeToClose) && e.cancelable) {
+          e.preventDefault();
+        }
+      }
     };
 
     const handleTouchEnd = () => {
@@ -140,12 +156,12 @@ export default function LayoutContent({ children }) {
       const diffX = touchEndX - touchStartX;
       const diffY = touchEndY - touchStartY;
 
-      // Minimum swipe distance of 50px, and primarily horizontal
-      if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+      // Minimum swipe distance of 40px, and primarily horizontal
+      if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
         if (diffX > 0) {
           // Swipe from left to right (open drawer)
-          // Starting from within 60px of the left screen boundary
-          if (touchStartX < 60 && !isMobileMenuOpen) {
+          // Starting from within the left portion of the screen (120px)
+          if (touchStartX < 120 && !isMobileMenuOpen) {
             setIsMobileMenuOpen(true);
           }
         } else {
@@ -163,7 +179,7 @@ export default function LayoutContent({ children }) {
     };
 
     document.addEventListener('touchstart', handleTouchStart, { passive: true });
-    document.addEventListener('touchmove', handleTouchMove, { passive: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     return () => {
