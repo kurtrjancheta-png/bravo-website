@@ -165,6 +165,57 @@ export default function CCQBulletinClient({
     return targetPhtMs - nowPhtMs;
   };
 
+  const getCurrentDutyTime = () => {
+    if (!socRows || socRows.length === 0) return null;
+    
+    const rowsWithTime = socRows.filter(r => {
+      const diff = getTimeDifference(r.time);
+      return diff !== null && !r.isCancelled;
+    });
+    
+    if (rowsWithTime.length === 0) return null;
+    
+    const currentDuty = rowsWithTime.find(r => {
+      const diff = getTimeDifference(r.time);
+      return diff >= -10 * 60000;
+    });
+    
+    if (currentDuty) {
+      return currentDuty.time;
+    }
+    
+    return rowsWithTime[rowsWithTime.length - 1].time;
+  };
+
+  const getRemainingTimeStr = (diffMs) => {
+    if (diffMs === null) return '';
+    if (diffMs > 0) {
+      const diffSecs = Math.floor(diffMs / 1000);
+      const h = Math.floor(diffSecs / 3600);
+      const m = Math.floor((diffSecs % 3600) / 60);
+      const s = diffSecs % 60;
+      
+      const parts = [];
+      if (h > 0) parts.push(`${h}h`);
+      if (m > 0 || h > 0) parts.push(`${m}m`);
+      parts.push(`${s}s`);
+      
+      return `In ${parts.join(' ')}`;
+    } else if (diffMs === 0) {
+      return 'First Call Now';
+    } else {
+      const diffSecs = Math.floor(Math.abs(diffMs) / 1000);
+      const h = Math.floor(diffSecs / 3600);
+      const m = Math.floor((diffSecs % 3600) / 60);
+      
+      const parts = [];
+      if (h > 0) parts.push(`${h}h`);
+      parts.push(`${m}m`);
+      
+      return `${parts.join(' ')} ago`;
+    }
+  };
+
   const handleDutyClick = (duty) => {
     if (!duty || !duty.time) return;
     const diffMs = getTimeDifference(duty.time);
@@ -201,6 +252,16 @@ export default function CCQBulletinClient({
     setToastTimeoutId(id);
   };
 
+  const scrollToCurrentDuty = () => {
+    const elements = document.querySelectorAll('[data-current-duty="true"]');
+    for (let el of elements) {
+      if (el.offsetParent !== null) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        break;
+      }
+    }
+  };
+
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -227,6 +288,11 @@ export default function CCQBulletinClient({
 
   // Get most recent date from payload
   const mostRecentDate = bestBest && bestBest.length > 0 ? (bestBest[0].date || '') : '';
+
+  const currentDutyTime = getCurrentDutyTime();
+  const firstCurrentIndex = socRows ? socRows.findIndex(r => r.time === currentDutyTime) : -1;
+  const currentDutyDiffMs = currentDutyTime ? getTimeDifference(currentDutyTime) : null;
+  const remainingTimeStr = getRemainingTimeStr(currentDutyDiffMs);
 
   return (
     <div className="ccq-bulletin-container">
@@ -480,6 +546,47 @@ export default function CCQBulletinClient({
           background: var(--accent-gold);
           border-color: var(--bg-secondary);
           box-shadow: 0 0 6px rgba(212, 175, 55, 0.5);
+        }
+
+        @keyframes pulse-gold {
+          0% { transform: scale(1); opacity: 0.9; }
+          50% { transform: scale(1.05); opacity: 1; box-shadow: 0 0 12px rgba(212, 175, 55, 0.6); }
+          100% { transform: scale(1); opacity: 0.9; }
+        }
+
+        @keyframes arrow-pulse {
+          0% { transform: translateX(0); }
+          50% { transform: translateX(3px); }
+          100% { transform: translateX(0); }
+        }
+
+        .current-duty-arrow {
+          display: inline-block;
+          color: var(--accent-gold);
+          animation: arrow-pulse 1.5s infinite ease-in-out;
+          font-weight: 900;
+        }
+
+        .current-duty-countdown-badge {
+          display: inline-block;
+          background: rgba(212, 175, 55, 0.12);
+          border: 1px solid var(--accent-gold);
+          color: var(--accent-gold);
+          border-radius: 4px;
+          padding: 0.15rem 0.4rem;
+          font-size: 0.7rem;
+          font-weight: 750;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+          animation: pulse-gold 2s infinite ease-in-out;
+          width: fit-content;
+        }
+
+        .soc-timeline-dot.active-dot {
+          background: var(--accent-gold) !important;
+          border-color: var(--bg-secondary) !important;
+          box-shadow: 0 0 10px rgba(212, 175, 55, 0.8) !important;
+          transform: scale(1.25);
         }
 
         .soc-timeline-card {
@@ -749,7 +856,7 @@ export default function CCQBulletinClient({
         {/* SCHEDULE OF CONDUCT CARD */}
         <div className="command-card" style={{ height: 'fit-content' }}>
           <div className="card-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
               <h2 className="card-title" style={{ margin: 0 }}>📅 Schedule of Calls</h2>
               <button 
                 onClick={() => setIsChangesModalOpen(true)}
@@ -769,6 +876,30 @@ export default function CCQBulletinClient({
               >
                 📋 Changes
               </button>
+              {currentDutyTime && (
+                <button 
+                  onClick={scrollToCurrentDuty}
+                  style={{
+                    background: 'rgba(212, 175, 55, 0.15)',
+                    border: '1px solid var(--accent-gold)',
+                    color: 'var(--accent-gold)',
+                    borderRadius: '4px',
+                    padding: '0.15rem 0.5rem',
+                    fontSize: '0.65rem',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.2rem'
+                  }}
+                  title="Scroll to current active/upcoming duty"
+                >
+                  🎯 Current Duty
+                </button>
+              )}
             </div>
             <span className="card-meta-text">Resets at Midnight</span>
           </div>
@@ -784,34 +915,54 @@ export default function CCQBulletinClient({
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
                   <thead>
                     <tr style={{ borderBottom: '2px solid var(--border-color)', opacity: 0.8 }}>
-                      <th style={{ padding: '0.4rem 0.5rem', fontWeight: 800, width: '100px' }}>TIME</th>
+                      <th style={{ padding: '0.4rem 0.5rem', fontWeight: 800, width: '130px' }}>TIME</th>
                       <th style={{ padding: '0.4rem 0.5rem', fontWeight: 800 }}>ACTIVITY</th>
                       <th style={{ padding: '0.4rem 0.5rem', fontWeight: 800, width: '22%' }}>UNIFORM</th>
                       <th style={{ padding: '0.4rem 0.5rem', fontWeight: 800, width: '18%' }}>FORMATION</th>
                     </tr>
                   </thead>
                   <tbody>
-                     {socRows.map((r, i) => (
-                      <tr 
-                        key={i} 
-                        onClick={() => handleDutyClick(r)}
-                        className="soc-clickable-row"
-                        style={{ 
-                          borderBottom: '1px solid var(--border-color)', 
-                          cursor: 'pointer',
-                          textDecoration: r.isCancelled ? 'line-through' : 'none',
-                          opacity: r.isCancelled ? 0.45 : 1,
-                          backgroundColor: r.isCancelled ? 'rgba(239, 68, 68, 0.03)' : 'transparent'
-                        }}
-                      >
-                        <td className="mono-font" style={{ padding: '0.35rem 0.5rem', fontWeight: 800, color: 'var(--accent-gold)', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
-                          {formatMilitaryTime(r.time)}
-                        </td>
-                        <td style={{ padding: '0.35rem 0.5rem', color: 'var(--text-primary)', fontWeight: 500 }}>{r.activity}</td>
-                        <td style={{ padding: '0.35rem 0.5rem', color: 'var(--text-secondary)' }}>{r.uniform || '—'}</td>
-                        <td style={{ padding: '0.35rem 0.5rem', color: 'var(--text-primary)', fontWeight: 700 }}>{r.formation || '—'}</td>
-                      </tr>
-                    ))}
+                     {socRows.map((r, i) => {
+                       const isCurrent = r.time === currentDutyTime;
+                       return (
+                         <tr 
+                           key={i} 
+                           onClick={() => handleDutyClick(r)}
+                           className="soc-clickable-row"
+                           data-current-duty={isCurrent ? "true" : undefined}
+                           style={{ 
+                             borderBottom: '1px solid var(--border-color)', 
+                             cursor: 'pointer',
+                             textDecoration: r.isCancelled ? 'line-through' : 'none',
+                             opacity: r.isCancelled ? 0.45 : 1,
+                             backgroundColor: r.isCancelled 
+                               ? 'rgba(239, 68, 68, 0.03)' 
+                               : isCurrent 
+                                 ? 'rgba(212, 175, 55, 0.08)' 
+                                 : 'transparent'
+                           }}
+                         >
+                           <td className="mono-font" style={{ padding: '0.35rem 0.5rem', fontWeight: 800, color: 'var(--accent-gold)', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
+                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                 {isCurrent && (
+                                   <span className="current-duty-arrow" style={{ display: 'inline-block' }}>➔</span>
+                                 )}
+                                 <span>{formatMilitaryTime(r.time)}</span>
+                               </div>
+                               {isCurrent && i === firstCurrentIndex && (
+                                 <span className="current-duty-countdown-badge">
+                                   {remainingTimeStr}
+                                 </span>
+                               )}
+                             </div>
+                           </td>
+                           <td style={{ padding: '0.35rem 0.5rem', color: 'var(--text-primary)', fontWeight: 500 }}>{r.activity}</td>
+                           <td style={{ padding: '0.35rem 0.5rem', color: 'var(--text-secondary)' }}>{r.uniform || '—'}</td>
+                           <td style={{ padding: '0.35rem 0.5rem', color: 'var(--text-primary)', fontWeight: 700 }}>{r.formation || '—'}</td>
+                         </tr>
+                       );
+                     })}
                   </tbody>
                 </table>
               </div>
@@ -819,42 +970,68 @@ export default function CCQBulletinClient({
               {/* Mobile Timeline View */}
               <div className="soc-timeline-mobile">
                 <div className="soc-timeline">
-                  {socRows.map((r, i) => (
-                    <div key={i} className="soc-timeline-item">
-                      <div className="soc-timeline-dot"></div>
+                  {socRows.map((r, i) => {
+                    const isCurrent = r.time === currentDutyTime;
+                    return (
                       <div 
-                        className="soc-timeline-card soc-clickable-card"
-                        onClick={() => handleDutyClick(r)}
-                        style={{ 
-                          cursor: 'pointer',
-                          textDecoration: r.isCancelled ? 'line-through' : 'none',
-                          opacity: r.isCancelled ? 0.45 : 1,
-                          backgroundColor: r.isCancelled ? 'rgba(239, 68, 68, 0.03)' : 'var(--bg-secondary)',
-                          borderLeft: r.isCancelled ? '3px solid #ef4444' : '3px solid var(--accent-gold)'
-                        }}
+                        key={i} 
+                        className="soc-timeline-item"
+                        data-current-duty={isCurrent ? "true" : undefined}
                       >
-                        <div className="soc-time-header">
-                          <span className="soc-time-display">{formatMilitaryTime(r.time)}</span>
-                        </div>
-                        <div className="soc-activity-title">{r.activity}</div>
-                        
-                        {(r.uniform || r.formation) && (
-                          <div className="soc-badge-row">
-                            {r.uniform && (
-                              <span className="soc-badge soc-badge-uniform">
-                                👔 {r.uniform}
-                              </span>
-                            )}
-                            {r.formation && (
-                              <span className="soc-badge soc-badge-formation">
-                                📢 {r.formation}
+                        <div className={`soc-timeline-dot ${isCurrent ? 'active-dot' : ''}`}></div>
+                        <div 
+                          className="soc-timeline-card soc-clickable-card"
+                          onClick={() => handleDutyClick(r)}
+                          style={{ 
+                            cursor: 'pointer',
+                            textDecoration: r.isCancelled ? 'line-through' : 'none',
+                            opacity: r.isCancelled ? 0.45 : 1,
+                            backgroundColor: r.isCancelled 
+                              ? 'rgba(239, 68, 68, 0.03)' 
+                              : isCurrent 
+                                ? 'rgba(212, 175, 55, 0.08)' 
+                                : 'var(--bg-secondary)',
+                            borderLeft: r.isCancelled 
+                              ? '3px solid #ef4444' 
+                              : isCurrent 
+                                ? '4px solid var(--accent-gold)' 
+                                : '3px solid var(--accent-gold)',
+                            boxShadow: isCurrent ? '0 0 10px rgba(212, 175, 55, 0.15)' : 'none'
+                          }}
+                        >
+                          <div className="soc-time-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                              {isCurrent && (
+                                <span className="current-duty-arrow">➔</span>
+                              )}
+                              <span className="soc-time-display">{formatMilitaryTime(r.time)}</span>
+                            </div>
+                            {isCurrent && i === firstCurrentIndex && (
+                              <span className="current-duty-countdown-badge">
+                                {remainingTimeStr}
                               </span>
                             )}
                           </div>
-                        )}
+                          <div className="soc-activity-title">{r.activity}</div>
+                          
+                          {(r.uniform || r.formation) && (
+                            <div className="soc-badge-row">
+                              {r.uniform && (
+                                <span className="soc-badge soc-badge-uniform">
+                                  👔 {r.uniform}
+                                </span>
+                              )}
+                              {r.formation && (
+                                <span className="soc-badge soc-badge-formation">
+                                  📢 {r.formation}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </>
