@@ -153,7 +153,7 @@ Here is a summary of the accomplishments completed on the Bravo Company Website:
 
 ## 21. Real-Time Next Duty Card
 - **Automated Time Calculations**: Implemented dynamic selection of the next upcoming duty from `socRows` based on time, automatically filtering out cancelled or un-timed activities.
-- **Premium Side-by-Side Presentation**: Added a gold-accented card directly below the Schedule of Calls (SOC) displaying the upcoming duty activity name on the left and a live-updating countdown (updated every second) on the right.
+- **Premium Side-by-Side Presentation**: Added a gold-accented card directly above the Schedule of Calls (SOC) displaying the upcoming duty activity name on the left and a live-updating countdown (updated every second) on the right.
 - **Interactive Toasts**: Bound the card to the bulletin's glassmorphic toast notification component, enabling users to click the card and view the exact remaining or elapsed time instantly.
 
 ---
