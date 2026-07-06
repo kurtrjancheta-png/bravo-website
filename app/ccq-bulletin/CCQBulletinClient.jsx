@@ -294,6 +294,30 @@ export default function CCQBulletinClient({
   const currentDutyDiffMs = currentDutyTime ? getTimeDifference(currentDutyTime) : null;
   const remainingTimeStr = getRemainingTimeStr(currentDutyDiffMs);
 
+  // Calculate Next Duty
+  const getNextDutyObj = () => {
+    if (!socRows || socRows.length === 0) return null;
+    
+    const rowsWithTime = socRows.filter(r => {
+      const diff = getTimeDifference(r.time);
+      return diff !== null && !r.isCancelled;
+    });
+    
+    if (rowsWithTime.length === 0) return null;
+    
+    // Find the first duty that starts in the future (diff > 0)
+    const nextDuty = rowsWithTime.find(r => {
+      const diff = getTimeDifference(r.time);
+      return diff > 0;
+    });
+    
+    return nextDuty || null;
+  };
+
+  const nextDutyObj = getNextDutyObj();
+  const nextDutyDiffMs = nextDutyObj ? getTimeDifference(nextDutyObj.time) : null;
+  const nextDutyRemainingStr = nextDutyDiffMs !== null ? getRemainingTimeStr(nextDutyDiffMs) : '';
+
   return (
     <div className="ccq-bulletin-container">
       <style dangerouslySetInnerHTML={{__html: `
@@ -779,6 +803,69 @@ export default function CCQBulletinClient({
           transform: translateY(-2px);
           box-shadow: 0 6px 16px rgba(212, 175, 55, 0.08);
         }
+
+        /* Next Duty Card Styles */
+        .ccq-next-duty-card {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          border-left: 5px solid var(--accent-gold);
+          border-radius: 12px;
+          padding: 1.25rem 1.75rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 1.5rem;
+          cursor: pointer;
+          transition: all 0.25s ease;
+        }
+
+        .ccq-next-duty-card:hover {
+          border-color: var(--accent-gold) !important;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(212, 175, 55, 0.12);
+        }
+
+        .ccq-next-duty-content {
+          display: flex;
+          align-items: center;
+          gap: 1.5rem;
+          flex-wrap: wrap;
+        }
+
+        .ccq-next-duty-name {
+          font-weight: 900;
+          color: var(--accent-gold);
+          font-size: 1.35rem;
+          letter-spacing: 0.02em;
+        }
+
+        .ccq-next-duty-time {
+          font-family: monospace;
+          font-weight: 850;
+          color: var(--text-primary);
+          font-size: 1.1rem;
+        }
+
+        .ccq-next-duty-countdown {
+          font-weight: 800;
+          color: var(--accent-gold);
+          background: rgba(212, 175, 55, 0.08);
+          border: 1px solid var(--accent-gold);
+          padding: 0.25rem 0.65rem;
+          border-radius: 6px;
+          font-size: 0.85rem;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+          animation: pulse-gold 2s infinite ease-in-out;
+        }
+
+        .ccq-next-duty-divider {
+          width: 1px;
+          height: 12px;
+          background: var(--border-color);
+        }
+
         @keyframes toast-slide-up {
           from { transform: translate(-50%, 20px); opacity: 0; }
           to { transform: translate(-50%, 0); opacity: 1; }
@@ -853,8 +940,10 @@ export default function CCQBulletinClient({
       {/* MAIN GRID */}
       <div className="ccq-grid">
         
-        {/* SCHEDULE OF CONDUCT CARD */}
-        <div className="command-card" style={{ height: 'fit-content' }}>
+        {/* COLUMN 1: SOC & NEXT DUTY */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {/* SCHEDULE OF CONDUCT CARD */}
+          <div className="command-card" style={{ height: 'fit-content' }}>
           <div className="card-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
               <h2 className="card-title" style={{ margin: 0 }}>📅 Schedule of Calls</h2>
@@ -1036,6 +1125,39 @@ export default function CCQBulletinClient({
               </div>
             </>
           )}
+          </div>
+
+          {/* NEXT DUTY CARD */}
+          <div className="ccq-next-duty-card" onClick={() => handleDutyClick(nextDutyObj)}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '1.1rem' }}>⏰</span>
+              <span style={{ fontWeight: 800, textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '0.04em' }}>
+                NEXT DUTY:
+              </span>
+            </div>
+
+            <div className="ccq-next-duty-content">
+              {nextDutyObj ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+                  <span className="ccq-next-duty-name">
+                    {nextDutyObj.activity}
+                  </span>
+                  <div className="ccq-next-duty-divider"></div>
+                  <span className="ccq-next-duty-time">
+                    {formatMilitaryTime(nextDutyObj.time)}
+                  </span>
+                  <div className="ccq-next-duty-divider"></div>
+                  <span className="ccq-next-duty-countdown">
+                    {nextDutyRemainingStr}
+                  </span>
+                </div>
+              ) : (
+                <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>
+                  No upcoming duties scheduled
+                </span>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* COLUMN 2: GUARDS DETAIL & AWARDS BUTTON */}

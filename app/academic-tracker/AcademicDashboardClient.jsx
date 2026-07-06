@@ -334,14 +334,14 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
         <div className="pft-insight-card academic-metric-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', boxShadow: 'var(--shadow-sm)', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, height: '4px', width: '100%', background: '#ef4444' }}></div>
           <div className="pft-insight-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>HIGH / CRITICAL RISK</span>
+            <span>HIGHLY / EXTREMELY DEFICIENT</span>
             <span style={{ fontSize: '1.5rem' }}>🚨</span>
           </div>
           <div className="pft-insight-val" style={{ margin: '0.5rem 0' }}>
             <span style={{ fontSize: '2.25rem', fontWeight: 700, color: metrics.highRisk > 0 ? '#ef4444' : 'var(--text-primary)' }}>{metrics.highRisk}</span>
           </div>
           <div className="pft-insight-desc">
-            <span>Deficient in 10+ points</span>
+            <span>Deficient in more than 10 points</span>
           </div>
         </div>
 
@@ -487,7 +487,7 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
         {/* The List of Cadets */}
         <div className="table-container" style={{ width: '100%', overflowX: 'auto' }}>
           {filteredCadets.length > 0 ? (
-            <table className="mobile-card-table academic-cadet-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table className="academic-cadet-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--border-color)', textAlign: 'left' }}>
                   <th style={{ padding: '12px 16px', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>NO</th>
@@ -498,11 +498,11 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
                 </tr>
               </thead>
               <tbody>
-                {filteredCadets.map((cadet) => {
+                {filteredCadets.map((cadet, idx) => {
                   const isExpanded = expandedCadet && expandedCadet.name === cadet.name;
 
                   return (
-                    <React.Fragment key={cadet.name}>
+                    <React.Fragment key={`${cadet.name}-${cadet.no || idx}-${idx}`}>
                       <tr
                         onClick={() => setExpandedCadet(isExpanded ? null : cadet)}
                         style={{
@@ -523,21 +523,21 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
                             if (absPoints > 20) {
                               return (
                                 <span style={{ background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7', border: '1px solid rgba(168, 85, 247, 0.2)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700 }}>
-                                  💀 CRITICAL
+                                  💀 EXTREMELY DEFICIENT
                                 </span>
                               );
                             }
                             if (absPoints > 10) {
                               return (
                                 <span style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700 }}>
-                                  🚨 HIGH RISK
+                                  🚨 HIGHLY DEFICIENT
                                 </span>
                               );
                             }
                             if (absPoints > 5) {
                               return (
                                 <span style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700 }}>
-                                  ⚠️ MODERATE
+                                  ⚠️ MODERATELY DEFICIENT
                                 </span>
                               );
                             }
@@ -577,7 +577,7 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
                               ))}
                             </div>
                           ) : (
-                            <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>No deficiency points recorded</span>
+                            <span className="hide-on-mobile" style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>No deficiency points recorded</span>
                           )}
                         </td>
                         <td data-label="ACTION" style={{ padding: '14px 16px', textAlign: 'right', color: 'var(--accent-gold)', fontSize: '0.8rem', fontWeight: 600 }}>

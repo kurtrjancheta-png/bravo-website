@@ -16,6 +16,8 @@ export default async function AcademicTrackerPage() {
         getAcademicDeficiencies(),
         getAcademicHistoryLogs()
       ]);
+      console.log("SERVER SIDE 3CL CADETS COUNT:", parsedDeficiencies["3CL"]?.cadets?.length);
+      console.log("SERVER SIDE 3CL CADETS NAMES:", parsedDeficiencies["3CL"]?.cadets?.map(c => c.name));
       deficienciesData = parsedDeficiencies;
       historyLogs = parsedLogs;
     } catch (e) {

@@ -2260,6 +2260,18 @@ tbody tr:hover {
   }
 
   /* Compact Cadet Table on Mobile */
+  .academic-cadet-table,
+  .academic-cadet-table thead,
+  .academic-cadet-table tbody,
+  .academic-cadet-table tr {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .academic-cadet-table thead {
+    display: none !important;
+  }
+
   .academic-cadet-table tbody tr:not(.expanded-detail-row) {
     display: grid !important;
     grid-template-columns: 1fr auto !important;
