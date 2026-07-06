@@ -156,6 +156,9 @@ Here is a summary of the accomplishments completed on the Bravo Company Website:
 - **Premium Side-by-Side Presentation**: Added a gold-accented card directly above the Schedule of Calls (SOC) displaying the upcoming duty activity name on the left and a live-updating countdown (updated every second) on the right.
 - **Interactive Toasts**: Bound the card to the bulletin's glassmorphic toast notification component, enabling users to click the card and view the exact remaining or elapsed time instantly.
 
+## 22. CAMP Tracker Status Fallback Update
+- **Character Column Fallback**: Updated the inactive character status fallback badge in the CAMP Tracker table from `DUTY` to `N/A`, avoiding user confusion when no character punishments are currently active.
+
 ---
 
 ### Verification & Deployment
