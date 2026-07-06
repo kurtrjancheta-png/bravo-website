@@ -20,8 +20,6 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState('deficient'); // 'all' or 'deficient'
   const [expandedCadet, setExpandedCadet] = useState(null);
-  const [isScriptModalOpen, setIsScriptModalOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState(null);
 
@@ -240,161 +238,6 @@ export default function AcademicDashboardClient({ initialDeficienciesData, initi
     return points;
   }, [expandedCadet, initialHistoryLogs, activeClass, updateDate]);
 
-  // Apps Script Logger text for quick copy
-  const appScriptText = `// Google Apps Script: Academic Deficiency Logger
-// Set this to run on a time-driven trigger daily (e.g. between 11 PM and midnight)
-
-const SOURCE_SPREADSHEET_ID = "1YfrsGwikWtcLLsXFodHL47Yy8JoYRpp54Dt3mrAVA14";
-const LOG_SPREADSHEET_ID = "1Zp7dOh66ffzVRhkv8NC8rN4xwhe8UYk_dujhcObzg-E";
-const CLASSES = ["1CL ACADS", "2CL ACADS", "3CL ACADS", "4CL ACADS"];
-
-function logDailyDeficiencies() {
-  const sourceSs = SpreadsheetApp.openById(SOURCE_SPREADSHEET_ID);
-  const logSs = SpreadsheetApp.openById(LOG_SPREADSHEET_ID);
-  
-  let logSheet = logSs.getSheetByName("Logs");
-  if (!logSheet) {
-    logSheet = logSs.insertSheet("Logs");
-    logSheet.appendRow(["Date", "Class", "Name", "Subject", "Deficiency"]);
-    logSheet.getRange("A1:E1").setFontWeight("bold");
-  }
-  
-  const allNewLogs = [];
-  let logDateStr = "";
-
-  for (const className of CLASSES) {
-    const sheet = sourceSs.getSheetByName(className);
-    if (!sheet) continue;
-    
-    const values = sheet.getDataRange().getValues();
-    if (values.length < 3) continue;
-    
-    let headerRowIdx = -1;
-    let sheetDateStr = "";
-    
-    for (let r = 0; r < values.length; r++) {
-      const row = values[r];
-      for (let c = 0; c < row.length; c++) {
-        if (String(row[c]).toUpperCase().includes("UPDATED AS OF")) {
-          for (let nextC = c + 1; nextC < row.length; nextC++) {
-            if (row[nextC]) {
-              sheetDateStr = String(row[nextC]).trim();
-              break;
-            }
-          }
-        }
-      }
-      if (String(row[0]).trim().toUpperCase() === "NO" && String(row[1]).trim().toUpperCase() === "NAME") {
-        headerRowIdx = r;
-        break;
-      }
-    }
-    
-    if (headerRowIdx === -1) continue;
-    
-    if (!logDateStr) {
-      if (sheetDateStr) {
-        logDateStr = formatDate(sheetDateStr);
-      } else {
-        logDateStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
-      }
-    }
-    
-    const headers = values[headerRowIdx];
-    const dataRows = values.slice(headerRowIdx + 1);
-    const shortClassName = className.split(" ")[0];
-    
-    for (const row of dataRows) {
-      const name = String(row[1]).trim();
-      if (!name || name === "" || name.toUpperCase() === "NAME") continue;
-      
-      for (let c = 2; c < headers.length; c++) {
-        const subject = String(headers[c]).trim();
-        if (!subject) continue;
-        
-        const val = parseFloat(row[c]);
-        if (!isNaN(val) && val < 0) {
-          allNewLogs.push([logDateStr, shortClassName, name, subject, val]);
-        }
-      }
-    }
-  }
-  
-  if (allNewLogs.length > 0) {
-    const existingValues = logSheet.getDataRange().getValues();
-    const rowsToKeep = [existingValues[0]];
-    
-    for (let i = 1; i < existingValues.length; i++) {
-      const rowDate = Utilities.formatDate(new Date(existingValues[i][0]), Session.getScriptTimeZone(), "yyyy-MM-dd");
-      if (rowDate !== logDateStr) {
-        rowsToKeep.push(existingValues[i]);
-      }
-    }
-    
-    logSheet.clearContents();
-    logSheet.getRange(1, 1, rowsToKeep.length, 5).setValues(rowsToKeep);
-    logSheet.getRange(rowsToKeep.length + 1, 1, allNewLogs.length, 5).setValues(allNewLogs);
-    
-    if (logSheet.getLastRow() > 1) {
-      logSheet.getRange(2, 1, logSheet.getLastRow() - 1, 5).sort({column: 1, ascending: true});
-    }
-    
-    Logger.log("Successfully logged " + allNewLogs.length + " deficiencies for date: " + logDateStr);
-  }
-}
-
-function formatDate(dateStr) {
-  try {
-    const d = new Date(dateStr);
-    if (!isNaN(d.getTime())) {
-      return Utilities.formatDate(d, Session.getScriptTimeZone(), "yyyy-MM-dd");
-    }
-  } catch (e) {}
-  
-  const clean = dateStr.replace(/,/g, '').trim();
-  const parts = clean.split(/\\s+/);
-  if (parts.length === 3) {
-    const day = parseInt(parts[0]);
-    const monthName = parts[1].toLowerCase();
-    const year = parseInt(parts[2]);
-    
-    const months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december", "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
-    let monthIdx = months.findIndex(m => m.startsWith(monthName));
-    if (monthIdx !== -1) {
-      monthIdx = monthIdx % 12;
-      const formattedDate = new Date(year, monthIdx, day);
-      return Utilities.formatDate(formattedDate, Session.getScriptTimeZone(), "yyyy-MM-dd");
-    }
-  }
-  
-  return Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
-}
-
-function doGet(e) {
-  return handleRequest();
-}
-
-function doPost(e) {
-  return handleRequest();
-}
-
-function handleRequest() {
-  try {
-    logDailyDeficiencies();
-    return ContentService.createTextOutput(JSON.stringify({ status: "success", message: "Daily sync completed successfully." }))
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}`;
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(appScriptText);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       
@@ -428,13 +271,7 @@ function handleRequest() {
           >
             {isSyncing ? '🔄 SYNCING...' : '🔄 SYNC NOW'}
           </button>
-          <button
-            onClick={() => setIsScriptModalOpen(true)}
-            className="badge-outline"
-            style={{ cursor: 'pointer', background: 'rgba(218, 165, 32, 0.1)', color: 'var(--accent-gold)', borderColor: 'rgba(218, 165, 32, 0.3)', padding: '0.4rem 1rem', fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}
-          >
-            ⚙️ SETUP LOGGER
-          </button>
+
         </div>
       </div>
 
@@ -847,100 +684,7 @@ function handleRequest() {
 
       </div>
 
-      {/* 5. Google Apps Script Setup Instructions Modal */}
-      <AnimatePresence>
-        {isScriptModalOpen && (
-          <div className="pft-modal-overlay" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="pft-modal-content"
-              style={{ width: '90%', maxWidth: '650px', maxHeight: '85vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
-            >
-              {/* Header */}
-              <div className="pft-modal-header" style={{ borderBottom: '1px solid var(--border-color)', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 className="pft-modal-title" style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600, color: 'var(--accent-gold)' }}>
-                  ⚙️ Setup Daily Deficiency Logger
-                </h3>
-                <span
-                  onClick={() => setIsScriptModalOpen(false)}
-                  className="pft-modal-close-icon"
-                  style={{ cursor: 'pointer', fontSize: '1.2rem', color: 'var(--text-secondary)' }}
-                >
-                  ✕
-                </span>
-              </div>
 
-              {/* Body */}
-              <div className="pft-modal-body" style={{ padding: '1.5rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1.2rem', fontSize: '0.9rem', color: 'var(--text-primary)' }}>
-                <p style={{ margin: 0 }}>
-                  To track cadet deficiency records over time, we use a <strong>Google Apps Script</strong> inside Google Sheets that automatically logs negative scores daily.
-                </p>
-
-                <div style={{ background: 'rgba(218, 165, 32, 0.05)', borderLeft: '3px solid var(--accent-gold)', padding: '0.75rem 1rem', borderRadius: '4px' }}>
-                  <strong>How it works:</strong> The script scans the primary sheet daily, looks for negative points under subject columns, formats them, and writes them with the current date to the change log spreadsheet.
-                </div>
-
-                <h4 style={{ margin: '0.5rem 0 0 0', fontWeight: 600 }}>Setup Steps:</h4>
-                <ol style={{ margin: 0, paddingLeft: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <li>Open the <strong>Change Log Spreadsheet</strong> in your browser.</li>
-                  <li>Click on <strong>Extensions &gt; Apps Script</strong> in the top menu.</li>
-                  <li>Delete any existing code in the editor, and paste the code below.</li>
-                  <li>Click the <strong>Save</strong> icon (floppy disk).</li>
-                  <li>Click on the <strong>Triggers</strong> icon (clock) in the left-hand sidebar of Apps Script.</li>
-                  <li>Click <strong>+ Add Trigger</strong> in the bottom right:
-                    <ul style={{ margin: '0.25rem 0 0 0', paddingLeft: '1.2rem' }}>
-                      <li>Choose function to run: <code>logDailyDeficiencies</code></li>
-                      <li>Select event source: <code>Time-driven</code></li>
-                      <li>Select type of time based trigger: <code>Day timer</code></li>
-                      <li>Select time of day: <code>11 PM to Midnight</code> (recommended)</li>
-                    </ul>
-                  </li>
-                  <li>Click Save and approve permissions if prompted.</li>
-                </ol>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
-                  <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Google Apps Script Source Code:</span>
-                  <button
-                    onClick={copyToClipboard}
-                    className="badge-outline"
-                    style={{ cursor: 'pointer', background: copied ? 'rgba(16, 185, 129, 0.1)' : 'transparent', color: copied ? '#10b981' : 'var(--text-primary)', borderColor: copied ? '#10b981' : 'var(--border-color)', padding: '0.3rem 0.8rem', fontSize: '0.75rem', fontWeight: 600 }}
-                  >
-                    {copied ? '✅ COPIED!' : '📋 COPY CODE'}
-                  </button>
-                </div>
-
-                <pre style={{
-                  background: 'var(--body-bg, #0f172a)',
-                  color: '#e2e8f0',
-                  padding: '1rem',
-                  borderRadius: '6px',
-                  fontFamily: 'monospace',
-                  fontSize: '0.75rem',
-                  maxHeight: '200px',
-                  overflowY: 'auto',
-                  border: '1px solid var(--border-color)',
-                  margin: 0
-                }}>
-                  {appScriptText}
-                </pre>
-              </div>
-
-              {/* Footer */}
-              <div style={{ borderTop: '1px solid var(--border-color)', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'flex-end', background: 'rgba(15, 23, 42, 0.2)' }}>
-                <button
-                  onClick={() => setIsScriptModalOpen(false)}
-                  className="pft-modal-tab-btn active"
-                  style={{ padding: '0.5rem 1.5rem', borderRadius: '4px', cursor: 'pointer' }}
-                >
-                  Done
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
     </div>
   );
