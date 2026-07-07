@@ -58,9 +58,10 @@ export default async function TacODashboardPage() {
       const confStart = row[startKey] || null;
       const confEnd = row[endKey] || null;
       const statusVal = String(row[statusKey] || '').trim().toUpperCase();
+      const isServed = statusVal === 'SERVED';
       
-      const isConfined = (String(row[confinedKey] || '').toLowerCase() === 'yes' || statusVal.includes('CONFINED'))
-        || (confStart && String(confStart).trim() !== '' && confEnd && String(confEnd).trim() !== '');
+      const isConfined = !isServed && ((String(row[confinedKey] || '').toLowerCase() === 'yes' || statusVal.includes('CONFINED'))
+        || (confStart && String(confStart).trim() !== '' && confEnd && String(confEnd).trim() !== ''));
 
       if (!cadetMap.has(name)) {
         cadetMap.set(name, {
@@ -74,21 +75,22 @@ export default async function TacODashboardPage() {
 
       const cadet = cadetMap.get(name);
       cadet.totalDemerits += Number(row[demeritsKey]) || 0;
-      cadet.totalTourRemaining += Number(row[remainingKey]) || 0;
-      if (isConfined || statusVal.includes('CONFINED')) {
-        cadet.isConfined = true;
+      if (!isServed) {
+        cadet.totalTourRemaining += Number(row[remainingKey]) || 0;
+        if (isConfined || statusVal.includes('CONFINED')) {
+          cadet.isConfined = true;
+        }
       }
     });
 
     cadetMap.forEach(cadet => {
-      if (cadet.totalTourRemaining > 0 || cadet.rank === 'UNKNOWN') {
-        // Fallback or positive remaining tour
-        totalTouringCadets++;
-      } else if (cadet.totalDemerits > 0 && !cadet.isConfined) {
+      if (cadet.totalTourRemaining > 0) {
         totalTouringCadets++;
       }
       
-      if (cadet.isConfined) totalConfinedCadets++;
+      if (cadet.isConfined) {
+        totalConfinedCadets++;
+      }
       
       const accumulatedDemerits = Math.max(0, cadet.totalDemerits - cadet.totalMerits);
       const maxDemerits = getMaxDemerits(cadet.rank);

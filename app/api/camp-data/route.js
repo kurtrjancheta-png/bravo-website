@@ -126,23 +126,30 @@ export async function GET(request) {
         if (surname && surname !== 'NAME' && activeVal === 'ACTIVE') {
           const cadet = findOrCreateCadet(surname);
           if (cadet) {
-            cadet.character.active = true;
-            
             const rawStatus = row[statusKey] ? String(row[statusKey]).trim().toUpperCase() : 'TOURING';
-            cadet.character.status = rawStatus;
+            const isServed = rawStatus === 'SERVED';
+            
+            if (!isServed) {
+              cadet.character.active = true;
+              cadet.character.status = rawStatus;
+            } else if (cadet.character.status === 'DUTY') {
+              cadet.character.status = 'SERVED';
+            }
 
             const demerits = parseFloat(row[demeritsKey]) || 0;
             const remainingTour = parseFloat(row[remainingKey]) || 0;
             const confinedVal = row[confinedKey] ? String(row[confinedKey]).trim().toUpperCase() : 'NO';
 
             cadet.character.demerits += demerits;
-            cadet.character.remainingTour += remainingTour;
+            if (!isServed) {
+              cadet.character.remainingTour += remainingTour;
 
-            if (confinedVal === 'YES' || rawStatus.includes('CONFINED')) {
-              cadet.character.confined = true;
-            }
-            if (rawStatus.includes('TOURING') || remainingTour > 0) {
-              cadet.character.touring = true;
+              if (confinedVal === 'YES' || rawStatus.includes('CONFINED')) {
+                cadet.character.confined = true;
+              }
+              if (rawStatus.includes('TOURING') || remainingTour > 0) {
+                cadet.character.touring = true;
+              }
             }
 
             cadet.character.offenses.push({

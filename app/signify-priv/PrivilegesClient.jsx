@@ -23,6 +23,7 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
   
   const [status, setStatus] = useState('idle');
   const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('Signify successful!');
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // Autocomplete state
@@ -103,6 +104,7 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
 
     setStatus('loading');
     setErrorMsg('');
+    let entertainingWarning = '';
     
     try {
       // Fetch CAMP data and verify eligibility
@@ -119,11 +121,20 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
           return isSerialMatch || isNameMatch;
         });
 
+        const isEntertaining = selectedPriv && (
+          String(selectedPriv.type || '').toUpperCase().includes('ENTERTAINING') ||
+          String(selectedPriv.sheetName || '').toUpperCase().includes('ENTERTAINING')
+        );
+
         if (cadet) {
           if (!cadet.eligibleForPrivilege) {
-            setStatus('error');
-            setErrorMsg(`Signifying Blocked: You are not allowed to signify for privilege. Reason: ${cadet.eligibilityChecks.reasons.join(', ')}`);
-            return;
+            if (isEntertaining) {
+              entertainingWarning = 'Signify successful! (Notice: Since you are not on full duty, you are only allowed 1 hour of entertaining)';
+            } else {
+              setStatus('error');
+              setErrorMsg(`Signifying Blocked: You are not allowed to signify for privilege. Reason: ${cadet.eligibilityChecks.reasons.join(', ')}`);
+              return;
+            }
           }
         }
       }
@@ -167,12 +178,14 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
       const result = await response.json();
       if (result.status === 'success') {
          setStatus('success');
+         setSuccessMsg(entertainingWarning || 'Signify successful!');
          setTimeout(() => {
             setSelectedPriv(null);
             setStatus('idle');
             setFullName('');
             setSerialNumber('');
-         }, 2000);
+            setSuccessMsg('Signify successful!');
+         }, entertainingWarning ? 6000 : 2000);
       } else {
          throw new Error(result.message || 'Unknown error');
       }
@@ -483,7 +496,7 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
                   </div>
 
                   {status === 'error' && <div style={{ color: 'red', fontSize: '0.85rem' }}>{errorMsg}</div>}
-                  {status === 'success' && <div style={{ color: 'green', fontSize: '0.85rem', fontWeight: 'bold' }}>Signify successful!</div>}
+                  {status === 'success' && <div style={{ color: 'green', fontSize: '0.85rem', fontWeight: 'bold' }}>{successMsg}</div>}
 
                   <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                      <button 
