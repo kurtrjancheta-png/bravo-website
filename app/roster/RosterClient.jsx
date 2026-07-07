@@ -65,6 +65,10 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
     ethnicGroups: []
   });
 
+  // Unique suggestions list for autocomplete
+  const [fieldSuggestions, setFieldSuggestions] = useState({});
+  const [globalSuggestionsList, setGlobalSuggestionsList] = useState([]);
+
   useEffect(() => {
     const extractUnique = (key) => {
       const vals = allCadets
@@ -74,12 +78,50 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
       return Array.from(new Set(vals)).sort();
     };
 
+    const bts = extractUnique('BLOOD TYPE');
+    const regs = extractUnique('REGION');
+    const rels = extractUnique('RELIGION');
+    const eths = extractUnique('ETHNIC GROUP');
+
     setDynamicOptions({
-      bloodTypes: extractUnique('BLOOD TYPE'),
-      regions: extractUnique('REGION'),
-      religions: extractUnique('RELIGION'),
-      ethnicGroups: extractUnique('ETHNIC GROUP')
+      bloodTypes: bts,
+      regions: regs,
+      religions: rels,
+      ethnicGroups: eths
     });
+
+    // Build autocomplete suggestions lists
+    const suggestionsObj = {};
+    const globalSet = new Set();
+
+    ALL_FILTERS.forEach(f => {
+      const valuesSet = new Set();
+      allCadets.forEach(c => {
+        const val = c[f.id];
+        if (val && String(val).trim() !== '') {
+          const sVal = String(val).trim();
+          
+          // Split list-like fields to get individual terms for suggestions
+          if (f.id === 'HOBBIES' || f.id === 'CLUBS AND ORGANIZATION MEMBERSHIP' || f.id === 'CORPS SQUAD MEMBERSHIP' || f.id === 'ALLERGIES') {
+            sVal.split(/[,;&]/).forEach(term => {
+              const trimmed = term.trim();
+              if (trimmed && trimmed.toLowerCase() !== 'none' && trimmed.toLowerCase() !== 'n/a' && trimmed.toLowerCase() !== 'nil') {
+                valuesSet.add(trimmed);
+                globalSet.add(trimmed);
+              }
+            });
+          } else {
+            valuesSet.add(sVal);
+            globalSet.add(sVal);
+          }
+        }
+      });
+      suggestionsObj[f.id] = Array.from(valuesSet).sort();
+    });
+
+    setFieldSuggestions(suggestionsObj);
+    setGlobalSuggestionsList(Array.from(globalSet).sort());
+
   }, [allCadets]);
 
   // Click outside menu listener to close dropdown
@@ -429,17 +471,17 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
             🔍 SEARCH & FILTER ROSTER
           </h3>
           <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            Search globally or dynamically add specific data classification filters.
+            Search globally or dynamically add specific data classification filters. Autocomplete guides your text searches.
           </p>
         </div>
 
-        {/* Global Search input */}
+        {/* Global Search input with Autocomplete */}
         <div style={{ marginBottom: '1.25rem' }}>
-          <input
-            type="text"
+          <AutocompleteInput
             placeholder="Type any keyword (e.g. Black eyes, Methodist, Cebu, Guitar, Regional Science...)"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={setSearchTerm}
+            suggestionsList={globalSuggestionsList}
             style={{
               width: '100%',
               padding: '0.75rem 1rem',
@@ -515,11 +557,11 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
                     ))}
                   </select>
                 ) : (
-                  <input
-                    type="text"
+                  <AutocompleteInput
                     placeholder={`Type ${config.label.toLowerCase()}...`}
                     value={val}
-                    onChange={(e) => handleFilterValueChange(filterId, e.target.value)}
+                    onChange={(newVal) => handleFilterValueChange(filterId, newVal)}
+                    suggestionsList={fieldSuggestions[filterId] || []}
                     style={inputStyle}
                   />
                 )}
@@ -747,13 +789,109 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
           transform: translateY(-1px);
         }
         .filter-input-card {
-          animation: fadeIn 0.2s ease-out;
+          animation: filterCardFadeIn 0.2s ease-out;
         }
-        @keyframes fadeIn {
+        @keyframes filterCardFadeIn {
           from { opacity: 0; transform: translateY(6px); }
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
+    </div>
+  );
+}
+
+// Autocomplete Input component to guide user text queries
+function AutocompleteInput({ placeholder, value, onChange, suggestionsList, style }) {
+  const [suggestions, setSuggestions] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    onChange(val);
+
+    if (val.trim() === '') {
+      setSuggestions([]);
+      setShowDropdown(false);
+      return;
+    }
+
+    const filtered = suggestionsList
+      .filter(item => item.toLowerCase().includes(val.toLowerCase()) && item.toLowerCase() !== val.toLowerCase())
+      .slice(0, 5); // limit to 5 suggestions
+
+    setSuggestions(filtered);
+    setShowDropdown(filtered.length > 0);
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    onChange(suggestion);
+    setSuggestions([]);
+    setShowDropdown(false);
+  };
+
+  return (
+    <div ref={containerRef} style={{ position: 'relative', width: '100%' }}>
+      <input
+        type="text"
+        placeholder={placeholder}
+        value={value}
+        onChange={handleInputChange}
+        onFocus={() => {
+          if (value.trim() !== '' && suggestions.length > 0) {
+            setShowDropdown(true);
+          }
+        }}
+        style={style}
+      />
+      {showDropdown && (
+        <div style={{
+          position: 'absolute',
+          top: '105%',
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border-color)',
+          borderRadius: '6px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          overflowY: 'auto',
+          maxHeight: '180px'
+        }}>
+          {suggestions.map((s, idx) => (
+            <div
+              key={idx}
+              onClick={() => handleSuggestionClick(s)}
+              style={{
+                padding: '0.45rem 0.6rem',
+                fontSize: '0.8rem',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                borderBottom: idx < suggestions.length - 1 ? '1px solid var(--border-color)' : 'none',
+                transition: 'background 0.15s',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}
+              onMouseOver={(e) => e.target.style.background = 'rgba(212,175,55,0.15)'}
+              onMouseOut={(e) => e.target.style.background = 'none'}
+              title={s}
+            >
+              💡 {s}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -817,7 +955,8 @@ const filterColStyle = {
   border: '1px solid var(--border-color)',
   padding: '0.6rem 0.8rem',
   borderRadius: '8px',
-  boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+  boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
+  position: 'relative'
 };
 
 const labelStyle = {
