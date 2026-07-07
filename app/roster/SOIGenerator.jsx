@@ -4,11 +4,23 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { driveUrlToImage } from '../../lib/googleSheets';
 
-export default function SOIGenerator({ soiData }) {
+export default function SOIGenerator({ 
+  soiData,
+  selectedCadet: controlledSelectedCadet,
+  setSelectedCadet: controlledSetSelectedCadet,
+  showCard: controlledShowCard,
+  setShowCard: controlledSetShowCard
+}) {
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCadet, setSelectedCadet] = useState(null);
-  const [showCard, setShowCard] = useState(false);
+  const [localSelectedCadet, localSetSelectedCadet] = useState(null);
+  const [localShowCard, localSetShowCard] = useState(false);
+
+  const selectedCadet = controlledSelectedCadet !== undefined ? controlledSelectedCadet : localSelectedCadet;
+  const setSelectedCadet = controlledSetSelectedCadet !== undefined ? controlledSetSelectedCadet : localSetSelectedCadet;
+  const showCard = controlledShowCard !== undefined ? controlledShowCard : localShowCard;
+  const setShowCard = controlledSetShowCard !== undefined ? controlledSetShowCard : localSetShowCard;
+
 
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {

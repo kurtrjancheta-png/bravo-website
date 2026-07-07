@@ -1,11 +1,39 @@
-import { getSheetData } from '../../lib/googleSheets';
-import SOIGenerator from './SOIGenerator';
-import { Suspense } from 'react';
+import { getSheetData, parseDateValue } from '../../lib/googleSheets';
+import RosterClient from './RosterClient';
 import { getCadetImageUrl } from '../../lib/imageMatcher';
 
 const SHEET_ID = '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
 
 export const revalidate = 30;
+
+function calculateAge(birthdateStr) {
+  if (!birthdateStr) return '';
+  const s = String(birthdateStr).trim();
+  let birthdate = null;
+  
+  if (s.includes('Date(')) {
+    const match = s.match(/Date\((\d+),(\d+),(\d+)\)/);
+    if (match) {
+      // Month parameter in Google Sheets/JSON is 0-based
+      birthdate = new Date(parseInt(match[1], 10), parseInt(match[2], 10), parseInt(match[3], 10));
+    }
+  } else {
+    const parsed = new Date(s);
+    if (!isNaN(parsed.getTime())) {
+      birthdate = parsed;
+    }
+  }
+
+  if (!birthdate) return '';
+
+  const today = new Date();
+  let age = today.getFullYear() - birthdate.getFullYear();
+  const m = today.getMonth() - birthdate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthdate.getDate())) {
+    age--;
+  }
+  return age;
+}
 
 export default async function RosterPage() {
   const [rosterRows, rawSoiRows] = await Promise.all([
@@ -61,48 +89,67 @@ export default async function RosterPage() {
 
   const soiRows = [olavidezSOI, ...mappedSoiRows];
 
-  // Parsing ATTACHMENT data removed, handled in disposition page
-
-  // Group by class based on requested row indices.
-  // The first data row (row 2 in sheet) is index 0 in the returned array.
-  // 1CL: Rows 2-31 (Index 0-29)
-  // 2CL: Rows 32-68 (Index 30-66)
-  // 3CL: Rows 69-106 (Index 67-104)
-
-  const class1 = [];
-  const class2 = [];
-  const class3 = [];
-
+  // Merge Roster with SOI
+  const allCadets = [];
   rosterRows.forEach((row, i) => {
-    // Basic extraction
     const values = Object.values(row);
     if (!values[1]) return; // Skip empty rows
 
     const cadetClass = (typeof values[1] === 'string' ? values[1] : '').trim().toUpperCase();
     const name = (typeof values[8] === 'string' ? values[8] : '').trim(); // FULL NAME or similar
 
-    const cadet = {
+    const rosterCadet = {
       no: values[0] || i + 1,
       class: cadetClass,
-      firstName: values[2] || '',
-      middleName: values[3] || '',
-      lastName: values[4] || '',
-      serialNo: values[5] || '',
-      gender: values[6] || '',
-      coy: values[7] || '',
-      bos: values[8] || '', // Branch of Service
-      fullName: values[9] || name,
+      firstName: (values[2] || '').trim(),
+      middleName: (values[3] || '').trim(),
+      lastName: (values[4] || '').trim(),
+      serialNo: (values[5] || '').trim(),
+      gender: (values[6] || '').trim(),
+      coy: (values[7] || '').trim(),
+      bos: (values[8] || '').trim(),
+      fullName: (values[9] || name).trim(),
       picture: getCadetImageUrl(values[4] || '', values[2] || '', values[9] || name) || ''
     };
 
-    if (i >= 0 && i <= 29) {
-      class1.push(cadet);
-    } else if (i >= 30 && i <= 66) {
-      class2.push(cadet);
-    } else if (i >= 67 && i <= 104) {
-      class3.push(cadet);
+    // Find matching SOI row
+    const matchingSoi = soiRows.find(soiRow => {
+      const soiSerial = String(soiRow['SERIAL NR'] || soiRow['SERIAL NUMBER'] || '').trim();
+      if (soiSerial && rosterCadet.serialNo && soiSerial.toLowerCase() === rosterCadet.serialNo.toLowerCase()) {
+        return true;
+      }
+      
+      const soiSurname = String(soiRow['SURNAME'] || soiRow['LAST NAME'] || '').trim().toLowerCase();
+      const soiFirst = String(soiRow['FIRST NAME'] || '').trim().toLowerCase();
+      if (soiSurname && rosterCadet.lastName && soiSurname === rosterCadet.lastName.toLowerCase() &&
+          soiFirst && rosterCadet.firstName && soiFirst === rosterCadet.firstName.toLowerCase()) {
+        return true;
+      }
+      return false;
+    });
+
+    const merged = { ...rosterCadet };
+    if (matchingSoi) {
+      // Copy all keys from SOI
+      Object.keys(matchingSoi).forEach(key => {
+        if (!(key in merged)) {
+          merged[key] = matchingSoi[key];
+        }
+      });
+      merged['AGE'] = calculateAge(matchingSoi['BIRTHDATE']);
+      merged.soiMatched = true;
+    } else {
+      merged.soiMatched = false;
+      merged['AGE'] = '';
     }
+
+    allCadets.push(merged);
   });
+
+  // Group by class for the default view
+  const class1 = allCadets.filter(c => c.class === '1CL');
+  const class2 = allCadets.filter(c => c.class === '2CL');
+  const class3 = allCadets.filter(c => c.class === '3CL');
 
   return (
     <div>
@@ -111,62 +158,13 @@ export default async function RosterPage() {
         <div className="section-subtitle">Bravo Company Personnel Directory</div>
       </div>
 
-      {/* SOI Generator at the top */}
-      <Suspense fallback={<div style={{ textAlign: 'center', padding: '2rem' }}>Loading SOI Generator...</div>}>
-        <SOIGenerator soiData={soiRows} />
-      </Suspense>
-
-      {/* Roster Sections */}
-      <div className="roster-sections hide-on-mobile" style={{ marginTop: '3rem' }}>
-        <RosterSection title="1ST CLASS (1CL)" cadets={class1} color="var(--accent-gold)" />
-        <RosterSection title="2ND CLASS (2CL)" cadets={class2} color="#1a7a3a" />
-        <RosterSection title="3RD CLASS (3CL)" cadets={class3} color="#2d3748" />
-      </div>
-    </div>
-  );
-}
-
-function RosterSection({ title, cadets, color }) {
-  if (!cadets || cadets.length === 0) return null;
-
-  return (
-    <div style={{ marginBottom: '3rem' }}>
-      <h2 style={{ 
-        borderBottom: `2px solid ${color}`, 
-        paddingBottom: '0.5rem', 
-        marginBottom: '1rem',
-        color: 'var(--text-primary)',
-        fontSize: '1.25rem',
-        textTransform: 'uppercase'
-      }}>
-        {title}
-      </h2>
-      <div className="table-container">
-        <table className="mobile-card-table">
-          <thead>
-            <tr>
-              <th>No.</th>
-              <th>Serial No.</th>
-              <th>Full Name</th>
-              <th>Gender</th>
-              <th>BOS</th>
-            </tr>
-          </thead>
-          <tbody>
-            {cadets.map((c, idx) => (
-              <tr key={idx}>
-                <td data-label="No." style={{ color: 'var(--text-secondary)' }}>{c.no}</td>
-                <td data-label="Serial No." style={{ fontWeight: 600 }}>{c.serialNo}</td>
-                <td data-label="Full Name" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
-                  {c.lastName}, {c.firstName} {c.middleName}
-                </td>
-                <td data-label="Gender">{c.gender}</td>
-                <td data-label="BOS">{c.bos}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <RosterClient
+        allCadets={allCadets}
+        class1={class1}
+        class2={class2}
+        class3={class3}
+        soiRows={soiRows}
+      />
     </div>
   );
 }
