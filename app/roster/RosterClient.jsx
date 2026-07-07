@@ -164,9 +164,23 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
   };
 
   // Clipboard Copier formatted as: CADET (class) (FULL NAME) (SERIAL NUMBER) CCAFP
-  // E.g. CADET 1CL KURT RANDLE JOSH MOLINA ANCHETA C-27011 CCAFP
+  // With metadata header details at the top
   const copyListToClipboard = () => {
-    let text = '';
+    let filterSummary = [];
+    if (searchTerm) filterSummary.push(`Search: "${searchTerm}"`);
+    if (selectedBOS !== 'ALL') filterSummary.push(`BOS: ${selectedBOS}`);
+    if (selectedClass !== 'ALL') filterSummary.push(`Class: ${selectedClass}`);
+    if (selectedGender !== 'ALL') filterSummary.push(`Gender: ${selectedGender}`);
+    if (selectedBloodType !== 'ALL') filterSummary.push(`Blood Type: ${selectedBloodType}`);
+    if (selectedRegion !== 'ALL') filterSummary.push(`Region: ${selectedRegion}`);
+    if (selectedAllergyStatus !== 'ALL') filterSummary.push(`Allergies: ${selectedAllergyStatus}`);
+    
+    const filterDescription = filterSummary.join(', ') || 'None';
+
+    let text = `Bravo Company Roster Lookup List\n`;
+    text += `Filters: ${filterDescription}\n`;
+    text += `Total Count: ${filteredCadets.length} cadets\n\n`;
+
     filteredCadets.forEach(c => {
       const nameParts = [c.firstName, c.middleName, c.lastName]
         .filter(p => p && String(p).trim() !== '')
@@ -178,7 +192,7 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
     });
 
     navigator.clipboard.writeText(text).then(() => {
-      alert("Filtered roster list copied to clipboard in CADET format!");
+      alert("Filtered roster list copied to clipboard with metadata header!");
     }).catch(err => {
       console.error(err);
       alert("Failed to copy list.");
