@@ -92,24 +92,25 @@ export default async function RosterPage() {
   // Merge Roster with SOI
   const allCadets = [];
   rosterRows.forEach((row, i) => {
-    const values = Object.values(row);
-    if (!values[1]) return; // Skip empty rows
+    // Skip empty rows - check if CLASS or FIRST NAME exists
+    const classVal = String(row['CLASS'] || '').trim();
+    if (!classVal) return;
 
-    const cadetClass = (typeof values[1] === 'string' ? values[1] : '').trim().toUpperCase();
-    const name = (typeof values[8] === 'string' ? values[8] : '').trim(); // FULL NAME or similar
+    const cadetClass = classVal.toUpperCase();
+    const name = String(row['FULL NAME'] || '').trim();
 
     const rosterCadet = {
-      no: values[0] || i + 1,
+      no: row['NO.'] || i + 1,
       class: cadetClass,
-      firstName: (values[2] || '').trim(),
-      middleName: (values[3] || '').trim(),
-      lastName: (values[4] || '').trim(),
-      serialNo: (values[5] || '').trim(),
-      gender: (values[6] || '').trim(),
-      coy: (values[7] || '').trim(),
-      bos: (values[8] || '').trim(),
-      fullName: (values[9] || name).trim(),
-      picture: getCadetImageUrl(values[4] || '', values[2] || '', values[9] || name) || ''
+      firstName: String(row['FIRST NAME'] || '').trim(),
+      middleName: String(row['MIDDLE NAME'] || '').trim(),
+      lastName: String(row['SURNAME'] || '').trim(),
+      serialNo: String(row['SERIAL NO.'] || '').trim(),
+      gender: String(row['GENDER'] || '').trim(),
+      coy: String(row['COY'] || '').trim(),
+      bos: String(row['BOS'] || '').trim(),
+      fullName: name,
+      picture: getCadetImageUrl(row['SURNAME'] || '', row['FIRST NAME'] || '', name) || ''
     };
 
     // Find matching SOI row

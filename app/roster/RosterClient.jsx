@@ -98,19 +98,29 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
     }
 
     // 2. BOS Filter
-    if (selectedBOS !== 'ALL' && c.bos !== selectedBOS) return false;
+    if (selectedBOS !== 'ALL') {
+      if (String(c.bos || '').trim().toUpperCase() !== selectedBOS.toUpperCase()) return false;
+    }
 
     // 3. Class Filter
-    if (selectedClass !== 'ALL' && c.class !== selectedClass) return false;
+    if (selectedClass !== 'ALL') {
+      if (String(c.class || '').trim().toUpperCase() !== selectedClass.toUpperCase()) return false;
+    }
 
     // 4. Gender Filter
-    if (selectedGender !== 'ALL' && c.gender !== selectedGender) return false;
+    if (selectedGender !== 'ALL') {
+      if (String(c.gender || '').trim().toUpperCase() !== selectedGender.toUpperCase()) return false;
+    }
 
     // 5. Blood Type Filter
-    if (selectedBloodType !== 'ALL' && String(c['BLOOD TYPE'] || '').trim().toUpperCase() !== selectedBloodType) return false;
+    if (selectedBloodType !== 'ALL') {
+      if (String(c['BLOOD TYPE'] || '').trim().toUpperCase() !== selectedBloodType.toUpperCase()) return false;
+    }
 
     // 6. Region Filter
-    if (selectedRegion !== 'ALL' && String(c['REGION'] || '').trim().toUpperCase() !== selectedRegion) return false;
+    if (selectedRegion !== 'ALL') {
+      if (String(c['REGION'] || '').trim().toUpperCase() !== selectedRegion.toUpperCase()) return false;
+    }
 
     // 7. Allergies Filter
     if (selectedAllergyStatus !== 'ALL') {
@@ -153,18 +163,22 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
     }
   };
 
-  // Clipboard Copier formatted as: Cadet (class) (FULL NAME) (SERIAL NUMBER) CCAFP
+  // Clipboard Copier formatted as: CADET (class) (FULL NAME) (SERIAL NUMBER) CCAFP
+  // E.g. CADET 1CL KURT RANDLE JOSH MOLINA ANCHETA C-27011 CCAFP
   const copyListToClipboard = () => {
     let text = '';
     filteredCadets.forEach(c => {
-      const fullNameStr = `${c.lastName || ''}, ${c.firstName || ''} ${c.middleName || ''}`.toUpperCase().trim();
-      const classStr = c.class || '';
-      const serialStr = c.serialNo || '';
-      text += `Cadet ${classStr} ${fullNameStr} ${serialStr} CCAFP\n`;
+      const nameParts = [c.firstName, c.middleName, c.lastName]
+        .filter(p => p && String(p).trim() !== '')
+        .map(p => String(p).trim().toUpperCase());
+      const fullNameStr = nameParts.join(' ');
+      const classStr = String(c.class || '').trim().toUpperCase();
+      const serialStr = String(c.serialNo || '').trim().toUpperCase();
+      text += `CADET ${classStr} ${fullNameStr} ${serialStr} CCAFP\n`;
     });
 
     navigator.clipboard.writeText(text).then(() => {
-      alert("Filtered roster list copied to clipboard in Cadet format!");
+      alert("Filtered roster list copied to clipboard in CADET format!");
     }).catch(err => {
       console.error(err);
       alert("Failed to copy list.");
