@@ -3,173 +3,124 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import SOIGenerator from './SOIGenerator';
 
-const FILTER_FIELDS = [
-  { id: 'BOS', label: 'Branch of Service (BOS)', type: 'select' },
-  { id: 'CLASS', label: 'Class (e.g., 1CL)', type: 'select' },
-  { id: 'GENDER', label: 'Gender', type: 'select' },
-  { id: 'AGE', label: 'Age', type: 'number' },
-  { id: 'BLOOD TYPE', label: 'Blood Type', type: 'select' },
-  { id: 'EYES', label: 'Eye Color', type: 'select' },
-  { id: 'HAIR', label: 'Hair Color', type: 'select' },
-  { id: 'RELIGION', label: 'Religion', type: 'select' },
-  { id: 'REGION', label: 'Region', type: 'select' },
-  { id: 'ETHNIC GROUP', label: 'Ethnic Group', type: 'select' },
-  { id: 'ALLERGIES', label: 'Allergies', type: 'text' },
-  { id: 'COURSE BEFORE APPOINTMENT TO PMA', label: 'Pre-PMA Course', type: 'text' },
-  { id: 'NAME OF COLLEGE/ UNIVERSITY', label: 'College/University', type: 'text' },
-  { id: 'NAME OF HIGH SCHOOL', label: 'High School', type: 'text' },
-  { id: 'CORPS SQUAD MEMBERSHIP', label: 'Corps Squad', type: 'text' },
-  { id: 'CLUBS AND ORGANIZATION MEMBERSHIP', label: 'Clubs & Orgs', type: 'text' },
-  { id: 'HOBBIES', label: 'Hobbies', type: 'text' },
-  { id: 'OCCUPATION (FATHER)', label: 'Father\'s Occupation', type: 'text' },
-  { id: 'OCCUPATION (MOTHER)', label: 'Mother\'s Occupation', type: 'text' }
-];
-
 export default function RosterClient({ allCadets, class1, class2, class3, soiRows }) {
-  const [rules, setRules] = useState([]);
-  const [matchType, setMatchType] = useState('AND');
-  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  // Simple, user-friendly filter states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedBOS, setSelectedBOS] = useState('ALL');
+  const [selectedClass, setSelectedClass] = useState('ALL');
+  const [selectedGender, setSelectedGender] = useState('ALL');
+  const [selectedBloodType, setSelectedBloodType] = useState('ALL');
+  const [selectedRegion, setSelectedRegion] = useState('ALL');
+  const [selectedAllergyStatus, setSelectedAllergyStatus] = useState('ALL'); // ALL, NONE, HAS_ALLERGIES
+
   const [selectedCadet, setSelectedCadet] = useState(null);
   const [showCard, setShowCard] = useState(false);
   const generatorRef = useRef(null);
 
-  // Auto-extract unique options for select fields
-  const [uniqueFieldOptions, setUniqueFieldOptions] = useState({});
+  // Dynamic filter options
+  const [bloodTypes, setBloodTypes] = useState([]);
+  const [regions, setRegions] = useState([]);
 
   useEffect(() => {
-    const options = {};
-    FILTER_FIELDS.forEach(field => {
-      if (field.type === 'select') {
-        const vals = allCadets
-          .map(c => c[field.id])
-          .filter(v => v !== undefined && v !== null && String(v).trim() !== '')
-          .map(v => String(v).trim().toUpperCase());
-        options[field.id] = Array.from(new Set(vals)).sort();
-      }
-    });
-    setUniqueFieldOptions(options);
+    // Extract unique blood types
+    const bt = allCadets
+      .map(c => c['BLOOD TYPE'])
+      .filter(v => v && String(v).trim() !== '')
+      .map(v => String(v).trim().toUpperCase());
+    setBloodTypes(Array.from(new Set(bt)).sort());
+
+    // Extract unique regions
+    const reg = allCadets
+      .map(c => c['REGION'])
+      .filter(v => v && String(v).trim() !== '')
+      .map(v => String(v).trim().toUpperCase());
+    setRegions(Array.from(new Set(reg)).sort());
   }, [allCadets]);
 
-  const addRule = (fieldId = 'BOS') => {
-    const fieldConf = FILTER_FIELDS.find(f => f.id === fieldId) || FILTER_FIELDS[0];
-    const isSelect = fieldConf.type === 'select';
-    const firstOption = isSelect && uniqueFieldOptions[fieldId] && uniqueFieldOptions[fieldId].length > 0
-      ? uniqueFieldOptions[fieldId][0]
-      : '';
-    
-    setRules([...rules, {
-      id: Date.now() + Math.random().toString(),
-      field: fieldId,
-      operator: isSelect ? 'equals' : 'contains',
-      value: firstOption
-    }]);
-  };
-
-  const updateRule = (id, updatedFields) => {
-    setRules(rules.map(r => {
-      if (r.id === id) {
-        const newRule = { ...r, ...updatedFields };
-        // Reset operator and value if field changes
-        if (updatedFields.field) {
-          const fieldConf = FILTER_FIELDS.find(f => f.id === updatedFields.field);
-          const isSelect = fieldConf.type === 'select';
-          newRule.operator = isSelect ? 'equals' : 'contains';
-          newRule.value = isSelect && uniqueFieldOptions[updatedFields.field] && uniqueFieldOptions[updatedFields.field].length > 0
-            ? uniqueFieldOptions[updatedFields.field][0]
-            : '';
-        }
-        return newRule;
-      }
-      return r;
-    }));
-  };
-
-  const removeRule = (id) => {
-    setRules(rules.filter(r => r.id !== id));
-  };
-
+  // Apply Quick Presets
   const applyPreset = (presetName) => {
+    resetFilters();
     if (presetName === 'NAVY') {
-      setRules([{ id: 'preset_navy', field: 'BOS', operator: 'equals', value: 'PN' }]);
-      setMatchType('AND');
+      setSelectedBOS('PN');
     } else if (presetName === 'ARMY') {
-      setRules([{ id: 'preset_army', field: 'BOS', operator: 'equals', value: 'PA' }]);
-      setMatchType('AND');
+      setSelectedBOS('PA');
     } else if (presetName === 'AIRFORCE') {
-      setRules([{ id: 'preset_af', field: 'BOS', operator: 'equals', value: 'PAF' }]);
-      setMatchType('AND');
+      setSelectedBOS('PAF');
     } else if (presetName === 'FEMALE') {
-      setRules([{ id: 'preset_female', field: 'GENDER', operator: 'equals', value: 'F' }]);
-      setMatchType('AND');
+      setSelectedGender('F');
     } else if (presetName === 'O_PLUS') {
-      setRules([{ id: 'preset_oplus', field: 'BLOOD TYPE', operator: 'equals', value: 'O+' }]);
-      setMatchType('AND');
+      setSelectedBloodType('O+');
     } else if (presetName === 'ALLERGIES') {
-      setRules([{ id: 'preset_allergies', field: 'ALLERGIES', operator: 'is_not_empty', value: '' }]);
-      setMatchType('AND');
+      setSelectedAllergyStatus('HAS_ALLERGIES');
     }
-    setIsAdvancedOpen(true);
   };
 
-  const clearFilters = () => {
-    setRules([]);
+  const resetFilters = () => {
+    setSearchTerm('');
+    setSelectedBOS('ALL');
+    setSelectedClass('ALL');
+    setSelectedGender('ALL');
+    setSelectedBloodType('ALL');
+    setSelectedRegion('ALL');
+    setSelectedAllergyStatus('ALL');
   };
 
-  const filterCadet = (cadet, rule) => {
-    const { field, operator, value } = rule;
-    const rawVal = cadet[field];
+  // Check if any filter is active
+  const hasActiveFilters = 
+    searchTerm.trim() !== '' ||
+    selectedBOS !== 'ALL' ||
+    selectedClass !== 'ALL' ||
+    selectedGender !== 'ALL' ||
+    selectedBloodType !== 'ALL' ||
+    selectedRegion !== 'ALL' ||
+    selectedAllergyStatus !== 'ALL';
 
-    if (operator === 'is_empty') {
-      return rawVal === undefined || rawVal === null || String(rawVal).trim() === '';
+  // Perform filtration
+  const filteredCadets = allCadets.filter(c => {
+    // 1. Unified Search Term
+    if (searchTerm.trim() !== '') {
+      const q = searchTerm.toLowerCase();
+      const match = 
+        String(c.firstName || '').toLowerCase().includes(q) ||
+        String(c.lastName || '').toLowerCase().includes(q) ||
+        String(c.middleName || '').toLowerCase().includes(q) ||
+        String(c.serialNo || '').toLowerCase().includes(q) ||
+        String(c['REGION'] || '').toLowerCase().includes(q) ||
+        String(c['RELIGION'] || '').toLowerCase().includes(q) ||
+        String(c['ALLERGIES'] || '').toLowerCase().includes(q) ||
+        String(c['HOBBIES'] || '').toLowerCase().includes(q) ||
+        String(c['NAME OF COLLEGE/ UNIVERSITY'] || '').toLowerCase().includes(q) ||
+        String(c['NAME OF HIGH SCHOOL'] || '').toLowerCase().includes(q) ||
+        String(c['CLUBS AND ORGANIZATION MEMBERSHIP'] || '').toLowerCase().includes(q) ||
+        String(c['CORPS SQUAD MEMBERSHIP'] || '').toLowerCase().includes(q);
+      
+      if (!match) return false;
     }
-    if (operator === 'is_not_empty') {
-      const v = rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== '';
-      if (!v) return false;
-      // Also filter out 'none' or 'n/a'
-      const s = String(rawVal).trim().toLowerCase();
-      return s !== 'none' && s !== 'n/a' && s !== 'nil';
+
+    // 2. BOS Filter
+    if (selectedBOS !== 'ALL' && c.bos !== selectedBOS) return false;
+
+    // 3. Class Filter
+    if (selectedClass !== 'ALL' && c.class !== selectedClass) return false;
+
+    // 4. Gender Filter
+    if (selectedGender !== 'ALL' && c.gender !== selectedGender) return false;
+
+    // 5. Blood Type Filter
+    if (selectedBloodType !== 'ALL' && String(c['BLOOD TYPE'] || '').trim().toUpperCase() !== selectedBloodType) return false;
+
+    // 6. Region Filter
+    if (selectedRegion !== 'ALL' && String(c['REGION'] || '').trim().toUpperCase() !== selectedRegion) return false;
+
+    // 7. Allergies Filter
+    if (selectedAllergyStatus !== 'ALL') {
+      const allergies = String(c['ALLERGIES'] || '').trim().toLowerCase();
+      const hasAllergies = allergies !== '' && allergies !== 'none' && allergies !== 'n/a' && allergies !== 'nil';
+      if (selectedAllergyStatus === 'NONE' && hasAllergies) return false;
+      if (selectedAllergyStatus === 'HAS_ALLERGIES' && !hasAllergies) return false;
     }
 
-    if (rawVal === undefined || rawVal === null) return false;
-
-    const cadetValStr = String(rawVal).trim().toLowerCase();
-    const filterValStr = String(value).trim().toLowerCase();
-
-    if (operator === 'equals') {
-      return cadetValStr === filterValStr;
-    }
-    if (operator === 'contains') {
-      return cadetValStr.includes(filterValStr);
-    }
-    if (operator === 'starts_with') {
-      return cadetValStr.startsWith(filterValStr);
-    }
-    if (operator === 'ends_with') {
-      return cadetValStr.endsWith(filterValStr);
-    }
-
-    // Numbers
-    const cadetNum = parseFloat(rawVal);
-    const filterNum = parseFloat(value);
-    if (isNaN(cadetNum) || isNaN(filterNum)) return false;
-
-    if (operator === 'greater_than') return cadetNum > filterNum;
-    if (operator === 'less_than') return cadetNum < filterNum;
-    if (operator === 'greater_than_or_equal') return cadetNum >= filterNum;
-    if (operator === 'less_than_or_equal') return cadetNum <= filterNum;
-
-    return false;
-  };
-
-  // Compute filtered list
-  const hasActiveFilters = rules.length > 0;
-  const filteredCadets = allCadets.filter(cadet => {
-    if (!hasActiveFilters) return true;
-    if (matchType === 'AND') {
-      return rules.every(rule => filterCadet(cadet, rule));
-    } else {
-      return rules.some(rule => filterCadet(cadet, rule));
-    }
+    return true;
   });
 
   const selectCadetProfile = (cadet) => {
@@ -194,7 +145,6 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
         generatorRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     } else {
-      // Fallback
       setSelectedCadet(cadet);
       setShowCard(true);
       if (generatorRef.current) {
@@ -203,7 +153,24 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
     }
   };
 
-  // Utility actions
+  // Clipboard Copier formatted as: Cadet (class) (FULL NAME) (SERIAL NUMBER) CCAFP
+  const copyListToClipboard = () => {
+    let text = '';
+    filteredCadets.forEach(c => {
+      const fullNameStr = `${c.lastName || ''}, ${c.firstName || ''} ${c.middleName || ''}`.toUpperCase().trim();
+      const classStr = c.class || '';
+      const serialStr = c.serialNo || '';
+      text += `Cadet ${classStr} ${fullNameStr} ${serialStr} CCAFP\n`;
+    });
+
+    navigator.clipboard.writeText(text).then(() => {
+      alert("Filtered roster list copied to clipboard in Cadet format!");
+    }).catch(err => {
+      console.error(err);
+      alert("Failed to copy list.");
+    });
+  };
+
   const exportToCSV = () => {
     const headers = ['No.', 'Class', 'Serial No.', 'Full Name', 'Gender', 'BOS', 'Age', 'Blood Type', 'Religion', 'Region', 'Allergies', 'Hobbies'];
     const rows = filteredCadets.map((c, idx) => [
@@ -233,25 +200,18 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
     document.body.removeChild(link);
   };
 
-  const copyListToClipboard = () => {
-    const filterDescription = rules.map(r => `${r.field} ${r.operator} "${r.value || ''}"`).join(` ${matchType} `) || 'None';
-    let text = `Bravo Company Roster Lookup List\nFilters: ${filterDescription}\nTotal Count: ${filteredCadets.length} cadets\n\n`;
-
-    filteredCadets.forEach((c, idx) => {
-      text += `${idx + 1}. ${c.lastName || ''}, ${c.firstName || ''} ${c.middleName || ''} (${c.serialNo || 'N/A'}) - Class ${c.class || ''} - BOS: ${c.bos || 'N/A'}\n`;
-    });
-
-    navigator.clipboard.writeText(text).then(() => {
-      alert("Formatted list copied to clipboard!");
-    }).catch(err => {
-      console.error(err);
-      alert("Failed to copy list.");
-    });
-  };
-
   const printList = () => {
     const printWindow = window.open('', '_blank');
-    const filterDescription = rules.map(r => `${r.field} ${r.operator} "${r.value || ''}"`).join(` ${matchType} `) || 'None';
+    let filterSummary = [];
+    if (searchTerm) filterSummary.push(`Search: "${searchTerm}"`);
+    if (selectedBOS !== 'ALL') filterSummary.push(`BOS: ${selectedBOS}`);
+    if (selectedClass !== 'ALL') filterSummary.push(`Class: ${selectedClass}`);
+    if (selectedGender !== 'ALL') filterSummary.push(`Gender: ${selectedGender}`);
+    if (selectedBloodType !== 'ALL') filterSummary.push(`Blood Type: ${selectedBloodType}`);
+    if (selectedRegion !== 'ALL') filterSummary.push(`Region: ${selectedRegion}`);
+    if (selectedAllergyStatus !== 'ALL') filterSummary.push(`Allergies: ${selectedAllergyStatus}`);
+    
+    const filterDescription = filterSummary.join(', ') || 'None (All Cadets)';
 
     const html = `
       <html>
@@ -338,240 +298,153 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
         </Suspense>
       </div>
 
-      {/* Advanced Search & Filtering Interface */}
+      {/* User Friendly Filter Interface */}
       <div className="filter-system-container" style={{
         background: 'var(--bg-secondary)',
         border: '1px solid var(--border-color)',
         borderRadius: '12px',
         padding: '1.5rem',
-        marginBottom: '3rem',
+        marginBottom: '2rem',
         boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
       }}>
-        {/* Toggle & Title Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              🔍 ADVANCED ROSTER LOOKUP
-            </h3>
-            <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Create custom lists by filtering cadets based on any data classification.
-            </p>
+        <div style={{ marginBottom: '1.25rem' }}>
+          <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            🔍 SEARCH & FILTER ROSTER
+          </h3>
+          <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            Search anything (e.g. eye color, allergies, hobbies, province) or use the dropdowns to quickly filter the roster.
+          </p>
+        </div>
+
+        {/* Global Search input */}
+        <div style={{ marginBottom: '1.25rem' }}>
+          <input
+            type="text"
+            placeholder="Type any keyword (e.g., Brown eyes, Asthma, Cebu, Guitar, Regional Science...)"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '0.75rem 1rem',
+              borderRadius: '8px',
+              border: '1px solid var(--border-color)',
+              background: 'var(--card-bg)',
+              color: 'var(--text-primary)',
+              fontSize: '0.95rem',
+              outline: 'none',
+              transition: 'border-color 0.2s'
+            }}
+          />
+        </div>
+
+        {/* Filter Dropdowns Grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: '1rem',
+          marginBottom: '1.25rem'
+        }}>
+          {/* Class filter */}
+          <div style={filterColStyle}>
+            <label style={labelStyle}>Class</label>
+            <select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} style={selectStyle}>
+              <option value="ALL">All Classes</option>
+              <option value="1CL">1st Class (1CL)</option>
+              <option value="2CL">2nd Class (2CL)</option>
+              <option value="3CL">3rd Class (3CL)</option>
+            </select>
           </div>
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button
-              onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
-              style={{
-                background: isAdvancedOpen ? 'var(--bg-tertiary)' : 'var(--card-bg)',
-                color: isAdvancedOpen ? 'white' : 'var(--text-primary)',
-                border: '1px solid var(--border-color)',
-                padding: '0.5rem 1rem',
-                borderRadius: '8px',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem'
-              }}
-            >
-              {isAdvancedOpen ? 'Collapse Filters ▴' : 'Expand Filter Builder ▾'}
-            </button>
+
+          {/* BOS filter */}
+          <div style={filterColStyle}>
+            <label style={labelStyle}>Branch of Service (BOS)</label>
+            <select value={selectedBOS} onChange={(e) => setSelectedBOS(e.target.value)} style={selectStyle}>
+              <option value="ALL">All Branches</option>
+              <option value="PN">PN (Navy)</option>
+              <option value="PA">PA (Army)</option>
+              <option value="PAF">PAF (Air Force)</option>
+            </select>
+          </div>
+
+          {/* Gender filter */}
+          <div style={filterColStyle}>
+            <label style={labelStyle}>Gender</label>
+            <select value={selectedGender} onChange={(e) => setSelectedGender(e.target.value)} style={selectStyle}>
+              <option value="ALL">All Genders</option>
+              <option value="M">Male</option>
+              <option value="F">Female</option>
+            </select>
+          </div>
+
+          {/* Blood Type filter */}
+          <div style={filterColStyle}>
+            <label style={labelStyle}>Blood Type</label>
+            <select value={selectedBloodType} onChange={(e) => setSelectedBloodType(e.target.value)} style={selectStyle}>
+              <option value="ALL">All Blood Types</option>
+              {bloodTypes.map(type => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Region filter */}
+          <div style={filterColStyle}>
+            <label style={labelStyle}>Region</label>
+            <select value={selectedRegion} onChange={(e) => setSelectedRegion(e.target.value)} style={selectStyle}>
+              <option value="ALL">All Regions</option>
+              {regions.map(r => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Allergy Status filter */}
+          <div style={filterColStyle}>
+            <label style={labelStyle}>Allergies</label>
+            <select value={selectedAllergyStatus} onChange={(e) => setSelectedAllergyStatus(e.target.value)} style={selectStyle}>
+              <option value="ALL">All Cadets</option>
+              <option value="NONE">No Allergies</option>
+              <option value="HAS_ALLERGIES">Has Allergies</option>
+            </select>
           </div>
         </div>
 
-        {/* Preset Chips */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
-          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', alignSelf: 'center', marginRight: '0.5rem' }}>QUICK PRESETS:</span>
-          <button onClick={() => applyPreset('NAVY')} className="preset-chip-btn" style={presetChipStyle}>Navy (PN)</button>
-          <button onClick={() => applyPreset('ARMY')} className="preset-chip-btn" style={presetChipStyle}>Army (PA)</button>
-          <button onClick={() => applyPreset('AIRFORCE')} className="preset-chip-btn" style={presetChipStyle}>Air Force (PAF)</button>
-          <button onClick={() => applyPreset('FEMALE')} className="preset-chip-btn" style={presetChipStyle}>Female Cadets</button>
-          <button onClick={() => applyPreset('O_PLUS')} className="preset-chip-btn" style={presetChipStyle}>O+ Blood Type</button>
-          <button onClick={() => applyPreset('ALLERGIES')} className="preset-chip-btn" style={presetChipStyle}>Allergies Recorded</button>
-        </div>
+        {/* Preset Buttons & Reset Row */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          borderTop: '1px solid var(--border-color)',
+          paddingTop: '1rem'
+        }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginRight: '0.5rem' }}>QUICK FILTERS:</span>
+            <button onClick={() => applyPreset('NAVY')} className="preset-chip-btn" style={presetChipStyle}>Navy (PN)</button>
+            <button onClick={() => applyPreset('ARMY')} className="preset-chip-btn" style={presetChipStyle}>Army (PA)</button>
+            <button onClick={() => applyPreset('AIRFORCE')} className="preset-chip-btn" style={presetChipStyle}>Air Force (PAF)</button>
+            <button onClick={() => applyPreset('FEMALE')} className="preset-chip-btn" style={presetChipStyle}>Female</button>
+            <button onClick={() => applyPreset('ALLERGIES')} className="preset-chip-btn" style={presetChipStyle}>Allergies</button>
+          </div>
 
-        {/* Rules Builder Panel */}
-        {isAdvancedOpen && (
-          <div style={{ marginTop: '1.5rem', padding: '1.25rem', background: 'var(--card-bg)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Match:</span>
-                <select
-                  value={matchType}
-                  onChange={(e) => setMatchType(e.target.value)}
-                  style={{
-                    padding: '0.3rem 0.6rem',
-                    borderRadius: '6px',
-                    border: '1px solid var(--border-color)',
-                    background: 'var(--bg-secondary)',
-                    color: 'var(--text-primary)',
-                    fontWeight: 600,
-                    fontSize: '0.85rem',
-                    outline: 'none'
-                  }}
-                >
-                  <option value="AND">ALL filters (AND)</option>
-                  <option value="OR">ANY filter (OR)</option>
-                </select>
-              </div>
-              {rules.length > 0 && (
-                <button
-                  onClick={clearFilters}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#ef4444',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    textDecoration: 'underline'
-                  }}
-                >
-                  Clear All Filters
-                </button>
-              )}
-            </div>
-
-            {/* Rules List */}
-            {rules.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-secondary)', fontSize: '0.9rem', border: '1px dashed var(--border-color)', borderRadius: '6px' }}>
-                No active filter rules. Click "Add Filter Rule" or a Quick Preset to build your list.
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {rules.map((rule, idx) => {
-                  const fieldConf = FILTER_FIELDS.find(f => f.id === rule.field) || FILTER_FIELDS[0];
-                  const isSelect = fieldConf.type === 'select';
-                  const isNumber = fieldConf.type === 'number';
-
-                  return (
-                    <div key={rule.id} style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center', background: 'var(--bg-secondary)', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-gold)', minWidth: '20px' }}>#{idx + 1}</span>
-
-                      {/* Field Selection */}
-                      <select
-                        value={rule.field}
-                        onChange={(e) => updateRule(rule.id, { field: e.target.value })}
-                        style={selectStyle}
-                      >
-                        {FILTER_FIELDS.map(f => (
-                          <option key={f.id} value={f.id}>{f.label}</option>
-                        ))}
-                      </select>
-
-                      {/* Operator Selection */}
-                      <select
-                        value={rule.operator}
-                        onChange={(e) => updateRule(rule.id, { operator: e.target.value })}
-                        style={selectStyle}
-                      >
-                        {isNumber ? (
-                          <>
-                            <option value="equals">equals</option>
-                            <option value="greater_than">&gt; (greater than)</option>
-                            <option value="less_than">&lt; (less than)</option>
-                            <option value="greater_than_or_equal">&ge; (greater or equal)</option>
-                            <option value="less_than_or_equal">&le; (less or equal)</option>
-                          </>
-                        ) : (
-                          <>
-                            <option value="contains">contains</option>
-                            <option value="equals">equals</option>
-                            <option value="starts_with">starts with</option>
-                            <option value="ends_with">ends with</option>
-                            <option value="is_empty">is empty</option>
-                            <option value="is_not_empty">is not empty</option>
-                          </>
-                        )}
-                      </select>
-
-                      {/* Value Input */}
-                      {rule.operator !== 'is_empty' && rule.operator !== 'is_not_empty' && (
-                        isSelect ? (
-                          <select
-                            value={rule.value}
-                            onChange={(e) => updateRule(rule.id, { value: e.target.value })}
-                            style={selectStyle}
-                          >
-                            <option value="">-- Select Option --</option>
-                            {(uniqueFieldOptions[rule.field] || []).map(opt => (
-                              <option key={opt} value={opt}>{opt}</option>
-                            ))}
-                          </select>
-                        ) : (
-                          <input
-                            type={isNumber ? 'number' : 'text'}
-                            placeholder={isNumber ? 'e.g. 21' : 'Search value...'}
-                            value={rule.value}
-                            onChange={(e) => updateRule(rule.id, { value: e.target.value })}
-                            style={{
-                              padding: '0.4rem 0.6rem',
-                              borderRadius: '6px',
-                              border: '1px solid var(--border-color)',
-                              background: 'var(--card-bg)',
-                              color: 'var(--text-primary)',
-                              fontSize: '0.85rem',
-                              flex: '1 1 150px',
-                              outline: 'none'
-                            }}
-                          />
-                        )
-                      )}
-
-                      {/* Remove Button */}
-                      <button
-                        onClick={() => removeRule(rule.id)}
-                        style={{
-                          background: '#fee2e2',
-                          color: '#ef4444',
-                          border: '1px solid #fecaca',
-                          borderRadius: '6px',
-                          width: '32px',
-                          height: '32px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          cursor: 'pointer',
-                          fontWeight: 'bold',
-                          transition: 'all 0.15s',
-                          marginLeft: 'auto'
-                        }}
-                        onMouseOver={(e) => e.target.style.background = '#fca5a5'}
-                        onMouseOut={(e) => e.target.style.background = '#fee2e2'}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
+          {hasActiveFilters && (
             <button
-              onClick={() => addRule()}
+              onClick={resetFilters}
               style={{
-                marginTop: '1rem',
-                background: 'var(--bg-secondary)',
-                color: 'var(--text-primary)',
-                border: '1px dashed var(--accent-gold)',
-                padding: '0.5rem 1.2rem',
-                borderRadius: '6px',
+                background: 'none',
+                border: 'none',
+                color: '#ef4444',
                 fontSize: '0.85rem',
                 fontWeight: 600,
                 cursor: 'pointer',
-                transition: 'all 0.2s',
-                display: 'block',
-                width: '100%',
-                textAlign: 'center'
+                textDecoration: 'underline'
               }}
-              onMouseOver={(e) => { e.target.style.background = 'var(--accent-gold)'; e.target.style.color = 'white'; }}
-              onMouseOut={(e) => { e.target.style.background = 'var(--bg-secondary)'; e.target.style.color = 'var(--text-primary)'; }}
             >
-              + Add Filter Rule
+              Reset All Filters
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Output / Search Results Section */}
@@ -581,7 +454,7 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem', borderBottom: '2px solid var(--accent-gold)', paddingBottom: '0.75rem' }}>
             <div>
               <h2 style={{ margin: 0, textTransform: 'uppercase', color: 'var(--text-primary)', fontSize: '1.25rem' }}>
-                🔍 Filtered Roster Results
+                🔍 Filtered Results
               </h2>
               <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
                 Found <strong>{filteredCadets.length}</strong> matching cadets in Bravo Company
@@ -591,7 +464,7 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
             {/* List Utilities */}
             {filteredCadets.length > 0 && (
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <button onClick={copyListToClipboard} style={utilityBtnStyle}>📋 Copy List</button>
+                <button onClick={copyListToClipboard} style={utilityBtnStyle}>📋 Copy cadet list</button>
                 <button onClick={printList} style={utilityBtnStyle}>🖨️ Print List</button>
                 <button onClick={exportToCSV} style={{ ...utilityBtnStyle, background: 'var(--accent-gold)', color: 'white', borderColor: 'var(--accent-gold-dark)' }}>📥 Export CSV</button>
               </div>
@@ -602,7 +475,7 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
           {filteredCadets.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '3rem 1rem', background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
               <span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '0.5rem' }}>📭</span>
-              No cadets match the current filter criteria. Check your operators or try clearing rules.
+              No cadets match the current search filters. Try typing a different keyword or resetting dropdowns.
             </div>
           ) : (
             <div className="table-container">
@@ -615,10 +488,8 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
                     <th>Full Name</th>
                     <th>Gender</th>
                     <th>BOS</th>
-                    {rules.map(r => {
-                      const fConf = FILTER_FIELDS.find(f => f.id === r.field);
-                      return fConf ? <th key={r.id}>{fConf.label}</th> : null;
-                    })}
+                    <th>Allergies</th>
+                    <th>Region</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -648,17 +519,14 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
                           {c.bos}
                         </span>
                       </td>
-                      {rules.map(r => {
-                        const fConf = FILTER_FIELDS.find(f => f.id === r.field);
-                        if (!fConf) return null;
-                        const rawVal = c[r.field];
-                        const valString = rawVal !== undefined && rawVal !== null ? String(rawVal) : '--';
-                        return (
-                          <td key={r.id} data-label={fConf.label} style={{ fontStyle: 'italic', color: 'var(--accent-gold)' }}>
-                            {valString}
-                          </td>
-                        );
-                      })}
+                      <td data-label="Allergies" style={{ fontSize: '0.9rem', fontStyle: 'italic' }}>
+                        {c['ALLERGIES'] && String(c['ALLERGIES']).toLowerCase() !== 'none' ? (
+                          <span style={{ color: '#e53e3e', fontWeight: 600 }}>{c['ALLERGIES']}</span>
+                        ) : 'None'}
+                      </td>
+                      <td data-label="Region" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                        {c['REGION'] || '--'}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -744,6 +612,31 @@ function RosterSection({ title, cadets, color, onRowClick }) {
 }
 
 // Inline styles
+const filterColStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '0.35rem'
+};
+
+const labelStyle = {
+  fontSize: '0.8rem',
+  fontWeight: 700,
+  color: 'var(--text-secondary)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em'
+};
+
+const selectStyle = {
+  padding: '0.5rem 0.75rem',
+  borderRadius: '8px',
+  border: '1px solid var(--border-color)',
+  background: 'var(--card-bg)',
+  color: 'var(--text-primary)',
+  fontSize: '0.9rem',
+  outline: 'none',
+  width: '100%'
+};
+
 const presetChipStyle = {
   background: 'var(--card-bg)',
   border: '1px solid var(--border-color)',
@@ -754,18 +647,6 @@ const presetChipStyle = {
   color: 'var(--text-primary)',
   cursor: 'pointer',
   outline: 'none'
-};
-
-const selectStyle = {
-  padding: '0.4rem 0.6rem',
-  borderRadius: '6px',
-  border: '1px solid var(--border-color)',
-  background: 'var(--card-bg)',
-  color: 'var(--text-primary)',
-  fontSize: '0.85rem',
-  fontWeight: 500,
-  outline: 'none',
-  flex: '1 1 120px'
 };
 
 const utilityBtnStyle = {
