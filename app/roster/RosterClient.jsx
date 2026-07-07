@@ -8,6 +8,7 @@ const ALL_FILTERS = [
   { id: 'CLASS', label: 'Class', type: 'select', options: ['1CL', '2CL', '3CL'] },
   { id: 'BOS', label: 'Branch of Service (BOS)', type: 'select', options: ['PN', 'PA', 'PAF'] },
   { id: 'GENDER', label: 'Gender', type: 'select', options: ['M', 'F'], labels: { M: 'Male', F: 'Female' } },
+  { id: 'AGE', label: 'Age', type: 'text' },
   { id: 'BLOOD TYPE', label: 'Blood Type', type: 'select', dynamicOptionsKey: 'bloodTypes' },
   { id: 'REGION', label: 'Region', type: 'select', dynamicOptionsKey: 'regions' },
   { id: 'ALLERGIES', label: 'Allergies', type: 'select', options: ['NONE', 'HAS_ALLERGIES'], labels: { NONE: 'No Allergies', HAS_ALLERGIES: 'Has Allergies' } },
@@ -20,13 +21,19 @@ const ALL_FILTERS = [
   { id: 'CLUBS AND ORGANIZATION MEMBERSHIP', label: 'Clubs & Orgs', type: 'text' },
   { id: 'HOBBIES', label: 'Hobbies', type: 'text' },
   { id: 'OCCUPATION (FATHER)', label: 'Father\'s Occupation', type: 'text' },
-  { id: 'OCCUPATION (MOTHER)', label: 'Mother\'s Occupation', type: 'text' }
+  { id: 'OCCUPATION (MOTHER)', label: 'Mother\'s Occupation', type: 'text' },
+  { id: 'EYES', label: 'Eye Color', type: 'text' },
+  { id: 'HAIR', label: 'Hair Color', type: 'text' },
+  { id: 'HEIGHT', label: 'Height (cm)', type: 'text' },
+  { id: 'WEIGHT', label: 'Weight (kg)', type: 'text' },
+  { id: 'ADDRESS', label: 'Address', type: 'text' }
 ];
 
 const INITIAL_FILTER_VALUES = {
   CLASS: 'ALL',
   BOS: 'ALL',
   GENDER: 'ALL',
+  AGE: '',
   'BLOOD TYPE': 'ALL',
   REGION: 'ALL',
   ALLERGIES: 'ALL',
@@ -39,7 +46,21 @@ const INITIAL_FILTER_VALUES = {
   'CLUBS AND ORGANIZATION MEMBERSHIP': '',
   HOBBIES: '',
   'OCCUPATION (FATHER)': '',
-  'OCCUPATION (MOTHER)': ''
+  'OCCUPATION (MOTHER)': '',
+  EYES: '',
+  HAIR: '',
+  HEIGHT: '',
+  WEIGHT: '',
+  ADDRESS: ''
+};
+
+// Maps uppercase filter IDs to the corresponding lowercase/camelCase property keys on the mapped cadet object.
+const getCadetValue = (cadet, key) => {
+  if (key === 'CLASS') return cadet.class;
+  if (key === 'BOS') return cadet.bos;
+  if (key === 'GENDER') return cadet.gender;
+  if (key === 'SERIAL NO.') return cadet.serialNo;
+  return cadet[key];
 };
 
 export default function RosterClient({ allCadets, class1, class2, class3, soiRows }) {
@@ -75,7 +96,7 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
   useEffect(() => {
     const extractUnique = (key) => {
       const vals = allCadets
-        .map(c => c[key])
+        .map(c => getCadetValue(c, key))
         .filter(v => v && String(v).trim() !== '')
         .map(v => String(v).trim().toUpperCase());
       return Array.from(new Set(vals)).sort();
@@ -100,7 +121,7 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
     ALL_FILTERS.forEach(f => {
       const valuesSet = new Set();
       allCadets.forEach(c => {
-        const val = c[f.id];
+        const val = getCadetValue(c, f.id);
         if (val && String(val).trim() !== '') {
           const sVal = String(val).trim();
           
@@ -166,6 +187,10 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
         String(c.lastName || '').toLowerCase().includes(q) ||
         String(c.middleName || '').toLowerCase().includes(q) ||
         String(c.serialNo || '').toLowerCase().includes(q) ||
+        String(c.class || '').toLowerCase().includes(q) ||
+        String(c.bos || '').toLowerCase().includes(q) ||
+        String(c.gender || '').toLowerCase().includes(q) ||
+        String(c.AGE || '').toLowerCase().includes(q) ||
         String(c['REGION'] || '').toLowerCase().includes(q) ||
         String(c['RELIGION'] || '').toLowerCase().includes(q) ||
         String(c['ALLERGIES'] || '').toLowerCase().includes(q) ||
@@ -190,11 +215,18 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
         continue;
       }
 
-      const rawVal = c[filterId];
+      const rawVal = getCadetValue(c, filterId);
       if (rawVal === undefined || rawVal === null) return false;
 
       const cadetValStr = String(rawVal).trim().toLowerCase();
       const filterValStr = String(value).trim().toLowerCase();
+
+      if (filterId === 'GENDER') {
+        const isCadetMale = cadetValStr.startsWith('m');
+        const isFilterMale = filterValStr.startsWith('m');
+        if (isCadetMale !== isFilterMale) return false;
+        continue;
+      }
 
       const filterConf = ALL_FILTERS.find(f => f.id === filterId);
       if (filterConf && filterConf.type === 'text') {
@@ -224,6 +256,14 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
     return val !== 'ALL' && val !== '';
   });
   const hasActiveAppliedFilters = isAppliedSearchActive || hasAppliedFilterValues;
+
+  // Check if any draft or applied filter is currently active
+  const isDraftSearchActive = searchTerm.trim() !== '';
+  const hasDraftFilterValues = activeFilterIds.some(id => {
+    const val = filterValues[id];
+    return val !== 'ALL' && val !== '';
+  });
+  const hasActiveFilters = isDraftSearchActive || hasDraftFilterValues || hasActiveAppliedFilters;
 
   // Apply draft filters to the live table view
   const applyFilters = () => {
