@@ -23,32 +23,35 @@ const ALL_FILTERS = [
   { id: 'OCCUPATION (MOTHER)', label: 'Mother\'s Occupation', type: 'text' }
 ];
 
+const INITIAL_FILTER_VALUES = {
+  CLASS: 'ALL',
+  BOS: 'ALL',
+  GENDER: 'ALL',
+  'BLOOD TYPE': 'ALL',
+  REGION: 'ALL',
+  ALLERGIES: 'ALL',
+  RELIGION: 'ALL',
+  'ETHNIC GROUP': 'ALL',
+  'COURSE BEFORE APPOINTMENT TO PMA': '',
+  'NAME OF COLLEGE/ UNIVERSITY': '',
+  'NAME OF HIGH SCHOOL': '',
+  'CORPS SQUAD MEMBERSHIP': '',
+  'CLUBS AND ORGANIZATION MEMBERSHIP': '',
+  HOBBIES: '',
+  'OCCUPATION (FATHER)': '',
+  'OCCUPATION (MOTHER)': ''
+};
+
 export default function RosterClient({ allCadets, class1, class2, class3, soiRows }) {
-  // Simple search input
+  // DRAFT states (inputs change these immediately)
   const [searchTerm, setSearchTerm] = useState('');
-
-  // Active filter IDs displayed in the filter grid
   const [activeFilterIds, setActiveFilterIds] = useState(['CLASS', 'BOS', 'GENDER']);
+  const [filterValues, setFilterValues] = useState({ ...INITIAL_FILTER_VALUES });
 
-  // Filter values matching each filter ID
-  const [filterValues, setFilterValues] = useState({
-    CLASS: 'ALL',
-    BOS: 'ALL',
-    GENDER: 'ALL',
-    'BLOOD TYPE': 'ALL',
-    REGION: 'ALL',
-    ALLERGIES: 'ALL',
-    RELIGION: 'ALL',
-    'ETHNIC GROUP': 'ALL',
-    'COURSE BEFORE APPOINTMENT TO PMA': '',
-    'NAME OF COLLEGE/ UNIVERSITY': '',
-    'NAME OF HIGH SCHOOL': '',
-    'CORPS SQUAD MEMBERSHIP': '',
-    'CLUBS AND ORGANIZATION MEMBERSHIP': '',
-    HOBBIES: '',
-    'OCCUPATION (FATHER)': '',
-    'OCCUPATION (MOTHER)': ''
-  });
+  // APPLIED states (the table filters by these)
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState('');
+  const [appliedActiveFilterIds, setAppliedActiveFilterIds] = useState(['CLASS', 'BOS', 'GENDER']);
+  const [appliedFilterValues, setAppliedFilterValues] = useState({ ...INITIAL_FILTER_VALUES });
 
   const [showOtherMenu, setShowOtherMenu] = useState(false);
   const [selectedCadet, setSelectedCadet] = useState(null);
@@ -101,7 +104,6 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
         if (val && String(val).trim() !== '') {
           const sVal = String(val).trim();
           
-          // Split list-like fields to get individual terms for suggestions
           if (f.id === 'HOBBIES' || f.id === 'CLUBS AND ORGANIZATION MEMBERSHIP' || f.id === 'CORPS SQUAD MEMBERSHIP' || f.id === 'ALLERGIES') {
             sVal.split(/[,;&]/).forEach(term => {
               const trimmed = term.trim();
@@ -135,7 +137,7 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Set individual filter value
+  // Set individual filter value in draft
   const handleFilterValueChange = (filterId, value) => {
     setFilterValues(prev => ({ ...prev, [filterId]: value }));
   };
@@ -151,75 +153,14 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
   // Remove a filter input and reset its state
   const removeFilter = (filterId) => {
     setActiveFilterIds(activeFilterIds.filter(id => id !== filterId));
-    // Reset its value
     const isSelect = ALL_FILTERS.find(f => f.id === filterId)?.type === 'select';
     handleFilterValueChange(filterId, isSelect ? 'ALL' : '');
   };
 
-  // Apply Quick Presets
-  const applyPreset = (presetName) => {
-    resetFilters();
-    if (presetName === 'NAVY') {
-      ensureFilterActive('BOS');
-      handleFilterValueChange('BOS', 'PN');
-    } else if (presetName === 'ARMY') {
-      ensureFilterActive('BOS');
-      handleFilterValueChange('BOS', 'PA');
-    } else if (presetName === 'AIRFORCE') {
-      ensureFilterActive('BOS');
-      handleFilterValueChange('BOS', 'PAF');
-    } else if (presetName === 'FEMALE') {
-      ensureFilterActive('GENDER');
-      handleFilterValueChange('GENDER', 'F');
-    } else if (presetName === 'O_PLUS') {
-      ensureFilterActive('BLOOD TYPE');
-      handleFilterValueChange('BLOOD TYPE', 'O+');
-    } else if (presetName === 'ALLERGIES') {
-      ensureFilterActive('ALLERGIES');
-      handleFilterValueChange('ALLERGIES', 'HAS_ALLERGIES');
-    }
-  };
-
-  const ensureFilterActive = (filterId) => {
-    setActiveFilterIds(prev => prev.includes(filterId) ? prev : [...prev, filterId]);
-  };
-
-  const resetFilters = () => {
-    setSearchTerm('');
-    setFilterValues({
-      CLASS: 'ALL',
-      BOS: 'ALL',
-      GENDER: 'ALL',
-      'BLOOD TYPE': 'ALL',
-      REGION: 'ALL',
-      ALLERGIES: 'ALL',
-      RELIGION: 'ALL',
-      'ETHNIC GROUP': 'ALL',
-      'COURSE BEFORE APPOINTMENT TO PMA': '',
-      'NAME OF COLLEGE/ UNIVERSITY': '',
-      'NAME OF HIGH SCHOOL': '',
-      'CORPS SQUAD MEMBERSHIP': '',
-      'CLUBS AND ORGANIZATION MEMBERSHIP': '',
-      HOBBIES: '',
-      'OCCUPATION (FATHER)': '',
-      'OCCUPATION (MOTHER)': ''
-    });
-    setActiveFilterIds(['CLASS', 'BOS', 'GENDER']);
-  };
-
-  // Check if any filter is currently in use
-  const isSearchActive = searchTerm.trim() !== '';
-  const hasActiveFilterValues = activeFilterIds.some(id => {
-    const val = filterValues[id];
-    return val !== 'ALL' && val !== '';
-  });
-  const hasActiveFilters = isSearchActive || hasActiveFilterValues;
-
-  // Perform filtration
-  const filteredCadets = allCadets.filter(c => {
-    // 1. Unified Search Term
-    if (searchTerm.trim() !== '') {
-      const q = searchTerm.toLowerCase();
+  // Helper to check if a specific cadet passes filters (reusable for draft & applied)
+  const cadetPassesFilters = (c, searchVal, activeIds, valuesMap) => {
+    if (searchVal.trim() !== '') {
+      const q = searchVal.toLowerCase();
       const match = 
         String(c.firstName || '').toLowerCase().includes(q) ||
         String(c.lastName || '').toLowerCase().includes(q) ||
@@ -237,9 +178,8 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
       if (!match) return false;
     }
 
-    // 2. Loop over active filters
-    for (const filterId of activeFilterIds) {
-      const value = filterValues[filterId];
+    for (const filterId of activeIds) {
+      const value = valuesMap[filterId];
       if (value === 'ALL' || value === '') continue;
 
       if (filterId === 'ALLERGIES' && (value === 'NONE' || value === 'HAS_ALLERGIES')) {
@@ -265,10 +205,84 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
     }
 
     return true;
+  };
+
+  // Compute Draft Matches Count (in real time)
+  const draftFilteredCadets = allCadets.filter(c => 
+    cadetPassesFilters(c, searchTerm, activeFilterIds, filterValues)
+  );
+
+  // Compute Applied Matches List (only updates when Show Results is clicked)
+  const filteredCadets = allCadets.filter(c => 
+    cadetPassesFilters(c, appliedSearchTerm, appliedActiveFilterIds, appliedFilterValues)
+  );
+
+  // Check if any applied filter is active (to show Results Table vs Default Sections)
+  const isAppliedSearchActive = appliedSearchTerm.trim() !== '';
+  const hasAppliedFilterValues = appliedActiveFilterIds.some(id => {
+    const val = appliedFilterValues[id];
+    return val !== 'ALL' && val !== '';
   });
+  const hasActiveAppliedFilters = isAppliedSearchActive || hasAppliedFilterValues;
+
+  // Apply draft filters to the live table view
+  const applyFilters = () => {
+    setAppliedSearchTerm(searchTerm);
+    setAppliedActiveFilterIds([...activeFilterIds]);
+    setAppliedFilterValues({ ...filterValues });
+  };
+
+  // Reset both draft and applied states
+  const resetFilters = () => {
+    setSearchTerm('');
+    setFilterValues({ ...INITIAL_FILTER_VALUES });
+    setActiveFilterIds(['CLASS', 'BOS', 'GENDER']);
+
+    setAppliedSearchTerm('');
+    setAppliedFilterValues({ ...INITIAL_FILTER_VALUES });
+    setAppliedActiveFilterIds(['CLASS', 'BOS', 'GENDER']);
+  };
+
+  // Quick preset loader (instantly sets drafts AND applies them for one-click action)
+  const applyPreset = (presetName) => {
+    resetFilters();
+    
+    // Set drafts
+    let updatedActiveIds = ['CLASS', 'BOS', 'GENDER'];
+    let updatedValues = { ...INITIAL_FILTER_VALUES };
+
+    if (presetName === 'NAVY') {
+      updatedValues.BOS = 'PN';
+    } else if (presetName === 'ARMY') {
+      updatedValues.BOS = 'PA';
+    } else if (presetName === 'AIRFORCE') {
+      updatedValues.BOS = 'PAF';
+    } else if (presetName === 'FEMALE') {
+      updatedValues.GENDER = 'F';
+    } else if (presetName === 'O_PLUS') {
+      if (!updatedActiveIds.includes('BLOOD TYPE')) updatedActiveIds.push('BLOOD TYPE');
+      updatedValues['BLOOD TYPE'] = 'O+';
+    } else if (presetName === 'ALLERGIES') {
+      if (!updatedActiveIds.includes('ALLERGIES')) updatedActiveIds.push('ALLERGIES');
+      updatedValues.ALLERGIES = 'HAS_ALLERGIES';
+    }
+
+    setFilterValues(updatedValues);
+    setActiveFilterIds(updatedActiveIds);
+
+    // Apply immediately
+    setAppliedSearchTerm('');
+    setAppliedActiveFilterIds(updatedActiveIds);
+    setAppliedFilterValues(updatedValues);
+  };
+
+  // Check if draft inputs are different from applied values (pending changes)
+  const isDraftDifferent = 
+    searchTerm !== appliedSearchTerm ||
+    JSON.stringify(activeFilterIds) !== JSON.stringify(appliedActiveFilterIds) ||
+    JSON.stringify(filterValues) !== JSON.stringify(appliedFilterValues);
 
   const selectCadetProfile = (cadet) => {
-    // Find matching SOI row in main soiRows
     const found = soiRows.find(row => {
       const soiSerial = String(row['SERIAL NR'] || row['SERIAL NUMBER'] || '').trim();
       const cSerial = String(cadet.serialNo || '').trim();
@@ -300,9 +314,9 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
   // Clipboard Copier formatted as: CADET (class) (FULL NAME) (SERIAL NUMBER) CCAFP
   const copyListToClipboard = () => {
     let filterSummary = [];
-    if (searchTerm) filterSummary.push(`Search: "${searchTerm}"`);
-    activeFilterIds.forEach(id => {
-      const val = filterValues[id];
+    if (appliedSearchTerm) filterSummary.push(`Search: "${appliedSearchTerm}"`);
+    appliedActiveFilterIds.forEach(id => {
+      const val = appliedFilterValues[id];
       if (val !== 'ALL' && val !== '') filterSummary.push(`${id}: ${val}`);
     });
     
@@ -362,9 +376,9 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
   const printList = () => {
     const printWindow = window.open('', '_blank');
     let filterSummary = [];
-    if (searchTerm) filterSummary.push(`Search: "${searchTerm}"`);
-    activeFilterIds.forEach(id => {
-      const val = filterValues[id];
+    if (appliedSearchTerm) filterSummary.push(`Search: "${appliedSearchTerm}"`);
+    appliedActiveFilterIds.forEach(id => {
+      const val = appliedFilterValues[id];
       if (val !== 'ALL' && val !== '') filterSummary.push(`${id}: ${val}`);
     });
     const filterDescription = filterSummary.join(', ') || 'None (All Cadets)';
@@ -439,7 +453,6 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
     printWindow.document.close();
   };
 
-  // Get available filters that are not yet active
   const remainingFilters = ALL_FILTERS.filter(f => !activeFilterIds.includes(f.id));
 
   return (
@@ -471,7 +484,7 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
             🔍 SEARCH & FILTER ROSTER
           </h3>
           <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            Search globally or dynamically add specific data classification filters. Autocomplete guides your text searches.
+            Configure your filters and search keywords, then click "Show Results" to update the directory.
           </p>
         </div>
 
@@ -664,23 +677,58 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
             <button onClick={() => applyPreset('ALLERGIES')} className="preset-chip-btn" style={presetChipStyle}>Allergies</button>
           </div>
 
-          {/* Reset Filters */}
-          {hasActiveFilters && (
+          {/* Reset Filters & Show Results Action Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            {hasActiveFilters && (
+              <button
+                onClick={resetFilters}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#ef4444',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  textDecoration: 'underline'
+                }}
+              >
+                Reset Filters
+              </button>
+            )}
+
+            {/* Show Results Button */}
             <button
-              onClick={resetFilters}
+              onClick={applyFilters}
+              disabled={!isDraftDifferent}
               style={{
-                background: 'none',
-                border: 'none',
-                color: '#ef4444',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                textDecoration: 'underline'
+                background: isDraftDifferent ? 'var(--accent-gold)' : 'var(--bg-secondary)',
+                color: isDraftDifferent ? 'white' : 'var(--text-secondary)',
+                border: isDraftDifferent ? '1px solid var(--accent-gold-dark)' : '1px solid var(--border-color)',
+                padding: '0.6rem 1.5rem',
+                borderRadius: '8px',
+                fontSize: '0.9rem',
+                fontWeight: 700,
+                cursor: isDraftDifferent ? 'pointer' : 'not-allowed',
+                transition: 'all 0.2s',
+                textTransform: 'uppercase',
+                boxShadow: isDraftDifferent ? '0 4px 12px rgba(212,175,55,0.2)' : 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
+              onMouseOver={(e) => {
+                if (isDraftDifferent) e.target.style.background = 'var(--accent-gold-dark)';
+              }}
+              onMouseOut={(e) => {
+                if (isDraftDifferent) e.target.style.background = 'var(--accent-gold)';
               }}
             >
-              Reset Filters
+              {isDraftDifferent 
+                ? `⚡ Show Results (${draftFilteredCadets.length} matches)`
+                : `✓ Results Up to Date`
+              }
             </button>
-          )}
+          </div>
         </div>
       </div>
 
@@ -689,7 +737,7 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
         minHeight: '600px',
         position: 'relative'
       }}>
-        {hasActiveFilters ? (
+        {hasActiveAppliedFilters ? (
           <div style={{ animation: 'fadeIn 0.3s ease' }}>
             {/* Results Action Bar */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem', borderBottom: '2px solid var(--accent-gold)', paddingBottom: '0.75rem' }}>
