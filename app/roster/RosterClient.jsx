@@ -516,8 +516,6 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
                     <th>Full Name</th>
                     <th>Gender</th>
                     <th>BOS</th>
-                    <th>Allergies</th>
-                    <th>Region</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -546,14 +544,6 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
                         }}>
                           {c.bos}
                         </span>
-                      </td>
-                      <td data-label="Allergies" style={{ fontSize: '0.9rem', fontStyle: 'italic' }}>
-                        {c['ALLERGIES'] && String(c['ALLERGIES']).toLowerCase() !== 'none' ? (
-                          <span style={{ color: '#e53e3e', fontWeight: 600 }}>{c['ALLERGIES']}</span>
-                        ) : 'None'}
-                      </td>
-                      <td data-label="Region" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                        {c['REGION'] || '--'}
                       </td>
                     </tr>
                   ))}
