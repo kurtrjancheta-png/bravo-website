@@ -3,77 +3,175 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import SOIGenerator from './SOIGenerator';
 
-export default function RosterClient({ allCadets, class1, class2, class3, soiRows }) {
-  // Simple, user-friendly filter states
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedBOS, setSelectedBOS] = useState('ALL');
-  const [selectedClass, setSelectedClass] = useState('ALL');
-  const [selectedGender, setSelectedGender] = useState('ALL');
-  const [selectedBloodType, setSelectedBloodType] = useState('ALL');
-  const [selectedRegion, setSelectedRegion] = useState('ALL');
-  const [selectedAllergyStatus, setSelectedAllergyStatus] = useState('ALL'); // ALL, NONE, HAS_ALLERGIES
+// Configuration for all possible filters
+const ALL_FILTERS = [
+  { id: 'CLASS', label: 'Class', type: 'select', options: ['1CL', '2CL', '3CL'] },
+  { id: 'BOS', label: 'Branch of Service (BOS)', type: 'select', options: ['PN', 'PA', 'PAF'] },
+  { id: 'GENDER', label: 'Gender', type: 'select', options: ['M', 'F'], labels: { M: 'Male', F: 'Female' } },
+  { id: 'BLOOD TYPE', label: 'Blood Type', type: 'select', dynamicOptionsKey: 'bloodTypes' },
+  { id: 'REGION', label: 'Region', type: 'select', dynamicOptionsKey: 'regions' },
+  { id: 'ALLERGIES', label: 'Allergies', type: 'select', options: ['NONE', 'HAS_ALLERGIES'], labels: { NONE: 'No Allergies', HAS_ALLERGIES: 'Has Allergies' } },
+  { id: 'RELIGION', label: 'Religion', type: 'select', dynamicOptionsKey: 'religions' },
+  { id: 'ETHNIC GROUP', label: 'Ethnic Group', type: 'select', dynamicOptionsKey: 'ethnicGroups' },
+  { id: 'COURSE BEFORE APPOINTMENT TO PMA', label: 'Pre-PMA Course', type: 'text' },
+  { id: 'NAME OF COLLEGE/ UNIVERSITY', label: 'College/University', type: 'text' },
+  { id: 'NAME OF HIGH SCHOOL', label: 'High School', type: 'text' },
+  { id: 'CORPS SQUAD MEMBERSHIP', label: 'Corps Squad', type: 'text' },
+  { id: 'CLUBS AND ORGANIZATION MEMBERSHIP', label: 'Clubs & Orgs', type: 'text' },
+  { id: 'HOBBIES', label: 'Hobbies', type: 'text' },
+  { id: 'OCCUPATION (FATHER)', label: 'Father\'s Occupation', type: 'text' },
+  { id: 'OCCUPATION (MOTHER)', label: 'Mother\'s Occupation', type: 'text' }
+];
 
+export default function RosterClient({ allCadets, class1, class2, class3, soiRows }) {
+  // Simple search input
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Active filter IDs displayed in the filter grid
+  const [activeFilterIds, setActiveFilterIds] = useState(['CLASS', 'BOS', 'GENDER']);
+
+  // Filter values matching each filter ID
+  const [filterValues, setFilterValues] = useState({
+    CLASS: 'ALL',
+    BOS: 'ALL',
+    GENDER: 'ALL',
+    'BLOOD TYPE': 'ALL',
+    REGION: 'ALL',
+    ALLERGIES: 'ALL',
+    RELIGION: 'ALL',
+    'ETHNIC GROUP': 'ALL',
+    'COURSE BEFORE APPOINTMENT TO PMA': '',
+    'NAME OF COLLEGE/ UNIVERSITY': '',
+    'NAME OF HIGH SCHOOL': '',
+    'CORPS SQUAD MEMBERSHIP': '',
+    'CLUBS AND ORGANIZATION MEMBERSHIP': '',
+    HOBBIES: '',
+    'OCCUPATION (FATHER)': '',
+    'OCCUPATION (MOTHER)': ''
+  });
+
+  const [showOtherMenu, setShowOtherMenu] = useState(false);
   const [selectedCadet, setSelectedCadet] = useState(null);
   const [showCard, setShowCard] = useState(false);
+  
   const generatorRef = useRef(null);
+  const otherMenuRef = useRef(null);
 
-  // Dynamic filter options
-  const [bloodTypes, setBloodTypes] = useState([]);
-  const [regions, setRegions] = useState([]);
+  // Dynamic filter options extracted from the sheet database
+  const [dynamicOptions, setDynamicOptions] = useState({
+    bloodTypes: [],
+    regions: [],
+    religions: [],
+    ethnicGroups: []
+  });
 
   useEffect(() => {
-    // Extract unique blood types
-    const bt = allCadets
-      .map(c => c['BLOOD TYPE'])
-      .filter(v => v && String(v).trim() !== '')
-      .map(v => String(v).trim().toUpperCase());
-    setBloodTypes(Array.from(new Set(bt)).sort());
+    const extractUnique = (key) => {
+      const vals = allCadets
+        .map(c => c[key])
+        .filter(v => v && String(v).trim() !== '')
+        .map(v => String(v).trim().toUpperCase());
+      return Array.from(new Set(vals)).sort();
+    };
 
-    // Extract unique regions
-    const reg = allCadets
-      .map(c => c['REGION'])
-      .filter(v => v && String(v).trim() !== '')
-      .map(v => String(v).trim().toUpperCase());
-    setRegions(Array.from(new Set(reg)).sort());
+    setDynamicOptions({
+      bloodTypes: extractUnique('BLOOD TYPE'),
+      regions: extractUnique('REGION'),
+      religions: extractUnique('RELIGION'),
+      ethnicGroups: extractUnique('ETHNIC GROUP')
+    });
   }, [allCadets]);
+
+  // Click outside menu listener to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (otherMenuRef.current && !otherMenuRef.current.contains(event.target)) {
+        setShowOtherMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Set individual filter value
+  const handleFilterValueChange = (filterId, value) => {
+    setFilterValues(prev => ({ ...prev, [filterId]: value }));
+  };
+
+  // Add a dynamic filter input to the layout
+  const addFilter = (filterId) => {
+    if (!activeFilterIds.includes(filterId)) {
+      setActiveFilterIds([...activeFilterIds, filterId]);
+    }
+    setShowOtherMenu(false);
+  };
+
+  // Remove a filter input and reset its state
+  const removeFilter = (filterId) => {
+    setActiveFilterIds(activeFilterIds.filter(id => id !== filterId));
+    // Reset its value
+    const isSelect = ALL_FILTERS.find(f => f.id === filterId)?.type === 'select';
+    handleFilterValueChange(filterId, isSelect ? 'ALL' : '');
+  };
 
   // Apply Quick Presets
   const applyPreset = (presetName) => {
     resetFilters();
     if (presetName === 'NAVY') {
-      setSelectedBOS('PN');
+      ensureFilterActive('BOS');
+      handleFilterValueChange('BOS', 'PN');
     } else if (presetName === 'ARMY') {
-      setSelectedBOS('PA');
+      ensureFilterActive('BOS');
+      handleFilterValueChange('BOS', 'PA');
     } else if (presetName === 'AIRFORCE') {
-      setSelectedBOS('PAF');
+      ensureFilterActive('BOS');
+      handleFilterValueChange('BOS', 'PAF');
     } else if (presetName === 'FEMALE') {
-      setSelectedGender('F');
+      ensureFilterActive('GENDER');
+      handleFilterValueChange('GENDER', 'F');
     } else if (presetName === 'O_PLUS') {
-      setSelectedBloodType('O+');
+      ensureFilterActive('BLOOD TYPE');
+      handleFilterValueChange('BLOOD TYPE', 'O+');
     } else if (presetName === 'ALLERGIES') {
-      setSelectedAllergyStatus('HAS_ALLERGIES');
+      ensureFilterActive('ALLERGIES');
+      handleFilterValueChange('ALLERGIES', 'HAS_ALLERGIES');
     }
+  };
+
+  const ensureFilterActive = (filterId) => {
+    setActiveFilterIds(prev => prev.includes(filterId) ? prev : [...prev, filterId]);
   };
 
   const resetFilters = () => {
     setSearchTerm('');
-    setSelectedBOS('ALL');
-    setSelectedClass('ALL');
-    setSelectedGender('ALL');
-    setSelectedBloodType('ALL');
-    setSelectedRegion('ALL');
-    setSelectedAllergyStatus('ALL');
+    setFilterValues({
+      CLASS: 'ALL',
+      BOS: 'ALL',
+      GENDER: 'ALL',
+      'BLOOD TYPE': 'ALL',
+      REGION: 'ALL',
+      ALLERGIES: 'ALL',
+      RELIGION: 'ALL',
+      'ETHNIC GROUP': 'ALL',
+      'COURSE BEFORE APPOINTMENT TO PMA': '',
+      'NAME OF COLLEGE/ UNIVERSITY': '',
+      'NAME OF HIGH SCHOOL': '',
+      'CORPS SQUAD MEMBERSHIP': '',
+      'CLUBS AND ORGANIZATION MEMBERSHIP': '',
+      HOBBIES: '',
+      'OCCUPATION (FATHER)': '',
+      'OCCUPATION (MOTHER)': ''
+    });
+    setActiveFilterIds(['CLASS', 'BOS', 'GENDER']);
   };
 
-  // Check if any filter is active
-  const hasActiveFilters = 
-    searchTerm.trim() !== '' ||
-    selectedBOS !== 'ALL' ||
-    selectedClass !== 'ALL' ||
-    selectedGender !== 'ALL' ||
-    selectedBloodType !== 'ALL' ||
-    selectedRegion !== 'ALL' ||
-    selectedAllergyStatus !== 'ALL';
+  // Check if any filter is currently in use
+  const isSearchActive = searchTerm.trim() !== '';
+  const hasActiveFilterValues = activeFilterIds.some(id => {
+    const val = filterValues[id];
+    return val !== 'ALL' && val !== '';
+  });
+  const hasActiveFilters = isSearchActive || hasActiveFilterValues;
 
   // Perform filtration
   const filteredCadets = allCadets.filter(c => {
@@ -97,37 +195,31 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
       if (!match) return false;
     }
 
-    // 2. BOS Filter
-    if (selectedBOS !== 'ALL') {
-      if (String(c.bos || '').trim().toUpperCase() !== selectedBOS.toUpperCase()) return false;
-    }
+    // 2. Loop over active filters
+    for (const filterId of activeFilterIds) {
+      const value = filterValues[filterId];
+      if (value === 'ALL' || value === '') continue;
 
-    // 3. Class Filter
-    if (selectedClass !== 'ALL') {
-      if (String(c.class || '').trim().toUpperCase() !== selectedClass.toUpperCase()) return false;
-    }
+      if (filterId === 'ALLERGIES' && (value === 'NONE' || value === 'HAS_ALLERGIES')) {
+        const allergies = String(c['ALLERGIES'] || '').trim().toLowerCase();
+        const hasAllergies = allergies !== '' && allergies !== 'none' && allergies !== 'n/a' && allergies !== 'nil';
+        if (value === 'NONE' && hasAllergies) return false;
+        if (value === 'HAS_ALLERGIES' && !hasAllergies) return false;
+        continue;
+      }
 
-    // 4. Gender Filter
-    if (selectedGender !== 'ALL') {
-      if (String(c.gender || '').trim().toUpperCase() !== selectedGender.toUpperCase()) return false;
-    }
+      const rawVal = c[filterId];
+      if (rawVal === undefined || rawVal === null) return false;
 
-    // 5. Blood Type Filter
-    if (selectedBloodType !== 'ALL') {
-      if (String(c['BLOOD TYPE'] || '').trim().toUpperCase() !== selectedBloodType.toUpperCase()) return false;
-    }
+      const cadetValStr = String(rawVal).trim().toLowerCase();
+      const filterValStr = String(value).trim().toLowerCase();
 
-    // 6. Region Filter
-    if (selectedRegion !== 'ALL') {
-      if (String(c['REGION'] || '').trim().toUpperCase() !== selectedRegion.toUpperCase()) return false;
-    }
-
-    // 7. Allergies Filter
-    if (selectedAllergyStatus !== 'ALL') {
-      const allergies = String(c['ALLERGIES'] || '').trim().toLowerCase();
-      const hasAllergies = allergies !== '' && allergies !== 'none' && allergies !== 'n/a' && allergies !== 'nil';
-      if (selectedAllergyStatus === 'NONE' && hasAllergies) return false;
-      if (selectedAllergyStatus === 'HAS_ALLERGIES' && !hasAllergies) return false;
+      const filterConf = ALL_FILTERS.find(f => f.id === filterId);
+      if (filterConf && filterConf.type === 'text') {
+        if (!cadetValStr.includes(filterValStr)) return false;
+      } else {
+        if (cadetValStr !== filterValStr) return false;
+      }
     }
 
     return true;
@@ -164,16 +256,13 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
   };
 
   // Clipboard Copier formatted as: CADET (class) (FULL NAME) (SERIAL NUMBER) CCAFP
-  // With metadata header details at the top
   const copyListToClipboard = () => {
     let filterSummary = [];
     if (searchTerm) filterSummary.push(`Search: "${searchTerm}"`);
-    if (selectedBOS !== 'ALL') filterSummary.push(`BOS: ${selectedBOS}`);
-    if (selectedClass !== 'ALL') filterSummary.push(`Class: ${selectedClass}`);
-    if (selectedGender !== 'ALL') filterSummary.push(`Gender: ${selectedGender}`);
-    if (selectedBloodType !== 'ALL') filterSummary.push(`Blood Type: ${selectedBloodType}`);
-    if (selectedRegion !== 'ALL') filterSummary.push(`Region: ${selectedRegion}`);
-    if (selectedAllergyStatus !== 'ALL') filterSummary.push(`Allergies: ${selectedAllergyStatus}`);
+    activeFilterIds.forEach(id => {
+      const val = filterValues[id];
+      if (val !== 'ALL' && val !== '') filterSummary.push(`${id}: ${val}`);
+    });
     
     const filterDescription = filterSummary.join(', ') || 'None';
 
@@ -232,13 +321,10 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
     const printWindow = window.open('', '_blank');
     let filterSummary = [];
     if (searchTerm) filterSummary.push(`Search: "${searchTerm}"`);
-    if (selectedBOS !== 'ALL') filterSummary.push(`BOS: ${selectedBOS}`);
-    if (selectedClass !== 'ALL') filterSummary.push(`Class: ${selectedClass}`);
-    if (selectedGender !== 'ALL') filterSummary.push(`Gender: ${selectedGender}`);
-    if (selectedBloodType !== 'ALL') filterSummary.push(`Blood Type: ${selectedBloodType}`);
-    if (selectedRegion !== 'ALL') filterSummary.push(`Region: ${selectedRegion}`);
-    if (selectedAllergyStatus !== 'ALL') filterSummary.push(`Allergies: ${selectedAllergyStatus}`);
-    
+    activeFilterIds.forEach(id => {
+      const val = filterValues[id];
+      if (val !== 'ALL' && val !== '') filterSummary.push(`${id}: ${val}`);
+    });
     const filterDescription = filterSummary.join(', ') || 'None (All Cadets)';
 
     const html = `
@@ -311,6 +397,9 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
     printWindow.document.close();
   };
 
+  // Get available filters that are not yet active
+  const remainingFilters = ALL_FILTERS.filter(f => !activeFilterIds.includes(f.id));
+
   return (
     <div>
       {/* Target for smooth scrolling when profile is clicked */}
@@ -340,7 +429,7 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
             🔍 SEARCH & FILTER ROSTER
           </h3>
           <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            Search anything (e.g. eye color, allergies, hobbies, province) or use the dropdowns to quickly filter the roster.
+            Search globally or dynamically add specific data classification filters.
           </p>
         </div>
 
@@ -348,7 +437,7 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
         <div style={{ marginBottom: '1.25rem' }}>
           <input
             type="text"
-            placeholder="Type any keyword (e.g., Brown eyes, Asthma, Cebu, Guitar, Regional Science...)"
+            placeholder="Type any keyword (e.g. Black eyes, Methodist, Cebu, Guitar, Regional Science...)"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
@@ -365,79 +454,81 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
           />
         </div>
 
-        {/* Filter Dropdowns Grid */}
+        {/* Filter Inputs Grid */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
           gap: '1rem',
           marginBottom: '1.25rem'
         }}>
-          {/* Class filter */}
-          <div style={filterColStyle}>
-            <label style={labelStyle}>Class</label>
-            <select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} style={selectStyle}>
-              <option value="ALL">All Classes</option>
-              <option value="1CL">1st Class (1CL)</option>
-              <option value="2CL">2nd Class (2CL)</option>
-              <option value="3CL">3rd Class (3CL)</option>
-            </select>
-          </div>
+          {activeFilterIds.map(filterId => {
+            const config = ALL_FILTERS.find(f => f.id === filterId);
+            if (!config) return null;
 
-          {/* BOS filter */}
-          <div style={filterColStyle}>
-            <label style={labelStyle}>Branch of Service (BOS)</label>
-            <select value={selectedBOS} onChange={(e) => setSelectedBOS(e.target.value)} style={selectStyle}>
-              <option value="ALL">All Branches</option>
-              <option value="PN">PN (Navy)</option>
-              <option value="PA">PA (Army)</option>
-              <option value="PAF">PAF (Air Force)</option>
-            </select>
-          </div>
+            const isSelect = config.type === 'select';
+            const val = filterValues[filterId];
 
-          {/* Gender filter */}
-          <div style={filterColStyle}>
-            <label style={labelStyle}>Gender</label>
-            <select value={selectedGender} onChange={(e) => setSelectedGender(e.target.value)} style={selectStyle}>
-              <option value="ALL">All Genders</option>
-              <option value="M">Male</option>
-              <option value="F">Female</option>
-            </select>
-          </div>
+            // Resolve options for select inputs
+            let selectOptions = [];
+            if (isSelect) {
+              if (config.options) {
+                selectOptions = config.options;
+              } else if (config.dynamicOptionsKey && dynamicOptions[config.dynamicOptionsKey]) {
+                selectOptions = dynamicOptions[config.dynamicOptionsKey];
+              }
+            }
 
-          {/* Blood Type filter */}
-          <div style={filterColStyle}>
-            <label style={labelStyle}>Blood Type</label>
-            <select value={selectedBloodType} onChange={(e) => setSelectedBloodType(e.target.value)} style={selectStyle}>
-              <option value="ALL">All Blood Types</option>
-              {bloodTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
-          </div>
+            return (
+              <div key={filterId} style={filterColStyle} className="filter-input-card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                  <label style={labelStyle}>{config.label}</label>
+                  <button
+                    onClick={() => removeFilter(filterId)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#94a3b8',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      padding: 0,
+                      fontWeight: 700
+                    }}
+                    onMouseOver={(e) => e.target.style.color = '#ef4444'}
+                    onMouseOut={(e) => e.target.style.color = '#94a3b8'}
+                    title="Remove filter"
+                  >
+                    ✕ remove
+                  </button>
+                </div>
 
-          {/* Region filter */}
-          <div style={filterColStyle}>
-            <label style={labelStyle}>Region</label>
-            <select value={selectedRegion} onChange={(e) => setSelectedRegion(e.target.value)} style={selectStyle}>
-              <option value="ALL">All Regions</option>
-              {regions.map(r => (
-                <option key={r} value={r}>{r}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Allergy Status filter */}
-          <div style={filterColStyle}>
-            <label style={labelStyle}>Allergies</label>
-            <select value={selectedAllergyStatus} onChange={(e) => setSelectedAllergyStatus(e.target.value)} style={selectStyle}>
-              <option value="ALL">All Cadets</option>
-              <option value="NONE">No Allergies</option>
-              <option value="HAS_ALLERGIES">Has Allergies</option>
-            </select>
-          </div>
+                {isSelect ? (
+                  <select
+                    value={val}
+                    onChange={(e) => handleFilterValueChange(filterId, e.target.value)}
+                    style={selectStyle}
+                  >
+                    <option value="ALL">All {config.label}s</option>
+                    {selectOptions.map(opt => (
+                      <option key={opt} value={opt}>
+                        {config.labels && config.labels[opt] ? config.labels[opt] : opt}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    placeholder={`Type ${config.label.toLowerCase()}...`}
+                    value={val}
+                    onChange={(e) => handleFilterValueChange(filterId, e.target.value)}
+                    style={inputStyle}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
 
-        {/* Preset Buttons & Reset Row */}
+        {/* Filter Controls Row */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -447,8 +538,83 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
           borderTop: '1px solid var(--border-color)',
           paddingTop: '1rem'
         }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginRight: '0.5rem' }}>QUICK FILTERS:</span>
+          {/* Add Filter & Quick Actions */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center', position: 'relative' }}>
+            {/* Add Other Filters Button */}
+            <div ref={otherMenuRef} style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowOtherMenu(!showOtherMenu)}
+                style={{
+                  background: 'var(--card-bg)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-primary)',
+                  padding: '0.45rem 1rem',
+                  borderRadius: '20px',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  outline: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.borderColor = 'var(--accent-gold)'}
+                onMouseOut={(e) => e.target.style.borderColor = 'var(--border-color)'}
+              >
+                ➕ OTHER FILTERS {showOtherMenu ? '▴' : '▾'}
+              </button>
+
+              {/* Other Filters Dropdown Menu */}
+              {showOtherMenu && (
+                <div style={{
+                  position: 'absolute',
+                  top: '110%',
+                  left: 0,
+                  zIndex: 99,
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-color)',
+                  boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+                  borderRadius: '8px',
+                  width: '240px',
+                  maxHeight: '260px',
+                  overflowY: 'auto',
+                  padding: '0.5rem'
+                }}>
+                  {remainingFilters.length === 0 ? (
+                    <div style={{ padding: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                      All filters are active.
+                    </div>
+                  ) : (
+                    remainingFilters.map(f => (
+                      <button
+                        key={f.id}
+                        onClick={() => addFilter(f.id)}
+                        style={{
+                          width: '100%',
+                          textAlign: 'left',
+                          background: 'none',
+                          border: 'none',
+                          padding: '0.45rem 0.6rem',
+                          fontSize: '0.8rem',
+                          color: 'var(--text-primary)',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontWeight: 500,
+                          transition: 'background 0.15s'
+                        }}
+                        onMouseOver={(e) => e.target.style.background = 'rgba(212,175,55,0.15)'}
+                        onMouseOut={(e) => e.target.style.background = 'none'}
+                      >
+                        + {f.label}
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Quick Presets */}
             <button onClick={() => applyPreset('NAVY')} className="preset-chip-btn" style={presetChipStyle}>Navy (PN)</button>
             <button onClick={() => applyPreset('ARMY')} className="preset-chip-btn" style={presetChipStyle}>Army (PA)</button>
             <button onClick={() => applyPreset('AIRFORCE')} className="preset-chip-btn" style={presetChipStyle}>Air Force (PAF)</button>
@@ -456,6 +622,7 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
             <button onClick={() => applyPreset('ALLERGIES')} className="preset-chip-btn" style={presetChipStyle}>Allergies</button>
           </div>
 
+          {/* Reset Filters */}
           {hasActiveFilters && (
             <button
               onClick={resetFilters}
@@ -469,97 +636,102 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
                 textDecoration: 'underline'
               }}
             >
-              Reset All Filters
+              Reset Filters
             </button>
           )}
         </div>
       </div>
 
-      {/* Output / Search Results Section */}
-      {hasActiveFilters ? (
-        <div style={{ marginBottom: '3rem', animation: 'fadeIn 0.4s ease' }}>
-          {/* Results Action Bar */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem', borderBottom: '2px solid var(--accent-gold)', paddingBottom: '0.75rem' }}>
-            <div>
-              <h2 style={{ margin: 0, textTransform: 'uppercase', color: 'var(--text-primary)', fontSize: '1.25rem' }}>
-                🔍 Filtered Results
-              </h2>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
-                Found <strong>{filteredCadets.length}</strong> matching cadets in Bravo Company
+      {/* Output / Search Results Section with Stable Min-Height */}
+      <div className="roster-results-wrapper" style={{
+        minHeight: '600px',
+        position: 'relative'
+      }}>
+        {hasActiveFilters ? (
+          <div style={{ animation: 'fadeIn 0.3s ease' }}>
+            {/* Results Action Bar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem', borderBottom: '2px solid var(--accent-gold)', paddingBottom: '0.75rem' }}>
+              <div>
+                <h2 style={{ margin: 0, textTransform: 'uppercase', color: 'var(--text-primary)', fontSize: '1.25rem' }}>
+                  🔍 Filtered Results
+                </h2>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                  Found <strong>{filteredCadets.length}</strong> matching cadets in Bravo Company
+                </div>
               </div>
+
+              {/* List Utilities */}
+              {filteredCadets.length > 0 && (
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <button onClick={copyListToClipboard} style={utilityBtnStyle}>📋 Copy cadet list</button>
+                  <button onClick={printList} style={utilityBtnStyle}>🖨️ Print List</button>
+                  <button onClick={exportToCSV} style={{ ...utilityBtnStyle, background: 'var(--accent-gold)', color: 'white', borderColor: 'var(--accent-gold-dark)' }}>📥 Export CSV</button>
+                </div>
+              )}
             </div>
 
-            {/* List Utilities */}
-            {filteredCadets.length > 0 && (
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <button onClick={copyListToClipboard} style={utilityBtnStyle}>📋 Copy cadet list</button>
-                <button onClick={printList} style={utilityBtnStyle}>🖨️ Print List</button>
-                <button onClick={exportToCSV} style={{ ...utilityBtnStyle, background: 'var(--accent-gold)', color: 'white', borderColor: 'var(--accent-gold-dark)' }}>📥 Export CSV</button>
+            {/* Results Table */}
+            {filteredCadets.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3rem 1rem', background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
+                <span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '0.5rem' }}>📭</span>
+                No cadets match the current search filters. Try typing a different keyword or resetting dropdowns.
+              </div>
+            ) : (
+              <div className="table-container">
+                <table className="mobile-card-table">
+                  <thead>
+                    <tr>
+                      <th>No.</th>
+                      <th>Class</th>
+                      <th>Serial No.</th>
+                      <th>Full Name</th>
+                      <th>Gender</th>
+                      <th>BOS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredCadets.map((c, idx) => (
+                      <tr
+                        key={idx}
+                        onClick={() => selectCadetProfile(c)}
+                        style={{ cursor: 'pointer', transition: 'background 0.15s' }}
+                        className="roster-row-interactive"
+                      >
+                        <td data-label="No." style={{ color: 'var(--text-secondary)' }}>{idx + 1}</td>
+                        <td data-label="Class" style={{ fontWeight: 600 }}>{c.class}</td>
+                        <td data-label="Serial No." style={{ fontWeight: 600, fontFamily: 'monospace' }}>{c.serialNo}</td>
+                        <td data-label="Full Name" style={{ color: 'var(--text-primary)', fontWeight: 700 }}>
+                          {c.lastName}, {c.firstName} {c.middleName}
+                        </td>
+                        <td data-label="Gender">{c.gender}</td>
+                        <td data-label="BOS">
+                          <span style={{
+                            background: c.bos === 'PN' ? 'rgba(26,54,93,0.1)' : c.bos === 'PA' ? 'rgba(26,84,37,0.1)' : 'rgba(107,114,128,0.1)',
+                            color: c.bos === 'PN' ? '#2b6cb0' : c.bos === 'PA' ? '#2f855a' : 'var(--text-primary)',
+                            padding: '0.15rem 0.4rem',
+                            borderRadius: '4px',
+                            fontWeight: 700,
+                            fontSize: '0.8rem'
+                          }}>
+                            {c.bos}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
-
-          {/* Results Table */}
-          {filteredCadets.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem 1rem', background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
-              <span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '0.5rem' }}>📭</span>
-              No cadets match the current search filters. Try typing a different keyword or resetting dropdowns.
-            </div>
-          ) : (
-            <div className="table-container">
-              <table className="mobile-card-table">
-                <thead>
-                  <tr>
-                    <th>No.</th>
-                    <th>Class</th>
-                    <th>Serial No.</th>
-                    <th>Full Name</th>
-                    <th>Gender</th>
-                    <th>BOS</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredCadets.map((c, idx) => (
-                    <tr
-                      key={idx}
-                      onClick={() => selectCadetProfile(c)}
-                      style={{ cursor: 'pointer', transition: 'background 0.15s' }}
-                      className="roster-row-interactive"
-                    >
-                      <td data-label="No." style={{ color: 'var(--text-secondary)' }}>{idx + 1}</td>
-                      <td data-label="Class" style={{ fontWeight: 600 }}>{c.class}</td>
-                      <td data-label="Serial No." style={{ fontWeight: 600, fontFamily: 'monospace' }}>{c.serialNo}</td>
-                      <td data-label="Full Name" style={{ color: 'var(--text-primary)', fontWeight: 700 }}>
-                        {c.lastName}, {c.firstName} {c.middleName}
-                      </td>
-                      <td data-label="Gender">{c.gender}</td>
-                      <td data-label="BOS">
-                        <span style={{
-                          background: c.bos === 'PN' ? 'rgba(26,54,93,0.1)' : c.bos === 'PA' ? 'rgba(26,84,37,0.1)' : 'rgba(107,114,128,0.1)',
-                          color: c.bos === 'PN' ? '#2b6cb0' : c.bos === 'PA' ? '#2f855a' : 'var(--text-primary)',
-                          padding: '0.15rem 0.4rem',
-                          borderRadius: '4px',
-                          fontWeight: 700,
-                          fontSize: '0.8rem'
-                        }}>
-                          {c.bos}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      ) : (
-        /* Default view (No active filters): Render 1CL, 2CL, 3CL Roster Sections */
-        <div className="roster-sections" style={{ marginTop: '3rem', animation: 'fadeIn 0.4s ease' }}>
-          <RosterSection title="1ST CLASS (1CL)" cadets={class1} color="var(--accent-gold)" onRowClick={selectCadetProfile} />
-          <RosterSection title="2ND CLASS (2CL)" cadets={class2} color="#1a7a3a" onRowClick={selectCadetProfile} />
-          <RosterSection title="3RD CLASS (3CL)" cadets={class3} color="#2d3748" onRowClick={selectCadetProfile} />
-        </div>
-      )}
+        ) : (
+          /* Default view (No active filters): Render 1CL, 2CL, 3CL Roster Sections */
+          <div className="roster-sections" style={{ marginTop: '3rem', animation: 'fadeIn 0.3s ease' }}>
+            <RosterSection title="1ST CLASS (1CL)" cadets={class1} color="var(--accent-gold)" onRowClick={selectCadetProfile} />
+            <RosterSection title="2ND CLASS (2CL)" cadets={class2} color="#1a7a3a" onRowClick={selectCadetProfile} />
+            <RosterSection title="3RD CLASS (3CL)" cadets={class3} color="#2d3748" onRowClick={selectCadetProfile} />
+          </div>
+        )}
+      </div>
 
       {/* Styled components inside file to avoid styling pollution */}
       <style jsx global>{`
@@ -573,6 +745,13 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
           border-color: var(--accent-gold) !important;
           background: rgba(212, 175, 55, 0.1) !important;
           transform: translateY(-1px);
+        }
+        .filter-input-card {
+          animation: fadeIn 0.2s ease-out;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>
@@ -633,11 +812,16 @@ function RosterSection({ title, cadets, color, onRowClick }) {
 const filterColStyle = {
   display: 'flex',
   flexDirection: 'column',
-  gap: '0.35rem'
+  gap: '0.2rem',
+  background: 'var(--card-bg)',
+  border: '1px solid var(--border-color)',
+  padding: '0.6rem 0.8rem',
+  borderRadius: '8px',
+  boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
 };
 
 const labelStyle = {
-  fontSize: '0.8rem',
+  fontSize: '0.75rem',
   fontWeight: 700,
   color: 'var(--text-secondary)',
   textTransform: 'uppercase',
@@ -645,12 +829,24 @@ const labelStyle = {
 };
 
 const selectStyle = {
-  padding: '0.5rem 0.75rem',
-  borderRadius: '8px',
+  padding: '0.4rem 0.6rem',
+  borderRadius: '6px',
   border: '1px solid var(--border-color)',
-  background: 'var(--card-bg)',
+  background: 'var(--bg-secondary)',
   color: 'var(--text-primary)',
-  fontSize: '0.9rem',
+  fontSize: '0.85rem',
+  outline: 'none',
+  width: '100%',
+  cursor: 'pointer'
+};
+
+const inputStyle = {
+  padding: '0.4rem 0.6rem',
+  borderRadius: '6px',
+  border: '1px solid var(--border-color)',
+  background: 'var(--bg-secondary)',
+  color: 'var(--text-primary)',
+  fontSize: '0.85rem',
   outline: 'none',
   width: '100%'
 };
