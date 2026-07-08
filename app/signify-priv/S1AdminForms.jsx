@@ -41,6 +41,21 @@ export default function S1AdminForms() {
       
       const result = await response.json();
       if (result.status === 'success') {
+         // Clear the created privilege from local deleted list if it was previously deleted
+         try {
+           await fetch('/api/delete-privilege', {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify({
+               action: 'create',
+               type: type,
+               date: date
+             })
+           });
+         } catch (delErr) {
+           console.error('Failed to restore privilege in local deletion log:', delErr);
+         }
+
          // Trigger push notification to all users
          try {
            await fetch('/api/web-push/broadcast', {

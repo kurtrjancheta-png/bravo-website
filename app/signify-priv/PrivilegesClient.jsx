@@ -208,20 +208,31 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
     }
     setStatus('loading');
     try {
-      const response = await fetch(SCRIPT_URL, {
+      const response = await fetch('/api/delete-privilege', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          action: 'deletePrivilege',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'delete',
           sheetName: sheetName
         })
       });
       const result = await response.json();
-      if (result.status === 'success') {
+      if (result.success) {
          setStatus('success');
+         
+         // Trigger the Apps Script deletion in background (non-blocking)
+         fetch(SCRIPT_URL, {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+           body: new URLSearchParams({
+             action: 'deletePrivilege',
+             sheetName: sheetName
+           })
+         }).catch(err => console.error('Background Apps Script delete failed:', err));
+
          setTimeout(() => window.location.reload(), 2000);
       } else {
-         throw new Error(result.message || 'Unknown error');
+         throw new Error(result.error || 'Failed to delete privilege.');
       }
     } catch (err) {
       console.error(err);

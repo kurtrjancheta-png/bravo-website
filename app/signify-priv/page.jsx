@@ -1,5 +1,7 @@
 import { getSheetData } from '../../lib/googleSheets';
 import PrivilegesClient from './PrivilegesClient';
+import fs from 'fs';
+import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +15,18 @@ export default async function SignifyPrivilegePage() {
   try {
     // Fetch Privileges
     const data = await getSheetData(PRIVILEGES_SHEET_ID, 'ACTIVE PRIV SIGNIFY SHEETS');
+    
+    // Load local deleted list if any
+    let deletedPrivs = [];
+    try {
+      const deletedFilePath = path.join(process.cwd(), 'lib', 'deletedPrivileges.json');
+      if (fs.existsSync(deletedFilePath)) {
+        deletedPrivs = JSON.parse(fs.readFileSync(deletedFilePath, 'utf8'));
+      }
+    } catch (fsErr) {
+      console.error('Failed to read deleted privileges:', fsErr);
+    }
+
     // Ensure we filter out empty rows by checking for any type key
     if (data && Array.isArray(data)) {
        activePrivileges = data.filter(row => {
@@ -63,6 +77,11 @@ export default async function SignifyPrivilegePage() {
            'DATE': rawDate,
            'DEADLINE': rawDeadline
          };
+       }).filter(row => {
+         const rawType = row.TYPE || row['TYPE OF PRIV'] || 'Unknown';
+         const rawDate = row.DATE || row['DATE OF PRIV'] || 'No Date';
+         const rawSheetName = row['SHEET NAME'] || row[''] || `${rawType} ${rawDate}`;
+         return !deletedPrivs.includes(rawSheetName);
        });
        
        // Reverse so newest are at the top

@@ -2,6 +2,7 @@ import { getSheetData, isExpired } from '../lib/googleSheets';
 import AnnouncementsGrid from './AnnouncementsGrid';
 import { parsePFTData } from '../lib/pftParser';
 import InstallAppButton from './components/InstallAppButton';
+import { getReactions } from '../lib/reactionsDb';
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID || '';
 const DISSEMINATION_SHEET_ID = '1YeaoloRz4REe_iVomGfFI9WugalrDFsHiz04eOcD0a8';
@@ -35,11 +36,12 @@ export default async function Home() {
   const ROSTER_SHEET_ID = process.env.ROSTER_SHEET_ID || '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
   const ROSTER_TAB = 'ROSTER';
 
-  // Fetch old data
-  const [trackers, pft1Rows, rosterRows] = await Promise.all([
+  // Fetch old data and reactions database
+  const [trackers, pft1Rows, rosterRows, reactions] = await Promise.all([
     getSheetData(SHEET_ID, 'Trackers'),
     getSheetData(PFT_SHEET_ID, PFT1_TAB),
-    getSheetData(ROSTER_SHEET_ID, ROSTER_TAB)
+    getSheetData(ROSTER_SHEET_ID, ROSTER_TAB),
+    getReactions()
   ]);
   
   const genderMap = {};
@@ -59,12 +61,28 @@ export default async function Home() {
   const disseminationPromises = COUNCILS.map(async (council) => {
     try {
       const data = await getSheetData(DISSEMINATION_SHEET_ID, council.id);
-      return data.map((row, index) => ({ 
-        ...row, 
-        council: council.name, 
-        councilId: council.id,
-        sheetRowIndex: row._sheetRowIndex || index 
-      }));
+      return data.map((row, index) => {
+        const sheetRowIndex = row._sheetRowIndex || index;
+        const rawContent = String(row['CONTENT'] || '').trim();
+        const rawDate = String(row['DATE ANNOUNCED'] || '').trim();
+        
+        // Generate stable content-based ID
+        const rawId = `${council.id}_${rawContent}_${rawDate}`;
+        let hash = 0;
+        for (let i = 0; i < rawId.length; i++) {
+          hash = (hash << 5) - hash + rawId.charCodeAt(i);
+          hash |= 0;
+        }
+        const cardId = `${council.id}_${Math.abs(hash)}`;
+
+        return { 
+          ...row, 
+          id: cardId,
+          council: council.name, 
+          councilId: council.id,
+          sheetRowIndex: sheetRowIndex
+        };
+      });
     } catch (e) {
       console.error(`Failed to fetch disseminations for ${council.name}`);
       return [];
@@ -188,7 +206,7 @@ export default async function Home() {
       )}
 
       <div style={{ marginBottom: '4rem', marginTop: '2rem', width: '100%', maxWidth: '100%', overflow: 'hidden', boxSizing: 'border-box' }}>
-        <AnnouncementsGrid disseminations={allDisseminations} />
+        <AnnouncementsGrid disseminations={allDisseminations} initialReactions={reactions} />
       </div>
 
     </div>

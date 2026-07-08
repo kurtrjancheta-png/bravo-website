@@ -114,7 +114,7 @@ const getUrgencyColor = (urgency) => {
   }
 };
 
-export default function AnnouncementsGrid({ disseminations }) {
+export default function AnnouncementsGrid({ disseminations, initialReactions }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCouncil, setSelectedCouncil] = useState('ALL');
   const [selectedType, setSelectedType] = useState('ALL');
@@ -156,7 +156,6 @@ export default function AnnouncementsGrid({ disseminations }) {
   };
 
   const [reactionsState, setReactionsState] = useState({});
-  const [userReactionsState, setUserReactionsState] = useState({});
 
   const { adminUser } = useAuth();
   const [isBroadcasting, setIsBroadcasting] = useState(false);
@@ -210,58 +209,77 @@ export default function AnnouncementsGrid({ disseminations }) {
 
   useEffect(() => {
     const loadedReactions = {};
-    const loadedUserReactions = {};
 
     disseminations.forEach((card, index) => {
-      const cardId = `${card.councilId || 'SYSTEM'}_${card.sheetRowIndex || index}`;
-      const base = getInitialReactions(cardId, card.CONTENT);
+      const cardId = card.id || `${card.councilId || 'SYSTEM'}_${card.sheetRowIndex || index}`;
+      const base = initialReactions && initialReactions[cardId] ? initialReactions[cardId] : { love: [], like: [], salute: [] };
       
-      const savedUserReactions = localStorage.getItem(`bravo_user_reactions_${cardId}`);
-      let userObj = { love: false, like: false, salute: false, laugh: false };
-      if (savedUserReactions) {
-        try {
-          userObj = JSON.parse(savedUserReactions);
-        } catch (e) {}
-      }
-      loadedUserReactions[cardId] = userObj;
-
       loadedReactions[cardId] = {
-        love: base.love + (userObj.love ? 1 : 0),
-        like: base.like + (userObj.like ? 1 : 0),
-        salute: base.salute + (userObj.salute ? 1 : 0),
-        laugh: base.laugh + (userObj.laugh ? 1 : 0)
+        love: Array.isArray(base.love) ? base.love : [],
+        like: Array.isArray(base.like) ? base.like : [],
+        salute: Array.isArray(base.salute) ? base.salute : []
       };
     });
 
     setReactionsState(loadedReactions);
-    setUserReactionsState(loadedUserReactions);
-  }, [disseminations]);
+  }, [disseminations, initialReactions]);
 
-  const toggleReaction = (cardId, emojiType, e) => {
-    e.stopPropagation(); // prevent opening the details modal
-    setUserReactionsState(prevUser => {
-      const cardUser = prevUser[cardId] || { love: false, like: false, salute: false, laugh: false };
-      const currentVal = cardUser[emojiType];
-      const newUserObj = { ...cardUser, [emojiType]: !currentVal };
-      
-      localStorage.setItem(`bravo_user_reactions_${cardId}`, JSON.stringify(newUserObj));
+  const toggleReaction = async (cardId, emojiType, e) => {
+    if (e) e.stopPropagation(); // prevent opening the details modal
 
-      setReactionsState(prevTotals => {
-        const cardTotals = prevTotals[cardId] || { love: 0, like: 0, salute: 0, laugh: 0 };
-        return {
-          ...prevTotals,
-          [cardId]: {
-            ...cardTotals,
-            [emojiType]: Math.max(0, cardTotals[emojiType] + (!currentVal ? 1 : -1))
-          }
-        };
-      });
+    if (!adminUser) {
+      alert("Please log in to react to announcements.");
+      return;
+    }
 
+    const username = adminUser.username;
+    const cardReactions = reactionsState[cardId] || { love: [], like: [], salute: [] };
+    const currentList = Array.isArray(cardReactions[emojiType]) ? cardReactions[emojiType] : [];
+    const hasReacted = currentList.includes(username);
+    const action = hasReacted ? 'unreact' : 'react';
+
+    // Optimistically update local state
+    setReactionsState(prevTotals => {
+      const totals = prevTotals[cardId] || { love: [], like: [], salute: [] };
+      const list = Array.isArray(totals[emojiType]) ? [...totals[emojiType]] : [];
+      if (action === 'react') {
+        if (!list.includes(username)) list.push(username);
+      } else {
+        const idx = list.indexOf(username);
+        if (idx !== -1) list.splice(idx, 1);
+      }
       return {
-        ...prevUser,
-        [cardId]: newUserObj
+        ...prevTotals,
+        [cardId]: {
+          ...totals,
+          [emojiType]: list
+        }
       };
     });
+
+    try {
+      const res = await fetch('/api/reactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cardId, emojiType, action })
+      });
+      const data = await res.json();
+      if (data.success && data.reactions) {
+        // Sync with actual server totals to keep UI accurate
+        setReactionsState(prevTotals => ({
+          ...prevTotals,
+          [cardId]: {
+            love: Array.isArray(data.reactions.love) ? data.reactions.love : [],
+            like: Array.isArray(data.reactions.like) ? data.reactions.like : [],
+            salute: Array.isArray(data.reactions.salute) ? data.reactions.salute : []
+          }
+        }));
+      } else if (data.error === 'Unauthorized') {
+        alert("Session expired. Please log in again to react.");
+      }
+    } catch (err) {
+      console.error('Failed to sync reaction with server:', err);
+    }
   };
 
   const FILTER_COUNCILS = ['ALL', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S10', 'EXO', 'TACO', 'CO', 'FSGT', 'ATHLETIC', 'HONOR COMM', 'CCPB'];
@@ -577,7 +595,7 @@ export default function AnnouncementsGrid({ disseminations }) {
             alignItems: 'stretch'
           }}>
             {filteredDisseminations.map((card, i) => {
-              const cardId = `${card.councilId || 'SYSTEM'}_${card.sheetRowIndex || i}`;
+              const cardId = card.id || `${card.councilId || 'SYSTEM'}_${card.sheetRowIndex || i}`;
               const stripeColor = getUrgencyColor(card['URGENCY']);
               const councilInfo = getCouncilMetadata(card.councilId);
               const cardType = String(card['TYPE'] || '').trim().toUpperCase();
@@ -599,8 +617,7 @@ export default function AnnouncementsGrid({ disseminations }) {
               const displayHeadline = headline || (cardType === 'ACTIVITY' ? '[ACTIVITY] Event scheduled' : 'Announcement Bulletin');
               const displayBody = body;
               const truncatedText = displayBody && displayBody.length > 180 ? displayBody.substring(0, 180).trim() + '...' : displayBody;
-              const cardReactions = reactionsState[cardId] || { love: 0, like: 0, salute: 0, laugh: 0 };
-              const cardUserReactions = userReactionsState[cardId] || { love: false, like: false, salute: false, laugh: false };
+              const cardReactions = reactionsState[cardId] || { love: [], like: [], salute: [] };
 
               if (cardType === 'ACTIVITY') {
                 const calendarDate = parseEventCalendarDate(card['EVENT DATE']);
@@ -813,8 +830,9 @@ export default function AnnouncementsGrid({ disseminations }) {
                     </div>
                     <div style={{ display: 'flex', gap: '0.35rem' }}>
                       {Object.entries(EMOJIS).map(([key, emoji]) => {
-                        const count = cardReactions[key] || 0;
-                        const hasReacted = cardUserReactions[key];
+                        const reactionList = Array.isArray(cardReactions[key]) ? cardReactions[key] : [];
+                        const count = reactionList.length;
+                        const hasReacted = adminUser && reactionList.includes(adminUser.username);
                         return (
                           <button key={key} onClick={(e) => toggleReaction(cardId, key, e)} style={{ display: 'flex', alignItems: 'center', gap: '3px', background: hasReacted ? 'rgba(212,175,55,0.15)' : 'rgba(0,0,0,0.03)', border: hasReacted ? '1px solid var(--accent-gold)' : '1px solid transparent', padding: '0.2rem 0.45rem', borderRadius: '12px', cursor: 'pointer', fontSize: '0.75rem' }}>
                             <span>{emoji}</span>
@@ -859,7 +877,7 @@ export default function AnnouncementsGrid({ disseminations }) {
           gap: '1rem'
         }}>
           {filteredDisseminations.map((card, i) => {
-            const cardId = `${card.councilId || 'SYSTEM'}_${card.sheetRowIndex || i}`;
+            const cardId = card.id || `${card.councilId || 'SYSTEM'}_${card.sheetRowIndex || i}`;
             const stripeColor = getUrgencyColor(card['URGENCY']);
             const councilInfo = getCouncilMetadata(card.councilId);
             const cardType = String(card['TYPE'] || '').trim().toUpperCase();
@@ -874,8 +892,7 @@ export default function AnnouncementsGrid({ disseminations }) {
             const displayHeadline = headline || (cardType === 'ACTIVITY' ? '[ACTIVITY] Event scheduled' : 'Announcement Bulletin');
             const displayBody = body;
             const truncatedText = displayBody && displayBody.length > 180 ? displayBody.substring(0, 180).trim() + '...' : displayBody;
-            const cardReactions = reactionsState[cardId] || { love: 0, like: 0, salute: 0, laugh: 0 };
-            const cardUserReactions = userReactionsState[cardId] || { love: false, like: false, salute: false, laugh: false };
+            const cardReactions = reactionsState[cardId] || { love: [], like: [], salute: [] };
             if (cardType === 'ACTIVITY') {
               const calendarDate = parseEventCalendarDate(card['EVENT DATE']);
               return (
@@ -1052,7 +1069,17 @@ export default function AnnouncementsGrid({ disseminations }) {
                     {adminUser && adminUser.role === 'ADMIN' && (<button onClick={(e) => handleFollowUp(card, e)} disabled={isBroadcasting} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(212, 175, 55, 0.1)', border: '1px solid var(--accent-gold)', color: 'var(--accent-gold-dark)', borderRadius: '6px', cursor: isBroadcasting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>📢 {isBroadcasting ? 'Sending...' : 'Follow Up'}</button>)}
                   </div>
                   <div style={{ display: 'flex', gap: '0.35rem' }}>
-                    {Object.entries(EMOJIS).map(([key, emoji]) => { const count = cardReactions[key] || 0; const hasReacted = cardUserReactions[key]; return (<button key={key} onClick={(e) => toggleReaction(cardId, key, e)} style={{ display: 'flex', alignItems: 'center', gap: '3px', background: hasReacted ? 'rgba(212,175,55,0.15)' : 'rgba(0,0,0,0.03)', border: hasReacted ? '1px solid var(--accent-gold)' : '1px solid transparent', padding: '0.2rem 0.45rem', borderRadius: '12px', cursor: 'pointer', fontSize: '0.75rem' }}><span>{emoji}</span><span style={{ fontWeight: 800, color: hasReacted ? 'var(--accent-gold-dark)' : 'var(--text-secondary)' }}>{count}</span></button>); })}
+                    {Object.entries(EMOJIS).map(([key, emoji]) => {
+                      const reactionList = Array.isArray(cardReactions[key]) ? cardReactions[key] : [];
+                      const count = reactionList.length;
+                      const hasReacted = adminUser && reactionList.includes(adminUser.username);
+                      return (
+                        <button key={key} onClick={(e) => toggleReaction(cardId, key, e)} style={{ display: 'flex', alignItems: 'center', gap: '3px', background: hasReacted ? 'rgba(212,175,55,0.15)' : 'rgba(0,0,0,0.03)', border: hasReacted ? '1px solid var(--accent-gold)' : '1px solid transparent', padding: '0.2rem 0.45rem', borderRadius: '12px', cursor: 'pointer', fontSize: '0.75rem' }}>
+                          <span>{emoji}</span>
+                          <span style={{ fontWeight: 800, color: hasReacted ? 'var(--accent-gold-dark)' : 'var(--text-secondary)' }}>{count}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -1076,11 +1103,10 @@ export default function AnnouncementsGrid({ disseminations }) {
       {/* Details View Modal */}
       {selectedAnnouncement && (() => {
         const d = selectedAnnouncement;
-        const cardId = `${d.councilId || 'SYSTEM'}_${d.sheetRowIndex}`;
+        const cardId = d.id || `${d.councilId || 'SYSTEM'}_${d.sheetRowIndex}`;
         const stripeColor = getUrgencyColor(d['URGENCY']);
         const councilInfo = getCouncilMetadata(d.councilId);
-        const cardReactions = reactionsState[cardId] || { love: 0, like: 0, salute: 0, laugh: 0 };
-        const cardUserReactions = userReactionsState[cardId] || { love: false, like: false, salute: false, laugh: false };
+        const cardReactions = reactionsState[cardId] || { love: [], like: [], salute: [] };
 
         const { headline, body } = parseHeadlineAndContent(d['CONTENT']);
         const isActivity = String(d['TYPE'] || '').trim().toUpperCase() === 'ACTIVITY';
@@ -1286,8 +1312,9 @@ export default function AnnouncementsGrid({ disseminations }) {
                 
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   {Object.entries(EMOJIS).map(([key, emoji]) => {
-                    const count = cardReactions[key] || 0;
-                    const hasReacted = cardUserReactions[key];
+                    const reactionList = Array.isArray(cardReactions[key]) ? cardReactions[key] : [];
+                    const count = reactionList.length;
+                    const hasReacted = adminUser && reactionList.includes(adminUser.username);
                     return (
                       <button
                         key={key}
