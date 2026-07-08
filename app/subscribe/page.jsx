@@ -25,7 +25,7 @@ export default function SubscribePage() {
 
   useEffect(() => {
     // Check if already subscribed
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
+    if ('serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window) {
       navigator.serviceWorker.ready.then(reg => {
         reg.pushManager.getSubscription().then(sub => {
           if (sub) {
@@ -41,23 +41,24 @@ export default function SubscribePage() {
     setStatus('loading');
     setErrorMessage('');
 
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
       setStatus('error');
       setErrorMessage('Push notifications are not supported in your browser. Please try Chrome or Safari on your phone.');
       return;
     }
 
     try {
-      const activeReg = await navigator.serviceWorker.ready;
-      
-      const publicVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "BO9Q7iN7CAdgbkHAL5NlRSY1_PutOA6cxH8ovFBTmAMul4MUcIVWY5lE2Rg6REA_nf2FMIg27f87DqAzuAgu5QU";
-      
+      // Request notification permission first to preserve user gesture context
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
         setStatus('error');
         setErrorMessage('You blocked notifications. You must allow them in your browser settings to receive alerts.');
         return;
       }
+
+      const activeReg = await navigator.serviceWorker.ready;
+      
+      const publicVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "BO9Q7iN7CAdgbkHAL5NlRSY1_PutOA6cxH8ovFBTmAMul4MUcIVWY5lE2Rg6REA_nf2FMIg27f87DqAzuAgu5QU";
 
       const existingSub = await activeReg.pushManager.getSubscription();
       if (existingSub) {

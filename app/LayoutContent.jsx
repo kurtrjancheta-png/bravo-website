@@ -210,7 +210,7 @@ export default function LayoutContent({ children }) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
       console.log('Web Push is not supported in this browser.');
       return;
     }
@@ -490,7 +490,7 @@ export default function LayoutContent({ children }) {
       return;
     }
 
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
       if (!silent) {
         alert('Push notifications are not supported in this browser or private browsing mode.');
       }
@@ -498,6 +498,17 @@ export default function LayoutContent({ children }) {
     }
 
     try {
+      // 1. Explicitly request permission first to trigger native browser prompts reliably.
+      // Doing this BEFORE awaiting the service worker ensures the browser's permission prompt
+      // is requested synchronously within the user gesture context of the click event.
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        if (!silent) {
+          alert('Notification permission was not granted. Please enable notifications in your browser settings to receive alerts.');
+        }
+        return;
+      }
+
       const activeReg = await navigator.serviceWorker.ready;
       
       // Fallback to verified key if environment variable isn't injected in the client bundle
@@ -505,15 +516,6 @@ export default function LayoutContent({ children }) {
       if (!publicVapidKey) {
         if (!silent) {
           alert('Public VAPID key is missing.');
-        }
-        return;
-      }
-
-      // 1. Explicitly request permission first to trigger native browser prompts reliably
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') {
-        if (!silent) {
-          alert('Notification permission was not granted. Please enable notifications in your browser settings to receive alerts.');
         }
         return;
       }
@@ -1047,6 +1049,16 @@ export default function LayoutContent({ children }) {
               <Link href="/cellphone-rack" className={`nav-item ${pathname === '/cellphone-rack' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
                 Smartphone Rack
               </Link>
+              {isCEIS && (
+                <>
+                  <Link href="/cellphone-rack/scanner" className={`nav-item ${pathname === '/cellphone-rack/scanner' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                    Smartphone Scanner
+                  </Link>
+                  <Link href="/cellphone-rack/qr-manager" className={`nav-item ${pathname === '/cellphone-rack/qr-manager' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
+                    QR Code Manager
+                  </Link>
+                </>
+              )}
               <Link href="/tablet-directory" className={`nav-item ${pathname === '/tablet-directory' ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.85rem', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center' }}>
                 Tablet Directory
               </Link>

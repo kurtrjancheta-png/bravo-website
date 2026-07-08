@@ -8,8 +8,13 @@ export async function POST(req) {
     const changes = await req.json();
     logActivity(req, 'Smartphone Rack Update', { count: changes.length });
 
-    // Normalize status to strictly match Google Sheets Data Validation rules
+    const protocol = req.headers.get('x-forwarded-proto') || 'https';
+    const host = req.headers.get('host') || 'localhost:3000';
+    const baseUrl = `${protocol}://${host}`;
+
+    // Normalize status and append baseUrl
     changes.forEach(c => {
+      c.baseUrl = baseUrl;
       if (c.status) {
         const s = String(c.status).toLowerCase();
         if (s.includes('out')) c.status = 'Logged Out';

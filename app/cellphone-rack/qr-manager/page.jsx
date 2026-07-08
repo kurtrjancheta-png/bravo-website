@@ -1,13 +1,13 @@
-import { getSheetData } from '../../lib/googleSheets';
-import CellphoneRackClient from './CellphoneRackClient';
-import { getCadetImageUrl } from '../../lib/imageMatcher';
+import { getSheetData } from '../../../lib/googleSheets';
+import QRManagerClient from './QRManagerClient';
+import { getCadetImageUrl } from '../../../lib/imageMatcher';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const CELLPHONE_SHEET_ID = '13xZEcuuedRTppVj479aYhUqpgbvqOq3VMMvBJn_IH5Q';
 
-export default async function CellphoneRackPage() {
+export default async function QRManagerPage() {
   let sheet1Data = [];
   let cl2Data = [];
   let cl3Data = [];
@@ -24,7 +24,6 @@ export default async function CellphoneRackPage() {
     cl2Data = d2 || [];
     cl3Data = d3 || [];
     
-    // Google Sheets API returns Sheet1 if 4CL doesn't exist. Check for duplicates.
     const isD4Duplicate = d4 && d4.length > 0 && d1 && d1.length > 0 && JSON.stringify(d4[0]) === JSON.stringify(d1[0]);
     cl4Data = isD4Duplicate ? [] : (d4 || []);
   } catch (err) {
@@ -58,8 +57,6 @@ export default async function CellphoneRackPage() {
       
       const picture = getCadetImageUrl(name, '', name);
 
-      // Find db entry
-      // Assuming 'DATA BASE' has columns like 'NAME', 'MODEL', 'COLOR', 'SERIAL NUMBER', 'QR CODE'
       let model = 'Not Specified';
       let color = 'Not Specified';
       let dbRemarks = 'None';
@@ -97,10 +94,10 @@ export default async function CellphoneRackPage() {
       parsedData.push({
         name,
         status,
-        remarks: String(row[kRemarks] || '').trim(), // Authorized Reason
+        remarks: String(row[kRemarks] || '').trim(),
         cadetClass: assignedClass,
         numPhones,
-        phone: String(row[kPhone] || '').trim(), // Contact number from class sheet
+        phone: String(row[kPhone] || '').trim(),
         ig: String(row[kIG] || '').trim(),
         telegram: kTelegram ? String(row[kTelegram] || '').trim() : '',
         model,
@@ -121,16 +118,16 @@ export default async function CellphoneRackPage() {
   return (
     <div>
       <div className="section-header" style={{ marginBottom: '2rem' }}>
-        <h2 className="section-title">SMARTPHONE RACK</h2>
-        <div className="section-subtitle">Real-time device tracking and authorization log</div>
+        <h2 className="section-title">QR CODE MANAGER</h2>
+        <div className="section-subtitle">Device registrations, serial numbers, and printable labels</div>
       </div>
       
       {parsedData.length > 0 ? (
-        <CellphoneRackClient initialData={parsedData} />
+        <QRManagerClient initialData={parsedData} />
       ) : (
         <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
           <h3>No Data Available</h3>
-          <p style={{ color: 'var(--text-secondary)' }}>Check the Google Sheet configuration or data format.</p>
+          <p style={{ color: 'var(--text-secondary)' }}>Check the Google Sheet configuration.</p>
         </div>
       )}
     </div>

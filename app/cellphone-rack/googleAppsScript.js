@@ -6,7 +6,7 @@ function doPost(e) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     
     for (const data of changesArray) {
-      const { name, cadetClass, status, remarks, numPhones, phone, ig, model, color, dbRemarks } = data;
+      const { name, cadetClass, status, remarks, numPhones, phone, ig, model, color, dbRemarks, serial, baseUrl } = data;
       
       // 1. Update the Class Sheet
       let classSheetName = cadetClass + 'CL';
@@ -26,10 +26,16 @@ function doPost(e) {
       // 2. Update the DATA BASE Sheet
       const dbSheet = ss.getSheetByName('DATA BASE');
       if (dbSheet) {
+        const activeBaseUrl = baseUrl || 'https://bravo-website.vercel.app';
+        const qrData = activeBaseUrl + '/cellphone-rack/scan?name=' + encodeURIComponent(name);
+        const qrFormula = '=IMAGE("https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(qrData) + '")';
+        
         updateRowByName(dbSheet, name, {
           "PHONE": model, // Phone Model
           "COLOR": color,
-          "REMARKS": dbRemarks // Device identifying features
+          "REMARKS": dbRemarks, // Device identifying features
+          "SERIAL": serial,
+          "QR CODE": qrFormula
         });
       }
     }
