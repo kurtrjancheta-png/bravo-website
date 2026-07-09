@@ -16,8 +16,8 @@ export function middleware(req) {
       return NextResponse.next();
     }
 
-    // Rewrite all other requests to the "oops" error page
-    return NextResponse.rewrite(new URL('/something-went-wrong', req.url));
+    // Redirect all other requests to the "oops" error page
+    return NextResponse.redirect(new URL('/something-went-wrong', req.url));
   }
 
   return NextResponse.next();
