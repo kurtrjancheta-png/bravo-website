@@ -28,6 +28,10 @@ export default function LayoutContent({ children }) {
   const isCCQ = adminUser && (adminUser.council === 'CCQ' || isCEIS);
   const pathname = usePathname();
 
+  if (pathname === '/something-went-wrong') {
+    return <>{children}</>;
+  }
+
   // Push subscription state
   const [showBanner, setShowBanner] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
