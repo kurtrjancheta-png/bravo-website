@@ -1028,6 +1028,7 @@ export default function EXOGuardsManagerClient({
           pendingChanges={pendingChanges}
           isUploading={isUploading}
           handleUploadChanges={handleUploadChanges}
+          isMobile={isMobile}
           onAssignFromTally={(cadetName, classLevel, dateStr) => {
             setRoleModalConfig({ isOpen: true, cadetName, classLevel, dateStr });
           }}
@@ -1199,7 +1200,7 @@ function RoleSelectionModal({ isOpen, onClose, cadetName, dateStr, classLevel, o
   );
 }
 
-function TallySheetModal({ isOpen, onClose, tally1CL, tally2CL, tally3CL, soiData, postedDateObj, pendingChanges, isUploading, handleUploadChanges, onAssignFromTally }) {
+function TallySheetModal({ isOpen, onClose, tally1CL, tally2CL, tally3CL, soiData, postedDateObj, pendingChanges, isUploading, handleUploadChanges, onAssignFromTally, isMobile }) {
   const [activeTab, setActiveTab] = useState('1CL');
   const [weekOffset, setWeekOffset] = useState(0);
   const [animState, setAnimState] = useState({ opacity: 1, transform: 'translateX(0)', transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' });
@@ -1233,7 +1234,7 @@ function TallySheetModal({ isOpen, onClose, tally1CL, tally2CL, tally3CL, soiDat
 
   // Compute the 7 days starting from postedDateObj - 3 days + weekOffset * 7 (index 3 is today)
   const dates = [];
-  const start = new Date(postedDateObj);
+  const start = new Date(postedDateObj || new Date());
   start.setDate(start.getDate() - 3 + (weekOffset * 7));
   
   for (let i = 0; i < 7; i++) {
@@ -1248,7 +1249,7 @@ function TallySheetModal({ isOpen, onClose, tally1CL, tally2CL, tally3CL, soiDat
   const formatDate = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const formatHeader = (date) => date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', weekday: 'short' });
 
-  const isToday = (date) => date.toDateString() === new Date(postedDateObj).toDateString();
+  const isToday = (date) => date.toDateString() === new Date(postedDateObj || new Date()).toDateString();
 
   // Get tally for current class
   const baseTally = activeTab === '1CL' ? tally1CL : activeTab === '2CL' ? tally2CL : tally3CL;
@@ -1257,7 +1258,7 @@ function TallySheetModal({ isOpen, onClose, tally1CL, tally2CL, tally3CL, soiDat
   const activeTally = (() => {
     const merged = {};
     // Copy base
-    Object.keys(baseTally).forEach(cadet => {
+    Object.keys(baseTally || {}).forEach(cadet => {
       merged[cadet] = { ...(baseTally[cadet] || {}) };
     });
     // Overlay pending changes for this class
@@ -1275,7 +1276,7 @@ function TallySheetModal({ isOpen, onClose, tally1CL, tally2CL, tally3CL, soiDat
   })();
 
   // Get cadets for current class
-  const classCadets = soiData.filter(row => {
+  const classCadets = (soiData || []).filter(row => {
     const cl = String(row['CL'] || row['CLASS'] || '').trim();
     if (activeTab === '1CL') return cl === '1' || cl === '1CL';
     if (activeTab === '2CL') return cl === '2' || cl === '2CL';

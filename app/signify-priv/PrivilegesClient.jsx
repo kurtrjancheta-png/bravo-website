@@ -127,13 +127,13 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
         );
 
         if (cadet) {
+          // Qualification check disabled. All cadets are allowed to signify regardless of status.
           if (!cadet.eligibleForPrivilege) {
             if (isEntertaining) {
               entertainingWarning = 'Signify successful! (Notice: Since you are not on full duty, you are only allowed 1 hour of entertaining)';
             } else {
-              setStatus('error');
-              setErrorMsg(`Signifying Blocked: You are not allowed to signify for privilege. Reason: ${cadet.eligibilityChecks.reasons.join(', ')}`);
-              return;
+              // Previously blocked, now allowed. We can optionally set a notice.
+              entertainingWarning = `Signify successful! (Notice: Please be advised you currently have unresolved tracker entries: ${cadet.eligibilityChecks.reasons.join(', ')})`;
             }
           }
         }

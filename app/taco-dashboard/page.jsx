@@ -28,8 +28,8 @@ export default async function TacODashboardPage() {
 
   if (fsgtData && fsgtData.length > 0) {
     const keys = Object.keys(fsgtData[0]);
-    const nameKey = keys.find(k => k.trim().toUpperCase() === 'NAME') || keys[1];
-    const statusKey = keys.find(k => k.trim().toUpperCase() === 'STATUS') || keys[2];
+    const nameKey = keys.find(k => k.trim().toUpperCase() === 'NAME' || k.trim().toUpperCase() === 'LAST NAME') || keys[2];
+    const statusKey = keys.find(k => k.trim().toUpperCase() === 'STATUS' || k.trim().toUpperCase() === 'REMARKS') || keys[15];
     const demeritsKey = keys.find(k => k.trim().toUpperCase().includes('DEMERIT')) || keys[6];
     const confinedKey = keys.find(k => k.trim().toUpperCase().includes('CONFINED')) || keys[7];
     const startKey = keys.find(k => k.trim().toUpperCase() === 'START') || keys[8];
@@ -38,9 +38,8 @@ export default async function TacODashboardPage() {
     const classKey = keys.find(k => k.trim().toUpperCase().startsWith('CLASS')) || keys[4];
 
     const validRows = fsgtData.filter(row => {
-      const activeVal = String(row[keys[0]] || '').trim().toUpperCase();
       const lastName = String(row[nameKey] || '').trim();
-      return activeVal === 'ACTIVE' && lastName !== '' && lastName.toUpperCase() !== 'NAME';
+      return lastName !== '' && lastName.toUpperCase() !== 'NAME' && lastName.toUpperCase() !== 'LAST NAME';
     });
 
     totalDelinquencies = validRows.length;

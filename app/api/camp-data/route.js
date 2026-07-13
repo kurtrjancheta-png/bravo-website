@@ -1,15 +1,45 @@
 import { getSheetData } from '../../../lib/googleSheets';
+import { getAcademicDeficiencies } from '../../../lib/academicParser';
+import { parsePFTData } from '../../../lib/pftParser';
 import { NextResponse } from 'next/server';
 
 const CAMP_SHEET_ID = '1YfrsGwikWtcLLsXFodHL47Yy8JoYRpp54Dt3mrAVA14';
 const ROSTER_SHEET_ID = '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
+const PFT_SHEET_ID = process.env.PFT_SHEET_ID || '1YfwRNbWer8QDtqSyw7A3jxHAOrWSl6p6tW-7zI074yM';
+const PFT1_TAB = process.env.PFT1_TAB || 'PFT1';
+
+function normalizeName(name) {
+  if (!name) return '';
+  return name
+    .trim()
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/Ñ/g, "N")
+    .replace(/\b(JR|SR|I{1,3}|IV|V)\b/g, '')
+    .replace(/[^A-Z ]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function matchesCadetName(rosterSurname, targetName) {
+  const normRoster = normalizeName(rosterSurname);
+  const normTarget = normalizeName(targetName);
+  
+  if (!normRoster || !normTarget) return false;
+  if (normRoster === normTarget) return true;
+  if (normTarget.startsWith(normRoster) || normRoster.startsWith(normTarget)) return true;
+  if (normTarget.includes(normRoster) || normRoster.includes(normTarget)) return true;
+  return false;
+}
 
 export async function GET(request) {
   try {
-    const [rosterRows, statusRows, characterRows] = await Promise.all([
+    const [rosterRows, characterRows, acadData, pftRows] = await Promise.all([
       getSheetData(ROSTER_SHEET_ID, 'SOI'),
-      getSheetData(CAMP_SHEET_ID, 'ACADS/PFT STATUS'),
-      getSheetData(CAMP_SHEET_ID, 'CHARACTER (REPORTS)')
+      getSheetData(CAMP_SHEET_ID, 'CHARACTER (REPORTS)'),
+      getAcademicDeficiencies(),
+      getSheetData(PFT_SHEET_ID, PFT1_TAB)
     ]);
 
     const cadets = {};
@@ -31,7 +61,7 @@ export async function GET(request) {
         ).trim().toUpperCase();
 
         if (last) {
-          const fullName = mi ? `${first} ${mi} ${row['SURNAME '] || row['SURNAME']}` : `${first} ${row['SURNAME '] || row['SURNAME']}`;
+          const fullName = mi ? `${first} ${mi} ${last}` : `${first} ${last}`;
           cadets[last] = {
             surname: last,
             firstName: first,
@@ -49,61 +79,71 @@ export async function GET(request) {
       });
     }
 
-    // Helper to get or create cadet by surname
-    function findOrCreateCadet(surname) {
-      const clean = String(surname).trim().toUpperCase();
-      if (!clean || clean === 'NAME' || clean === 'LAST NAME') return null;
-      if (!cadets[clean]) {
-        cadets[clean] = {
-          surname: clean,
-          firstName: '',
-          middleInitial: '',
-          fullName: clean,
-          class: 'UNKNOWN',
-          gender: 'M',
-          serialNumber: '',
-          academics: { status: 'FULL DUTY', remarks: 'PROFICIENT', subjects: [] },
-          physical: { status: 'FULL DUTY', remarks: 'PASSED', category: '' },
-          character: { active: false, status: 'DUTY', demerits: 0, confined: false, touring: false, remainingTour: 0, offenses: [] },
-          military: { status: 'PROFICIENT' }
-        };
-      }
-      return cadets[clean];
-    }
-
-    // 2. Process Academics and PFT Status
-    if (statusRows && statusRows.length > 0) {
-      const keys = Object.keys(statusRows[0]);
-      statusRows.forEach(row => {
-        // Academic side (cols 1-4)
-        const acadName = row[keys[1]] ? String(row[keys[1]]).trim().toUpperCase() : '';
-        if (acadName && acadName !== 'NAME') {
-          const cadet = findOrCreateCadet(acadName);
-          if (cadet) {
-            cadet.academics.status = row[keys[2]] ? String(row[keys[2]]).trim().toUpperCase() : 'FULL DUTY';
-            cadet.academics.remarks = row[keys[3]] ? String(row[keys[3]]).trim().toUpperCase() : 'PROFICIENT';
-            
-            const subjectVal = row[keys[4]] ? String(row[keys[4]]).trim() : '';
-            if (subjectVal) {
-              cadet.academics.subjects = subjectVal.split(',').map(s => s.trim()).filter(Boolean);
+    // 2. Process Academics from getAcademicDeficiencies
+    if (acadData) {
+      Object.entries(acadData).forEach(([className, classData]) => {
+        const classCadets = classData.cadets || [];
+        classCadets.forEach(acadCadet => {
+          const rosterCadet = Object.values(cadets).find(c => matchesCadetName(c.surname, acadCadet.name));
+          if (rosterCadet) {
+            if (acadCadet.isDeficient) {
+              rosterCadet.academics.status = 'NOT FULL DUTY';
+              rosterCadet.academics.remarks = 'DEFICIENT';
+              rosterCadet.academics.subjects = Object.entries(acadCadet.deficiencies).map(([subj, val]) => `${subj} (${val})`);
+            } else {
+              rosterCadet.academics.status = 'FULL DUTY';
+              rosterCadet.academics.remarks = 'PROFICIENT';
+              rosterCadet.academics.subjects = [];
             }
           }
-        }
-
-        // Physical side (cols 9-12)
-        const physName = row[keys[9]] ? String(row[keys[9]]).trim().toUpperCase() : '';
-        if (physName && physName !== 'NAME') {
-          const cadet = findOrCreateCadet(physName);
-          if (cadet) {
-            cadet.physical.status = row[keys[10]] ? String(row[keys[10]]).trim().toUpperCase() : 'FULL DUTY';
-            cadet.physical.remarks = row[keys[11]] ? String(row[keys[11]]).trim().toUpperCase() : 'PASSED';
-            cadet.physical.category = row[keys[12]] ? String(row[keys[12]]).trim() : '';
-          }
-        }
+        });
       });
     }
 
-    // 3. Process Character Reports
+    // Build gender map for PFT parser
+    const genderMap = {};
+    Object.values(cadets).forEach(c => {
+      genderMap[c.surname] = c.gender;
+    });
+
+    const { data: pftParsedData } = parsePFTData(pftRows, genderMap);
+
+    // 3. Process Physical/PFT from parsePFTData
+    if (pftParsedData) {
+      const classes = ['1cl', '2cl', '3cl'];
+      classes.forEach(cl => {
+        const classPft = pftParsedData[cl] || { passed: [], failed: [], smc: [], fad: [] };
+        
+        classPft.failed.forEach(pftCadet => {
+          const rosterCadet = Object.values(cadets).find(c => matchesCadetName(c.surname, pftCadet.surname));
+          if (rosterCadet) {
+            rosterCadet.physical.status = 'NOT FULL DUTY';
+            rosterCadet.physical.remarks = 'FAILED';
+            rosterCadet.physical.category = pftCadet.scores?.category || '';
+          }
+        });
+
+        classPft.smc.forEach(pftCadet => {
+          const rosterCadet = Object.values(cadets).find(c => matchesCadetName(c.surname, pftCadet.surname));
+          if (rosterCadet) {
+            rosterCadet.physical.status = 'NOT FULL DUTY';
+            rosterCadet.physical.remarks = 'SMC';
+            rosterCadet.physical.category = pftCadet.scores?.category || '';
+          }
+        });
+
+        classPft.passed.forEach(pftCadet => {
+          const rosterCadet = Object.values(cadets).find(c => matchesCadetName(c.surname, pftCadet.surname));
+          if (rosterCadet) {
+            rosterCadet.physical.status = 'FULL DUTY';
+            rosterCadet.physical.remarks = 'PASSED';
+            rosterCadet.physical.category = pftCadet.scores?.category || '';
+          }
+        });
+      });
+    }
+
+    // 4. Process Character Reports
     if (characterRows && characterRows.length > 0) {
       const keys = Object.keys(characterRows[0]);
       const nameKey = keys.find(k => k.trim().toUpperCase() === 'NAME') || keys[1];
@@ -124,35 +164,35 @@ export async function GET(request) {
         const surname = String(row[nameKey] || '').trim().toUpperCase();
 
         if (surname && surname !== 'NAME' && activeVal === 'ACTIVE') {
-          const cadet = findOrCreateCadet(surname);
-          if (cadet) {
+          const rosterCadet = Object.values(cadets).find(c => matchesCadetName(c.surname, surname));
+          if (rosterCadet) {
             const rawStatus = row[statusKey] ? String(row[statusKey]).trim().toUpperCase() : 'TOURING';
             const isServed = rawStatus === 'SERVED';
             
             if (!isServed) {
-              cadet.character.active = true;
-              cadet.character.status = rawStatus;
-            } else if (cadet.character.status === 'DUTY') {
-              cadet.character.status = 'SERVED';
+              rosterCadet.character.active = true;
+              rosterCadet.character.status = rawStatus;
+            } else if (rosterCadet.character.status === 'DUTY') {
+              rosterCadet.character.status = 'SERVED';
             }
 
             const demerits = parseFloat(row[demeritsKey]) || 0;
             const remainingTour = parseFloat(row[remainingKey]) || 0;
             const confinedVal = row[confinedKey] ? String(row[confinedKey]).trim().toUpperCase() : 'NO';
 
-            cadet.character.demerits += demerits;
+            rosterCadet.character.demerits += demerits;
             if (!isServed) {
-              cadet.character.remainingTour += remainingTour;
+              rosterCadet.character.remainingTour += remainingTour;
 
               if (confinedVal === 'YES' || rawStatus.includes('CONFINED')) {
-                cadet.character.confined = true;
+                rosterCadet.character.confined = true;
               }
               if (rawStatus.includes('TOURING') || remainingTour > 0) {
-                cadet.character.touring = true;
+                rosterCadet.character.touring = true;
               }
             }
 
-            cadet.character.offenses.push({
+            rosterCadet.character.offenses.push({
               offense: row[offenseKey] ? String(row[offenseKey]).trim() : '',
               class: row[classKey] ? String(row[classKey]).trim() : '',
               nature: row[natureKey] ? String(row[natureKey]).trim() : '',
@@ -169,21 +209,16 @@ export async function GET(request) {
       });
     }
 
-    // Convert to array and calculate overall eligibility
-    const cadetList = Object.values(cadets);
-
-    // Filter out mock/invalid entries if any (ensure class is populated)
-    const validCadets = cadetList.filter(c => c.class !== 'UNKNOWN');
+    const validCadets = Object.values(cadets);
 
     validCadets.forEach(c => {
       const hasAcademicDeficiency = c.academics.remarks === 'DEFICIENT';
       const hasFailedPFT = c.physical.remarks === 'FAILED';
       const hasSMCPFT = c.physical.remarks === 'SMC';
-      const hasActivePunishments = c.character.active; // On the active list, status is not SERVED (only ACTIVE rows are added)
+      const hasActivePunishments = c.character.active;
       
       c.eligibleForPrivilege = !hasAcademicDeficiency && !hasFailedPFT && !hasSMCPFT && !hasActivePunishments;
       
-      // Detailed check results
       c.eligibilityChecks = {
         academics: !hasAcademicDeficiency,
         pft: !hasFailedPFT,
@@ -198,7 +233,6 @@ export async function GET(request) {
       };
     });
 
-    // Compute Summaries
     const totalCadets = validCadets.length;
     const eligibleCount = validCadets.filter(c => c.eligibleForPrivilege).length;
     const academicsDeficient = validCadets.filter(c => c.academics.remarks === 'DEFICIENT').length;
