@@ -22,23 +22,56 @@ export default async function ExoPunishmentPage() {
     );
   }
 
-  // Google Sheets API returns the first row as the keys of the objects.  // So we grab the keys by their index.
-  const keys = Object.keys(data[0]);
-  const k1 = keys[0];   // NO or "UPDATED AS OF :"
-  const k2 = keys[1];   // RANK
-  const k3 = keys[2];   // LAST NAME
-  const k4 = keys[3];   // OFFENSE
-  const k5 = keys[4];   // CLASS
-  const k6 = keys[5];   // NATURE OF OFFENSE
-  const k7 = keys[6];   // DEMERITS
-  const k8 = keys[7];   // CONFINED?
-  const k9 = keys[8];   // CONFINEMENT START
-  const k10 = keys[9];  // CONFINEMENT END
-  const k11 = keys[10]; // TOURING HOURS TOTAL
-  const k12 = keys[11]; // TOURING CONVERTED
-  const k13 = keys[12]; // TOURING SERVED
-  const k14 = keys[13]; // TOURING REMAINING
-  const k16 = keys[15]; // REMARKS
+  // Google Sheets API returns rows as objects.
+  const keys = Object.keys(data[0] || {});
+
+  // Dynamically find column names from header row or fallback to standard indices
+  const headerRow = data.find(row => {
+    const vals = Object.values(row).map(v => String(v || '').trim().toUpperCase());
+    return vals.includes('LAST NAME') || vals.includes('RANK');
+  });
+
+  let k1 = keys[0];   // NO or "UPDATED AS OF :"
+  let k2 = keys[1];   // RANK
+  let k3 = keys[2];   // LAST NAME
+  let k4 = keys[3];   // OFFENSE
+  let k5 = keys[4];   // CLASS
+  let k6 = keys[5];   // NATURE OF OFFENSE
+  let k7 = keys[6];   // DEMERITS
+  let k8 = keys[7];   // CONFINED?
+  let k9 = keys[8];   // CONFINEMENT START
+  let k10 = keys[9];  // CONFINEMENT END
+  let k11 = keys[10]; // TOURING HOURS TOTAL
+  let k12 = keys[11]; // TOURING CONVERTED
+  let k13 = keys[12]; // TOURING SERVED
+  let k14 = keys[13]; // TOURING REMAINING
+  let k15 = keys[14]; // DEMERIT ALLOWANCE
+  let k16_idx = keys[15]; // MERIT
+  let k17 = keys[18] || keys[keys.length - 2]; // REFERENCE
+  let k18 = keys[19] || keys[keys.length - 1]; // REMARKS
+
+  if (headerRow) {
+    for (const [colKey, headerVal] of Object.entries(headerRow)) {
+      const v = String(headerVal || '').trim().toUpperCase();
+      if (v === 'LAST NAME' || v === 'NAME') k3 = colKey;
+      else if (v === 'RANK') k2 = colKey;
+      else if (v === 'OFFENSE') k4 = colKey;
+      else if (v.startsWith('CLASS')) k5 = colKey;
+      else if (v.includes('NATURE')) k6 = colKey;
+      else if (v.includes('DEMERIT') && !v.includes('ALLOWANCE') && !v.includes('TOTAL') && !v.includes('REMAINING')) k7 = colKey;
+      else if (v.includes('CONFINED') && !v.includes('START') && !v.includes('END')) k8 = colKey;
+      else if (v.includes('START')) k9 = colKey;
+      else if (v.includes('END')) k10 = colKey;
+      else if (v.includes('HOURS') || (v.includes('TOURING') && v.includes('TOTAL'))) k11 = colKey;
+      else if (v.includes('CONVERTED')) k12 = colKey;
+      else if (v.includes('SERVED')) k13 = colKey;
+      else if (v.includes('REMAINING') && v.includes('TOURING')) k14 = colKey;
+      else if (v.includes('ALLOWANCE')) k15 = colKey;
+      else if (v.includes('MERIT') && !v.includes('DEMERIT')) k16_idx = colKey;
+      else if (v.includes('REFERENCE') || v === 'REF') k17 = colKey;
+      else if (v.includes('REMARK')) k18 = colKey;
+    }
+  }
 
   // Extract "UPDATED AS OF" date from the first data row (col E = CLASS col)
   let updatedAsOf = 'Unknown';
@@ -53,95 +86,105 @@ export default async function ExoPunishmentPage() {
   if (updatedRow) updatedAsOf = String(updatedRow[k5] || updatedRow[k4] || '').trim();
 
   // Filter valid rows: must have a LAST NAME and not be a header row
-  // NOTE: We do NOT filter by NO column — many valid entries have no sequential number
+  let lastSeenRank = '3CL';
   const validRows = data.filter(row => {
     const lastName = String(row[k3] || '').trim();
-    const rank = String(row[k2] || '').trim().toUpperCase();
-    return lastName !== '' && lastName.toUpperCase() !== 'LAST NAME' && rank !== '' && rank !== 'RANK';
+    if (!lastName || lastName.toUpperCase() === 'LAST NAME' || lastName.toUpperCase() === 'NAME') {
+      return false;
+    }
+    const rankVal = String(row[k2] || '').trim().toUpperCase();
+    if (rankVal === 'RANK') return false;
+    if (rankVal) lastSeenRank = rankVal;
+    return true;
   });
 
-  const k15 = keys[14]; // DEMERIT ALLOWANCE
-  const k16_idx = keys[15]; // MERIT
-  const k17 = keys[18]; // REFERENCE
-  const k18 = keys[19]; // REMARKS
+  const MONTHS = {
+    jan: 1, january: 1,
+    feb: 2, february: 2,
+    mar: 3, march: 3,
+    apr: 4, april: 4,
+    may: 5,
+    jun: 6, june: 6,
+    jul: 7, july: 7,
+    aug: 8, august: 8,
+    sep: 9, sept: 9, september: 9,
+    oct: 10, october: 10,
+    nov: 11, november: 11,
+    dec: 12, december: 12
+  };
 
-  // Helper to parse reference string details
-  function parseReference(refStr) {
+  // Robust date parser for military order references
+  function parseAwardDate(refStr) {
     if (!refStr) return null;
     const s = String(refStr).trim();
-    // Match date part
-    const dateMatch = s.match(/(?:dtd\s+)?([0-9]{1,2}\s+[a-zA-Z]+\s+[0-9]{4})/i);
-    if (dateMatch) {
-      const dateVal = new Date(dateMatch[1]);
-      if (!isNaN(dateVal.getTime())) {
-        const year = dateVal.getFullYear();
-        const month = String(dateVal.getMonth() + 1).padStart(2, '0');
-        const day = String(dateVal.getDate()).padStart(2, '0');
-        const isoDate = `${year}-${month}-${day}`;
-        const dateIndex = s.indexOf(dateMatch[0]);
-        let prefix = s.substring(0, dateIndex).trim();
-        if (prefix.toLowerCase().endsWith('dtd')) {
-          prefix = prefix.substring(0, prefix.length - 3).trim();
-        }
-        const normPrefix = prefix.toUpperCase().replace(/[^A-Z0-9]/g, '');
-        return { prefix, normPrefix, date: isoDate, rawDatePart: dateMatch[1] };
+
+    // 1. Day Month Year (e.g. 15 OCTOBER 2026, 15-Oct-2026, 15 Sept. 2026, 15/Oct/2026)
+    const m1 = s.match(/([0-9]{1,2})[\s\-\/\.]*([a-zA-Z]+)[\s\-\/\.]*([0-9]{4})/i);
+    if (m1) {
+      const d = parseInt(m1[1], 10);
+      const monStr = m1[2].toLowerCase();
+      let y = parseInt(m1[3], 10);
+      if (y > 2026) y = 2026; // Auto-correct drag-down year increments (2027-2035 -> 2026)
+      if (MONTHS[monStr] && d >= 1 && d <= 31) {
+        return `${y}-${String(MONTHS[monStr]).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       }
     }
+
+    // 2. Month Day Year (e.g. September 15, 2026, Oct 15 2026)
+    const m2 = s.match(/([a-zA-Z]+)[\s\-\/\.]*([0-9]{1,2}),?[\s\-\/\.]*([0-9]{4})/i);
+    if (m2) {
+      const monStr = m2[1].toLowerCase();
+      const d = parseInt(m2[2], 10);
+      let y = parseInt(m2[3], 10);
+      if (y > 2026) y = 2026;
+      if (MONTHS[monStr] && d >= 1 && d <= 31) {
+        return `${y}-${String(MONTHS[monStr]).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      }
+    }
+
+    // 3. ISO format YYYY-MM-DD
+    const m3 = s.match(/([0-9]{4})[\-\/]([0-9]{1,2})[\-\/]([0-9]{1,2})/);
+    if (m3) {
+      let y = parseInt(m3[1], 10);
+      if (y > 2026) y = 2026;
+      return `${y}-${String(parseInt(m3[2], 10)).padStart(2, '0')}-${String(parseInt(m3[3], 10)).padStart(2, '0')}`;
+    }
+
+    // 4. Numeric DD/MM/YYYY or MM/DD/YYYY
+    const m4 = s.match(/([0-9]{1,2})[\/]([0-9]{1,2})[\/]([0-9]{4})/);
+    if (m4) {
+      const p1 = parseInt(m4[1], 10);
+      const p2 = parseInt(m4[2], 10);
+      let y = parseInt(m4[3], 10);
+      if (y > 2026) y = 2026;
+      if (p1 > 12) {
+        return `${y}-${String(p2).padStart(2, '0')}-${String(p1).padStart(2, '0')}`;
+      } else {
+        return `${y}-${String(p1).padStart(2, '0')}-${String(p2).padStart(2, '0')}`;
+      }
+    }
+
+    // 5. Day Month without year (defaults to 2026)
+    const m5 = s.match(/([0-9]{1,2})[\s\-\/\.]*([a-zA-Z]+)/i);
+    if (m5) {
+      const d = parseInt(m5[1], 10);
+      const monStr = m5[2].toLowerCase();
+      if (MONTHS[monStr] && d >= 1 && d <= 31) {
+        return `2026-${String(MONTHS[monStr]).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      }
+    }
+
+    // 6. Month Day without year (defaults to 2026)
+    const m6 = s.match(/([a-zA-Z]+)[\s\-\/\.]*([0-9]{1,2})/i);
+    if (m6) {
+      const monStr = m6[1].toLowerCase();
+      const d = parseInt(m6[2], 10);
+      if (MONTHS[monStr] && d >= 1 && d <= 31) {
+        return `2026-${String(MONTHS[monStr]).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      }
+    }
+
     return null;
-  }
-
-  // Pre-process references to build a map of normalized prefix -> earliest date
-  // This automatically corrects Google Sheets auto-fill drag-down errors (where the year was incremented consecutively)
-  const prefixMap = new Map();
-  validRows.forEach(row => {
-    const refStr = row[k17] || '';
-    const parsed = parseReference(refStr);
-    if (parsed && parsed.normPrefix) {
-      const { normPrefix, date } = parsed;
-      if (!prefixMap.has(normPrefix) || new Date(date) < new Date(prefixMap.get(normPrefix))) {
-        prefixMap.set(normPrefix, date);
-      }
-    }
-  });
-
-  // Helper to extract date from strings like "S.O. Nr 95 dtd 12 MAY 2026"
-  // It checks if there's a corrected earliest date for this order prefix
-  function extractDateFromReference(ref) {
-    if (!ref) return null;
-    const parsed = parseReference(ref);
-    if (parsed && parsed.normPrefix) {
-      const correctedDate = prefixMap.get(parsed.normPrefix);
-      if (correctedDate) return correctedDate;
-    }
-    // Fallback to original parsing if prefix grouping failed
-    const s = String(ref).trim();
-    const dtdMatch = s.match(/dtd\s+([0-9]{1,2}\s+[a-zA-Z]+\s+[0-9]{4})/i);
-    if (dtdMatch) {
-      const parsedD = new Date(dtdMatch[1]);
-      if (!isNaN(parsedD.getTime())) return parsedD.toISOString().split('T')[0];
-    }
-    const genericMatch = s.match(/([0-9]{1,2}\s+[a-zA-Z]+\s+[0-9]{4})/i);
-    if (genericMatch) {
-      const parsedD = new Date(genericMatch[1]);
-      if (!isNaN(parsedD.getTime())) return parsedD.toISOString().split('T')[0];
-    }
-    return null;
-  }
-
-  // Helper to correct the year inside reference string
-  function getCorrectedReference(ref) {
-    if (!ref) return '';
-    const parsed = parseReference(ref);
-    if (parsed && parsed.normPrefix) {
-      const correctedDate = prefixMap.get(parsed.normPrefix);
-      if (correctedDate) {
-        const correctYear = correctedDate.split('-')[0];
-        return String(ref).replace(parsed.rawDatePart, (match) => {
-          return match.replace(/\b[0-9]{4}\b/, correctYear);
-        });
-      }
-    }
-    return String(ref);
   }
 
   // Group by cadet (LAST NAME)
@@ -150,8 +193,9 @@ export default async function ExoPunishmentPage() {
   const violationsByDate = new Map();
 
   validRows.forEach(row => {
-    const name = String(row[k3]).trim();
-    const rank = String(row[k2]).trim();
+    const name = String(row[k3] || '').trim();
+    let rank = String(row[k2] || '').trim();
+    if (!rank && lastSeenRank) rank = lastSeenRank;
 
     if (!cadetMap.has(name)) {
       cadetMap.set(name, {
@@ -175,15 +219,57 @@ export default async function ExoPunishmentPage() {
     }
 
     const cadet = cadetMap.get(name);
+    if (rank && !cadet.rank) cadet.rank = rank;
     
-    // Track violation dates
-    const refStr = row[k17] || '';
-    const extractedDate = extractDateFromReference(refStr);
-    const rowDemerits = Number(row[k7]) || 0;
-    const rowMerits = Number(row[k16_idx]) || 0;
+    // Extract reference text dynamically
+    let refStr = String(row[k17] || '').trim();
+    if (!refStr) {
+      for (const [colKey, colVal] of Object.entries(row)) {
+        if (colKey.toUpperCase().includes('REFERENCE') || colKey.toUpperCase() === 'REF') {
+          const s = String(colVal || '').trim();
+          if (s) { refStr = s; break; }
+        }
+      }
+    }
+    if (!refStr) {
+      for (const val of Object.values(row)) {
+        if (typeof val === 'string' && (/\bdtd\b/i.test(val) || /\bS\.?O\.?\b/i.test(val) || /\bS\.?R\.?\b/i.test(val))) {
+          refStr = val.trim();
+          break;
+        }
+      }
+    }
 
-    // 2nd Term Rule: Only offenses awarded after 11 September shall be included in the deduction of merit allowance for 2nd term.
-    const isAwardedAfterSep11 = !!(extractedDate && extractedDate > '2026-09-11');
+    // Extract award date from reference or other cells in the row
+    let extractedDate = parseAwardDate(refStr);
+    if (!extractedDate && row[k18]) {
+      extractedDate = parseAwardDate(row[k18]);
+    }
+    if (!extractedDate) {
+      for (const val of Object.values(row)) {
+        if (typeof val === 'string' && (/\b2026\b/.test(val) || /\b(sep|sept|oct|nov|dec)/i.test(val))) {
+          const candidate = parseAwardDate(val);
+          if (candidate) {
+            extractedDate = candidate;
+            break;
+          }
+        }
+      }
+    }
+
+    // Cleanly parse demerits
+    let rowDemerits = 0;
+    const rawDem = String(row[k7] !== undefined && row[k7] !== null ? row[k7] : '').trim();
+    const cleanDem = rawDem.replace(/[^0-9.]/g, '');
+    if (cleanDem) rowDemerits = parseFloat(cleanDem) || 0;
+
+    let rowMerits = 0;
+    const rawMerit = String(row[k16_idx] !== undefined && row[k16_idx] !== null ? row[k16_idx] : '').trim();
+    const cleanMerit = rawMerit.replace(/[^0-9.]/g, '');
+    if (cleanMerit) rowMerits = parseFloat(cleanMerit) || 0;
+
+    // 2nd Term Rule: Demerits awarded on or after September 11, 2026 are included in the deduction of merit allowance for 2nd term.
+    const isAwardedAfterSep11 = !!(extractedDate && extractedDate >= '2026-09-11');
 
     if (isAwardedAfterSep11) {
       cadet.totalDemerits += rowDemerits;
@@ -231,7 +317,7 @@ export default async function ExoPunishmentPage() {
       confStart: confStart,
       confEnd: confEnd,
       remarks: String(row[k18] || ''),
-      reference: getCorrectedReference(refStr),
+      reference: refStr,
       date: extractedDate
     });
 

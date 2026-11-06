@@ -20,10 +20,11 @@ export default async function TacODashboardPage() {
 
   const getMaxDemerits = (rank) => {
     const r = (rank || '').toUpperCase();
-    if (r.includes('1CL') || r.includes('CPT') || r.includes('LT') || r.includes('MAJ') || r.includes('COL')) return 88.2;
-    if (r.includes('2CL')) return 102.9;
-    if (r.includes('3CL')) return 117.6;
-    return 100;
+    if (r.includes('1CL') || r.includes('CPT') || r.includes('LT') || r.includes('MAJ') || r.includes('COL')) return 61.8;
+    if (r.includes('2CL')) return 72.1;
+    if (r.includes('3CL')) return 82.4;
+    if (r.includes('4CL')) return 92.7;
+    return 82.4;
   };
 
   if (fsgtData && fsgtData.length > 0) {

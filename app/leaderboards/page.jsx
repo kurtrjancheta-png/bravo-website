@@ -92,67 +92,171 @@ export default async function LeaderboardsPage() {
   // 3. Character: Discipline Leaderboard (Lowest accumulated demerits = demerits - merits for 2nd Term)
   const characterMap = {};
   if (fsgtRows && fsgtRows.length > 0) {
-    const keys = Object.keys(fsgtRows[0]);
-    const k2 = keys[1]; // RANK
-    const k3 = keys[2]; // LAST NAME
-    const k7 = keys[6]; // DEMERITS
-    const k16_idx = keys[15]; // MERIT
-    const k14 = keys[13]; // TOURING REMAINING
-    const k17 = keys[18]; // REFERENCE
+    const keys = Object.keys(fsgtRows[0] || {});
 
-    function parseRef(refStr) {
+    // Dynamically find header mapping or fallback to standard indices
+    const headerRow = fsgtRows.find(row => {
+      const vals = Object.values(row).map(v => String(v || '').trim().toUpperCase());
+      return vals.includes('LAST NAME') || vals.includes('RANK');
+    });
+
+    let k2 = keys[1]; // RANK
+    let k3 = keys[2]; // LAST NAME
+    let k7 = keys[6]; // DEMERITS
+    let k14 = keys[13]; // TOURING REMAINING
+    let k16_idx = keys[15]; // MERIT
+    let k17 = keys[18] || keys[keys.length - 2]; // REFERENCE
+    let k18 = keys[19] || keys[keys.length - 1]; // REMARKS
+
+    if (headerRow) {
+      for (const [colKey, headerVal] of Object.entries(headerRow)) {
+        const v = String(headerVal || '').trim().toUpperCase();
+        if (v === 'LAST NAME' || v === 'NAME') k3 = colKey;
+        else if (v === 'RANK') k2 = colKey;
+        else if (v.includes('DEMERIT') && !v.includes('ALLOWANCE') && !v.includes('TOTAL') && !v.includes('REMAINING')) k7 = colKey;
+        else if (v.includes('REMAINING') && v.includes('TOURING')) k14 = colKey;
+        else if (v.includes('MERIT') && !v.includes('DEMERIT')) k16_idx = colKey;
+        else if (v.includes('REFERENCE') || v === 'REF') k17 = colKey;
+        else if (v.includes('REMARK')) k18 = colKey;
+      }
+    }
+
+    const MONTHS = {
+      jan: 1, january: 1,
+      feb: 2, february: 2,
+      mar: 3, march: 3,
+      apr: 4, april: 4,
+      may: 5,
+      jun: 6, june: 6,
+      jul: 7, july: 7,
+      aug: 8, august: 8,
+      sep: 9, sept: 9, september: 9,
+      oct: 10, october: 10,
+      nov: 11, november: 11,
+      dec: 12, december: 12
+    };
+
+    function parseAwardDate(refStr) {
       if (!refStr) return null;
       const s = String(refStr).trim();
-      const dateMatch = s.match(/(?:dtd\s+)?([0-9]{1,2}\s+[a-zA-Z]+\s+[0-9]{4})/i);
-      if (dateMatch) {
-        const dateVal = new Date(dateMatch[1]);
-        if (!isNaN(dateVal.getTime())) {
-          const year = dateVal.getFullYear();
-          const month = String(dateVal.getMonth() + 1).padStart(2, '0');
-          const day = String(dateVal.getDate()).padStart(2, '0');
-          const isoDate = `${year}-${month}-${day}`;
-          const dateIndex = s.indexOf(dateMatch[0]);
-          let prefix = s.substring(0, dateIndex).trim();
-          if (prefix.toLowerCase().endsWith('dtd')) {
-            prefix = prefix.substring(0, prefix.length - 3).trim();
-          }
-          const normPrefix = prefix.toUpperCase().replace(/[^A-Z0-9]/g, '');
-          return { prefix, normPrefix, date: isoDate };
+
+      // 1. Day Month Year
+      const m1 = s.match(/([0-9]{1,2})[\s\-\/\.]*([a-zA-Z]+)[\s\-\/\.]*([0-9]{4})/i);
+      if (m1) {
+        const d = parseInt(m1[1], 10);
+        const monStr = m1[2].toLowerCase();
+        let y = parseInt(m1[3], 10);
+        if (y > 2026) y = 2026;
+        if (MONTHS[monStr] && d >= 1 && d <= 31) {
+          return `${y}-${String(MONTHS[monStr]).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         }
       }
+
+      // 2. Month Day Year
+      const m2 = s.match(/([a-zA-Z]+)[\s\-\/\.]*([0-9]{1,2}),?[\s\-\/\.]*([0-9]{4})/i);
+      if (m2) {
+        const monStr = m2[1].toLowerCase();
+        const d = parseInt(m2[2], 10);
+        let y = parseInt(m2[3], 10);
+        if (y > 2026) y = 2026;
+        if (MONTHS[monStr] && d >= 1 && d <= 31) {
+          return `${y}-${String(MONTHS[monStr]).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        }
+      }
+
+      // 3. ISO format YYYY-MM-DD
+      const m3 = s.match(/([0-9]{4})[\-\/]([0-9]{1,2})[\-\/]([0-9]{1,2})/);
+      if (m3) {
+        let y = parseInt(m3[1], 10);
+        if (y > 2026) y = 2026;
+        return `${y}-${String(parseInt(m3[2], 10)).padStart(2, '0')}-${String(parseInt(m3[3], 10)).padStart(2, '0')}`;
+      }
+
+      // 4. Numeric DD/MM/YYYY or MM/DD/YYYY
+      const m4 = s.match(/([0-9]{1,2})[\/]([0-9]{1,2})[\/]([0-9]{4})/);
+      if (m4) {
+        const p1 = parseInt(m4[1], 10);
+        const p2 = parseInt(m4[2], 10);
+        let y = parseInt(m4[3], 10);
+        if (y > 2026) y = 2026;
+        if (p1 > 12) {
+          return `${y}-${String(p2).padStart(2, '0')}-${String(p1).padStart(2, '0')}`;
+        } else {
+          return `${y}-${String(p1).padStart(2, '0')}-${String(p2).padStart(2, '0')}`;
+        }
+      }
+
+      // 5. Day Month without year
+      const m5 = s.match(/([0-9]{1,2})[\s\-\/\.]*([a-zA-Z]+)/i);
+      if (m5) {
+        const d = parseInt(m5[1], 10);
+        const monStr = m5[2].toLowerCase();
+        if (MONTHS[monStr] && d >= 1 && d <= 31) {
+          return `2026-${String(MONTHS[monStr]).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        }
+      }
+
+      // 6. Month Day without year
+      const m6 = s.match(/([a-zA-Z]+)[\s\-\/\.]*([0-9]{1,2})/i);
+      if (m6) {
+        const monStr = m6[1].toLowerCase();
+        const d = parseInt(m6[2], 10);
+        if (MONTHS[monStr] && d >= 1 && d <= 31) {
+          return `2026-${String(MONTHS[monStr]).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        }
+      }
+
       return null;
     }
 
-    const prefixMap = new Map();
-    fsgtRows.forEach(row => {
-      const parsed = parseRef(row[k17]);
-      if (parsed && parsed.normPrefix) {
-        if (!prefixMap.has(parsed.normPrefix) || new Date(parsed.date) < new Date(prefixMap.get(parsed.normPrefix))) {
-          prefixMap.set(parsed.normPrefix, parsed.date);
-        }
-      }
-    });
-
     fsgtRows.forEach(row => {
       const name = String(row[k3] || '').trim().toUpperCase();
-      if (!name) return;
+      if (!name || name === 'LAST NAME' || name === 'NAME') return;
 
       if (!characterMap[name]) {
         characterMap[name] = { demerits: 0, merits: 0, tourRemaining: 0, allTimeDemerits: 0 };
       }
 
-      const parsed = parseRef(row[k17]);
-      let extractedDate = parsed ? parsed.date : null;
-      if (parsed && parsed.normPrefix && prefixMap.has(parsed.normPrefix)) {
-        extractedDate = prefixMap.get(parsed.normPrefix);
+      let refStr = String(row[k17] || '').trim();
+      if (!refStr) {
+        for (const [colKey, colVal] of Object.entries(row)) {
+          if (colKey.toUpperCase().includes('REFERENCE') || colKey.toUpperCase() === 'REF') {
+            const s = String(colVal || '').trim();
+            if (s) { refStr = s; break; }
+          }
+        }
+      }
+      if (!refStr) {
+        for (const val of Object.values(row)) {
+          if (typeof val === 'string' && (/\bdtd\b/i.test(val) || /\bS\.?O\.?\b/i.test(val) || /\bS\.?R\.?\b/i.test(val))) {
+            refStr = val.trim();
+            break;
+          }
+        }
       }
 
-      // 2nd Term Rule: Only offenses awarded after 11 September count in 2nd term demerit calculation
-      const isAwardedAfterSep11 = !!(extractedDate && extractedDate > '2026-09-11');
+      let extractedDate = parseAwardDate(refStr);
+      if (!extractedDate && row[k18]) {
+        extractedDate = parseAwardDate(row[k18]);
+      }
+      if (!extractedDate) {
+        for (const val of Object.values(row)) {
+          if (typeof val === 'string' && (/\b2026\b/.test(val) || /\b(sep|sept|oct|nov|dec)/i.test(val))) {
+            const candidate = parseAwardDate(val);
+            if (candidate) {
+              extractedDate = candidate;
+              break;
+            }
+          }
+        }
+      }
+
+      // 2nd Term Rule: Offenses awarded on or after 11 September count in 2nd term demerit calculation
+      const isAwardedInSecondTerm = !!(extractedDate && extractedDate >= '2026-09-11');
       const rowDemerits = Number(row[k7]) || 0;
       const rowMerits = Number(row[k16_idx]) || 0;
 
-      if (isAwardedAfterSep11) {
+      if (isAwardedInSecondTerm) {
         characterMap[name].demerits += rowDemerits;
         characterMap[name].merits += rowMerits;
       }
