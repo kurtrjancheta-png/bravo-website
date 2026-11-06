@@ -51,6 +51,7 @@ export default async function DispositionPage() {
   const class1 = [];
   const class2 = [];
   const class3 = [];
+  const class4 = [];
 
   rosterRows.forEach((row, i) => {
     const values = Object.values(row);
@@ -73,12 +74,14 @@ export default async function DispositionPage() {
       picture: getCadetImageUrl(values[4] || '', values[2] || '', values[9] || name) || ''
     };
 
-    if (i >= 0 && i <= 29) {
+    if (cadetClass.includes('1CL') || (i >= 0 && i <= 29)) {
       class1.push(cadet);
-    } else if (i >= 30 && i <= 66) {
+    } else if (cadetClass.includes('2CL') || (i >= 30 && i <= 66)) {
       class2.push(cadet);
-    } else if (i >= 67 && i <= 104) {
+    } else if (cadetClass.includes('3CL') || (i >= 67 && i <= 104)) {
       class3.push(cadet);
+    } else if (cadetClass.includes('4CL') || i >= 105) {
+      class4.push(cadet);
     }
   });
 
@@ -90,7 +93,7 @@ export default async function DispositionPage() {
       </div>
 
       {/* Disposition Dashboard */}
-      <DispositionDashboard dispositionData={dispositionRows} attachmentData={parsedAttachments} rosterData={[...class1, ...class2, ...class3]} />
+      <DispositionDashboard dispositionData={dispositionRows} attachmentData={parsedAttachments} rosterData={[...class1, ...class2, ...class3, ...class4]} />
     </div>
   );
 }

@@ -62,16 +62,22 @@ export async function POST(req) {
         if (soi && soi.length > 0) {
           const normalizedInput = String(username).replace(/[-\s]/g, '').toUpperCase();
           const cadet = soi.find(row => {
-            const val = String(row['SERIAL NR'] || row['SERIAL NUMBER'] || row['SERIAL_NR'] || '').trim();
+            const val = String(
+              row['SERIAL NR'] || row['SERIAL NR '] || row['SERIAL NUMBER'] || 
+              row['SERIAL_NR'] || row['SERIAL NO.'] || row['SERIAL NO'] || row['AFPSN'] || ''
+            ).trim();
             const normalizedVal = val.replace(/[-\s]/g, '').toUpperCase();
             return normalizedVal === normalizedInput;
           });
 
           if (cadet) {
-            const serial = String(cadet['SERIAL NR'] || '').trim();
-            const firstName = String(cadet['FIRST NAME'] || '').trim();
-            const surname = String(cadet['SURNAME'] || '').trim();
-            const cadetClass = String(cadet['CLASS'] || '').trim();
+            const serial = String(
+              cadet['SERIAL NR'] || cadet['SERIAL NR '] || cadet['SERIAL NUMBER'] || 
+              cadet['SERIAL NO.'] || cadet['SERIAL NO'] || cadet['AFPSN'] || ''
+            ).trim();
+            const firstName = String(cadet['FIRST NAME'] || cadet['FIRST NAME '] || '').trim();
+            const surname = String(cadet['SURNAME'] || cadet['SURNAME '] || '').trim();
+            const cadetClass = String(cadet['CLASS'] || cadet['CLASS '] || '').trim();
 
             userSession = {
               username: serial,

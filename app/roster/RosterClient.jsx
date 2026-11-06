@@ -5,7 +5,7 @@ import SOIGenerator from './SOIGenerator';
 
 // Configuration for all possible filters
 const ALL_FILTERS = [
-  { id: 'CLASS', label: 'Class', type: 'select', options: ['1CL', '2CL', '3CL'] },
+  { id: 'CLASS', label: 'Class', type: 'select', options: ['1CL', '2CL', '3CL', '4CL'] },
   { id: 'BOS', label: 'Branch of Service (BOS)', type: 'select', options: ['PN', 'PA', 'PAF'] },
   { id: 'GENDER', label: 'Gender', type: 'select', options: ['M', 'F'], labels: { M: 'Male', F: 'Female' } },
   { id: 'AGE', label: 'Age', type: 'text' },
@@ -63,7 +63,7 @@ const getCadetValue = (cadet, key) => {
   return cadet[key];
 };
 
-export default function RosterClient({ allCadets, class1, class2, class3, soiRows }) {
+export default function RosterClient({ allCadets, class1, class2, class3, class4, soiRows }) {
   // DRAFT states (inputs change these immediately)
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilterIds, setActiveFilterIds] = useState(['CLASS', 'BOS', 'GENDER']);
@@ -854,11 +854,12 @@ export default function RosterClient({ allCadets, class1, class2, class3, soiRow
             )}
           </div>
         ) : (
-          /* Default view (No active filters): Render 1CL, 2CL, 3CL Roster Sections */
+          /* Default view (No active filters): Render 1CL, 2CL, 3CL, 4CL Roster Sections */
           <div className="roster-sections" style={{ marginTop: '3rem', animation: 'fadeIn 0.3s ease' }}>
             <RosterSection title="1ST CLASS (1CL)" cadets={class1} color="var(--accent-gold)" onRowClick={selectCadetProfile} />
             <RosterSection title="2ND CLASS (2CL)" cadets={class2} color="#1a7a3a" onRowClick={selectCadetProfile} />
             <RosterSection title="3RD CLASS (3CL)" cadets={class3} color="#2d3748" onRowClick={selectCadetProfile} />
+            <RosterSection title="4TH CLASS (4CL)" cadets={class4} color="#b45309" onRowClick={selectCadetProfile} />
           </div>
         )}
       </div>

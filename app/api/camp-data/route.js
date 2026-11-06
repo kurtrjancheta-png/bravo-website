@@ -57,6 +57,7 @@ export async function GET(request) {
         const gender = String(row['GENDER '] || row['GENDER'] || 'M').trim().toUpperCase();
         const afpsn = String(
           row['AFPSN '] || row['AFPSN'] || 
+          row['SERIAL NR '] || row['SERIAL NR'] || row['SERIAL NUMBER'] ||
           row['SERIAL NO.'] || row['SERIAL NO '] || row['SERIAL NO'] || ''
         ).trim().toUpperCase();
 
@@ -110,7 +111,7 @@ export async function GET(request) {
 
     // 3. Process Physical/PFT from parsePFTData
     if (pftParsedData) {
-      const classes = ['1cl', '2cl', '3cl'];
+      const classes = ['1cl', '2cl', '3cl', '4cl'];
       classes.forEach(cl => {
         const classPft = pftParsedData[cl] || { passed: [], failed: [], smc: [], fad: [] };
         

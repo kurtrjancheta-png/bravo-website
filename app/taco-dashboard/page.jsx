@@ -187,7 +187,8 @@ export default async function TacODashboardPage() {
           let rowValues = Object.values(row).map(v => typeof v === 'string' ? v.trim().toUpperCase() : '');
           if (rowValues.includes('1CL') || rowValues.includes('1ST CLASS') || 
               rowValues.includes('2CL') || rowValues.includes('2ND CLASS') ||
-              rowValues.includes('3CL') || rowValues.includes('3RD CLASS')) return; // header
+              rowValues.includes('3CL') || rowValues.includes('3RD CLASS') ||
+              rowValues.includes('4CL') || rowValues.includes('4TH CLASS')) return; // header
 
           const name = String(row[allKeys[nameIdx]] || '').trim();
           if (name && name.toUpperCase() !== 'NAME') {

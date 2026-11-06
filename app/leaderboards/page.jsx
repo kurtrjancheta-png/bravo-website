@@ -46,14 +46,26 @@ export default async function LeaderboardsPage() {
         genderMap[lastName.toUpperCase()] = gender;
       }
 
-      // Group cadets by class based on row indices
-      let mappedClass = '3cl';
-      if (i >= 0 && i <= 29) {
+      // Group cadets by class
+      let mappedClass = '4cl';
+      if (cadetClass.includes('1CL') || cadetClass.includes('1ST')) {
         mappedClass = '1cl';
-      } else if (i >= 30 && i <= 66) {
+      } else if (cadetClass.includes('2CL') || cadetClass.includes('2ND')) {
         mappedClass = '2cl';
-      } else if (i >= 67 && i <= 104) {
+      } else if (cadetClass.includes('3CL') || cadetClass.includes('3RD')) {
         mappedClass = '3cl';
+      } else if (cadetClass.includes('4CL') || cadetClass.includes('4TH')) {
+        mappedClass = '4cl';
+      } else {
+        if (i >= 0 && i <= 29) {
+          mappedClass = '1cl';
+        } else if (i >= 30 && i <= 66) {
+          mappedClass = '2cl';
+        } else if (i >= 67 && i <= 104) {
+          mappedClass = '3cl';
+        } else {
+          mappedClass = '4cl';
+        }
       }
 
       fullRoster.push({
@@ -86,7 +98,8 @@ export default async function LeaderboardsPage() {
   const physicalLeaderboard = {
     '1cl': buildPhysicalLeaderboard('1cl'),
     '2cl': buildPhysicalLeaderboard('2cl'),
-    '3cl': buildPhysicalLeaderboard('3cl')
+    '3cl': buildPhysicalLeaderboard('3cl'),
+    '4cl': buildPhysicalLeaderboard('4cl')
   };
 
   // 3. Character: Discipline Leaderboard (Lowest accumulated demerits = demerits - merits for 2nd Term)
@@ -294,7 +307,8 @@ export default async function LeaderboardsPage() {
   const characterLeaderboard = {
     '1cl': buildCharacterLeaderboard('1cl'),
     '2cl': buildCharacterLeaderboard('2cl'),
-    '3cl': buildCharacterLeaderboard('3cl')
+    '3cl': buildCharacterLeaderboard('3cl'),
+    '4cl': buildCharacterLeaderboard('4cl')
   };
 
   // 4. Academics: Deterministic GPAs based on Roster
@@ -316,7 +330,8 @@ export default async function LeaderboardsPage() {
   const academicsLeaderboard = {
     '1cl': buildAcademicsLeaderboard('1cl'),
     '2cl': buildAcademicsLeaderboard('2cl'),
-    '3cl': buildAcademicsLeaderboard('3cl')
+    '3cl': buildAcademicsLeaderboard('3cl'),
+    '4cl': buildAcademicsLeaderboard('4cl')
   };
 
   // 5. Military: Deterministic Aptitude Scores based on Roster
@@ -338,7 +353,8 @@ export default async function LeaderboardsPage() {
   const militaryLeaderboard = {
     '1cl': buildMilitaryLeaderboard('1cl'),
     '2cl': buildMilitaryLeaderboard('2cl'),
-    '3cl': buildMilitaryLeaderboard('3cl')
+    '3cl': buildMilitaryLeaderboard('3cl'),
+    '4cl': buildMilitaryLeaderboard('4cl')
   };
 
   const leaderboardsData = {

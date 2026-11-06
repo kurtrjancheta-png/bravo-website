@@ -85,7 +85,7 @@ export default function PrivilegesClient({ activePrivileges, soiData = [] }) {
        if (cClass.includes('1CL') || cClass.includes('2026')) setCadetClass('1CL');
        else if (cClass.includes('2CL') || cClass.includes('2027')) setCadetClass('2CL');
        else if (cClass.includes('3CL') || cClass.includes('2028')) setCadetClass('3CL');
-       else if (cClass.includes('4CL') || cClass.includes('2029')) setCadetClass('4CL');
+       else if (cClass.includes('4CL') || cClass.includes('2029') || cClass.includes('2030')) setCadetClass('4CL');
        else setCadetClass(cClass); // Fallback
     }
     

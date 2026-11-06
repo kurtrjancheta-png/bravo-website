@@ -187,7 +187,7 @@ function getPFTInsights(pftData, classKey) {
   
   // Class breakdown (only relevant if classKey === 'all')
   const classBreakdown = {};
-  ['1cl', '2cl', '3cl'].forEach(ck => {
+  ['1cl', '2cl', '3cl', '4cl'].forEach(ck => {
     const clsActive = [...(pftData[ck]?.passed || []), ...(pftData[ck]?.failed || []), ...(pftData[ck]?.smc || [])];
     const clsPassed = pftData[ck]?.passed || [];
     
@@ -275,7 +275,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
     try {
       const getCadetRecord = (pftData) => {
         if (!pftData) return null;
-        for (const cls of ['1cl', '2cl', '3cl']) {
+        for (const cls of ['1cl', '2cl', '3cl', '4cl']) {
           if (!pftData[cls]) continue;
           
           const allCadets = [
@@ -338,6 +338,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
       '1CL': getPassRateForPFT(mockData, '1cl'),
       '2CL': getPassRateForPFT(mockData, '2cl'),
       '3CL': getPassRateForPFT(mockData, '3cl'),
+      '4CL': getPassRateForPFT(mockData, '4cl'),
     },
     {
       name: 'PFT 1',
@@ -345,6 +346,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
       '1CL': getPassRateForPFT(pft1Data, '1cl'),
       '2CL': getPassRateForPFT(pft1Data, '2cl'),
       '3CL': getPassRateForPFT(pft1Data, '3cl'),
+      '4CL': getPassRateForPFT(pft1Data, '4cl'),
     },
     {
       name: 'PFT 2',
@@ -352,6 +354,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
       '1CL': getPassRateForPFT(pft2Data, '1cl'),
       '2CL': getPassRateForPFT(pft2Data, '2cl'),
       '3CL': getPassRateForPFT(pft2Data, '3cl'),
+      '4CL': getPassRateForPFT(pft2Data, '4cl'),
     }
   ].filter(item => item['Company Average'] !== null);
 
@@ -363,7 +366,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
     let maxVal = 0;
     
     progressChartData.forEach(item => {
-      ['Company Average', '1CL', '2CL', '3CL'].forEach(key => {
+      ['Company Average', '1CL', '2CL', '3CL', '4CL'].forEach(key => {
         const val = item[key];
         if (val !== null && val !== undefined) {
           if (val < minVal) minVal = val;
@@ -392,7 +395,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
 
     let allScores = [];
     datasets.forEach(data => {
-      const classesToCheck = classKey === 'all' ? ['1cl', '2cl', '3cl'] : [classKey];
+      const classesToCheck = classKey === 'all' ? ['1cl', '2cl', '3cl', '4cl'] : [classKey];
       classesToCheck.forEach(cls => {
         const cData = data[cls];
         if (cData) {
@@ -423,11 +426,13 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
     const c1 = getEventAverage(selectedPFT, '1cl', evt.key);
     const c2 = getEventAverage(selectedPFT, '2cl', evt.key);
     const c3 = getEventAverage(selectedPFT, '3cl', evt.key);
+    const c4 = getEventAverage(selectedPFT, '4cl', evt.key);
     
     let activeClassVal = null;
     if (selectedClass === '1cl') activeClassVal = c1;
     else if (selectedClass === '2cl') activeClassVal = c2;
     else if (selectedClass === '3cl') activeClassVal = c3;
+    else if (selectedClass === '4cl') activeClassVal = c4;
 
     let diffRange = null;
     if (activeClassVal !== null && overall !== null) {
@@ -440,6 +445,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
       '1CL': c1,
       '2CL': c2,
       '3CL': c3,
+      '4CL': c4,
       diffRange
     };
   });
@@ -449,7 +455,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
     let minVal = 10;
     let maxVal = 0;
     averageGradesData.forEach(item => {
-      ['Company Average', '1CL', '2CL', '3CL'].forEach(key => {
+      ['Company Average', '1CL', '2CL', '3CL', '4CL'].forEach(key => {
         const val = item[key];
         if (val !== null && val !== undefined && val > 0) {
           if (val < minVal) minVal = val;
@@ -660,7 +666,8 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                 { value: 'all', label: 'ALL CLASSES' },
                 { value: '1cl', label: '1ST CLASS' },
                 { value: '2cl', label: '2ND CLASS' },
-                { value: '3cl', label: '3RD CLASS' }
+                { value: '3cl', label: '3RD CLASS' },
+                { value: '4cl', label: '4TH CLASS' }
               ].map(opt => (
                 <button
                   key={opt.value}
@@ -836,6 +843,13 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                       radius={[4, 4, 0, 0]} 
                       name="3CL" 
                     />
+                    <Bar 
+                      dataKey="4CL" 
+                      fill="#10b981" 
+                      fillOpacity={isBarActive('4cl') ? 1.0 : 0.25} 
+                      radius={[4, 4, 0, 0]} 
+                      name="4CL" 
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -938,6 +952,17 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                       strokeOpacity={isLineActive('3cl') ? 1.0 : 0.25}
                       dot={{ r: 4 }} 
                       name="3CL" 
+                    />
+                  )}
+                  { (selectedClass === 'all' || selectedClass === '4cl') && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="4CL" 
+                      stroke="#10b981" 
+                      strokeWidth={selectedClass === '4cl' ? 4 : 2} 
+                      strokeOpacity={isLineActive('4cl') ? 1.0 : 0.25}
+                      dot={{ r: 4 }} 
+                      name="4CL" 
                     />
                   )}
                 </ComposedChart>
@@ -1178,8 +1203,8 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                       <h4 style={{ fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-secondary)', marginBottom: '0.75rem', fontWeight: 700 }}>
                         Class Level Passing Rates
                       </h4>
-                      <div className="pft-insight-grid" style={{ gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)' }}>
-                        {['1cl', '2cl', '3cl'].map(ck => {
+                      <div className="pft-insight-grid" style={{ gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)' }}>
+                        {['1cl', '2cl', '3cl', '4cl'].map(ck => {
                           const data = activeInsights.classBreakdown[ck];
                           return (
                             <div key={ck} className="pft-insight-card" style={{ padding: '1rem', alignItems: 'center' }}>
@@ -1226,7 +1251,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                   {selectedClass === 'all' ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem' }}>
                       <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', fontWeight: 700, margin: 0 }}>Class-Specific Strategies</h3>
-                      {['1cl', '2cl', '3cl'].map(ck => {
+                      {['1cl', '2cl', '3cl', '4cl'].map(ck => {
                         const cb = activeInsights.classBreakdown[ck];
                         if (!cb || cb.total === 0 || !cb.weakestEvent) return null;
                         const classRemediation = getRemediationRecommendation(cb.weakestEvent.key);
@@ -1234,7 +1259,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                           <div key={ck} className="pft-remediation-box" style={{ marginTop: 0 }}>
                             <div className="pft-remediation-title">
                               <span style={{ 
-                                backgroundColor: ck === '1cl' ? '#3b82f6' : ck === '2cl' ? '#ef4444' : '#FFFF00', 
+                                backgroundColor: ck === '1cl' ? '#3b82f6' : ck === '2cl' ? '#ef4444' : ck === '3cl' ? '#FFFF00' : '#10b981', 
                                 color: ck === '3cl' ? '#000' : '#fff',
                                 padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', marginRight: '0.75rem', fontWeight: 800
                               }}>{ck.toUpperCase()}</span>

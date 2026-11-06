@@ -85,3 +85,14 @@
 - [x] Maintained full historical offense records with badges showing 1st Term (exempt) vs 2nd Term.
 - [x] Updated `app/exo-punishment/ExoPunishmentClient.jsx` cards and table headers to clearly display "Accumulated Demerits (2nd Term)".
 - [x] Updated `app/leaderboards/page.jsx` character discipline standings to align with the 2nd Term demerit calculation.
+
+# 4CL Cadets Roster & SOI Integration
+- [x] Updated Company Roster (`app/roster/page.jsx` & `RosterClient.jsx`) to filter, group, display, and search 4th Class (4CL) cadets alongside 1CL, 2CL, and 3CL.
+- [x] Updated Troop Disposition (`app/disposition/page.jsx`) to include 4CL cadets in `rosterData` for Full Duty morning reports.
+- [x] Integrated 4CL into Leaderboards (`app/leaderboards/page.jsx` & `LeaderboardsClient.jsx`) across Physical, Character, Academics, and Military standing categories.
+- [x] Updated PFT Parser (`lib/pftParser.js`) and PFT Dashboard (`app/pft-tracker/PFTDashboard.jsx`) to support 4CL records, charts, class filters, class-level pass rates, and remediation strategies.
+- [x] Updated CAMP Data API (`app/api/camp-data/route.js`) to parse 4CL cadets from SOI with `SERIAL NR` and evaluate 4CL physical status.
+- [x] Updated Authentication (`app/api/auth/login/route.js`) to support 4CL cadet logins using their Serial Numbers and SOI data.
+- [x] Updated S1 Signify Privileges (`app/signify-priv/PrivilegesClient.jsx`) to autocomplete and recognize 4CL cadets.
+- [x] Updated Finance Tracker (`app/finance-tracker/FinanceDashboard.jsx`) to calculate collection statistics and render progress bars for 4CL.
+- [x] Updated TacO Dashboard (`app/taco-dashboard/page.jsx`) and S2 Rifle Directory (`app/s2/rifle-directory/api.js`) for 4CL header handling and inventory.

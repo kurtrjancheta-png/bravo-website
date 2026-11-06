@@ -37,6 +37,7 @@ export async function getRifleInventory() {
         addEntry(cols[0], cols[1], '1CL');
         addEntry(cols[4], cols[5], '2CL');
         addEntry(cols[8], cols[9], '3CL');
+        if (cols.length > 13) addEntry(cols[12], cols[13], '4CL');
       }
     } catch (error) {
       console.error(`Error fetching ${sheet.name}:`, error);

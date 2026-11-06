@@ -277,7 +277,7 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
     });
   }, [currentCadets, searchQuery, statusFilter, selectedMonthIdx]);
 
-  // 3. Class-by-Class & Combined Stats Calculations for 1CL to 3CL
+  // 3. Class-by-Class & Combined Stats Calculations for 1CL to 4CL
   const currentMonthName = MONTH_NAMES[selectedMonthIdx];
   const classTrackerStats = useMemo(() => {
     const stats = {};
@@ -286,7 +286,7 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
     let paidCoyCountCombined = 0;
     let coyApplicableCountCombined = 0;
 
-    ['1CL', '2CL', '3CL'].forEach(className => {
+    ['1CL', '2CL', '3CL', '4CL'].forEach(className => {
       let totalCdtCount = 0;
       let paidCdtCount = 0;
       let paidCoyCount = 0;
@@ -486,7 +486,7 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
           
           {/* Divided Progress Bars */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginTop: '0.25rem', width: '100%' }}>
-            {['1CL', '2CL', '3CL'].map(cls => {
+            {['1CL', '2CL', '3CL', '4CL'].map(cls => {
               const pct = classTrackerStats.classes[cls]?.coyPct || 0;
               return (
                 <div key={cls} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
@@ -503,7 +503,7 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
           </div>
           
           <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 500, marginTop: '0.25rem' }}>
-            1CL to 3CL for {currentMonthName}
+            1CL to 4CL for {currentMonthName}
           </span>
         </div>
 
@@ -522,7 +522,7 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
           
           {/* Divided Progress Bars */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginTop: '0.25rem', width: '100%' }}>
-            {['1CL', '2CL', '3CL'].map(cls => {
+            {['1CL', '2CL', '3CL', '4CL'].map(cls => {
               const pct = classTrackerStats.classes[cls]?.cdtPct || 0;
               return (
                 <div key={cls} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
@@ -539,7 +539,7 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
           </div>
 
           <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 500, marginTop: '0.25rem' }}>
-            1CL to 3CL for {currentMonthName}
+            1CL to 4CL for {currentMonthName}
           </span>
         </div>
 
@@ -639,7 +639,7 @@ export default function FinanceDashboard({ trackers = {}, monthlySheets = {} }) 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                 <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.05em' }}>CLASS</span>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  {['1CL', '2CL', '3CL'].map(cls => (
+                  {['1CL', '2CL', '3CL', '4CL'].map(cls => (
                     <button
                       key={cls}
                       onClick={() => { setSelectedClass(cls); setStatusFilter('all'); }}

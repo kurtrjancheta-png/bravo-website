@@ -148,9 +148,10 @@ export default async function RosterPage() {
   });
 
   // Group by class for the default view
-  const class1 = allCadets.filter(c => c.class === '1CL');
-  const class2 = allCadets.filter(c => c.class === '2CL');
-  const class3 = allCadets.filter(c => c.class === '3CL');
+  const class1 = allCadets.filter(c => c.class.includes('1CL'));
+  const class2 = allCadets.filter(c => c.class.includes('2CL'));
+  const class3 = allCadets.filter(c => c.class.includes('3CL'));
+  const class4 = allCadets.filter(c => c.class.includes('4CL'));
 
   return (
     <div>
@@ -164,6 +165,7 @@ export default async function RosterPage() {
         class1={class1}
         class2={class2}
         class3={class3}
+        class4={class4}
         soiRows={soiRows}
       />
     </div>

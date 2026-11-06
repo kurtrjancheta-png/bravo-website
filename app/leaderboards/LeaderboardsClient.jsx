@@ -247,10 +247,15 @@ export default function LeaderboardsClient({ data }) {
       </div>
 
       {/* Class Level Selector */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '2rem' }}>
-        {['1cl', '2cl', '3cl'].map(cls => {
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+        {['1cl', '2cl', '3cl', '4cl'].map(cls => {
           const isActive = activeClass === cls;
-          const displayLabels = { '1cl': '1st Class (1CL)', '2cl': '2nd Class (2CL)', '3cl': '3rd Class (3CL)' };
+          const displayLabels = {
+            '1cl': '1st Class (1CL)',
+            '2cl': '2nd Class (2CL)',
+            '3cl': '3rd Class (3CL)',
+            '4cl': '4th Class (4CL)'
+          };
           return (
             <button
               key={cls}
