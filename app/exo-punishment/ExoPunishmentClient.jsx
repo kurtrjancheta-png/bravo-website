@@ -1076,9 +1076,18 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                             opacity: isOffInactive ? 0.6 : 1
                           }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
-                              <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                                 <span style={{ fontSize: '0.75rem' }}>{getOffenseEmoji(offense.natureOfOffense)}</span>
                                 <span>{offense.natureOfOffense || 'UNKNOWN'}</span>
+                                {offense.isAwardedAfterSep11 ? (
+                                  <span style={{ fontSize: '0.6rem', padding: '1px 5px', borderRadius: '4px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', fontWeight: 700 }}>
+                                    2nd Term (-{offense.demerits || 0} dem)
+                                  </span>
+                                ) : (
+                                  <span style={{ fontSize: '0.6rem', padding: '1px 5px', borderRadius: '4px', background: 'rgba(128, 128, 128, 0.15)', color: 'var(--text-secondary)' }}>
+                                    1st Term (exempt)
+                                  </span>
+                                )}
                               </div>
                               <div style={{ fontSize: '0.65rem', color: classColor, fontWeight: 800 }}>Class {offense.classOfOffense}</div>
                             </div>
@@ -1095,7 +1104,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                   {/* Demerits Progress */}
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
-                      <span>DEMERITS</span>
+                      <span>DEMERITS (2ND TERM)</span>
                       <span style={{ fontWeight: 800, color: healthColor }}>
                         {accumulatedDemerits.toFixed(1)} / {maxDemerits}
                       </span>
@@ -1108,6 +1117,11 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                         }} 
                       />
                     </div>
+                    {cadet.term1Demerits > 0 && (
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                        1st Term: {cadet.term1Demerits.toFixed(1)} dem (exempt from 2nd term allowance)
+                      </div>
+                    )}
                   </div>
 
                   {/* Confinement Progress */}
@@ -1152,7 +1166,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
             <tr>
               <th style={{ padding: '1rem', textAlign: 'left', width: '25%' }}>Cadet Profile</th>
               <th style={{ padding: '1rem', textAlign: 'left', width: '35%' }}>Offenses</th>
-              <th style={{ padding: '1rem', textAlign: 'left', width: '15%' }}>Accumulated Demerits</th>
+              <th style={{ padding: '1rem', textAlign: 'left', width: '15%' }}>Accumulated Demerits (2nd Term)</th>
               <th style={{ padding: '1rem', textAlign: 'left', width: '15%' }}>Confinement</th>
               <th style={{ padding: '1rem', textAlign: 'left', width: '10%' }}>Touring</th>
             </tr>
@@ -1379,6 +1393,15 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                                 <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                                   <span style={{ fontSize: '0.8rem' }}>{getOffenseEmoji(offense.natureOfOffense)}</span>
                                   <span>{offense.natureOfOffense || 'UNKNOWN'}</span>
+                                  {offense.isAwardedAfterSep11 ? (
+                                    <span style={{ fontSize: '0.65rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', fontWeight: 700 }}>
+                                      2nd Term (-{offense.demerits || 0} dem)
+                                    </span>
+                                  ) : (
+                                    <span style={{ fontSize: '0.65rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(128, 128, 128, 0.15)', color: 'var(--text-secondary)' }}>
+                                      1st Term (exempt)
+                                    </span>
+                                  )}
                                   {isOffInactive && <span style={{ marginLeft: '0.5rem', color: '#10b981', fontWeight: 800 }}>✓ INACTIVE</span>}
                                 </div>
                                 <div style={{ fontSize: '0.7rem', color: classColor, fontWeight: 800 }}>Class {offense.classOfOffense}</div>
@@ -1393,7 +1416,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
 
                   <td data-label="Accumulated Demerits" style={{ padding: '1.5rem 1rem' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', opacity: isGloballyInactive ? 0.6 : 1 }}>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Accumulated Demerits</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Accumulated Demerits (2nd Term)</div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
                         <span style={{ fontWeight: 800, color: healthColor, fontSize: '1.1rem' }}>{accumulatedDemerits.toFixed(1)}</span>
                         <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>/ {maxDemerits}</span>
@@ -1414,6 +1437,11 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                           }} 
                         />
                       </div>
+                      {cadet.term1Demerits > 0 && (
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>
+                          1st Term: {cadet.term1Demerits.toFixed(1)} dem (exempt)
+                        </div>
+                      )}
                     </div>
                   </td>
 

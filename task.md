@@ -76,3 +76,12 @@
 - [x] Map the 24 hourly periods to local time strings, weather descriptions, temps, apparent feels-like temps, and precipitation probabilities.
 - [x] Created isWeatherModalOpen state hook and bound onClick handler to weather card.
 - [x] Built gorgeous glassmorphic scrollable hourly forecast modal overlay at page bottom.
+
+# 2nd Term Merit Allowance & Demerit Cutoff Update
+- [x] Linked local repository to GitHub (`https://github.com/kurtrjancheta-png/bravo-website.git`).
+- [x] Updated `app/exo-punishment/page.jsx` to filter demerit calculations by award date extracted from the "REFERENCE" column.
+- [x] Demerits awarded on or before September 11, 2026 (1st Term) are excluded from the 2nd Term allowance deduction.
+- [x] Only demerits awarded after September 11, 2026 (2nd Term) are deducted from the merit allowance.
+- [x] Maintained full historical offense records with badges showing 1st Term (exempt) vs 2nd Term.
+- [x] Updated `app/exo-punishment/ExoPunishmentClient.jsx` cards and table headers to clearly display "Accumulated Demerits (2nd Term)".
+- [x] Updated `app/leaderboards/page.jsx` character discipline standings to align with the 2nd Term demerit calculation.

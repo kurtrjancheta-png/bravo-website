@@ -159,6 +159,9 @@ export default async function ExoPunishmentPage() {
         rank,
         picture: getCadetImageUrl(name, '', name) || '',
         totalDemerits: 0,
+        secondTermDemerits: 0,
+        allTimeDemerits: 0,
+        term1Demerits: 0,
         totalMerits: 0,
         totalTour: 0,
         totalTourConverted: 0,
@@ -173,9 +176,26 @@ export default async function ExoPunishmentPage() {
 
     const cadet = cadetMap.get(name);
     
-    // Add demerits and tours
-    cadet.totalDemerits += Number(row[k7]) || 0;
-    cadet.totalMerits += Number(row[k16_idx]) || 0;
+    // Track violation dates
+    const refStr = row[k17] || '';
+    const extractedDate = extractDateFromReference(refStr);
+    const rowDemerits = Number(row[k7]) || 0;
+    const rowMerits = Number(row[k16_idx]) || 0;
+
+    // 2nd Term Rule: Only offenses awarded after 11 September shall be included in the deduction of merit allowance for 2nd term.
+    const isAwardedAfterSep11 = !!(extractedDate && extractedDate > '2026-09-11');
+
+    if (isAwardedAfterSep11) {
+      cadet.totalDemerits += rowDemerits;
+      cadet.totalMerits += rowMerits;
+    }
+
+    cadet.secondTermDemerits = cadet.totalDemerits;
+    cadet.allTimeDemerits += rowDemerits;
+    if (!isAwardedAfterSep11) {
+      cadet.term1Demerits += rowDemerits;
+    }
+
     cadet.totalTour += Number(row[k11]) || 0;
     cadet.totalTourConverted += Number(row[k12]) || 0;
     cadet.totalTourServed += Number(row[k13]) || 0;
@@ -195,15 +215,14 @@ export default async function ExoPunishmentPage() {
       cadet.confinementEnd = String(confEnd);
     }
 
-    // Track violation dates
-    const refStr = row[k17] || '';
-    const extractedDate = extractDateFromReference(refStr);
-
     // Add offense details
     cadet.offenses.push({
       description: String(row[k4] || ''),
       classOfOffense: String(row[k5] || ''),
       natureOfOffense: String(row[k6] || ''),
+      demerits: rowDemerits,
+      isAwardedAfterSep11,
+      term: isAwardedAfterSep11 ? '2nd Term' : '1st Term',
       tourTotal: Number(row[k11]) || 0,
       tourConverted: Number(row[k12]) || 0,
       tourServed: Number(row[k13]) || 0,
@@ -254,11 +273,16 @@ export default async function ExoPunishmentPage() {
       <header className="page-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <h1>F/SGT's Punishment Monitoring</h1>
         <p>Monitoring Dashboard for Cadet Punishments</p>
-        {updatedAsOf !== 'Unknown' && (
-          <div style={{ marginTop: '0.5rem', background: 'rgba(255,255,255,0.1)', padding: '0.5rem 1rem', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-            UPDATED AS OF: {updatedAsOf}
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '0.5rem' }}>
+          <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', color: '#10b981', padding: '0.35rem 0.8rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 700 }}>
+            📌 2nd Term Merit Allowance Active (Cutoff: Awarded after 11 Sept 2026)
           </div>
-        )}
+          {updatedAsOf !== 'Unknown' && (
+            <div style={{ background: 'rgba(255,255,255,0.1)', padding: '0.35rem 0.8rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+              UPDATED AS OF: {updatedAsOf}
+            </div>
+          )}
+        </div>
       </header>
 
       <ExoPunishmentClient initialCadets={cadets} violationsOverTime={violationsOverTime} breakdownData={breakdownData || []} />

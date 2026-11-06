@@ -2,3 +2,16 @@ node_modules/
 .next/
 .env
 .env.local
+.DS_Store
+node/
+*.zip
+temp*.json
+temp.jsx
+test*.js
+test-script.mjs
+*_out.txt
+punishment_unzipped/
+diff.patch
+diff_compare.txt
+good_state.jsx
+

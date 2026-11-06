@@ -89,7 +89,7 @@ export default async function LeaderboardsPage() {
     '3cl': buildPhysicalLeaderboard('3cl')
   };
 
-  // 3. Character: Discipline Leaderboard (Lowest accumulated demerits = demerits - merits)
+  // 3. Character: Discipline Leaderboard (Lowest accumulated demerits = demerits - merits for 2nd Term)
   const characterMap = {};
   if (fsgtRows && fsgtRows.length > 0) {
     const keys = Object.keys(fsgtRows[0]);
@@ -98,16 +98,65 @@ export default async function LeaderboardsPage() {
     const k7 = keys[6]; // DEMERITS
     const k16_idx = keys[15]; // MERIT
     const k14 = keys[13]; // TOURING REMAINING
+    const k17 = keys[18]; // REFERENCE
+
+    function parseRef(refStr) {
+      if (!refStr) return null;
+      const s = String(refStr).trim();
+      const dateMatch = s.match(/(?:dtd\s+)?([0-9]{1,2}\s+[a-zA-Z]+\s+[0-9]{4})/i);
+      if (dateMatch) {
+        const dateVal = new Date(dateMatch[1]);
+        if (!isNaN(dateVal.getTime())) {
+          const year = dateVal.getFullYear();
+          const month = String(dateVal.getMonth() + 1).padStart(2, '0');
+          const day = String(dateVal.getDate()).padStart(2, '0');
+          const isoDate = `${year}-${month}-${day}`;
+          const dateIndex = s.indexOf(dateMatch[0]);
+          let prefix = s.substring(0, dateIndex).trim();
+          if (prefix.toLowerCase().endsWith('dtd')) {
+            prefix = prefix.substring(0, prefix.length - 3).trim();
+          }
+          const normPrefix = prefix.toUpperCase().replace(/[^A-Z0-9]/g, '');
+          return { prefix, normPrefix, date: isoDate };
+        }
+      }
+      return null;
+    }
+
+    const prefixMap = new Map();
+    fsgtRows.forEach(row => {
+      const parsed = parseRef(row[k17]);
+      if (parsed && parsed.normPrefix) {
+        if (!prefixMap.has(parsed.normPrefix) || new Date(parsed.date) < new Date(prefixMap.get(parsed.normPrefix))) {
+          prefixMap.set(parsed.normPrefix, parsed.date);
+        }
+      }
+    });
 
     fsgtRows.forEach(row => {
       const name = String(row[k3] || '').trim().toUpperCase();
       if (!name) return;
 
       if (!characterMap[name]) {
-        characterMap[name] = { demerits: 0, merits: 0, tourRemaining: 0 };
+        characterMap[name] = { demerits: 0, merits: 0, tourRemaining: 0, allTimeDemerits: 0 };
       }
-      characterMap[name].demerits += Number(row[k7]) || 0;
-      characterMap[name].merits += Number(row[k16_idx]) || 0;
+
+      const parsed = parseRef(row[k17]);
+      let extractedDate = parsed ? parsed.date : null;
+      if (parsed && parsed.normPrefix && prefixMap.has(parsed.normPrefix)) {
+        extractedDate = prefixMap.get(parsed.normPrefix);
+      }
+
+      // 2nd Term Rule: Only offenses awarded after 11 September count in 2nd term demerit calculation
+      const isAwardedAfterSep11 = !!(extractedDate && extractedDate > '2026-09-11');
+      const rowDemerits = Number(row[k7]) || 0;
+      const rowMerits = Number(row[k16_idx]) || 0;
+
+      if (isAwardedAfterSep11) {
+        characterMap[name].demerits += rowDemerits;
+        characterMap[name].merits += rowMerits;
+      }
+      characterMap[name].allTimeDemerits += rowDemerits;
       characterMap[name].tourRemaining += Number(row[k14]) || 0;
     });
   }
