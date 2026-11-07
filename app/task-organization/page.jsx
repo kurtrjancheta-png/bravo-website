@@ -4,7 +4,8 @@ import { getCadetImageUrl } from '../../lib/imageMatcher';
 import taskOrgFallback from '../../lib/taskOrgFallback.json';
 
 const TASK_ORG_SHEET_ID = process.env.TASK_ORG_SHEET_ID || process.env.ROSTER_SHEET_ID || '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
-const TASK_ORG_GID = process.env.TASK_ORG_GID || '582148706';
+// User specified gid=1245223884 for the latest task organization sheet
+const TASK_ORG_GID = process.env.TASK_ORG_GID || '1245223884';
 
 // Force Next.js to revalidate this page every 30 seconds
 export const revalidate = 30;
@@ -22,7 +23,9 @@ function isValidTaskOrgData(rows) {
       text.includes('(s2)') ||
       text.includes('(s3)') ||
       text.includes('(s4)') ||
-      text.includes('personnel officer')
+      text.includes('personnel officer') ||
+      text.includes('regimental') ||
+      text.includes('battalion')
     );
   });
 }
@@ -30,29 +33,17 @@ function isValidTaskOrgData(rows) {
 export default async function TaskOrganization() {
   let allRows = [];
 
-  // Priority 1: Query by specific tab names, starting with " TASK ORGANIZATION" (leading space) and "TASK ORG"
-  const candidateTabNames = [
-    ' TASK ORGANIZATION',
-    'TASK ORG',
-    'TASK ORGANIZATION',
-    'Task Organization',
-    'Task Org',
-    'TASK_ORGANIZATION'
-  ];
-
-  for (const tab of candidateTabNames) {
-    try {
-      const res = await getSheetData(TASK_ORG_SHEET_ID, tab);
-      if (isValidTaskOrgData(res)) {
-        allRows = res;
-        break;
-      }
-    } catch (e) {
-      // Continue to next candidate
+  // Priority 1: Query by exact GID 1245223884 via GViz API (with headers=1)
+  try {
+    const res = await getSheetData(TASK_ORG_SHEET_ID, null, TASK_ORG_GID);
+    if (isValidTaskOrgData(res)) {
+      allRows = res;
     }
+  } catch (err) {
+    console.error('Error fetching Task Org by GID via GViz:', err);
   }
 
-  // Priority 2: Query by CSV export using exact sheet gid 582148706
+  // Priority 2: Query by CSV export using exact GID 1245223884
   if (!isValidTaskOrgData(allRows)) {
     try {
       const res = await getSheetCsvData(TASK_ORG_SHEET_ID, TASK_ORG_GID);
@@ -64,7 +55,30 @@ export default async function TaskOrganization() {
     }
   }
 
-  // Priority 3: Fallback dataset if live Google Sheet is unreachable or invalid
+  // Priority 3: Search candidate tab names
+  if (!isValidTaskOrgData(allRows)) {
+    const candidateTabNames = [
+      ' TASK ORGANIZATION',
+      'TASK ORG',
+      'TASK ORGANIZATION',
+      'Task Organization',
+      'Task Org',
+      'TASK_ORGANIZATION'
+    ];
+    for (const tab of candidateTabNames) {
+      try {
+        const res = await getSheetData(TASK_ORG_SHEET_ID, tab);
+        if (isValidTaskOrgData(res)) {
+          allRows = res;
+          break;
+        }
+      } catch (e) {
+        // Continue to next candidate
+      }
+    }
+  }
+
+  // Priority 4: Fallback dataset with verified gid=1245223884 data
   if (!isValidTaskOrgData(allRows)) {
     allRows = taskOrgFallback;
   }
@@ -107,21 +121,33 @@ export default async function TaskOrganization() {
 
   const allowedSpecialStaff = [
     'values, ethics, and standards officer',
+    'values, ethics, and standards',
     'academic officer',
+    'academic',
     'honor committee representative',
+    'honor committee',
     'mess officer',
+    'mess',
     'ccpb representative',
+    'ccpb',
     'safety officer',
+    'safety',
     'military training officer',
+    'military training',
     'responsible supply officer',
+    'responsible supply',
     'gender awareness and development',
     'spiritual development',
     'athletic officer',
     'athletic',
+    'cadet acquisition officer',
+    'cadet acquisition',
   ];
 
+  let currentDesignation = '';
+
   for (const row of allRows) {
-    // Intelligent column extraction: first check named properties, then fallback to key scanning & row values
+    // Intelligent column extraction
     let designationStr = (
       row['DESIGNATION'] ||
       row['Designation'] ||
@@ -169,12 +195,22 @@ export default async function TaskOrganization() {
           designationStr = values[0];
           nameStr = values[1];
         }
+      } else if (values.length === 1 && /cdt|1cl|2cl|3cl|4cl|c-\d/i.test(values[0])) {
+        nameStr = values[0];
       }
     }
 
-    // Clean up whitespace & non-breaking spaces
+    // Clean whitespace & non-breaking spaces
     designationStr = designationStr.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
     nameStr = nameStr.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
+
+    // Carry over previous designation for multi-person roles (e.g. CCPB & Honor Committee reps)
+    if (designationStr) {
+      currentDesignation = designationStr;
+    } else if (nameStr && currentDesignation) {
+      designationStr = currentDesignation;
+    }
+
     const desLower = designationStr.toLowerCase();
     const nameLower = nameStr.toLowerCase();
 
@@ -189,26 +225,24 @@ export default async function TaskOrganization() {
     const cadetClass = classMatch ? classMatch[1].toUpperCase() : '';
     const pictureUrl = getCadetImageUrl(null, null, nameStr, cadetClass) || '';
 
-    // --- FILTER: Skip Sergeants and Corporals from the officer chart (except First Sergeant) ---
-    const isEnlistedRank =
-      nameLower.includes('cdt sgt') ||
-      nameLower.includes('cdt s/sgt') ||
-      nameLower.includes('cdt cpl') ||
-      nameLower.includes('cdt pvt');
+    // --- FILTER: Skip underclassmen (2CL, 3CL, 4CL) from the officer hierarchy, except First Sergeant ---
+    const isEnlisted = anyMatch(nameLower, ['cdt sgt', 'cdt s/sgt', 'cdt cpl', 'cdt pvt', '2cl', '3cl', '4cl']);
 
-    if (isEnlistedRank) {
+    if (isEnlisted) {
       // First Sergeant is specifically included in Bravo Company command tier
       if (
         (desLower === 'first sergeant' || desLower.includes('first sergeant') || desLower.includes('1st sergeant')) &&
         !isRegiment &&
         !isBattalion
       ) {
-        firstSgt = {
-          designation: designationStr,
-          name: nameStr,
-          navTarget: 'nav-fsgt',
-          picture: pictureUrl,
-        };
+        if (!firstSgt) {
+          firstSgt = {
+            designation: designationStr,
+            name: nameStr,
+            navTarget: 'nav-fsgt',
+            picture: pictureUrl,
+          };
+        }
       }
       continue;
     }
@@ -257,14 +291,11 @@ export default async function TaskOrganization() {
       if (!sStaff.some((p) => p.designation === person.designation)) {
         sStaff.push(person);
       }
-    } else if (
-      (desLower.includes('platoon leader') || desLower.includes('platoon commander')) &&
-      !desLower.includes('sergeant') &&
-      !desLower.includes('corporal') &&
-      !desLower.includes('guide')
-    ) {
-      if (!platoonLeaders.some((p) => p.name === person.name)) {
-        platoonLeaders.push(person);
+    } else if (desLower.includes('platoon leader') || desLower.includes('platoon commander')) {
+      if (anyMatch(desLower, ['1st', '2nd', '3rd', '4th', 'first', 'second', 'third', 'fourth'])) {
+        if (!platoonLeaders.some((p) => p.designation === person.designation)) {
+          platoonLeaders.push(person);
+        }
       }
     } else {
       const isSpecial = allowedSpecialStaff.some((s) => desLower.includes(s));
@@ -296,4 +327,8 @@ export default async function TaskOrganization() {
       />
     </div>
   );
+}
+
+function anyMatch(str, list) {
+  return list.some((k) => str.includes(k));
 }

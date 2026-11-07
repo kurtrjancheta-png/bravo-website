@@ -1,5 +1,49 @@
 [
   {
+    "DESIGNATION": "Regimental Logistic Officer (R4)",
+    "NAME": "CDT CPT 1CL LAKEISHA FELICE V LEVISTE C-27138 B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Regimental Plans and Program Officer (R5)",
+    "NAME": "CDT CPT 1CL DENNIS MARIE P MARTINEZ C-27157 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Regimental Civil Military Officer (R7)",
+    "NAME": "CDT CPT 1CL CHRISSALYN B MELISA C-27160 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Regimental Finance Officer (R10)",
+    "NAME": "CDT CPT 1CL DIANNE B EVANGELISTA C-27095 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Battalion Executive Officer",
+    "NAME": "CDT CPT 1CL PABLO L FARNACIO JR C-27096 \u2018B\u2019 CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Battalion Adjutant",
+    "NAME": "CDT LT 1CL MICHAEL  EDUARD D AQUINO C-27016 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Battalion Logistics Officer (B4)",
+    "NAME": "CDT LT 1CL CHRISTIAN CONCORDO S APOLONIO C-27014 \u2018B\u2019 CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Battalion Finance Officer (B10)",
+    "NAME": "CDT LT 1CL ALREIN TAPULAO C-27236 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Battalion Mess Officer",
+    "NAME": "CDT LT 1CL RICARDO MIGUEL E CABUNOC C-27040 `B` CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Battalion Honor Committee Representative",
+    "NAME": "CDT LT 1CL KURT RANDLE JOSH M ANCHETA C-27011 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Battalion CCPB Representative",
+    "NAME": "CDT LT 1CL SEAN LENARD N VIDALLO C-27255 \u2018B\u2019 CO CCAFP"
+  },
+  {
     "DESIGNATION": "Company Commander",
     "NAME": "CDT CPT 1CL JAIRUS ZIM S PASAGAD C-27187 \u2018B\u2019 CO CCAFP"
   },
@@ -21,7 +65,7 @@
   },
   {
     "DESIGNATION": "Logistic Officer (S4)",
-    "NAME": "CDT LT 1CL CHRISTIAN CONCORDO S APOLONIO C-27014 \u2018B\u2019 CO CCAFP"
+    "NAME": "CDT LT 1CL NHEL JAKE S MONTEMAYOR C-27295 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "Plans and Programs Officer (S5)",
@@ -29,15 +73,15 @@
   },
   {
     "DESIGNATION": "Communications, Electronics and Information System Officer (S6)",
-    "NAME": "CDT LT 1CL KURT RANDLE JOSH M ANCHETA C-27011 \u2018B\u2019 CO CCAFP"
+    "NAME": "CDT LT 1CL MARK JAMES P SARMIENTO C-27218 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "Civil Military Operations Officer (S7)",
-    "NAME": "CDT LT 1CL SHE ANNE A MOLO C-26246 'B' CO CCAFP"
+    "NAME": "CDT LT 1CL RON KAISSER E ANTOLIN C-26020 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "Education and Training Officer (S8)",
-    "NAME": "CDT LT 1CL SHEENAH P APIL C-27013 'B' CO CCAFP"
+    "NAME": "CDT LT 1CL ALADDIN B CAYAGO C-27054 B' CO CCAFP"
   },
   {
     "DESIGNATION": "Finance Officer (S10)",
@@ -49,7 +93,7 @@
   },
   {
     "DESIGNATION": "Spiritual Development Training Officer",
-    "NAME": "CDT LT 1CL MARK JAMES P SARMIENTO C-27218 'B' CO CCAFP"
+    "NAME": "CDT LT 1CL MARCELINO A BEDA\u00d1A C-26352 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "Values, Ethics, and Standards Officer",
@@ -57,7 +101,7 @@
   },
   {
     "DESIGNATION": "Academic Officer",
-    "NAME": "CDT LT 1CL ALADDIN B CAYAGO C-27054 'B' CO CCAFP"
+    "NAME": "CDT 1CL VINZ CARL MARIBAO C-27156 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "Military Training Officer",
@@ -69,35 +113,59 @@
   },
   {
     "DESIGNATION": "Safety Officer",
-    "NAME": "CDT LT 1CL NHEL JAKE S MONTEMAYOR C-27295 'B' CO CCAFP"
+    "NAME": "CDT 1CL VINZ CARL MARIBAO C-27156 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "Responsible Supply Officer",
-    "NAME": "CDT LT 1CL JOSHUA DAVE B BIRUNG C-27266 'B' CO CCAFP"
+    "NAME": "CDT LT 1CL MARCELINO A BEDA\u00d1A C-26352 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "Mess Officer",
     "NAME": "CDT LT 1CL ALADDIN B CAYAGO C-27054 B' CO CCAFP"
   },
   {
-    "DESIGNATION": "CCPB Representative",
-    "NAME": "CDT LT 1CL LAKEISHA FELICE V LEVISTE C-27138 B' CO CCAFP"
+    "DESIGNATION": "Cadet Acquisition Officer",
+    "NAME": "CDT LT 1CL NHEL JAKE S MONTEMAYOR C-27295 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "Honor Committee Representative",
+    "DESIGNATION": "Company CCPB Representative",
+    "NAME": "CDT CPT 1CL LAKEISHA FELICE V LEVISTE C-27138 B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Company CCPB Representative",
+    "NAME": "CDT LT 1CL SEAN LENARD N VIDALLO C-27255 \u2018B\u2019 CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Company Honor Committee Representative",
     "NAME": "CDT LT 1CL KURT RANDLE JOSH M ANCHETA C-27011 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "1st Platoon Leader",
+    "DESIGNATION": "Company Honor Committee Representative",
+    "NAME": "CDT CPT 1CL PABLO L FARNACIO JR C-27096 \u2018B\u2019 CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Company Honor Committee Representative",
+    "NAME": "CDT CPT 1CL JAIRUS ZIM S PASAGAD C-27187 \u2018B\u2019 CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Company Honor Committee Representative",
+    "NAME": "CDT LT 1CL ALADDIN B CAYAGO C-27054 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Company Honor Committee Representative",
     "NAME": "CDT LT 1CL SHEENAH P APIL C-27013 B' CO CCAFP"
   },
   {
+    "DESIGNATION": "1st Platoon Leader",
+    "NAME": "CDT LT 1CL DENVER B SINUMLAG C-27275 'B' CO CCAFP"
+  },
+  {
     "DESIGNATION": "2nd Platoon Leader",
-    "NAME": "CDT LT 1CL JOHN NICKON H BERNARDO C-27031 B' CO CCAFP"
+    "NAME": "CDT LT 1CL EULER GENE S CABUTAJE C-27041 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "3rd Platoon Leader",
-    "NAME": "CDT LT 1CL JOVITA CRISHA D BANAN C-27024 B' CO CCAFP"
+    "NAME": "CDT LT 1CL MARK JAMES P SARMIENTO C-27218 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "4th Platoon Leader",
@@ -105,427 +173,507 @@
   },
   {
     "DESIGNATION": "First Sergeant",
-    "NAME": "CDT S/SGT 2CL KENT ANTHONY C ADAY C-28006 'B' CO CCAFP"
+    "NAME": "CDT SGT 2CL AIAM ROWEL OCTOBER A MABILOG C-28210 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "Sergeant Executive Officer",
-    "NAME": "CDT SGT 2CL JHALON G MAMA C-28217'B' CO CCAFP"
+    "DESIGNATION": "Executive Seargeant",
+    "NAME": "CDT SGT 2CL JHALON G MAMA C-28217 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "S1 Sergeant",
+    "DESIGNATION": "Personnel Seargeant",
     "NAME": "CDT SGT 2CL KIMBERLY P UNDANG C-26337 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "S2 Sergeant",
-    "NAME": "CDT S/SGT 2CL JOHN ELIEZER M ARAOJO C-28031 'B' CO CCAFP"
+    "DESIGNATION": "Intelligence Seargeant",
+    "NAME": "CDT SGT 2CL JUSTINE G DIRAS C-27084 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "S3 Sergeant",
-    "NAME": "CDT S/SGT 2CL MARCUS AURELIUS M TAYOTO C-28242 'B' CO CCAFP"
+    "DESIGNATION": "Operations NCO",
+    "NAME": "CDT S/SGT 2CL ROY ADRIEL J BONGAO C-28060 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "S4 Sergeant",
-    "NAME": "CDT S/SGT 2CL ANGELO C ALEJO C-27008 'B' CO CCAFP"
+    "DESIGNATION": "Operations Sergeant",
+    "NAME": "CDT SGT 2CL MARCUS AURELIUS M TAYOTO C-28242 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "S5 Sergeant",
-    "NAME": "CDT S/SGT 2CL SUE JEAN C CANUTAB C-28082 'B' CO CCAFP"
+    "DESIGNATION": "Logistics Sergeant",
+    "NAME": "CDT SGT 2CL ANGELO C ALEJO C-27008 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "S6 Sergeant",
+    "DESIGNATION": "Plans and Programs Sergeant",
+    "NAME": "CDT SGT 2CL SUE JEAN C CANUTAB C-28082 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Communications, Electronics and Information System Sergeant",
     "NAME": "CDT SGT 2CL GAZELLE H PEREZ C-28272 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "S7 Sergeant",
-    "NAME": "CDT S/SGT 2CL SHANE CRISVY G RICAFORT C-27208 'B' CO CCAFP"
+    "DESIGNATION": "Civil Military Operations Sergeant",
+    "NAME": "CDT SGT 2CL SHANE CRISVY G RICAFORT C-27208 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "S8 Sergeant",
-    "NAME": "CDT SGT 2CL AIAM ROWEL OCTOBER A MABILOG C-28210 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "S10 Sergeant",
-    "NAME": "CDT S/SGT 2CL ALLEN B ALMELOR C-26014 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "Gender Awareness and Development Officer Sergeant",
-    "NAME": "CDT SGT 2CL  JULIE ANN G CAASI C-26067 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "Spiritual Development Training Officer Sergeant",
-    "NAME": "CDT SGT 2CL RANDY P LLARENAS C-28201 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "Values, Ethics, and Standards Officer Sergeant",
-    "NAME": "CDT SGT 2CL AIAM ROWEL OCTOBER A MABILOG C-28210 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "Academic Officer Sergeant",
+    "DESIGNATION": "Education and Training Sergeant",
     "NAME": "CDT SGT 2CL ANDRE CARL C NALLIW C-28242 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "Military Training Officer Sergeant",
+    "DESIGNATION": "Finance Sergeant",
+    "NAME": "CDT SGT 2CL ALLEN B ALMELOR C-26014 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Gender Awareness and Development Sergeant",
+    "NAME": "CDT SGT 2CL  JULIE ANN G CAASI C-26067 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Spiritual Development Training Sergeant",
+    "NAME": "CDT SGT 2CL RANDY P LLARENAS C-28201 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Values, Ethics, and Standards Sergeant",
+    "NAME": "CDT SGT 2CL ERICK JOHN C BLANCO C-27033 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Academic Sergeant",
+    "NAME": "CDT SGT 2CL LUKE MOSES A VALENCIA C-28342 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Military Training Sergeant",
     "NAME": "CDT SGT 2CL RANDY JR NAVARO GARCIA C-28161 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "Athletic Officer Sergeant",
+    "DESIGNATION": "Cadet Acquisition Sergeant",
+    "NAME": "CDT SGT 2CL GODWIN VIBAR DELOS REYES C-27081 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Athletic Sergeant",
     "NAME": "CDT SGT 2CL LANCE S KIAT-ONG C-27129 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "Safety Officer Sergeant",
+    "DESIGNATION": "Safety Sergeant",
     "NAME": "CDT SGT 2CL KENNON CHRISTOPHER R IRAL C-28375 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "Responsible Supply Officer Sergeant",
-    "NAME": "CDT SGT 2CL KYLE CHELTON NICO G QUEMADO C-27198 'B' CO CCAFP"
+    "DESIGNATION": "Responsible Supply Sergeant",
+    "NAME": "CDT SGT 2CL KENNON CHRISTOPHER R IRAL C-28375 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "Mess Officer Sergeant",
+    "DESIGNATION": "Mess Sergeant",
     "NAME": "CDT SGT 2CL GUEN MARIE G SAPINIT C-27217 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "CCPB Representative Sergeant",
-    "NAME": "CDT SGT 2CL NATHANIEL M DULAY C-28129 'B' CO CCAFP"
+    "NAME": "CDT SGT 2CL NATHANIEL M DULAY C-28129 'B' CO CCAFP\nCDT SGT 2CL RENIE BOY B RICO C-28295 'B' CO CCAFP\nCDT SGT 2CL RICCI NICAJ A OROPESA 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "Honor Committee Representative Sergeant",
-    "NAME": "CDT SGT 2CL ASIANA JULY L CELESTIAL C-27055 'B' CO CCAFP"
+    "NAME": "CDT SGT 2CL AUDRIANNE D CASAMAYOR C-28088 'B' CO CCAFP\r\nCDT SGT 2CL GARRET S CONICONDE C-28097 'B' CO CCAFP\nCDT SGT 2CL ASIANA JULY L CELESTIAL C-27055 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "Corporal Marcher",
-    "NAME": "CDT CPL 3CL CHRISTOPHER O CHIMMON C-29092 'B' CO CCAFP"
+    "NAME": "CDT 3CL JON BENCE D BALMERA C-29038 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "Corporal Executive Officer",
-    "NAME": "CDT CPL 3CL RALPH JARVIS S LACHICA C-29168 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "S1 Corporal",
-    "NAME": "CDT CPL 3CL ERNESTO REV A SALUNAT IX C-29290 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "S2 Corporal",
-    "NAME": "CDT CPL 3CL JUAN MIGUEL M GARCIA C-29143 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "S3 Corporal",
-    "NAME": "CDT CPL 3CL RADCLIFF JOSTEIN N SANCHEZ C-29295 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "S4 Corporal",
-    "NAME": "CDT CPL 3CL MARK HENRY M MANUEL C-29211 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "S5 Corporal",
-    "NAME": "CDT CPL 3CL ARIELLE A TIONGCO C-28332 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "S6 Corporal",
-    "NAME": "CDT CPL 3CL ZWEN ZYRONNE N LUMIWES C-29193 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "S7 Corporal",
-    "NAME": "CDT CPL 3CL KEN M TIHOK C-29321 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "S8 Corporal",
-    "NAME": "CDT CPL 3CL ALEX HUAN C ASCURA C-29026'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "S10 Corporal",
-    "NAME": "CDT CPL 3CL JERLI L SANDOVAL C-29296 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "Gender Awareness and Development Officer Corporal",
-    "NAME": "CDT CPL 3CL LUCKY EMMANUEL L POLLESCAS C-29259 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "Spiritual Development Training Officer Corporal",
-    "NAME": "CDT CPL 3CL LORD JESRICK A SUNGA C-29311 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "Values, Ethics, and Standards Officer Corporal",
     "NAME": "CDT CPL 3CL KURT AL N TUBURAN C-29328 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "Academic Officer Corporal",
-    "NAME": "CDT CPL 3CL ALEX HUAN C ASCURA C-29026'B' CO CCAFP"
+    "DESIGNATION": "Personnel Corporal",
+    "NAME": "CDT CPL 3CL CLARK JUSTIN A LORENZO C-29187 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "Military Training Officer Corporal",
+    "DESIGNATION": "Intelligence Corporal",
+    "NAME": "CDT CPL 3CL JUAN MIGUEL M GARCIA C-29143 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Operations Corporal",
+    "NAME": "CDT CPL 3CL RADCLIFF JOSTEIN N SANCHEZ C-29295 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Logistics Corporal",
+    "NAME": "CDT CPL 3CL KESTNER P PAG-A C-29243 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Plans and Programs Corporal",
+    "NAME": "CDT 3CL ARIELLE A TIONGCO C-28332 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Communications, Electronics and Information System Corporal",
+    "NAME": "CDT CPL 3CL ZWEN ZYRONNE N LUMIWES C-29193 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Civil Military Operations Corporal",
+    "NAME": "CDT 3CL QUEENIE J BORRES C-27037 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Education and Training Corporal",
+    "NAME": "CDT CPL 3CL JOHN RAVEN C VILLARIAZA C-29314 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Finance Corporal",
+    "NAME": "CDT CPL 3CL JERLI L SANDOVAL C-29296 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Gender Awareness and Development Corporal",
+    "NAME": "CDT 3CL LUCKY EMMANUEL L POLLESCAS C-29259 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Spiritual Development Training Corporal",
+    "NAME": "CDT CPL 3CL LORD JESRICK A SUNGA C-29311 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Values, Ethics, and Standards Corporal",
+    "NAME": "CDT CPL 3CL KURT AL N TUBURAN C-29328 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Academic Corporal",
+    "NAME": "CDT CPL 3CL ALEX HUAN KARL A ASCURA C-29026'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "Military Training Corporal",
     "NAME": "CDT CPL 3CL ARKIEL JAN LABRADOR ASUNCION C-29028 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "Athletic Officer Corporal",
-    "NAME": "CDT CPL 3CL ARKIEL JAN LABRADOR ASUNCION C-29028 'B' CO CCAFP"
+    "DESIGNATION": "Athletic Corporal",
+    "NAME": "CDT 3CL MARCO JAYLO J MAMAED C-28218 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "Safety Officer Corporal",
+    "DESIGNATION": "Safety Corporal",
     "NAME": "CDT CPL 3CL MACH LYNCE Q TORREFRANCA C-28334 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "Responsible Supply Officer Corporal",
-    "NAME": "CDT CPL 3CL  JUSTIN JOSE P OLIVEROS C-29237 'B' CO CCAFP"
+    "DESIGNATION": "Responsible Supply Corporal",
+    "NAME": "CDT CPL 3CL RALPH ASHLEY GAUIRAN LOMIGO C-29186 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "Mess Officer Corporal",
+    "DESIGNATION": "Mess Corporal",
     "NAME": "CDT CPL 3CL JOHN PAUL INRI A LADRILLO C-29171 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "CCPB Representative Corporal",
-    "NAME": "CDT CPL 3CL KESTNER P PAG-A C-29243 'B' CO CCAFP"
+    "NAME": "CDT CPL 3CL JOHN RAVEN C VILLARIAZA C-29314 'B' CO CCAFP\nCDT CPL 3CL MACH LYNCE Q TORREFRANCA C-28334 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "Honor Committee Representative Corporal",
-    "NAME": "CDT CPL 3CL HOMER RAFAEL M PATULOT C-29249 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "1ST PLATOON",
-    "NAME": ""
+    "NAME": "CDT CPL 3CL ARKIEL JAN LABRADOR ASUNCION C-29028 'B' CO CCAFP\nCDT CPL 3CL YALEN DON P GABUYA C-29137 'B' CO CCAFP\nCDT CPL 3CL KEIKO ERIK B KOZIEJ C-27130 'B' CO CCAFP\nCDT CPL 3CL KEN M TIHOK C-29321 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "Platoon Leader",
-    "NAME": "CDT LT 1CL SHEENAH P APIL C-27013 B' CO CCAFP"
+    "NAME": "CDT LT 1CL DENVER B SINUMLAG C-27275 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "Platoon Sergeant",
     "NAME": "CDT SGT 2CL NORJAY S BERBA C-28053 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "Platoon Guide",
-    "NAME": ""
-  },
-  {
     "DESIGNATION": "1st Squad",
     "NAME": "CDT LT 1CL SHEENAH P APIL C-27013 B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "1CL - 3",
     "NAME": "CDT LT 1CL DENVER B SINUMLAG C-27275 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "2CL - 3",
     "NAME": "CDT LT 1CL RON KAISSER E ANTOLIN C-26020 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "3CL - 3",
     "NAME": "CDT SGT 2CL SUE JEAN C CANUTAB C-28082 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "4CL - 4",
     "NAME": "CDT SGT 2CL RANDY P LLARENAS C-28201 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT SGT 2CL ROMARIE M UMOSO C-28339 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL JON BENCE D BALMERA C-29038 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL KURT AL N TUBURAN C-29328 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL QUEENIE J BORRES C-27037  'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL GHEZZRA GLAIRE M CARO C-30088 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL GAINER CRISTOBAL C PIGGANGAY C-30288 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL JOHN ROBERT R MACADAT C-30212 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL TRACEY CLARK B BENCIO C-30049 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "2nd Squad",
     "NAME": "CDT LT 1CL KIEFER CZARINE O PAGGAO C-27187 \u2018B\u2019 CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "1CL - 2",
     "NAME": "CDT LT 1CL PABLO L FARNACIO JR C-27096 \u2018B\u2019 CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "2CL - 4",
     "NAME": "CDT SGT 2CL SHANE CRISVY G RICAFORT C-27208 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "3CL - 3",
+    "NAME": "CDT SGT 2CL CHARENE T DACWAG C-26112 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "4CL - 4",
     "NAME": "CDT SGT 2CL LANCE S KIAT-ONG C-27129 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT SGT 2CL NORJAY S BERBA C-28053 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL PAYAPA L PE\u00d1AREDONDO C-29252  'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL ERNESTO REV A SALUNAT IX C-29290 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL LUCKY EMMANUEL L POLLESCAS C-29259 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL IVY GRACE M MISA C-30244 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL KYLE E BUYO C-30070 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL JENSON G GACOS C-30153 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL NICOLAE JAMES D SANCHEZ C-30317 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "3rd Squad",
     "NAME": "CDT LT 1CL ALADDIN B CAYAGO C-27054 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "1CL - 2",
     "NAME": "CDT LT 1CL DENNIS MARIE P MARTINEZ C-27157 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "2CL - 3",
     "NAME": "CDT SGT 2CL JHALON G MAMA C-28217'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "3CL - 4",
     "NAME": "CDT SGT 2CL MARCUS AURELIUS M TAYOTO C-28242 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "4CL - 4",
     "NAME": "CDT SGT 2CL GAZELLE H PEREZ C-28272 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL RADCLIFF JOSTEIN N SANCHEZ C-29295 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL KESTNER P PAG-A C-29243 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL ALEX HUAN C ASCURA C-29026'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL VALERIE S MANGALILI C-29209 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "2ND PLATOON",
-    "NAME": ""
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL ESTELLA MARIE F BALILI C-30034 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL ROBERT JOHN H AGNES C-30008 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL CLARK DELVIN K LUMICQUIO C-30209 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL JULO C MULA C-30250 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "Platoon Leader",
-    "NAME": "CDT LT 1CL JOHN NICKON H BERNARDO C-27031 B' CO CCAFP"
+    "NAME": "CDT LT 1CL EULER GENE S CABUTAJE C-27041 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "Platoon Sergeant",
-    "NAME": ""
-  },
-  {
-    "DESIGNATION": "Platoon Guide",
-    "NAME": ""
+    "NAME": "CDT SGT 2CL NATHANIEL M DULAY C-28129 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "1st Squad",
     "NAME": "CDT LT 1CL ROMELLE ANGELO P LABADOR C-26204 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "1CL - 2",
     "NAME": "CDT LT 1CL DIANNE B EVANGELISTA C-27095 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "2CL - 4",
     "NAME": "CDT SGT 2CL ANDRE CARL C NALLIW C-28242 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "3CL - 3",
     "NAME": "CDT SGT 2CL RENIE BOY B RICO C-28295 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "4CL - 4",
     "NAME": "CDT SGT 2CL KYLE CHELTON NICO G QUEMADO C-27198 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT SGT 2CL KIMBERLY P UNDANG C-26337 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL JUAN MIGUEL M GARCIA C-29143 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL KEN M TIHOK C-29321 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL MARCO JAYLO J MAMAED C-28218 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL JAYRACE MAE D TELAN C-30342 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL ROD IZZANDER W TASI C-30340 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL JOELIEN EARL B WAYAGWAG C-30367 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL MICHAEL VINCENT L CUA C-30104 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "2nd Squad",
     "NAME": "CDT LT 1CL EULER GENE S CABUTAJE C-27041 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "1CL - 2",
     "NAME": "CDT LT 1CL NHEL JAKE S MONTEMAYOR C-27295 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "2CL - 4",
     "NAME": "CDT SGT 2CL NATHANIEL M DULAY C-28129 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "3CL - 2",
     "NAME": "CDT SGT 2CL ROY ADRIEL J BONGAO C-28060 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "4CL - 4",
     "NAME": "CDT SGT 2CL ALLEN B ALMELOR C-26014 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "12",
     "NAME": "CDT SGT 2CL JUSTINE G DIRAS C-27084 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "12",
     "NAME": "CDT CPL 3CL ZWEN ZYRONNE N LUMIWES C-29193 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
-    "NAME": "CDT CPL 3CL HOMER RAFAEL M PATULOT C-29249 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "",
+    "DESIGNATION": "12",
     "NAME": "CDT CPL 3CL MARKIN H ASUNCION C-29029 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "3rd Squad",
-    "NAME": "CDT LT 1CL JOHN NICKON H BERNARDO C-27031 B' CO CCAFP"
+    "DESIGNATION": "12",
+    "NAME": "CDT PVT 4CL EMMANUEL M CANONIGO C-30081 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "12",
+    "NAME": "CDT PVT 4CL SELWYN JAMES P DE TORRES C-30116 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "12",
+    "NAME": "CDT PVT 4CL SCHEFFLER P MARCOS C-30234 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "12",
+    "NAME": "CDT PVT 4CL LEONIDAS C MAGBANUA C-30217 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "1CL - 3",
     "NAME": "CDT CPT 1CL CHRISSALYN B MELISA C-27160 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "2CL - 3",
     "NAME": "CDT LT 1CL VINZ CARL - MARIBAO C-27156 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "3CL - 4",
     "NAME": "CDT SGT 2CL LADY DIANNE F DE LEON C-26127 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "4CL - 3",
     "NAME": "CDT SGT 2CL LUKE MOSES A VALENCIA C-28342 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT SGT 2CL KENNON CHRISTOPHER R IRAL C-28375 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL LORD JESRICK A SUNGA C-29311 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL ANGEL PAULINE D ALOP C-28356 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL KEIKO ERIK B KOZIEJ C-27130 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "3RD PLATOON",
-    "NAME": ""
+    "DESIGNATION": "13",
+    "NAME": "CDT 3CL RED CEDRICK MERCADO TE\u00d1OSO C-29320 \u2018B\u2019 CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT 4CL JEAN CARLA CALLEJO DRAPIZA C-29116 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL JON RICHARD B GUINANGHAN C-30172 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL GENESIS T BANAO C-30037 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "Platoon Leader",
@@ -533,123 +681,155 @@
   },
   {
     "DESIGNATION": "Platoon Sergeant",
-    "NAME": ""
-  },
-  {
-    "DESIGNATION": "Platoon Guide",
-    "NAME": ""
+    "NAME": "CDT SGT 2CL JARRED MARTIN B MANODON C-28377 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "1st Squad",
     "NAME": "CDT LT 1CL JOVITA CRISHA D BANAN C-27024 B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "1CL - 3",
     "NAME": "CDT LT 1CL ACE ERICK B OLASO C-27176 \u2018B\u2019 CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "2CL - 3",
     "NAME": "CDT LT 1CL SEAN LENARD N VIDALLO C-27255 \u2018B\u2019 CO CCAFP"
   },
   {
-    "DESIGNATION": "",
-    "NAME": "CDT SGT 2CL KENT ANTHONY C ADAY C-28006 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "",
-    "NAME": "CDT SGT 2CL HEZEKIAH B BINWAG C-28038 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT SGT 2CL ASIANA JULY L CELESTIAL C-27055 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL JOHN PAUL INRI A LADRILLO C-29171 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL CHARLES HENRY BRENT S RAMASTA C-29263 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL ANGEL GRACE V ESCOBAR C-28135 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL JEE ANN F FRESAS C-30150 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL CARL ANDRIE E DEMAFILES C-30120 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL JOHN CARLO V JABOLIN C-30184 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL FULLBRIGHT S VILLALOBOS C-30358 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "2nd Squad",
     "NAME": "CDT CPT 1CL JAIRUS ZIM S PASAGAD C-27187 \u2018B\u2019 CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "1CL - 3",
     "NAME": "CDT LT 1CL MARK JAMES P SARMIENTO C-27218 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "2CL - 4",
     "NAME": "CDT LT 1CL ALREIN TAPULAO C-27236 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "3CL - 2",
     "NAME": "CDT SGT 2CL  JULIE ANN G CAASI C-26067 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "4CL - 4",
     "NAME": "CDT SGT 2CL JARRED MARTIN B MANODON C-28377 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT SGT 2CL HARRISBURG FELIX R VICENTE C-28345 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
+    "NAME": "CDT SGT 2CL HOWARD GODWIN V DELOS REYES C-27081 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL VINCENT VONN L SORIO C-29306 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL JERLI L SANDOVAL C-29296 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
-    "NAME": "CDT CPL 3CL RALPH JARVIS S LACHICA C-29168 'B' CO CCAFP"
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL ANGELINA NICHOLE M VILLEGAS C-30360 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL KAEDE MINE C FERNANDEZ C-30146 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL CHARLES WAYNE B JUMAWAN C-30188 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL RALFH JOHN A BOQUIL C-30058 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "3rd Squad",
     "NAME": "CDT LT 1CL CHRISTIAN CONCORDO S APOLONIO C-27014 \u2018B\u2019 CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "1CL - 3",
     "NAME": "CDT LT 1CL SHE ANNE A MOLO C-26246 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "2CL - 3",
     "NAME": "CDT LT 1CL RICARDO MIGUEL E CABUNOC C-27040 `B` CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "3CL - 3",
     "NAME": "CDT SGT 2CL GARRET S CONICONDE C-28097 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "4CL - 4",
     "NAME": "CDT SGT 2CL GUEN MARIE G SAPINIT C-27217 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT SGT 2CL ANGELO C ALEJO C-27008 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL YALEN DON P GABUYA C-29137 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL CLARK JUSTIN A LORENZO C-29187 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "13",
     "NAME": "CDT CPL 3CL ARIELLE A TIONGCO C-28332 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "4TH PLATOON",
-    "NAME": ""
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL DESSA MAE B GUIMBANGUNAN C-30170 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL MIGUEL \u00cd\u00d1IGO P CAWILI C-30091 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT PVT 4CL JACE LAURENCE C ESPIRITU C-30134 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "13",
+    "NAME": "CDT 4CL JECEL MARK LOON PARAWAN C-29247 'D' CO CCAFP"
   },
   {
     "DESIGNATION": "Platoon Leader",
@@ -657,114 +837,146 @@
   },
   {
     "DESIGNATION": "Platoon Sergeant",
-    "NAME": "CDT S/SGT 2CL JOHN ELIEZER M ARAOJO C-28031 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "Platoon Guide",
-    "NAME": ""
+    "NAME": "CDT SGT 2CL EULEX ARIADNE S SALIPSIP C-27214 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "1st Squad",
     "NAME": "CDT LT 1CL JOSHUA DAVE B BIRUNG C-27266 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "1CL - 2",
     "NAME": "CDT LT 1CL MARCELINO A BEDA\u00d1A C-26352 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "2CL - 3",
     "NAME": "CDT SGT 2CL JOHN ELIEZER M ARAOJO C-28031 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
-    "NAME": "CDT SGT 2CL KERWIN S TENEDERO C-26359 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "",
+    "DESIGNATION": "3CL - 3",
     "NAME": "CDT SGT 2CL EULEX ARIADNE S SALIPSIP C-27214 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "4CL - 4",
+    "NAME": "CDT SGT 2CL ERICK JOHN C BLANCO C-27033 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "12",
     "NAME": "CDT CPL 3CL CHRISTOPHER O CHIMMON C-29092 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "12",
     "NAME": "CDT CPL 3CL MACH LYNCE Q TORREFRANCA C-28334 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "12",
     "NAME": "CDT CPL 3CL JOHN RAVEN C VILLARIAZA C-29314 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "12",
+    "NAME": "CDT PVT 4CL RAINAH C ESCAT C-30132 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "12",
+    "NAME": "CDT PVT 4CL CHRISTIAN JOSH R SALES C-30312 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "12",
+    "NAME": "CDT PVT 4CL ACE R BERSAMINA C-30052 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "12",
+    "NAME": "CDT PVT 4CL JUDE R BARTOLOME C-30041 'B' CO CCAFP"
   },
   {
     "DESIGNATION": "2nd Squad",
     "NAME": "CDT LT 1CL KURT RANDLE JOSH M ANCHETA C-27011 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "1CL - 3",
     "NAME": "CDT LT 1CL MICHAEL  EDUARD D AQUINO C-27016 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "2CL - 3",
     "NAME": "CDT LT 1CL LAKEISHA FELICE V LEVISTE C-27138 B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "3CL - 3",
     "NAME": "CDT SGT 2CL RANDY JR NAVARO GARCIA C-28161 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "4CL - 3",
     "NAME": "CDT SGT 2CL RICCI NICAJ ALPEREZ OROPESA C-28251 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
-    "NAME": "CDT SGT 2CL KIM AEROK P LLONO C-28204 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "",
+    "DESIGNATION": "12",
     "NAME": "CDT CPL 3CL ARKIEL JAN LABRADOR ASUNCION C-29028 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "12",
     "NAME": "CDT CPL 3CL DIANELLA DE LEON BELONIA C-29048 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "12",
     "NAME": "CDT CPL 3CL RALPH ASHLEY GAUIRAN LOMIGO C-29186 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "12",
+    "NAME": "CDT PVT 4CL DIANA MELISA C NOLLA C-30258 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "12",
+    "NAME": "CDT PVT 4CL JB V ASUNCION C-30027 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "12",
+    "NAME": "CDT 4CL MARLON REALISAN RICAFRENTE C-28387 'C' CO CCAFP"
   },
   {
     "DESIGNATION": "3rd Squad",
     "NAME": "CDT LT 1CL RONNELL C TIMAJO C-27242 B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "1CL - 2",
     "NAME": "CDT LT 1CL RAFAEL ANGELO N MITRA C-26243 \u2018B\u2019 CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "2CL - 3",
     "NAME": "CDT SGT 2CL AUDRIANNE D CASAMAYOR C-28088 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "3CL - 3",
     "NAME": "CDT SGT 2CL AIAM ROWEL OCTOBER A MABILOG C-28210 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "4CL - 4",
     "NAME": "CDT SGT 2CL FIL ARTHUR A PALMA  C-27183 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "12",
     "NAME": "CDT CPL 3CL  JUSTIN JOSE P OLIVEROS C-29237 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
-    "NAME": "CDT CPL 3CL MARK HENRY M MANUEL C-29211 'B' CO CCAFP"
-  },
-  {
-    "DESIGNATION": "",
+    "DESIGNATION": "12",
     "NAME": "CDT CPL 3CL DOMINIC H MANZO C-28224 'B' CO CCAFP"
   },
   {
-    "DESIGNATION": "",
+    "DESIGNATION": "12",
     "NAME": "CDT CPL 3CL ROGERBERT MONROE P LEBRILLA C-28196 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "12",
+    "NAME": "CDT PVT 4CL JERVIN R MANABAT C-30225 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "12",
+    "NAME": "CDT PVT 4CL JON FLOYD D PAHIMUTANG C-30271 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "12",
+    "NAME": "CDT PVT 4CL ZAMIER A SAJILI C-30310 'B' CO CCAFP"
+  },
+  {
+    "DESIGNATION": "12",
+    "NAME": "CDT 4CL IAN LEI SORIANO MEJIA C-29218 'D' CO CCAFP"
   }
 ]
