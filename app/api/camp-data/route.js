@@ -101,13 +101,17 @@ export async function GET(request) {
       });
     }
 
-    // Build gender map for PFT parser
+    // Build gender & class map for PFT parser
     const genderMap = {};
+    const classMap = {};
     Object.values(cadets).forEach(c => {
-      genderMap[c.surname] = c.gender;
+      if (c.surname) {
+        if (c.gender) genderMap[c.surname] = c.gender;
+        if (c.class) classMap[c.surname] = c.class;
+      }
     });
 
-    const { data: pftParsedData } = parsePFTData(pftRows, genderMap);
+    const { data: pftParsedData } = parsePFTData(pftRows, genderMap, classMap);
 
     // 3. Process Physical/PFT from parsePFTData
     if (pftParsedData) {

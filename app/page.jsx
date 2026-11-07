@@ -45,17 +45,26 @@ export default async function Home() {
   ]);
   
   const genderMap = {};
+  const classMap = {};
   if (rosterRows && rosterRows.length > 0) {
-    rosterRows.forEach((row) => {
+    rosterRows.forEach((row, i) => {
       const surname = (row['SURNAME'] || '').trim().toUpperCase();
       const gender = (row['GENDER'] || '').trim().toUpperCase();
-      if (surname && gender) {
-        genderMap[surname] = gender;
+      let cls = (row['CLASS'] || row['YEAR'] || row['BATCH'] || '').toString().toLowerCase().trim();
+      if (!cls || !['1cl', '2cl', '3cl', '4cl'].includes(cls)) {
+        if (i >= 0 && i <= 29) cls = '1cl';
+        else if (i >= 30 && i <= 66) cls = '2cl';
+        else if (i >= 67 && i <= 104) cls = '3cl';
+        else cls = '4cl';
+      }
+      if (surname) {
+        if (gender) genderMap[surname] = gender;
+        if (cls) classMap[surname] = cls;
       }
     });
   }
 
-  const { topPerformers } = parsePFTData(pft1Rows, genderMap);
+  const { topPerformers } = parsePFTData(pft1Rows, genderMap, classMap);
 
   // Fetch all dissemination sheets concurrently
   const disseminationPromises = COUNCILS.map(async (council) => {

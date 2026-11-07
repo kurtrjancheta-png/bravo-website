@@ -245,7 +245,15 @@ function getPFTInsights(pftData, classKey) {
   };
 }
 
-export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
+export default function PFTDashboard({ 
+  mockData, 
+  pft1Data, 
+  pft2Data,
+  term2Data,
+  term1Data,
+  activeTerm = "2nd",
+  latestPFT = "pft1"
+}) {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
@@ -254,19 +262,73 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const [selectedPFT, setSelectedPFT] = useState('all');
+  const [selectedTerm, setSelectedTerm] = useState('term2');
+  const [selectedPFT, setSelectedPFT] = useState('pft1');
   const [selectedClass, setSelectedClass] = useState('all');
   const [activeList, setActiveList] = useState(null);
   
   // Toggle switcher state: 'class' for Class PFT Data, 'event' for PFT Event Data
   const [activeChartTab, setActiveChartTab] = useState('event');
 
+  // Datasets mapped by Term
+  const term2Datasets = {
+    mock: term2Data?.mock || mockData,
+    pft1: term2Data?.pft1 || pft1Data,
+    pft2: term2Data?.pft2 || pft2Data,
+  };
+
+  const term1Datasets = {
+    pft1: term1Data?.pft1 || null,
+    pft2: term1Data?.pft2 || null,
+    mock: null,
+  };
+
+  const currentTermDatasets = selectedTerm === 'term2' ? term2Datasets : term1Datasets;
+
+  const hasCadets = (dataset, classKey = 'all') => {
+    if (!dataset || !dataset[classKey]) return false;
+    const c = dataset[classKey];
+    return ((c.passed?.length || 0) + (c.failed?.length || 0) + (c.smc?.length || 0) + (c.fad?.length || 0)) > 0;
+  };
+
+  const pftTypes = {
+    pft1: { 
+      label: selectedTerm === 'term2' ? 'PFT 1 (2nd Term)' : 'PFT 1 (1st Term)', 
+      shortLabel: 'PFT 1',
+      badge: selectedTerm === 'term2' ? 'LATEST' : null,
+      data: currentTermDatasets.pft1 
+    },
+    pft2: { 
+      label: selectedTerm === 'term2' ? 'PFT 2 (2nd Term)' : 'PFT 2 (1st Term)', 
+      shortLabel: 'PFT 2',
+      badge: selectedTerm === 'term2' ? 'UPCOMING' : null,
+      data: currentTermDatasets.pft2 
+    },
+    mock: { 
+      label: 'Mock PFT', 
+      shortLabel: 'Mock PFT',
+      badge: null,
+      data: currentTermDatasets.mock 
+    },
+  };
+
+  // Dynamic filter options based on the active term
+  const pftFilterOptions = selectedTerm === 'term2' 
+    ? [
+        { value: 'pft1', label: 'PFT 1', badge: 'LATEST', isLatest: true },
+        { value: 'all', label: 'ALL PFTs' },
+        { value: 'pft2', label: 'PFT 2', badge: 'UPCOMING', isUpcoming: true },
+        { value: 'mock', label: 'MOCK PFT' }
+      ]
+    : [
+        { value: 'all', label: 'ALL PFTs' },
+        { value: 'pft1', label: 'PFT 1' },
+        { value: 'pft2', label: 'PFT 2' }
+      ];
+
   // Insight Modal State
   const [showInsightModal, setShowInsightModal] = useState(false);
-  const [insightPftTab, setInsightPftTab] = useState(
-    pft2Data && [...pft2Data.all.passed, ...pft2Data.all.failed, ...pft2Data.all.smc].length > 0 ? 'pft2' :
-    pft1Data && [...pft1Data.all.passed, ...pft1Data.all.failed, ...pft1Data.all.smc].length > 0 ? 'pft1' : 'mock'
-  );
+  const [insightPftTab, setInsightPftTab] = useState('pft1');
 
   // Individual Cadet Modal State
   const [selectedCadet, setSelectedCadet] = useState(null);
@@ -292,19 +354,15 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
       
       setSelectedCadet({
         name: cadetName,
-        mock: getCadetRecord(mockData),
-        pft1: getCadetRecord(pft1Data),
-        pft2: getCadetRecord(pft2Data)
+        mock: getCadetRecord(term2Datasets.mock),
+        pft1: getCadetRecord(term2Datasets.pft1),
+        pft2: getCadetRecord(term2Datasets.pft2),
+        term1Pft1: getCadetRecord(term1Datasets.pft1),
+        term1Pft2: getCadetRecord(term1Datasets.pft2)
       });
     } catch (err) {
       console.error(err);
     }
-  };
-
-  const pftTypes = {
-    mock: { label: 'Mock PFT', data: mockData },
-    pft1: { label: 'PFT 1', data: pft1Data },
-    pft2: { label: 'PFT 2', data: pft2Data },
   };
 
   const handleSegmentClick = (statusKey, cadets, pftTitle) => {
@@ -334,27 +392,27 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
   const progressChartData = [
     {
       name: 'Mock PFT',
-      'Company Average': getPassRateForPFT(mockData, 'all'),
-      '1CL': getPassRateForPFT(mockData, '1cl'),
-      '2CL': getPassRateForPFT(mockData, '2cl'),
-      '3CL': getPassRateForPFT(mockData, '3cl'),
-      '4CL': getPassRateForPFT(mockData, '4cl'),
+      'Company Average': getPassRateForPFT(currentTermDatasets.mock, 'all'),
+      '1CL': getPassRateForPFT(currentTermDatasets.mock, '1cl'),
+      '2CL': getPassRateForPFT(currentTermDatasets.mock, '2cl'),
+      '3CL': getPassRateForPFT(currentTermDatasets.mock, '3cl'),
+      '4CL': getPassRateForPFT(currentTermDatasets.mock, '4cl'),
     },
     {
-      name: 'PFT 1',
-      'Company Average': getPassRateForPFT(pft1Data, 'all'),
-      '1CL': getPassRateForPFT(pft1Data, '1cl'),
-      '2CL': getPassRateForPFT(pft1Data, '2cl'),
-      '3CL': getPassRateForPFT(pft1Data, '3cl'),
-      '4CL': getPassRateForPFT(pft1Data, '4cl'),
+      name: selectedTerm === 'term2' ? 'PFT 1 (2nd Term)' : 'PFT 1 (1st Term)',
+      'Company Average': getPassRateForPFT(currentTermDatasets.pft1, 'all'),
+      '1CL': getPassRateForPFT(currentTermDatasets.pft1, '1cl'),
+      '2CL': getPassRateForPFT(currentTermDatasets.pft1, '2cl'),
+      '3CL': getPassRateForPFT(currentTermDatasets.pft1, '3cl'),
+      '4CL': getPassRateForPFT(currentTermDatasets.pft1, '4cl'),
     },
     {
-      name: 'PFT 2',
-      'Company Average': getPassRateForPFT(pft2Data, 'all'),
-      '1CL': getPassRateForPFT(pft2Data, '1cl'),
-      '2CL': getPassRateForPFT(pft2Data, '2cl'),
-      '3CL': getPassRateForPFT(pft2Data, '3cl'),
-      '4CL': getPassRateForPFT(pft2Data, '4cl'),
+      name: selectedTerm === 'term2' ? 'PFT 2 (2nd Term)' : 'PFT 2 (1st Term)',
+      'Company Average': getPassRateForPFT(currentTermDatasets.pft2, 'all'),
+      '1CL': getPassRateForPFT(currentTermDatasets.pft2, '1cl'),
+      '2CL': getPassRateForPFT(currentTermDatasets.pft2, '2cl'),
+      '3CL': getPassRateForPFT(currentTermDatasets.pft2, '3cl'),
+      '4CL': getPassRateForPFT(currentTermDatasets.pft2, '4cl'),
     }
   ].filter(item => item['Company Average'] !== null);
 
@@ -388,7 +446,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
   const getEventAverage = (pftKey, classKey, eventKey) => {
     let datasets = [];
     if (pftKey === 'all') {
-      datasets = [mockData, pft1Data, pft2Data].filter(d => d !== null);
+      datasets = [currentTermDatasets.pft1, currentTermDatasets.mock, currentTermDatasets.pft2].filter(d => d !== null && d !== undefined);
     } else {
       datasets = [pftTypes[pftKey]?.data].filter(d => d !== null && d !== undefined);
     }
@@ -479,9 +537,9 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
 
   const getAverageChartTitle = () => {
     if (selectedPFT === 'all') {
-      return 'Average Event Grades (All PFTs)';
+      return `Average Event Grades (${selectedTerm === 'term2' ? '2nd Term' : '1st Term'} - All Tests)`;
     }
-    return `Average Event Grades (${pftTypes[selectedPFT].label})`;
+    return `Average Event Grades (${pftTypes[selectedPFT]?.label || selectedPFT.toUpperCase()})`;
   };
 
   // Bar opacity styling based on selectedClass dropdown filter
@@ -497,7 +555,7 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
   };
 
   // Get active insights for the modal
-  const activeInsights = getPFTInsights(pftTypes[insightPftTab].data, selectedClass);
+  const activeInsights = getPFTInsights(pftTypes[insightPftTab]?.data || currentTermDatasets.pft1, selectedClass);
 
   // Recommendations text based on weakest event
   const getRemediationRecommendation = (eventKey) => {
@@ -608,135 +666,234 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
       animate={{ opacity: 1, y: 0 }} 
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      {/* Controls: Dropdowns + Generate Insights Button */}
-      <div className="pft-controls" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center', width: '100%' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
-          <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>PFT TYPE</span>
-          <div style={{ width: '100%', overflow: 'hidden' }}>
-            <InfiniteSlider itemWidth="auto" gap="0.5rem">
-              {[
-                { value: 'all', label: 'ALL PFTs' },
-                { value: 'mock', label: 'MOCK PFT' },
-                { value: 'pft1', label: 'PFT 1' }
-              ].map(opt => (
+      {/* Controls: Term Selector + PFT Event Filter + Class Filter + Insights */}
+      <div className="pft-controls" style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: '1.25rem', 
+        width: '100%', 
+        padding: '1.25rem 1.5rem', 
+        background: 'var(--card-bg)', 
+        borderRadius: '16px', 
+        border: '1px solid var(--border-color)', 
+        boxShadow: '0 4px 20px rgba(0,0,0,0.06)' 
+      }}>
+        {/* ROW 1: Academic Term Pill Selector + Status Indicator */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '0.75rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              ACADEMIC TERM:
+            </span>
+            <div style={{
+              display: 'inline-flex',
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '24px',
+              padding: '3px',
+              gap: '4px'
+            }}>
+              <button
+                onClick={() => { setSelectedTerm('term2'); setSelectedPFT('pft1'); setActiveList(null); }}
+                style={{
+                  padding: '0.4rem 1.1rem',
+                  borderRadius: '20px',
+                  border: 'none',
+                  background: selectedTerm === 'term2' ? 'linear-gradient(135deg, #d97706 0%, #b45309 100%)' : 'transparent',
+                  color: selectedTerm === 'term2' ? '#ffffff' : 'var(--text-secondary)',
+                  fontWeight: 800,
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'all 0.2s ease',
+                  boxShadow: selectedTerm === 'term2' ? '0 2px 8px rgba(217, 119, 6, 0.35)' : 'none'
+                }}
+              >
+                <span>2ND TERM</span>
+                <span style={{
+                  fontSize: '0.65rem',
+                  padding: '1px 6px',
+                  borderRadius: '10px',
+                  background: selectedTerm === 'term2' ? 'rgba(255,255,255,0.25)' : 'rgba(217, 119, 6, 0.2)',
+                  color: selectedTerm === 'term2' ? '#ffffff' : '#d97706',
+                  fontWeight: 800,
+                  letterSpacing: '0.02em'
+                }}>
+                  CURRENT
+                </span>
+              </button>
+
+              <button
+                onClick={() => { setSelectedTerm('term1'); setSelectedPFT('all'); setActiveList(null); }}
+                style={{
+                  padding: '0.4rem 1.1rem',
+                  borderRadius: '20px',
+                  border: 'none',
+                  background: selectedTerm === 'term1' ? 'linear-gradient(135deg, #4b5563 0%, #374151 100%)' : 'transparent',
+                  color: selectedTerm === 'term1' ? '#ffffff' : 'var(--text-secondary)',
+                  fontWeight: 800,
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'all 0.2s ease',
+                  boxShadow: selectedTerm === 'term1' ? '0 2px 8px rgba(0, 0, 0, 0.25)' : 'none'
+                }}
+              >
+                <span>1ST TERM</span>
+                <span style={{
+                  fontSize: '0.65rem',
+                  padding: '1px 6px',
+                  borderRadius: '10px',
+                  background: selectedTerm === 'term1' ? 'rgba(255,255,255,0.2)' : 'rgba(107, 114, 128, 0.15)',
+                  color: selectedTerm === 'term1' ? '#ffffff' : 'var(--text-secondary)',
+                  fontWeight: 700
+                }}>
+                  ARCHIVE
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '0.35rem 0.8rem',
+              borderRadius: '20px',
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: '1px solid rgba(16, 185, 129, 0.25)',
+              color: '#10b981',
+              fontSize: '0.75rem',
+              fontWeight: 700
+            }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }}></span>
+              LATEST: 2ND TERM PFT 1
+            </div>
+
+            <motion.button 
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={() => setShowInsightModal(true)}
+              className="pft-insight-btn"
+              style={{
+                padding: '0.45rem 1rem',
+                background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                boxShadow: '0 2px 6px rgba(217, 119, 6, 0.3)',
+                outline: 'none'
+              }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+              Generate Insights
+            </motion.button>
+          </div>
+        </div>
+
+        {/* ROW 2: PFT Filter Tabs */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            PFT TEST FILTER ({selectedTerm === 'term2' ? '2ND TERM' : '1ST TERM'})
+          </span>
+
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', width: '100%' }}>
+            {pftFilterOptions.map(opt => {
+              const isSelected = selectedPFT === opt.value;
+              return (
                 <button
                   key={opt.value}
                   onClick={() => { setSelectedPFT(opt.value); setActiveList(null); }}
                   style={{
-                    position: 'relative',
-                    padding: '0.4rem 1.1rem',
-                    borderRadius: '20px',
-                    border: selectedPFT === opt.value ? 'none' : '1px solid var(--border-color)',
-                    background: selectedPFT === opt.value ? 'var(--text-primary)' : 'var(--bg-primary)',
-                    color: selectedPFT === opt.value ? 'var(--bg-primary)' : 'var(--text-secondary)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '0.45rem 1rem',
+                    borderRadius: '16px',
+                    border: isSelected ? '1px solid var(--text-primary)' : '1px solid var(--border-color)',
+                    background: isSelected ? 'var(--text-primary)' : 'var(--bg-primary)',
+                    color: isSelected ? 'var(--bg-primary)' : 'var(--text-secondary)',
                     fontWeight: 800,
                     cursor: 'pointer',
                     fontSize: '0.8rem',
-                    whiteSpace: 'nowrap',
                     transition: 'all 0.2s ease',
-                    boxShadow: selectedPFT === opt.value ? '0 4px 6px rgba(0,0,0,0.1)' : 'none'
+                    boxShadow: isSelected ? '0 3px 8px rgba(0,0,0,0.15)' : 'none'
                   }}
                 >
-                  {selectedPFT === opt.value && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '-6px',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      width: 0,
-                      height: 0,
-                      borderLeft: '4px solid transparent',
-                      borderRight: '4px solid transparent',
-                      borderTop: '5px solid var(--text-primary)',
-                      animation: 'dropIn 0.2s ease-out'
-                    }} />
+                  <span>{opt.label}</span>
+                  {opt.badge && (
+                    <span style={{
+                      fontSize: '0.65rem',
+                      fontWeight: 800,
+                      padding: '1px 6px',
+                      borderRadius: '8px',
+                      background: isSelected 
+                        ? (opt.isUpcoming ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.25)') 
+                        : (opt.isUpcoming ? 'rgba(156, 163, 175, 0.2)' : 'rgba(16, 185, 129, 0.15)'),
+                      color: isSelected 
+                        ? (opt.isUpcoming ? '#fbbf24' : '#ffffff') 
+                        : (opt.isUpcoming ? 'var(--text-secondary)' : '#10b981')
+                    }}>
+                      {opt.badge}
+                    </span>
                   )}
-                  {opt.label}
                 </button>
-              ))}
-            </InfiniteSlider>
+              );
+            })}
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
-          <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>CLASS</span>
-          <div style={{ width: '100%', overflow: 'hidden' }}>
-            <InfiniteSlider itemWidth="auto" gap="0.5rem">
-              {[
-                { value: 'all', label: 'ALL CLASSES' },
-                { value: '1cl', label: '1ST CLASS' },
-                { value: '2cl', label: '2ND CLASS' },
-                { value: '3cl', label: '3RD CLASS' },
-                { value: '4cl', label: '4TH CLASS' }
-              ].map(opt => (
+        {/* ROW 3: Class Filter Tabs */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            CLASS LEVEL
+          </span>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', width: '100%' }}>
+            {[
+              { value: 'all', label: 'ALL CLASSES' },
+              { value: '1cl', label: '1ST CLASS (1CL)' },
+              { value: '2cl', label: '2ND CLASS (2CL)' },
+              { value: '3cl', label: '3RD CLASS (3CL)' },
+              { value: '4cl', label: '4TH CLASS (4CL)' }
+            ].map(opt => {
+              const isSelected = selectedClass === opt.value;
+              return (
                 <button
                   key={opt.value}
                   onClick={() => { setSelectedClass(opt.value); setActiveList(null); }}
                   style={{
-                    position: 'relative',
-                    padding: '0.4rem 1.1rem',
-                    borderRadius: '20px',
-                    border: selectedClass === opt.value ? 'none' : '1px solid var(--border-color)',
-                    background: selectedClass === opt.value ? 'var(--text-primary)' : 'var(--bg-primary)',
-                    color: selectedClass === opt.value ? 'var(--bg-primary)' : 'var(--text-secondary)',
+                    padding: '0.45rem 1rem',
+                    borderRadius: '16px',
+                    border: isSelected ? '1px solid var(--text-primary)' : '1px solid var(--border-color)',
+                    background: isSelected ? 'var(--text-primary)' : 'var(--bg-primary)',
+                    color: isSelected ? 'var(--bg-primary)' : 'var(--text-secondary)',
                     fontWeight: 800,
                     cursor: 'pointer',
                     fontSize: '0.8rem',
-                    whiteSpace: 'nowrap',
                     transition: 'all 0.2s ease',
-                    boxShadow: selectedClass === opt.value ? '0 4px 6px rgba(0,0,0,0.1)' : 'none'
+                    boxShadow: isSelected ? '0 3px 8px rgba(0,0,0,0.15)' : 'none'
                   }}
                 >
-                  {selectedClass === opt.value && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '-6px',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      width: 0,
-                      height: 0,
-                      borderLeft: '4px solid transparent',
-                      borderRight: '4px solid transparent',
-                      borderTop: '5px solid var(--text-primary)',
-                      animation: 'dropIn 0.2s ease-out'
-                    }} />
-                  )}
                   {opt.label}
                 </button>
-              ))}
-            </InfiniteSlider>
+              );
+            })}
           </div>
         </div>
-
-        <motion.button 
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setShowInsightModal(true)}
-          className="pft-insight-btn"
-          style={{
-            margin: '0 auto',
-            padding: '0.5rem 1.25rem',
-            background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            fontWeight: 700,
-            fontSize: '0.9rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            boxShadow: '0 2px 5px rgba(217, 119, 6, 0.3)',
-            outline: 'none'
-          }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="20" x2="18" y2="10"></line>
-            <line x1="12" y1="20" x2="12" y2="4"></line>
-            <line x1="6" y1="20" x2="6" y2="14"></line>
-          </svg>
-          Generate Insights
-        </motion.button>
       </div>
 
       {/* Chart View Toggle Switcher */}
@@ -973,20 +1130,110 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
       </div>
 
       {/* Charts Grid */}
-      <div className={`pft-charts-grid ${selectedPFT !== 'all' ? 'single-chart' : ''}`}>
-        {selectedPFT === 'all' ? (
-          <>
-            <PieChart data={mockData[selectedClass]} title="Mock PFT" onSegmentClick={handleSegmentClick} />
-            <PieChart data={pft1Data[selectedClass]} title="PFT 1" onSegmentClick={handleSegmentClick} />
-          </>
-        ) : (
-          <PieChart 
-            data={pftTypes[selectedPFT].data[selectedClass]} 
-            title={pftTypes[selectedPFT].label} 
-            onSegmentClick={handleSegmentClick} 
-          />
-        )}
-      </div>
+      {selectedTerm === 'term1' && !hasCadets(currentTermDatasets.pft1) && !hasCadets(currentTermDatasets.pft2) ? (
+        <div className="pft-chart-card" style={{ padding: '3.5rem 2rem', textAlign: 'center', marginBottom: '2rem' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📋</div>
+          <h3 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 800 }}>
+            1st Term PFT Records Archived
+          </h3>
+          <p style={{ color: 'var(--text-secondary)', maxWidth: '540px', margin: '0 auto 1.5rem auto', lineHeight: 1.6, fontSize: '0.9rem' }}>
+            The active Athletic Council database (<code>BRAVO 2nd TERM PFT TRACKER</code>) currently maintains scores for the 2nd Term (PFT 1 conducted, PFT 2 upcoming). 1st Term PFTs were concluded prior to September 11, 2026.
+          </p>
+          <button
+            onClick={() => { setSelectedTerm('term2'); setSelectedPFT('pft1'); }}
+            style={{
+              padding: '0.55rem 1.4rem',
+              background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '20px',
+              fontWeight: 800,
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(217, 119, 6, 0.3)'
+            }}
+          >
+            Switch to 2nd Term (Active) &rarr;
+          </button>
+        </div>
+      ) : selectedPFT === 'pft2' && selectedTerm === 'term2' && !hasCadets(currentTermDatasets.pft2) ? (
+        <div className="pft-chart-card" style={{ padding: '3.5rem 2rem', textAlign: 'center', marginBottom: '2rem' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⏳</div>
+          <h3 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 800 }}>
+            2nd Term PFT 2 – Scheduled / Upcoming
+          </h3>
+          <p style={{ color: 'var(--text-secondary)', maxWidth: '520px', margin: '0 auto 1.5rem auto', lineHeight: 1.6, fontSize: '0.9rem' }}>
+            The latest physical test conducted for the 2nd Term is <strong>PFT 1</strong>. PFT 2 has not yet been administered. Once results are published to the Athletic Council spreadsheet, passing metrics and drill-downs will update automatically.
+          </p>
+          <button
+            onClick={() => setSelectedPFT('pft1')}
+            style={{
+              padding: '0.55rem 1.4rem',
+              background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '20px',
+              fontWeight: 800,
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(217, 119, 6, 0.3)'
+            }}
+          >
+            View Latest Conducted (PFT 1) &rarr;
+          </button>
+        </div>
+      ) : (
+        <div className={`pft-charts-grid ${selectedPFT !== 'all' ? 'single-chart' : ''}`}>
+          {selectedPFT === 'all' ? (
+            <>
+              {hasCadets(currentTermDatasets.pft1, selectedClass) && (
+                <PieChart 
+                  data={currentTermDatasets.pft1[selectedClass]} 
+                  title={selectedTerm === 'term2' ? "PFT 1 (2nd Term - Latest)" : "PFT 1 (1st Term)"} 
+                  onSegmentClick={handleSegmentClick} 
+                />
+              )}
+              {hasCadets(currentTermDatasets.mock, selectedClass) && (
+                <PieChart 
+                  data={currentTermDatasets.mock[selectedClass]} 
+                  title="Mock PFT" 
+                  onSegmentClick={handleSegmentClick} 
+                />
+              )}
+              {hasCadets(currentTermDatasets.pft2, selectedClass) ? (
+                <PieChart 
+                  data={currentTermDatasets.pft2[selectedClass]} 
+                  title={selectedTerm === 'term2' ? "PFT 2 (2nd Term)" : "PFT 2 (1st Term)"} 
+                  onSegmentClick={handleSegmentClick} 
+                />
+              ) : selectedTerm === 'term2' && (
+                <div className="pft-chart-card" style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center', alignItems: 'center', padding: '2.5rem 1.5rem', textAlign: 'center', border: '1px dashed var(--border-color)', background: 'rgba(255,255,255,0.02)' }}>
+                  <span style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⏳</span>
+                  <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-primary)', fontWeight: 700 }}>PFT 2 (2nd Term)</h4>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 800, padding: '2px 8px', borderRadius: '10px', background: 'rgba(251, 191, 36, 0.15)', color: '#fbbf24', marginBottom: '0.75rem' }}>
+                    UPCOMING TEST
+                  </span>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+                    Test not yet conducted. Will automatically appear once scores are logged in the sheet.
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            pftTypes[selectedPFT]?.data ? (
+              <PieChart 
+                data={pftTypes[selectedPFT].data[selectedClass]} 
+                title={pftTypes[selectedPFT].label} 
+                onSegmentClick={handleSegmentClick} 
+              />
+            ) : (
+              <div className="pft-chart-card" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                No data available for this selection.
+              </div>
+            )
+          )}
+        </div>
+      )}
 
 
       {/* Drill-down Cadet List View */}
@@ -1095,27 +1342,31 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                 <motion.button 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`pft-modal-tab-btn ${insightPftTab === 'mock' ? 'active' : ''}`}
-                  onClick={() => setInsightPftTab('mock')}
-                >
-                  Mock PFT
-                </motion.button>
-                <motion.button 
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
                   className={`pft-modal-tab-btn ${insightPftTab === 'pft1' ? 'active' : ''}`}
                   onClick={() => setInsightPftTab('pft1')}
                 >
-                  PFT 1
+                  PFT 1 {selectedTerm === 'term2' ? '(2nd Term - Latest)' : '(1st Term)'}
                 </motion.button>
-                <motion.button 
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`pft-modal-tab-btn ${insightPftTab === 'pft2' ? 'active' : ''}`}
-                  onClick={() => setInsightPftTab('pft2')}
-                >
-                  PFT 2
-                </motion.button>
+                {hasCadets(currentTermDatasets.mock) && (
+                  <motion.button 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`pft-modal-tab-btn ${insightPftTab === 'mock' ? 'active' : ''}`}
+                    onClick={() => setInsightPftTab('mock')}
+                  >
+                    Mock PFT
+                  </motion.button>
+                )}
+                {hasCadets(currentTermDatasets.pft2) && (
+                  <motion.button 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`pft-modal-tab-btn ${insightPftTab === 'pft2' ? 'active' : ''}`}
+                    onClick={() => setInsightPftTab('pft2')}
+                  >
+                    PFT 2
+                  </motion.button>
+                )}
               </div>
 
               {activeInsights.totalActive === 0 ? (
@@ -1589,8 +1840,14 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                       <tr>
                         <th style={{ textAlign: 'left' }}>Event</th>
                         <th>Mock PFT</th>
-                        <th>PFT 1</th>
-                        <th>PFT 2</th>
+                        <th>PFT 1 (2nd Term)</th>
+                        <th>PFT 2 (2nd Term)</th>
+                        {(selectedCadet.term1Pft1 || selectedCadet.term1Pft2) && (
+                          <>
+                            <th>PFT 1 (1st Term)</th>
+                            <th>PFT 2 (1st Term)</th>
+                          </>
+                        )}
                       </tr>
                     </thead>
                     <tbody>
@@ -1601,8 +1858,14 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                           <tr key={ev}>
                             <td data-label="Event" style={{ fontWeight: ev === 'Average' ? 700 : 600, textAlign: 'left' }}>{ev}</td>
                             <td data-label="Mock PFT" style={{ fontWeight: ev === 'Average' ? 700 : 400, textAlign: 'center' }}>{selectedCadet.mock?.scores?.[k] !== undefined ? selectedCadet.mock.scores[k].toFixed(2) : '-'}</td>
-                            <td data-label="PFT 1" style={{ fontWeight: ev === 'Average' ? 700 : 400, textAlign: 'center' }}>{selectedCadet.pft1?.scores?.[k] !== undefined ? selectedCadet.pft1.scores[k].toFixed(2) : '-'}</td>
-                            <td data-label="PFT 2" style={{ fontWeight: ev === 'Average' ? 700 : 400, textAlign: 'center' }}>{selectedCadet.pft2?.scores?.[k] !== undefined ? selectedCadet.pft2.scores[k].toFixed(2) : '-'}</td>
+                            <td data-label="PFT 1 (2nd Term)" style={{ fontWeight: ev === 'Average' ? 700 : 400, textAlign: 'center' }}>{selectedCadet.pft1?.scores?.[k] !== undefined ? selectedCadet.pft1.scores[k].toFixed(2) : '-'}</td>
+                            <td data-label="PFT 2 (2nd Term)" style={{ fontWeight: ev === 'Average' ? 700 : 400, textAlign: 'center' }}>{selectedCadet.pft2?.scores?.[k] !== undefined ? selectedCadet.pft2.scores[k].toFixed(2) : '-'}</td>
+                            {(selectedCadet.term1Pft1 || selectedCadet.term1Pft2) && (
+                              <>
+                                <td data-label="PFT 1 (1st Term)" style={{ fontWeight: ev === 'Average' ? 700 : 400, textAlign: 'center' }}>{selectedCadet.term1Pft1?.scores?.[k] !== undefined ? selectedCadet.term1Pft1.scores[k].toFixed(2) : '-'}</td>
+                                <td data-label="PFT 2 (1st Term)" style={{ fontWeight: ev === 'Average' ? 700 : 400, textAlign: 'center' }}>{selectedCadet.term1Pft2?.scores?.[k] !== undefined ? selectedCadet.term1Pft2.scores[k].toFixed(2) : '-'}</td>
+                              </>
+                            )}
                           </tr>
                         );
                       })}
@@ -1611,12 +1874,22 @@ export default function PFTDashboard({ mockData, pft1Data, pft2Data }) {
                         <td data-label="Mock PFT" style={{ color: selectedCadet.mock?.remarks?.includes('PASSED') || selectedCadet.mock?.remarks === 'P' ? '#1a7a3a' : selectedCadet.mock?.remarks ? '#c0392b' : 'inherit', fontWeight: 700, textAlign: 'center' }}>
                           {selectedCadet.mock?.remarks || '-'}
                         </td>
-                        <td data-label="PFT 1" style={{ color: selectedCadet.pft1?.remarks?.includes('PASSED') || selectedCadet.pft1?.remarks === 'P' ? '#1a7a3a' : selectedCadet.pft1?.remarks ? '#c0392b' : 'inherit', fontWeight: 700, textAlign: 'center' }}>
+                        <td data-label="PFT 1 (2nd Term)" style={{ color: selectedCadet.pft1?.remarks?.includes('PASSED') || selectedCadet.pft1?.remarks === 'P' ? '#1a7a3a' : selectedCadet.pft1?.remarks ? '#c0392b' : 'inherit', fontWeight: 700, textAlign: 'center' }}>
                           {selectedCadet.pft1?.remarks || '-'}
                         </td>
-                        <td data-label="PFT 2" style={{ color: selectedCadet.pft2?.remarks?.includes('PASSED') || selectedCadet.pft2?.remarks === 'P' ? '#1a7a3a' : selectedCadet.pft2?.remarks ? '#c0392b' : 'inherit', fontWeight: 700, textAlign: 'center' }}>
+                        <td data-label="PFT 2 (2nd Term)" style={{ color: selectedCadet.pft2?.remarks?.includes('PASSED') || selectedCadet.pft2?.remarks === 'P' ? '#1a7a3a' : selectedCadet.pft2?.remarks ? '#c0392b' : 'inherit', fontWeight: 700, textAlign: 'center' }}>
                           {selectedCadet.pft2?.remarks || '-'}
                         </td>
+                        {(selectedCadet.term1Pft1 || selectedCadet.term1Pft2) && (
+                          <>
+                            <td data-label="PFT 1 (1st Term)" style={{ color: selectedCadet.term1Pft1?.remarks?.includes('PASSED') || selectedCadet.term1Pft1?.remarks === 'P' ? '#1a7a3a' : selectedCadet.term1Pft1?.remarks ? '#c0392b' : 'inherit', fontWeight: 700, textAlign: 'center' }}>
+                              {selectedCadet.term1Pft1?.remarks || '-'}
+                            </td>
+                            <td data-label="PFT 2 (1st Term)" style={{ color: selectedCadet.term1Pft2?.remarks?.includes('PASSED') || selectedCadet.term1Pft2?.remarks === 'P' ? '#1a7a3a' : selectedCadet.term1Pft2?.remarks ? '#c0392b' : 'inherit', fontWeight: 700, textAlign: 'center' }}>
+                              {selectedCadet.term1Pft2?.remarks || '-'}
+                            </td>
+                          </>
+                        )}
                       </tr>
                     </tbody>
                   </table>

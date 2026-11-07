@@ -305,12 +305,28 @@ const OffensesPizzaChart = ({ data, hoveredItem, setHoveredItem }) => {
   );
 };
 
+export function isOffenseServed(off) {
+  if (!off) return false;
+  const offConfStats = getConfinementStats(off.confStart, off.confEnd);
+  const offConfCompleted = !off.isConfined || (offConfStats.total > 0 && offConfStats.remaining === 0);
+  const offTourProgress = (off.tourServed || 0) + (off.tourConverted || 0);
+  const offTourCompleted = (off.tourTotal || 0) === 0 || offTourProgress >= (off.tourTotal || 0);
+  return offConfCompleted && offTourCompleted;
+}
+
+export function isOffenseArchived(off) {
+  if (!off) return false;
+  const isFirstTerm = !off.isAwardedAfterSep11 || off.term === '1st Term';
+  return isFirstTerm && isOffenseServed(off);
+}
+
 export default function ExoPunishmentClient({ initialCadets, violationsOverTime, breakdownData }) {
   const [viewModes, setViewModes] = useState({});
   const [showClassLines, setShowClassLines] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [hoveredItem, setHoveredItem] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showArchived, setShowArchived] = useState(false);
   const { adminUser } = useAuth();
 
   const chartData = (violationsOverTime || [])
@@ -408,8 +424,24 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
     }
   };
 
+  const totalArchivedCount = (initialCadets || []).reduce((acc, cadet) => {
+    return acc + (cadet.offenses || []).filter(isOffenseArchived).length;
+  }, 0);
+
+  const cadetsWithArchiveFilter = (initialCadets || []).map(cadet => {
+    const visibleOffenses = showArchived
+      ? cadet.offenses
+      : (cadet.offenses || []).filter(off => !isOffenseArchived(off));
+    
+    if (visibleOffenses.length === 0) return null;
+    return {
+      ...cadet,
+      offenses: visibleOffenses
+    };
+  }).filter(Boolean);
+
   const filteredCadets = selectedDate
-    ? initialCadets.map(cadet => {
+    ? cadetsWithArchiveFilter.map(cadet => {
         const matchingOffenses = cadet.offenses.filter(off => off.date === selectedDate);
         if (matchingOffenses.length === 0) return null;
         return {
@@ -417,7 +449,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
           offenses: matchingOffenses
         };
       }).filter(Boolean)
-    : initialCadets;
+    : cadetsWithArchiveFilter;
 
   const searchedCadets = searchQuery.trim() !== ''
     ? filteredCadets.filter(cadet => 
@@ -425,6 +457,15 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
         (cadet.rank || '').toLowerCase().includes(searchQuery.toLowerCase())
       )
     : filteredCadets;
+
+  const matchingArchivedCount = searchQuery.trim() !== '' && !showArchived
+    ? (initialCadets || []).filter(cadet => {
+        const matchesSearch = (cadet.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (cadet.rank || '').toLowerCase().includes(searchQuery.toLowerCase());
+        const hasArchived = (cadet.offenses || []).some(isOffenseArchived);
+        return matchesSearch && hasArchived;
+      }).length
+    : 0;
 
   const sortedCadets = [...searchedCadets].map(cadet => {
     let activeOffenseCount = 0;
@@ -776,91 +817,174 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
           </button>
         </div>
       )}
-      {/* Search Input Bar */}
+      {/* Search Input Bar & Controls */}
       <div style={{ 
-        position: 'relative', 
-        width: '100%', 
+        display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        alignItems: isMobile ? 'stretch' : 'center',
+        justifyContent: 'space-between',
+        gap: '0.75rem',
         marginBottom: '1.5rem',
         marginTop: '0.5rem',
         animation: 'fadeIn 0.4s ease'
       }}>
-        <div style={{
-          position: 'absolute',
-          left: '1rem',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          color: 'var(--text-secondary)',
-          display: 'flex',
-          alignItems: 'center',
-          pointerEvents: 'none'
-        }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-        </div>
-        <input 
-          type="text"
-          placeholder="Search cadet by name or rank (e.g. kurtr, 1CL, Cdt)..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '0.85rem 1rem 0.85rem 2.8rem',
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-color)',
-            borderRadius: '12px',
-            color: 'var(--text-primary)',
-            fontSize: '0.95rem',
-            fontWeight: 500,
-            outline: 'none',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
-            transition: 'all 0.25s ease'
-          }}
-          onFocus={(e) => {
-            e.currentTarget.style.borderColor = 'var(--gold-primary)';
-            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(212, 175, 55, 0.15)';
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.borderColor = 'var(--border-color)';
-            e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.02)';
-          }}
-        />
-        {searchQuery && (
-          <button
-            onClick={() => setSearchQuery('')}
-            style={{
-              position: 'absolute',
-              right: '1rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'none',
-              border: 'none',
-              color: 'var(--text-secondary)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0.2rem',
-              borderRadius: '50%'
-            }}
-            onMouseOver={(e) => { e.currentTarget.style.color = '#ef4444'; }}
-            onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
+        <div style={{ position: 'relative', flex: 1 }}>
+          <div style={{
+            position: 'absolute',
+            left: '1rem',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: 'var(--text-secondary)',
+            display: 'flex',
+            alignItems: 'center',
+            pointerEvents: 'none'
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-          </button>
-        )}
+          </div>
+          <input 
+            type="text"
+            placeholder="Search cadet by name or rank (e.g. kurtr, 1CL, Cdt)..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '0.85rem 1rem 0.85rem 2.8rem',
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '12px',
+              color: 'var(--text-primary)',
+              fontSize: '0.95rem',
+              fontWeight: 500,
+              outline: 'none',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
+              transition: 'all 0.25s ease'
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'var(--gold-primary)';
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(212, 175, 55, 0.15)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border-color)';
+              e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.02)';
+            }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              style={{
+                position: 'absolute',
+                right: '1rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0.2rem',
+                borderRadius: '50%'
+              }}
+              onMouseOver={(e) => { e.currentTarget.style.color = '#ef4444'; }}
+              onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          )}
+        </div>
+
+        <button
+          onClick={() => setShowArchived(prev => !prev)}
+          style={{
+            padding: '0.85rem 1.25rem',
+            background: showArchived ? 'rgba(59, 130, 246, 0.15)' : 'var(--bg-secondary)',
+            border: showArchived ? '1px solid #3b82f6' : '1px solid var(--border-color)',
+            color: showArchived ? '#3b82f6' : 'var(--text-secondary)',
+            borderRadius: '12px',
+            fontSize: '0.85rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            whiteSpace: 'nowrap',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+          }}
+          onMouseOver={(e) => {
+            if (!showArchived) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+          }}
+          onMouseOut={(e) => {
+            if (!showArchived) e.currentTarget.style.background = 'var(--bg-secondary)';
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="21 8 21 21 3 21 3 8"></polyline>
+            <rect x="1" y="3" width="22" height="5"></rect>
+            <line x1="10" y1="12" x2="14" y2="12"></line>
+          </svg>
+          {showArchived ? 'Hide Archived Offenses' : 'Show Archived Offenses'}
+          {totalArchivedCount > 0 && (
+            <span style={{
+              background: showArchived ? '#3b82f6' : 'rgba(128,128,128,0.2)',
+              color: showArchived ? '#ffffff' : 'var(--text-primary)',
+              padding: '0.15rem 0.5rem',
+              borderRadius: '10px',
+              fontSize: '0.75rem',
+              fontWeight: 800
+            }}>
+              {totalArchivedCount}
+            </span>
+          )}
+        </button>
       </div>
 
       {sortedCadets.length === 0 ? (
         <div className="card" style={{ padding: '3rem', textAlign: 'center', marginTop: '1rem', width: '100%' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🔍</div>
-          <h3 style={{ fontSize: '1.15rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 700 }}>No Cadets Match Your Search</h3>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>{searchQuery ? '🔍' : '🎉'}</div>
+          <h3 style={{ fontSize: '1.15rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 700 }}>
+            {searchQuery ? 'No Cadets Match Your Search' : 'No Active Punishments'}
+          </h3>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-            We couldn't find any results for "{searchQuery}". Check the spelling or try searching by rank.
+            {searchQuery
+              ? (matchingArchivedCount > 0
+                  ? `We found ${matchingArchivedCount} archived record${matchingArchivedCount > 1 ? 's' : ''} matching "${searchQuery}", but archived offenses are currently hidden.`
+                  : `We couldn't find any results for "${searchQuery}". Check the spelling or try searching by rank.`)
+              : 'All active cadet punishments are currently clear.'}
           </p>
+          {((totalArchivedCount > 0 && !showArchived) || (matchingArchivedCount > 0 && !showArchived)) && (
+            <button
+              onClick={() => setShowArchived(true)}
+              style={{
+                marginTop: '1rem',
+                padding: '0.6rem 1.2rem',
+                background: 'rgba(59, 130, 246, 0.15)',
+                border: '1px solid #3b82f6',
+                color: '#3b82f6',
+                borderRadius: '8px',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                <rect x="1" y="3" width="22" height="5"></rect>
+                <line x1="10" y1="12" x2="14" y2="12"></line>
+              </svg>
+              Show Archived Offenses ({totalArchivedCount})
+            </button>
+          )}
         </div>
       ) : isMobile ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1rem', width: '100%' }}>
@@ -1087,6 +1211,11 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                                 ) : (
                                   <span style={{ fontSize: '0.6rem', padding: '1px 5px', borderRadius: '4px', background: 'rgba(128, 128, 128, 0.15)', color: 'var(--text-secondary)' }}>
                                     1st Term (exempt)
+                                  </span>
+                                )}
+                                {isOffenseArchived(offense) && (
+                                  <span style={{ fontSize: '0.6rem', padding: '1px 5px', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', fontWeight: 700 }}>
+                                    📦 ARCHIVED
                                   </span>
                                 )}
                               </div>
@@ -1404,6 +1533,11 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                                     </span>
                                   )}
                                   {isOffInactive && <span style={{ marginLeft: '0.5rem', color: '#10b981', fontWeight: 800 }}>✓ INACTIVE</span>}
+                                  {isOffenseArchived(offense) && (
+                                    <span style={{ marginLeft: '0.4rem', fontSize: '0.65rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', fontWeight: 700 }}>
+                                      📦 ARCHIVED
+                                    </span>
+                                  )}
                                 </div>
                                 <div style={{ fontSize: '0.7rem', color: classColor, fontWeight: 800 }}>Class {offense.classOfOffense}</div>
                               </div>

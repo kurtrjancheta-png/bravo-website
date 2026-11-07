@@ -79,8 +79,15 @@ export default async function LeaderboardsPage() {
     });
   }
 
+  const classMap = {};
+  fullRoster.forEach(c => {
+    if (c.surname && c.class) {
+      classMap[c.surname] = c.class;
+    }
+  });
+
   // 2. Physical: Top Performers from PFT Data
-  const { data: pftParsedData, topPerformers: pftTopPerformers } = parsePFTData(pft1Rows, genderMap);
+  const { data: pftParsedData, topPerformers: pftTopPerformers } = parsePFTData(pft1Rows, genderMap, classMap);
 
   const buildPhysicalLeaderboard = (cls) => {
     const passed = pftParsedData[cls]?.passed || [];
