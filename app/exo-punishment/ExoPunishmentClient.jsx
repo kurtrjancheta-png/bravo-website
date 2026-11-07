@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth } from '../AuthContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
 
@@ -19,7 +19,7 @@ function getConfinementStats(startStr, endStr) {
   const start = parseGoogleDate(startStr);
   const end = parseGoogleDate(endStr);
   
-  if (!start || !end) return { total: 0, remaining: 0, percentage: 0, startText: '-', endText: '-' };
+  if (!start || !end) return { total: 0, remaining: 0, percentage: 0, startText: '-', endText: '-', urgency: 'NONE', urgencyText: '' };
   
   const today = new Date();
   const totalMs = end.getTime() - start.getTime();
@@ -32,13 +32,31 @@ function getConfinementStats(startStr, endStr) {
   if (remainingDays > totalDays) remainingDays = totalDays;
   
   let percentage = ((totalDays - remainingDays) / totalDays) * 100;
+
+  let urgency = 'NONE';
+  let urgencyText = '';
+  if (remainingDays === 0) {
+    urgency = 'COMPLETED';
+    urgencyText = 'Served';
+  } else if (remainingDays === 1) {
+    urgency = 'CRITICAL';
+    urgencyText = 'Ends in 24h';
+  } else if (remainingDays <= 3) {
+    urgency = 'SOON';
+    urgencyText = `${remainingDays}d left`;
+  } else {
+    urgency = 'ACTIVE';
+    urgencyText = `${remainingDays}d left`;
+  }
   
   return {
     total: totalDays,
     remaining: remainingDays,
     percentage: percentage,
     startText: start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    endText: end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    endText: end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    urgency,
+    urgencyText
   };
 }
 
@@ -327,6 +345,11 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
   const [hoveredItem, setHoveredItem] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showArchived, setShowArchived] = useState(false);
+  const [classFilter, setClassFilter] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [sortBy, setSortBy] = useState('active');
+  const [copiedRollCall, setCopiedRollCall] = useState(false);
+  const [selectedOffenseModal, setSelectedOffenseModal] = useState(null);
   const { adminUser } = useAuth();
 
   const chartData = (violationsOverTime || [])
@@ -428,6 +451,147 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
     return acc + (cadet.offenses || []).filter(isOffenseArchived).length;
   }, 0);
 
+  // Executive KPI stats aggregated across all company cadets
+  const kpiStats = useMemo(() => {
+    let activeCadetsCount = 0;
+    let confinedCadetsCount = 0;
+    let totalTouringRemaining = 0;
+    let criticalDemeritsCount = 0;
+
+    (initialCadets || []).forEach(cadet => {
+      let isCadetActive = false;
+      let isCadetConfined = false;
+      let cadetTourRemaining = 0;
+
+      const maxDem = getMaxDemerits(cadet.rank);
+      const accDem = Math.max(0, (cadet.totalDemerits || 0) - (cadet.totalMerits || 0));
+      if (maxDem > 0 && (accDem / maxDem) >= 0.8) {
+        criticalDemeritsCount++;
+      }
+
+      (cadet.offenses || []).forEach(off => {
+        if (off.isConfined && off.confStart && off.confEnd) {
+          const stats = getConfinementStats(off.confStart, off.confEnd);
+          if (stats.remaining > 0) {
+            isCadetConfined = true;
+          }
+        }
+        const progress = (off.tourServed || 0) + (off.tourConverted || 0);
+        const rem = Math.max(0, (off.tourTotal || 0) - progress);
+        cadetTourRemaining += rem;
+
+        const stats = getConfinementStats(off.confStart, off.confEnd);
+        const confDone = !off.isConfined || (stats.total > 0 && stats.remaining === 0);
+        const tourDone = (off.tourTotal || 0) === 0 || progress >= (off.tourTotal || 0);
+        if (!confDone || !tourDone) {
+          isCadetActive = true;
+        }
+      });
+
+      if (isCadetActive) activeCadetsCount++;
+      if (isCadetConfined) confinedCadetsCount++;
+      totalTouringRemaining += cadetTourRemaining;
+    });
+
+    return {
+      activeCadetsCount,
+      confinedCadetsCount,
+      totalTouringRemaining,
+      criticalDemeritsCount
+    };
+  }, [initialCadets]);
+
+  // One-click CCQ / Touring roll-call clipboard generator
+  const handleCopyRollCall = () => {
+    const todayStr = new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+    const nowTimeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    let text = `========================================\n`;
+    text += `🎖️ BRAVO CO. PUNISHMENT MONITORING ROSTER\n`;
+    text += `📅 As of: ${todayStr} ${nowTimeStr}\n`;
+    text += `========================================\n\n`;
+
+    // Confined Cadets
+    const confinedList = [];
+    (initialCadets || []).forEach(c => {
+      const activeConf = (c.offenses || []).find(o => {
+        if (!o.isConfined || !o.confStart || !o.confEnd) return false;
+        const st = getConfinementStats(o.confStart, o.confEnd);
+        return st.remaining > 0;
+      });
+      if (activeConf) {
+        const st = getConfinementStats(activeConf.confStart, activeConf.confEnd);
+        confinedList.push({ rank: c.rank, name: c.name, remaining: st.remaining, endText: st.endText });
+      }
+    });
+
+    text += `🔒 CURRENTLY CONFINED CADETS (${confinedList.length}):\n`;
+    if (confinedList.length === 0) {
+      text += `   (None - Confinement list is clear)\n`;
+    } else {
+      confinedList.forEach((c, idx) => {
+        text += `   ${idx + 1}. CDT ${c.rank} ${c.name} - ${c.remaining} days left (until ${c.endText})\n`;
+      });
+    }
+
+    // Touring Cadets
+    const touringList = [];
+    (initialCadets || []).forEach(c => {
+      let rem = 0;
+      let tot = 0;
+      let srv = 0;
+      (c.offenses || []).forEach(o => {
+        const p = (o.tourServed || 0) + (o.tourConverted || 0);
+        rem += Math.max(0, (o.tourTotal || 0) - p);
+        tot += (o.tourTotal || 0);
+        srv += p;
+      });
+      if (rem > 0) {
+        touringList.push({ rank: c.rank, name: c.name, rem, tot, srv });
+      }
+    });
+    touringList.sort((a, b) => b.rem - a.rem);
+
+    text += `\n🏃 ACTIVE TOURING CADETS (${touringList.length}):\n`;
+    if (touringList.length === 0) {
+      text += `   (None - Touring list is clear)\n`;
+    } else {
+      touringList.forEach((c, idx) => {
+        text += `   ${idx + 1}. CDT ${c.rank} ${c.name} - ${c.rem} hrs rem (Served: ${c.srv}/${c.tot} hrs)\n`;
+      });
+    }
+
+    // High Risk Demerits
+    const criticalList = [];
+    (initialCadets || []).forEach(c => {
+      const maxDem = getMaxDemerits(c.rank);
+      const acc = Math.max(0, (c.totalDemerits || 0) - (c.totalMerits || 0));
+      if (maxDem > 0 && (acc / maxDem) >= 0.8) {
+        criticalList.push({ rank: c.rank, name: c.name, acc, maxDem, pct: ((acc / maxDem) * 100).toFixed(0) });
+      }
+    });
+    criticalList.sort((a, b) => (b.acc / b.maxDem) - (a.acc / a.maxDem));
+
+    text += `\n⚠️ HIGH-RISK DEMERITS (≥80% Limit) (${criticalList.length}):\n`;
+    if (criticalList.length === 0) {
+      text += `   (None - No cadets in critical demerit zone)\n`;
+    } else {
+      criticalList.forEach((c, idx) => {
+        text += `   ${idx + 1}. CDT ${c.rank} ${c.name} - ${c.acc.toFixed(1)}/${c.maxDem} dem (${c.pct}% used)\n`;
+      });
+    }
+
+    text += `\n========================================\n`;
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        setCopiedRollCall(true);
+        setTimeout(() => setCopiedRollCall(false), 2500);
+      });
+    }
+  };
+
+  // 1. Archive filter
   const cadetsWithArchiveFilter = (initialCadets || []).map(cadet => {
     const visibleOffenses = showArchived
       ? cadet.offenses
@@ -440,7 +604,8 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
     };
   }).filter(Boolean);
 
-  const filteredCadets = selectedDate
+  // 2. Date filter (from chart click)
+  const dateFilteredCadets = selectedDate
     ? cadetsWithArchiveFilter.map(cadet => {
         const matchingOffenses = cadet.offenses.filter(off => off.date === selectedDate);
         if (matchingOffenses.length === 0) return null;
@@ -451,12 +616,46 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
       }).filter(Boolean)
     : cadetsWithArchiveFilter;
 
+  // 3. Class filter
+  const classFilteredCadets = classFilter === 'ALL'
+    ? dateFilteredCadets
+    : dateFilteredCadets.filter(cadet => {
+        const r = (cadet.rank || '').toUpperCase();
+        return r.includes(classFilter);
+      });
+
+  // 4. Status filter
+  const statusFilteredCadets = statusFilter === 'ALL'
+    ? classFilteredCadets
+    : classFilteredCadets.filter(cadet => {
+        if (statusFilter === 'CONFINED') {
+          return (cadet.offenses || []).some(off => {
+            if (!off.isConfined || !off.confStart || !off.confEnd) return false;
+            const stats = getConfinementStats(off.confStart, off.confEnd);
+            return stats.remaining > 0;
+          });
+        }
+        if (statusFilter === 'TOURING') {
+          return (cadet.offenses || []).some(off => {
+            const progress = (off.tourServed || 0) + (off.tourConverted || 0);
+            return (off.tourTotal || 0) > progress;
+          });
+        }
+        if (statusFilter === 'CRITICAL') {
+          const maxDem = getMaxDemerits(cadet.rank);
+          const accDem = Math.max(0, (cadet.totalDemerits || 0) - (cadet.totalMerits || 0));
+          return maxDem > 0 && (accDem / maxDem) >= 0.8;
+        }
+        return true;
+      });
+
+  // 5. Free-text search filter
   const searchedCadets = searchQuery.trim() !== ''
-    ? filteredCadets.filter(cadet => 
+    ? statusFilteredCadets.filter(cadet => 
         (cadet.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (cadet.rank || '').toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : filteredCadets;
+    : statusFilteredCadets;
 
   const matchingArchivedCount = searchQuery.trim() !== '' && !showArchived
     ? (initialCadets || []).filter(cadet => {
@@ -467,9 +666,13 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
       }).length
     : 0;
 
+  // 6. Chain Sorting
   const sortedCadets = [...searchedCadets].map(cadet => {
     let activeOffenseCount = 0;
-    cadet.offenses.forEach(off => {
+    let totalRemainingTour = 0;
+    let maxConfinementDaysLeft = 0;
+
+    (cadet.offenses || []).forEach(off => {
       const offConfStats = getConfinementStats(off.confStart, off.confEnd);
       const offConfCompleted = !off.isConfined || (offConfStats.total > 0 && offConfStats.remaining === 0);
       const offTourProgress = (off.tourServed || 0) + (off.tourConverted || 0);
@@ -477,9 +680,38 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
       if (!(offConfCompleted && offTourCompleted)) {
         activeOffenseCount++;
       }
+      totalRemainingTour += Math.max(0, (off.tourTotal || 0) - offTourProgress);
+      if (off.isConfined && offConfStats.remaining > maxConfinementDaysLeft) {
+        maxConfinementDaysLeft = offConfStats.remaining;
+      }
     });
-    return { ...cadet, activeOffenseCount };
+
+    const maxDem = getMaxDemerits(cadet.rank);
+    const accDem = Math.max(0, (cadet.totalDemerits || 0) - (cadet.totalMerits || 0));
+    const demeritPct = maxDem > 0 ? (accDem / maxDem) : 0;
+
+    return { 
+      ...cadet, 
+      activeOffenseCount,
+      totalRemainingTour,
+      maxConfinementDaysLeft,
+      demeritPct,
+      accDem
+    };
   }).sort((a, b) => {
+    if (sortBy === 'tourRemaining') {
+      return b.totalRemainingTour - a.totalRemainingTour;
+    }
+    if (sortBy === 'demerits') {
+      return b.demeritPct - a.demeritPct || b.accDem - a.accDem;
+    }
+    if (sortBy === 'confinement') {
+      return b.maxConfinementDaysLeft - a.maxConfinementDaysLeft;
+    }
+    if (sortBy === 'name') {
+      return (a.name || '').localeCompare(b.name || '');
+    }
+    // Default: active offenses first
     const aActive = a.activeOffenseCount > 0;
     const bActive = b.activeOffenseCount > 0;
     if (aActive && !bActive) return -1;
@@ -519,6 +751,135 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
           </a>
         </div>
       )}
+
+      {/* Executive KPI Summary Cards */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+        gap: '1rem',
+        marginBottom: '1.5rem',
+        width: '100%'
+      }}>
+        {/* Card 1: Active Cadets */}
+        <div 
+          onClick={() => setStatusFilter(prev => prev === 'ALL' ? 'ALL' : 'ALL')}
+          style={{
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '14px',
+            padding: '1rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.35rem',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+          onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
+          onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+        >
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: '#3b82f6' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Active Cadets</span>
+            <span style={{ fontSize: '1.25rem' }}>🛡️</span>
+          </div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--text-primary)' }}>
+            {kpiStats.activeCadetsCount}
+          </div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Serving Tour / Confinement</div>
+        </div>
+
+        {/* Card 2: Currently Confined */}
+        <div 
+          onClick={() => setStatusFilter(prev => prev === 'CONFINED' ? 'ALL' : 'CONFINED')}
+          style={{
+            background: statusFilter === 'CONFINED' ? 'rgba(239, 68, 68, 0.15)' : 'var(--bg-secondary)',
+            border: statusFilter === 'CONFINED' ? '1px solid #ef4444' : '1px solid var(--border-color)',
+            borderRadius: '14px',
+            padding: '1rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.35rem',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+          onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
+          onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+        >
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: '#ef4444' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase' }}>Confined</span>
+            <span style={{ fontSize: '1.25rem' }}>🔒</span>
+          </div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#ef4444' }}>
+            {kpiStats.confinedCadetsCount}
+          </div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Under Room / Post Confinement</div>
+        </div>
+
+        {/* Card 3: Touring Remaining */}
+        <div 
+          onClick={() => setStatusFilter(prev => prev === 'TOURING' ? 'ALL' : 'TOURING')}
+          style={{
+            background: statusFilter === 'TOURING' ? 'rgba(245, 158, 11, 0.15)' : 'var(--bg-secondary)',
+            border: statusFilter === 'TOURING' ? '1px solid #f59e0b' : '1px solid var(--border-color)',
+            borderRadius: '14px',
+            padding: '1rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.35rem',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+          onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
+          onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+        >
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: '#f59e0b' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase' }}>Touring Left</span>
+            <span style={{ fontSize: '1.25rem' }}>🏃</span>
+          </div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#f59e0b' }}>
+            {kpiStats.totalTouringRemaining} <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>hrs</span>
+          </div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Pending Touring Duty</div>
+        </div>
+
+        {/* Card 4: Critical Demerits */}
+        <div 
+          onClick={() => setStatusFilter(prev => prev === 'CRITICAL' ? 'ALL' : 'CRITICAL')}
+          style={{
+            background: statusFilter === 'CRITICAL' ? 'rgba(220, 38, 38, 0.15)' : 'var(--bg-secondary)',
+            border: statusFilter === 'CRITICAL' ? '1px solid #dc2626' : '1px solid var(--border-color)',
+            borderRadius: '14px',
+            padding: '1rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.35rem',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+          onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
+          onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+        >
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: '#dc2626' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#dc2626', textTransform: 'uppercase' }}>Critical (≥80%)</span>
+            <span style={{ fontSize: '1.25rem' }}>⚠️</span>
+          </div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#dc2626' }}>
+            {kpiStats.criticalDemeritsCount}
+          </div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Close to Turnback Threshold</div>
+        </div>
+      </div>
 
       {((chartData && chartData.length > 0) || (breakdownData && breakdownData.length > 0)) && (
         <div style={{
@@ -899,6 +1260,53 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
           )}
         </div>
 
+        {/* Copy CCQ Roster Button */}
+        <button
+          onClick={handleCopyRollCall}
+          style={{
+            padding: '0.85rem 1.25rem',
+            background: copiedRollCall ? 'rgba(16, 185, 129, 0.2)' : 'var(--bg-secondary)',
+            border: copiedRollCall ? '1px solid #10b981' : '1px solid var(--border-color)',
+            color: copiedRollCall ? '#10b981' : 'var(--text-secondary)',
+            borderRadius: '12px',
+            fontSize: '0.85rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            whiteSpace: 'nowrap',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+          }}
+          onMouseOver={(e) => {
+            if (!copiedRollCall) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+          }}
+          onMouseOut={(e) => {
+            if (!copiedRollCall) e.currentTarget.style.background = 'var(--bg-secondary)';
+          }}
+          title="Copy active touring and confinement muster to clipboard"
+        >
+          {copiedRollCall ? (
+            <>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Copied Roster!
+            </>
+          ) : (
+            <>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              Copy CCQ Roster
+            </>
+          )}
+        </button>
+
+        {/* Show / Hide Archived Offenses Button */}
         <button
           onClick={() => setShowArchived(prev => !prev)}
           style={{
@@ -944,6 +1352,135 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
             </span>
           )}
         </button>
+      </div>
+
+      {/* Row 2: Filters & Sorting Toolbar */}
+      <div style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '0.75rem',
+        marginBottom: '1.5rem',
+        background: 'var(--bg-secondary)',
+        border: '1px solid var(--border-color)',
+        borderRadius: '12px',
+        padding: '0.75rem 1rem'
+      }}>
+        {/* Class Chips */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', marginRight: '4px' }}>CLASS:</span>
+          {['ALL', '1CL', '2CL', '3CL', '4CL'].map(cls => {
+            const isSelected = classFilter === cls;
+            return (
+              <button
+                key={cls}
+                onClick={() => setClassFilter(cls)}
+                style={{
+                  padding: '0.3rem 0.7rem',
+                  borderRadius: '20px',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  border: isSelected ? '1px solid #3b82f6' : '1px solid var(--border-color)',
+                  background: isSelected ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.03)',
+                  color: isSelected ? '#60a5fa' : 'var(--text-secondary)',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                {cls}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Status Chips */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', marginRight: '4px' }}>STATUS:</span>
+          {[
+            { id: 'ALL', label: 'All' },
+            { id: 'CONFINED', label: '🔒 Confined' },
+            { id: 'TOURING', label: '🏃 Touring' },
+            { id: 'CRITICAL', label: '⚠️ Critical' }
+          ].map(st => {
+            const isSelected = statusFilter === st.id;
+            return (
+              <button
+                key={st.id}
+                onClick={() => setStatusFilter(st.id)}
+                style={{
+                  padding: '0.3rem 0.7rem',
+                  borderRadius: '20px',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  border: isSelected 
+                    ? (st.id === 'CONFINED' ? '1px solid #ef4444' : st.id === 'TOURING' ? '1px solid #f59e0b' : st.id === 'CRITICAL' ? '1px solid #dc2626' : '1px solid #3b82f6')
+                    : '1px solid var(--border-color)',
+                  background: isSelected 
+                    ? (st.id === 'CONFINED' ? 'rgba(239, 68, 68, 0.2)' : st.id === 'TOURING' ? 'rgba(245, 158, 11, 0.2)' : st.id === 'CRITICAL' ? 'rgba(220, 38, 38, 0.2)' : 'rgba(59, 130, 246, 0.2)')
+                    : 'rgba(255, 255, 255, 0.03)',
+                  color: isSelected 
+                    ? (st.id === 'CONFINED' ? '#f87171' : st.id === 'TOURING' ? '#fbbf24' : st.id === 'CRITICAL' ? '#f87171' : '#60a5fa')
+                    : 'var(--text-secondary)',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                {st.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Sorting Dropdown & Reset */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>SORT:</span>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            style={{
+              padding: '0.35rem 0.75rem',
+              borderRadius: '8px',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              background: 'var(--bg-primary)',
+              border: '1px solid var(--border-color)',
+              color: 'var(--text-primary)',
+              cursor: 'pointer',
+              outline: 'none'
+            }}
+          >
+            <option value="active">Active First</option>
+            <option value="tourRemaining">Most Touring Left</option>
+            <option value="demerits">Highest Demerits</option>
+            <option value="confinement">Confinement Left</option>
+            <option value="name">Name (A-Z)</option>
+          </select>
+
+          {(classFilter !== 'ALL' || statusFilter !== 'ALL' || sortBy !== 'active' || searchQuery !== '') && (
+            <button
+              onClick={() => {
+                setClassFilter('ALL');
+                setStatusFilter('ALL');
+                setSortBy('active');
+                setSearchQuery('');
+              }}
+              style={{
+                padding: '0.3rem 0.6rem',
+                borderRadius: '8px',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                color: '#ef4444',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              Reset ✕
+            </button>
+          )}
+        </div>
       </div>
 
       {sortedCadets.length === 0 ? (
@@ -1192,14 +1729,23 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                         })();
 
                         return (
-                          <div key={i} style={{ 
-                            background: 'var(--bg-primary)', 
-                            padding: '0.6rem', 
-                            borderRadius: '8px', 
-                            borderLeft: `3px solid ${classColor}`,
-                            border: '1px solid var(--border-color)',
-                            opacity: isOffInactive ? 0.6 : 1
-                          }}>
+                          <div 
+                            key={i} 
+                            onClick={() => setSelectedOffenseModal({ cadet, offense })}
+                            style={{ 
+                              background: 'var(--bg-primary)', 
+                              padding: '0.65rem', 
+                              borderRadius: '8px', 
+                              borderLeft: `3px solid ${classColor}`,
+                              border: '1px solid var(--border-color)',
+                              opacity: isOffInactive ? 0.6 : 1,
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease'
+                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--gold-primary)'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; }}
+                            title="Click to view full offense dossier"
+                          >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
                               <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                                 <span style={{ fontSize: '0.75rem' }}>{getOffenseEmoji(offense.natureOfOffense)}</span>
@@ -1218,10 +1764,23 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                                     📦 ARCHIVED
                                   </span>
                                 )}
+                                {offense.reference && (
+                                  <span style={{ fontSize: '0.6rem', padding: '1px 5px', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.12)', color: '#60a5fa', border: '1px solid rgba(59, 130, 246, 0.25)', fontWeight: 600 }}>
+                                    📜 {offense.reference}
+                                  </span>
+                                )}
                               </div>
-                              <div style={{ fontSize: '0.65rem', color: classColor, fontWeight: 800 }}>Class {offense.classOfOffense}</div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <span style={{ fontSize: '0.65rem', color: classColor, fontWeight: 800 }}>Class {offense.classOfOffense}</span>
+                                <span style={{ fontSize: '0.75rem', opacity: 0.5 }}>🔍</span>
+                              </div>
                             </div>
                             <div style={{ fontSize: '0.8rem', color: 'var(--text-primary)', lineHeight: 1.3 }}>{offense.description}</div>
+                            {offense.remarks && (
+                              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontStyle: 'italic', marginTop: '0.25rem', borderLeft: '2px solid rgba(212, 175, 55, 0.4)', paddingLeft: '0.4rem' }}>
+                                <span style={{ color: 'var(--gold-primary)', fontWeight: 600 }}>Remarks: </span>{offense.remarks}
+                              </div>
+                            )}
                           </div>
                         );
                       })}
@@ -1257,8 +1816,22 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                   {/* Confinement Progress */}
                   {displayConfStats.total > 0 && (
                     <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
-                        <span>CONFINEMENT ({displayConfStats.remaining === 0 ? 'COMPLETED' : 'CONFINED'})</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span>CONFINEMENT ({displayConfStats.remaining === 0 ? 'COMPLETED' : 'CONFINED'})</span>
+                          {displayConfStats.remaining > 0 && (
+                            <span style={{ 
+                              background: displayConfStats.remaining <= 3 ? 'rgba(239, 68, 68, 0.25)' : 'rgba(255,255,255,0.1)',
+                              color: displayConfStats.remaining <= 3 ? '#ff4d4f' : 'var(--text-primary)',
+                              padding: '1px 5px',
+                              borderRadius: '4px',
+                              fontSize: '0.65rem',
+                              fontWeight: 700
+                            }}>
+                              ⏳ {displayConfStats.remaining === 1 ? 'Ends in 24h' : `${displayConfStats.remaining}d left`}
+                            </span>
+                          )}
+                        </div>
                         <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>
                           {displayConfStats.served} / {displayConfStats.total} days
                         </span>
@@ -1512,13 +2085,22 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                           })();
 
                           return (
-                            <div key={i} style={{ 
-                              background: isOffInactive ? 'rgba(128,128,128,0.05)' : 'rgba(128,128,128,0.1)', 
-                              padding: '0.75rem', 
-                              borderRadius: '8px', 
-                              borderLeft: `3px solid ${classColor}`,
-                              opacity: isOffInactive ? 0.6 : 1
-                            }}>
+                            <div 
+                              key={i} 
+                              onClick={() => setSelectedOffenseModal({ cadet, offense })}
+                              style={{ 
+                                background: isOffInactive ? 'rgba(128,128,128,0.05)' : 'rgba(128,128,128,0.1)', 
+                                padding: '0.75rem', 
+                                borderRadius: '8px', 
+                                borderLeft: `3px solid ${classColor}`,
+                                opacity: isOffInactive ? 0.6 : 1,
+                                cursor: 'pointer',
+                                transition: 'all 0.15s ease'
+                              }}
+                              onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; }}
+                              onMouseOut={(e) => { e.currentTarget.style.background = isOffInactive ? 'rgba(128,128,128,0.05)' : 'rgba(128,128,128,0.1)'; }}
+                              title="Click to view full offense dossier"
+                            >
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
                                 <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                                   <span style={{ fontSize: '0.8rem' }}>{getOffenseEmoji(offense.natureOfOffense)}</span>
@@ -1538,10 +2120,23 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                                       📦 ARCHIVED
                                     </span>
                                   )}
+                                  {offense.reference && (
+                                    <span style={{ marginLeft: '0.4rem', fontSize: '0.65rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.12)', color: '#60a5fa', border: '1px solid rgba(59, 130, 246, 0.25)', fontWeight: 600 }}>
+                                      📜 {offense.reference}
+                                    </span>
+                                  )}
                                 </div>
-                                <div style={{ fontSize: '0.7rem', color: classColor, fontWeight: 800 }}>Class {offense.classOfOffense}</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <span style={{ fontSize: '0.7rem', color: classColor, fontWeight: 800 }}>Class {offense.classOfOffense}</span>
+                                  <span style={{ fontSize: '0.75rem', opacity: 0.5 }}>🔍</span>
+                                </div>
                               </div>
                               <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', lineHeight: 1.4 }}>{offense.description}</div>
+                              {offense.remarks && (
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontStyle: 'italic', marginTop: '0.35rem', borderLeft: '2px solid rgba(212, 175, 55, 0.4)', paddingLeft: '0.5rem' }}>
+                                  <span style={{ color: 'var(--gold-primary)', fontWeight: 600 }}>Remarks: </span>{offense.remarks}
+                                </div>
+                              )}
                             </div>
                           );
                         })}
@@ -1588,8 +2183,17 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                             🔓 COMPLETED
                           </div>
                         ) : (
-                          <div style={{ display: 'inline-block', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.05em', border: '1px solid rgba(239,68,68,0.3)', marginBottom: '0.75rem' }}>
-                            🔒 CONFINED
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.05em', border: '1px solid rgba(239,68,68,0.3)', marginBottom: '0.75rem' }}>
+                            <span>🔒 CONFINED</span>
+                            <span style={{ 
+                              background: displayConfStats.remaining <= 3 ? 'rgba(239, 68, 68, 0.25)' : 'rgba(255,255,255,0.1)',
+                              color: displayConfStats.remaining <= 3 ? '#ff4d4f' : '#ffffff',
+                              padding: '1px 5px',
+                              borderRadius: '3px',
+                              fontSize: '0.65rem'
+                            }}>
+                              ⏳ {displayConfStats.remaining === 1 ? 'Ends in 24h' : `${displayConfStats.remaining}d left`}
+                            </span>
                           </div>
                         )}
                         
@@ -1672,6 +2276,271 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
         }
       `}} />
         </>
+      )}
+
+      {/* Offense Detail Dossier Modal */}
+      {selectedOffenseModal && (
+        <div 
+          onClick={() => setSelectedOffenseModal(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.8)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1rem',
+            animation: 'fadeIn 0.2s ease'
+          }}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '16px',
+              maxWidth: '560px',
+              width: '100%',
+              padding: '1.5rem',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem',
+              maxHeight: '85vh',
+              overflowY: 'auto'
+            }}
+          >
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                {selectedOffenseModal.cadet.picture ? (
+                  <img 
+                    src={selectedOffenseModal.cadet.picture} 
+                    alt={selectedOffenseModal.cadet.name}
+                    style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(128,128,128,0.2)' }}
+                  />
+                ) : (
+                  <div style={{
+                    width: '48px', height: '48px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #1e3a8a)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', fontWeight: 800, color: '#ffffff'
+                  }}>
+                    {selectedOffenseModal.cadet.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                    {selectedOffenseModal.cadet.rank} {selectedOffenseModal.cadet.name}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                    Cadet Punishment Dossier
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setSelectedOffenseModal(null)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  padding: '0.3rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  borderRadius: '6px'
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.color = '#ef4444'; }}
+                onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+
+            {/* Offense Overview Tags */}
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              <span style={{
+                background: 'rgba(212, 175, 55, 0.15)',
+                color: 'var(--gold-primary)',
+                border: '1px solid rgba(212, 175, 55, 0.3)',
+                padding: '0.25rem 0.6rem',
+                borderRadius: '6px',
+                fontSize: '0.75rem',
+                fontWeight: 700
+              }}>
+                Class {selectedOffenseModal.offense.classOfOffense}
+              </span>
+
+              <span style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid var(--border-color)',
+                padding: '0.25rem 0.6rem',
+                borderRadius: '6px',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                color: 'var(--text-primary)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}>
+                <span>{getOffenseEmoji(selectedOffenseModal.offense.natureOfOffense)}</span>
+                <span>{selectedOffenseModal.offense.natureOfOffense || 'UNKNOWN'}</span>
+              </span>
+
+              {selectedOffenseModal.offense.isAwardedAfterSep11 ? (
+                <span style={{ fontSize: '0.7rem', padding: '0.25rem 0.6rem', borderRadius: '6px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', fontWeight: 700 }}>
+                  2nd Term (-{selectedOffenseModal.offense.demerits || 0} dem)
+                </span>
+              ) : (
+                <span style={{ fontSize: '0.7rem', padding: '0.25rem 0.6rem', borderRadius: '6px', background: 'rgba(128, 128, 128, 0.15)', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                  1st Term (exempt)
+                </span>
+              )}
+
+              {isOffenseArchived(selectedOffenseModal.offense) && (
+                <span style={{ fontSize: '0.7rem', padding: '0.25rem 0.6rem', borderRadius: '6px', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', fontWeight: 700 }}>
+                  📦 ARCHIVED
+                </span>
+              )}
+            </div>
+
+            {/* Special Order / Reference */}
+            {selectedOffenseModal.offense.reference && (
+              <div style={{
+                background: 'rgba(59, 130, 246, 0.08)',
+                border: '1px solid rgba(59, 130, 246, 0.25)',
+                borderRadius: '8px',
+                padding: '0.65rem 0.85rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span style={{ fontSize: '1.1rem' }}>📜</span>
+                <div>
+                  <div style={{ fontSize: '0.65rem', color: '#93c5fd', textTransform: 'uppercase', fontWeight: 700 }}>Special Order / Authority Reference</div>
+                  <div style={{ fontSize: '0.85rem', color: '#ffffff', fontWeight: 600 }}>{selectedOffenseModal.offense.reference}</div>
+                </div>
+              </div>
+            )}
+
+            {/* Description */}
+            <div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                Offense Specification
+              </div>
+              <div style={{
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                padding: '0.85rem',
+                fontSize: '0.85rem',
+                color: 'var(--text-primary)',
+                lineHeight: 1.5
+              }}>
+                {selectedOffenseModal.offense.description || 'No detailed description provided.'}
+              </div>
+            </div>
+
+            {/* Remarks */}
+            {selectedOffenseModal.offense.remarks && (
+              <div>
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                  Official Remarks
+                </div>
+                <div style={{
+                  background: 'rgba(212, 175, 55, 0.06)',
+                  borderLeft: '3px solid var(--gold-primary)',
+                  borderRadius: '4px',
+                  padding: '0.6rem 0.85rem',
+                  fontSize: '0.8rem',
+                  color: 'var(--text-primary)',
+                  fontStyle: 'italic'
+                }}>
+                  {selectedOffenseModal.offense.remarks}
+                </div>
+              </div>
+            )}
+
+            {/* Punishment Balance Breakdown */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '0.75rem',
+              borderTop: '1px solid var(--border-color)',
+              paddingTop: '0.75rem'
+            }}>
+              {/* Confinement Box */}
+              <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.75rem' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                  Confinement
+                </div>
+                {selectedOffenseModal.offense.isConfined && selectedOffenseModal.offense.confStart && selectedOffenseModal.offense.confEnd ? (() => {
+                  const st = getConfinementStats(selectedOffenseModal.offense.confStart, selectedOffenseModal.offense.confEnd);
+                  return (
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '0.25rem' }}>
+                        <span style={{ fontSize: '0.9rem', fontWeight: 800, color: st.remaining === 0 ? '#10b981' : '#ef4444' }}>
+                          {st.remaining === 0 ? '🔓 COMPLETED' : `🔒 ${st.remaining}d left`}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                        {st.startText} → {st.endText} ({st.served}/{st.total} days)
+                      </div>
+                    </div>
+                  );
+                })() : (
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>None awarded</div>
+                )}
+              </div>
+
+              {/* Touring Box */}
+              <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.75rem' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                  Touring Hours
+                </div>
+                {selectedOffenseModal.offense.tourTotal > 0 ? (() => {
+                  const p = (selectedOffenseModal.offense.tourServed || 0) + (selectedOffenseModal.offense.tourConverted || 0);
+                  const rem = Math.max(0, selectedOffenseModal.offense.tourTotal - p);
+                  return (
+                    <div>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: rem === 0 ? '#10b981' : '#f59e0b', marginBottom: '0.25rem' }}>
+                        {rem === 0 ? '🟢 COMPLETED' : `🏃 ${rem} hrs remaining`}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                        Total: {selectedOffenseModal.offense.tourTotal} | Served: {p} hrs
+                      </div>
+                    </div>
+                  );
+                })() : (
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>None awarded</div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Close Button */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem' }}>
+              <button
+                onClick={() => setSelectedOffenseModal(null)}
+                style={{
+                  padding: '0.45rem 1rem',
+                  borderRadius: '8px',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                Close Dossier
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
