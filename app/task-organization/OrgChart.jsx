@@ -299,16 +299,30 @@ export default function OrgChart({
                 </div>
               </div>
             )}
+
+            {!bnExo && bnOtherStaff.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: 'var(--text-secondary)' }}>
+                <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>No Battalion Staff Listed</p>
+                <p style={{ fontSize: '0.85rem', opacity: 0.75, marginTop: '0.25rem' }}>Designations containing "Battalion" will automatically populate here.</p>
+              </div>
+            )}
           </div>
         )}
 
         {activeTab === 'regiment' && (
           <div style={{ width: '100%', marginTop: '2rem' }}>
-            <div className="org-nodes">
-              {regimentStaff.map((staff, i) => (
-                <PersonCard key={`reg-staff-${i}`} person={staff} noConnector={true} />
-              ))}
-            </div>
+            {regimentStaff.length > 0 ? (
+              <div className="org-nodes">
+                {regimentStaff.map((staff, i) => (
+                  <PersonCard key={`reg-staff-${i}`} person={staff} noConnector={true} />
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: 'var(--text-secondary)' }}>
+                <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>No Regiment Staff Listed</p>
+                <p style={{ fontSize: '0.85rem', opacity: 0.75, marginTop: '0.25rem' }}>Designations containing "Regiment" will automatically populate here.</p>
+              </div>
+            )}
           </div>
         )}
       </div>
