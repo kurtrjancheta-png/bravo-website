@@ -4,59 +4,68 @@ import { getCadetImageUrl } from '../../lib/imageMatcher';
 import taskOrgFallback from '../../lib/taskOrgFallback.json';
 
 const TASK_ORG_SHEET_ID = process.env.TASK_ORG_SHEET_ID || process.env.ROSTER_SHEET_ID || '1HoTX11Y0Ojx_Ow99J93mRxNAOBpcGods55bpggYxAdk';
-// User specified gid=582148706 and tab names " TASK ORGANIZATION" / "TASK ORG"
 const TASK_ORG_GID = process.env.TASK_ORG_GID || '582148706';
-const SHEET_NAME = process.env.TASK_ORG_SHEET_NAME || ' TASK ORGANIZATION';
 
 // Force Next.js to revalidate this page every 30 seconds
 export const revalidate = 30;
 
+function isValidTaskOrgData(rows) {
+  if (!rows || !Array.isArray(rows) || rows.length === 0) return false;
+  return rows.some((row) => {
+    const text = Object.values(row).join(' ').toLowerCase();
+    return (
+      text.includes('commander') ||
+      text.includes('executive officer') ||
+      text.includes('first sergeant') ||
+      text.includes('platoon leader') ||
+      text.includes('(s1)') ||
+      text.includes('(s2)') ||
+      text.includes('(s3)') ||
+      text.includes('(s4)') ||
+      text.includes('personnel officer')
+    );
+  });
+}
+
 export default async function TaskOrganization() {
   let allRows = [];
 
-  // 1. Primary Strategy: Fetch by GID 582148706 via Google Visualization API
-  try {
-    allRows = await getSheetData(TASK_ORG_SHEET_ID, null, TASK_ORG_GID);
-  } catch (err) {
-    console.error('Error fetching Task Org by GID via GViz:', err);
-  }
+  // Priority 1: Query by specific tab names, starting with " TASK ORGANIZATION" (leading space) and "TASK ORG"
+  const candidateTabNames = [
+    ' TASK ORGANIZATION',
+    'TASK ORG',
+    'TASK ORGANIZATION',
+    'Task Organization',
+    'Task Org',
+    'TASK_ORGANIZATION'
+  ];
 
-  // 2. Secondary Strategy: Fetch by GID 582148706 via CSV Export
-  if (!allRows || allRows.length === 0) {
+  for (const tab of candidateTabNames) {
     try {
-      allRows = await getSheetCsvData(TASK_ORG_SHEET_ID, TASK_ORG_GID);
-    } catch (err) {
-      console.error('Error fetching Task Org by GID via CSV:', err);
-    }
-  }
-
-  // 3. Tertiary Strategy: Search by tab names including " TASK ORGANIZATION", "TASK ORG", etc.
-  if (!allRows || allRows.length === 0) {
-    const candidateTabNames = [
-      SHEET_NAME,
-      ' TASK ORGANIZATION', // Tab name with leading space
-      'TASK ORG',
-      'TASK ORGANIZATION',
-      'Task Organization',
-      'Task Org',
-      'TASK_ORGANIZATION'
-    ];
-    const uniqueCandidates = [...new Set(candidateTabNames)];
-    for (const name of uniqueCandidates) {
-      try {
-        const res = await getSheetData(TASK_ORG_SHEET_ID, name);
-        if (res && res.length > 0) {
-          allRows = res;
-          break;
-        }
-      } catch (e) {
-        // Continue to next candidate
+      const res = await getSheetData(TASK_ORG_SHEET_ID, tab);
+      if (isValidTaskOrgData(res)) {
+        allRows = res;
+        break;
       }
+    } catch (e) {
+      // Continue to next candidate
     }
   }
 
-  // 4. Quaternary Strategy: Use verified fallback data if live Google Sheet is unreachable
-  if (!allRows || allRows.length === 0) {
+  // Priority 2: Query by CSV export using exact sheet gid 582148706
+  if (!isValidTaskOrgData(allRows)) {
+    try {
+      const res = await getSheetCsvData(TASK_ORG_SHEET_ID, TASK_ORG_GID);
+      if (isValidTaskOrgData(res)) {
+        allRows = res;
+      }
+    } catch (err) {
+      console.error('Error fetching Task Org by CSV export:', err);
+    }
+  }
+
+  // Priority 3: Fallback dataset if live Google Sheet is unreachable or invalid
+  if (!isValidTaskOrgData(allRows)) {
     allRows = taskOrgFallback;
   }
 

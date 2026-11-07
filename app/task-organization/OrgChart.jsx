@@ -8,9 +8,9 @@ export default function OrgChart({
   cmdr, 
   firstSgt, 
   exo, 
-  sStaff, 
-  specialStaff, 
-  platoonLeaders,
+  sStaff = [], 
+  specialStaff = [], 
+  platoonLeaders = [],
   battalionStaff = [],
   regimentStaff = []
 }) {
@@ -136,21 +136,23 @@ export default function OrgChart({
             )}
 
             {/* LEVEL 1: Commander & First Sgt */}
-            {cmdr && (
+            {(cmdr || firstSgt) && (
               <div className="org-tier">
                 {/* Use flex to center the CMDR. The First Sgt will be absolutely positioned off to the side so CMDR stays perfectly centered. */}
                 <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
                   
                   {isMobile ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', position: 'relative', zIndex: 2 }}>
-                      <PersonCard 
-                        person={cmdr}
-                        customStyle={{
-                          card: { borderColor: 'var(--text-primary)', borderWidth: '2px' },
-                          placeholder: { backgroundColor: 'var(--text-primary)', color: 'white', borderColor: 'var(--text-primary)' },
-                          wrapper: { position: 'relative' }
-                        }}
-                      />
+                      {cmdr && (
+                        <PersonCard 
+                          person={cmdr}
+                          customStyle={{
+                            card: { borderColor: 'var(--text-primary)', borderWidth: '2px' },
+                            placeholder: { backgroundColor: 'var(--text-primary)', color: 'white', borderColor: 'var(--text-primary)' },
+                            wrapper: { position: 'relative' }
+                          }}
+                        />
+                      )}
                       {firstSgt && (
                         <PersonCard 
                           person={firstSgt}
@@ -166,32 +168,36 @@ export default function OrgChart({
                     </div>
                   ) : (
                     <div style={{ position: 'relative', zIndex: 2 }}>
-                      <PersonCard 
-                        person={cmdr}
-                        customStyle={{
-                          card: { borderColor: 'var(--text-primary)', borderWidth: '2px' },
-                          placeholder: { backgroundColor: 'var(--text-primary)', color: 'white', borderColor: 'var(--text-primary)' },
-                          wrapper: { position: 'relative' }
-                        }}
-                      />
+                      {cmdr && (
+                        <PersonCard 
+                          person={cmdr}
+                          customStyle={{
+                            card: { borderColor: 'var(--text-primary)', borderWidth: '2px' },
+                            placeholder: { backgroundColor: 'var(--text-primary)', color: 'white', borderColor: 'var(--text-primary)' },
+                            wrapper: { position: 'relative' }
+                          }}
+                        />
+                      )}
 
                       {/* First Sergeant attached to the side */}
                       {firstSgt && (
                         <>
-                          <div style={{
-                            position: 'absolute',
-                            top: '50px',
-                            left: '100%',
-                            width: '3rem',
-                            height: '2px',
-                            backgroundColor: 'var(--border-color)',
-                            zIndex: 0
-                          }}></div>
+                          {cmdr && (
+                            <div style={{
+                              position: 'absolute',
+                              top: '50px',
+                              left: '100%',
+                              width: '3rem',
+                              height: '2px',
+                              backgroundColor: 'var(--border-color)',
+                              zIndex: 0
+                            }}></div>
+                          )}
 
                           <div style={{ 
-                            position: 'absolute', 
-                            left: 'calc(100% + 3rem)', 
-                            top: '20px',
+                            position: cmdr ? 'absolute' : 'relative', 
+                            left: cmdr ? 'calc(100% + 3rem)' : '0', 
+                            top: cmdr ? '20px' : '0',
                             zIndex: 2 
                           }}>
                             <PersonCard 
