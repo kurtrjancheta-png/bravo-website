@@ -106,8 +106,9 @@ export default function SickCallTrackerClient({ activeSickCalls, soiData }) {
     setAddForm(prev => ({ ...prev, name: selectedName }));
 
     const match = soiData.find(c => 
-      String(c['CLASS '] || c['CLASS']).includes(addForm.classNum) &&
-      String(c['LAST NAME'] || '').toUpperCase().includes(selectedName)
+      String(c['CLASS '] || c['CLASS'] || '').includes(addForm.classNum) &&
+      (String(c['SURNAME'] || c['SURNAME '] || c['LAST NAME'] || '').toUpperCase().includes(selectedName) ||
+       String(c['FIRST NAME'] || c['FIRST NAME '] || '').toUpperCase().includes(selectedName))
     );
 
     if (match) {

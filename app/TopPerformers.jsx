@@ -167,9 +167,10 @@ export default function TopPerformers({ topPerformers }) {
 
   // If no data to display at all
   if (
-    topPerformers['1cl'].average.value === -1 &&
-    topPerformers['2cl'].average.value === -1 &&
-    topPerformers['3cl'].average.value === -1
+    (!topPerformers['1cl'] || topPerformers['1cl'].average.value === -1) &&
+    (!topPerformers['2cl'] || topPerformers['2cl'].average.value === -1) &&
+    (!topPerformers['3cl'] || topPerformers['3cl'].average.value === -1) &&
+    (!topPerformers['4cl'] || topPerformers['4cl'].average.value === -1)
   ) {
     return null;
   }
@@ -181,9 +182,10 @@ export default function TopPerformers({ topPerformers }) {
         <div className="section-subtitle" style={{ fontSize: '1.2rem', color: '#64748b' }}>PFT 1 Honor Roll</div>
       </div>
       
-      {renderClass('1ST CLASS', topPerformers['1cl'])}
-      {renderClass('2ND CLASS', topPerformers['2cl'])}
-      {renderClass('3RD CLASS', topPerformers['3cl'])}
+      {topPerformers['1cl'] && renderClass('1ST CLASS', topPerformers['1cl'])}
+      {topPerformers['2cl'] && renderClass('2ND CLASS', topPerformers['2cl'])}
+      {topPerformers['3cl'] && renderClass('3RD CLASS', topPerformers['3cl'])}
+      {topPerformers['4cl'] && renderClass('4TH CLASS', topPerformers['4cl'])}
     </div>
   );
 }

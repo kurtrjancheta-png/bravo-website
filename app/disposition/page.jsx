@@ -43,7 +43,7 @@ export default async function DispositionPage() {
         reason: reason,
         dateStarted: dateStarted,
         dateEnd: dateEnd,
-        picture: getCadetImageUrl(name, '', name) || ''
+        picture: getCadetImageUrl(name, '', name, cadetClass) || ''
       });
     }
   });
@@ -71,7 +71,7 @@ export default async function DispositionPage() {
       coy: values[7] || '',
       bos: values[8] || '', // Branch of Service
       fullName: values[9] || name,
-      picture: getCadetImageUrl(values[4] || '', values[2] || '', values[9] || name) || ''
+      picture: getCadetImageUrl(values[4] || '', values[2] || '', values[9] || name, cadetClass) || ''
     };
 
     if (cadetClass.includes('1CL') || (i >= 0 && i <= 29)) {

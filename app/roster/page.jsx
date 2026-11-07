@@ -77,7 +77,9 @@ export default async function RosterPage() {
     const surname = surnameKey ? row[surnameKey] : '';
     const firstName = firstKey ? row[firstKey] : '';
     
-    const matchedUrl = getCadetImageUrl(surname, firstName, null);
+    const classKey = Object.keys(row).find(k => k.toLowerCase().includes('class'));
+    const classVal = classKey ? row[classKey] : '';
+    const matchedUrl = getCadetImageUrl(surname, firstName, null, classVal);
     
     if (matchedUrl) {
       const picKey = Object.keys(row).find(k => k.toLowerCase().includes('picture')) || 'PICTURE';
@@ -110,7 +112,7 @@ export default async function RosterPage() {
       coy: String(row['COY'] || '').trim(),
       bos: String(row['BOS'] || '').trim(),
       fullName: name,
-      picture: getCadetImageUrl(row['SURNAME'] || '', row['FIRST NAME'] || '', name) || ''
+      picture: getCadetImageUrl(row['SURNAME'] || '', row['FIRST NAME'] || '', name, cadetClass) || ''
     };
 
     // Find matching SOI row

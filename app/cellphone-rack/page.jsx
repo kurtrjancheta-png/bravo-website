@@ -56,7 +56,7 @@ export default async function CellphoneRackPage() {
       const name = String(row[kName] || '').trim();
       if (!name || name === '') return;
       
-      const picture = getCadetImageUrl(name, '', name);
+      const picture = getCadetImageUrl(name, '', name, assignedClass ? `${assignedClass}cl` : '');
 
       // Find db entry
       // Assuming 'DATA BASE' has columns like 'NAME', 'MODEL', 'COLOR', 'SERIAL NUMBER', 'QR CODE'

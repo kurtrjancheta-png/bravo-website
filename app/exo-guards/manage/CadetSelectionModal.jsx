@@ -20,6 +20,7 @@ export default function CadetSelectionModal({ isOpen, onClose, role, dateStr, cl
       if (classLevel === '1CL' && cl !== '1' && cl !== '1CL') return false;
       if (classLevel === '2CL' && cl !== '2' && cl !== '2CL') return false;
       if (classLevel === '3CL' && cl !== '3' && cl !== '3CL') return false;
+      if (classLevel === '4CL' && cl !== '4' && cl !== '4CL') return false;
       return name.toLowerCase().includes(searchTerm.toLowerCase());
     }).map(row => String(row['SURNAME'] || '').trim()).filter(Boolean);
   }, [soiData, searchTerm, classLevel]);

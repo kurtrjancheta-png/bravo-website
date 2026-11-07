@@ -55,7 +55,7 @@ export default async function QRManagerPage() {
       const name = String(row[kName] || '').trim();
       if (!name || name === '') return;
       
-      const picture = getCadetImageUrl(name, '', name);
+      const picture = getCadetImageUrl(name, '', name, assignedClass ? `${assignedClass}cl` : '');
 
       let model = 'Not Specified';
       let color = 'Not Specified';

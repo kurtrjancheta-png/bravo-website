@@ -39,8 +39,26 @@ export default function TabletDirectoryClient({ initialData }) {
     <div>
       {/* Filter and Link */}
       <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {['All', '1', '2', '3', '4'].map(cls => (
+            <button
+              key={cls}
+              onClick={() => setFilterClass(cls)}
+              style={{
+                padding: '0.45rem 1rem',
+                borderRadius: '8px',
+                border: filterClass === cls ? '1px solid var(--accent-gold)' : '1px solid var(--border-color)',
+                background: filterClass === cls ? 'rgba(212, 175, 55, 0.15)' : 'var(--bg-secondary)',
+                color: filterClass === cls ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              {cls === 'All' ? 'ALL' : `${cls}CL`}
+            </button>
+          ))}
 
           <a 
             href="https://docs.google.com/spreadsheets/d/1LbsJwJ7nMyh9SOb-SX0MOHwmLq85UVz4BaPxtHPesqA/edit?usp=sharing"
@@ -138,7 +156,7 @@ export default function TabletDirectoryClient({ initialData }) {
                     {cadet.name}
                   </h4>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 800 }}>
-                    {cadet.model && cadet.model !== 'Not Specified' ? cadet.model : 'Tablet'} 
+                    {cadet.cadetClass ? `${cadet.cadetClass}CL • ` : ''}{cadet.model && cadet.model !== 'Not Specified' ? cadet.model : 'Tablet'} 
                     {cadet.color && cadet.color !== 'Not Specified' ? ` (${cadet.color})` : ''}
                   </div>
                 </div>
