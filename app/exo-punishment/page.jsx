@@ -4,10 +4,204 @@ import { getCadetImageUrl } from '../../lib/imageMatcher';
 
 export const revalidate = 30; // seconds
 
+function parseCheckpointTable(rows) {
+  if (!rows || rows.length === 0) return [];
+
+  // Find header row if rows start with title/blank rows
+  const headerRow = rows.find(row => {
+    const vals = Object.values(row).map(v => String(v || '').trim().toUpperCase());
+    return vals.includes('LAST NAME') || vals.includes('NAME') || vals.includes('CADET');
+  });
+
+  const keys = Object.keys(rows[0] || {});
+  let kName = keys[2] || keys[0];
+  let kRank = keys[1] || keys[0];
+  let kOffense = keys[3] || keys[1];
+  let kClass = keys[4];
+  let kNature = keys[5];
+  let kTotalCp = null;
+  let kServedCp = null;
+  let kRemCp = null;
+  let kRef = null;
+  let kRemarks = null;
+  let kDate = null;
+
+  if (headerRow) {
+    for (const [colKey, headerVal] of Object.entries(headerRow)) {
+      const v = String(headerVal || '').trim().toUpperCase();
+      if (v === 'LAST NAME' || v === 'NAME' || v === 'CADET') kName = colKey;
+      else if (v === 'RANK') kRank = colKey;
+      else if (v === 'OFFENSE' || v === 'DELINQUENCY' || v === 'VIOLATION') kOffense = colKey;
+      else if (v.startsWith('CLASS')) kClass = colKey;
+      else if (v.includes('NATURE')) kNature = colKey;
+      else if (v.includes('SERVED') && (v.includes('CP') || v.includes('CHECKPOINT') || v.includes('RUN') || !v.includes('TOUR'))) kServedCp = colKey;
+      else if ((v.includes('REMAINING') || v.includes('BALANCE')) && (v.includes('CP') || v.includes('CHECKPOINT') || v.includes('RUN') || !v.includes('TOUR'))) kRemCp = colKey;
+      else if (v.includes('CHECKPOINT') || v.includes('CP') || v.includes('AWARDED')) kTotalCp = colKey;
+      else if (v.includes('REFERENCE') || v === 'REF' || v.includes('S.O.') || v.includes('ORDER')) kRef = colKey;
+      else if (v.includes('REMARK') || v.includes('NOTE') || v.includes('REMARKS')) kRemarks = colKey;
+      else if (v.includes('DATE')) kDate = colKey;
+    }
+  }
+
+  // Fallback scan for checkpoint columns in keys
+  if (!kTotalCp) {
+    for (const k of keys) {
+      const upper = k.toUpperCase();
+      if (upper.includes('CHECKPOINT') || upper.includes('CP')) {
+        if (upper.includes('SERVED')) kServedCp = k;
+        else if (upper.includes('REMAINING') || upper.includes('BALANCE')) kRemCp = k;
+        else kTotalCp = k;
+      }
+    }
+  }
+
+  let lastRank = '3CL';
+  const result = [];
+
+  rows.forEach((row, idx) => {
+    const rawName = String(row[kName] || '').trim();
+    if (!rawName || rawName.toUpperCase() === 'LAST NAME' || rawName.toUpperCase() === 'NAME') return;
+    
+    let rawRank = String(row[kRank] || '').trim();
+    if (rawRank.toUpperCase() === 'RANK') return;
+    if (rawRank) lastRank = rawRank;
+    else rawRank = lastRank;
+
+    let cpTotal = 0;
+    if (kTotalCp && row[kTotalCp] !== undefined && row[kTotalCp] !== null) {
+      const clean = String(row[kTotalCp]).replace(/[^0-9.]/g, '');
+      if (clean) cpTotal = parseFloat(clean) || 0;
+    }
+
+    let cpServed = 0;
+    if (kServedCp && row[kServedCp] !== undefined && row[kServedCp] !== null) {
+      const clean = String(row[kServedCp]).replace(/[^0-9.]/g, '');
+      if (clean) cpServed = parseFloat(clean) || 0;
+    }
+
+    let cpRemaining = 0;
+    if (kRemCp && row[kRemCp] !== undefined && row[kRemCp] !== null && String(row[kRemCp]).trim() !== '') {
+      const clean = String(row[kRemCp]).replace(/[^0-9.]/g, '');
+      if (clean) cpRemaining = parseFloat(clean) || 0;
+    } else {
+      cpRemaining = Math.max(0, cpTotal - cpServed);
+    }
+
+    // If cpTotal still 0, look for number followed by checkpoint/cp in any cell of the row
+    if (cpTotal === 0 && cpRemaining === 0) {
+      for (const val of Object.values(row)) {
+        const s = String(val || '');
+        const m = s.match(/([0-9]+)\s*(?:checkpoint|checkpoints|cp)/i);
+        if (m) {
+          cpTotal = parseInt(m[1], 10);
+          cpRemaining = cpTotal;
+          break;
+        }
+      }
+    }
+
+    // If row still has 0 checkpoints and isn't relevant, skip
+    if (cpTotal === 0 && cpRemaining === 0) return;
+
+    const totalKm = Number((cpTotal * 5).toFixed(1));
+    const servedKm = Number((cpServed * 5).toFixed(1));
+    const remainingKm = Number((cpRemaining * 5).toFixed(1));
+
+    let refStr = kRef ? String(row[kRef] || '').trim() : '';
+    let remarks = kRemarks ? String(row[kRemarks] || '').trim() : '';
+    let offenseDesc = kOffense ? String(row[kOffense] || '').trim() : 'Checkpoint Punishment';
+    let dateStr = kDate ? String(row[kDate] || '').trim() : '';
+
+    result.push({
+      id: `cp-${idx}-${rawName}`,
+      name: rawName,
+      rank: rawRank,
+      picture: getCadetImageUrl(rawName, '', rawName) || '',
+      offense: offenseDesc,
+      classOfOffense: kClass ? String(row[kClass] || '').trim() : '',
+      natureOfOffense: kNature ? String(row[kNature] || '').trim() : '',
+      checkpointsTotal: cpTotal,
+      checkpointsServed: cpServed,
+      checkpointsRemaining: cpRemaining,
+      kmPerCheckpoint: 5,
+      totalKm,
+      servedKm,
+      remainingKm,
+      reference: refStr,
+      remarks,
+      date: dateStr,
+      status: remainingKm === 0 ? 'COMPLETED' : 'ACTIVE'
+    });
+  });
+
+  return result;
+}
+
+function extractCheckpointsFromSheet1(data, keys, k1, k2, k3, k4, k5, k6, k17, k18) {
+  if (!data || data.length === 0) return { checkpoints: [], checkpointRowIndices: new Set() };
+
+  const checkpointRowIndices = new Set();
+  const checkpoints = [];
+
+  let sectionIndex = -1;
+  data.forEach((row, idx) => {
+    const vals = Object.values(row).map(v => String(v || '').trim().toUpperCase());
+    if (vals.some(v => v === 'CHECKPOINT' || v === 'CHECKPOINTS' || v === 'CHECKPOINT PUNISHMENT' || v === 'CHECKPOINT TABLE' || v.includes('5KM PER CHECKPOINT'))) {
+      sectionIndex = idx;
+    }
+  });
+
+  if (sectionIndex !== -1) {
+    const subRows = data.slice(sectionIndex + 1);
+    const parsed = parseCheckpointTable(subRows);
+    subRows.forEach((_, i) => checkpointRowIndices.add(sectionIndex + 1 + i));
+    return { checkpoints: parsed, checkpointRowIndices };
+  }
+
+  data.forEach((row, idx) => {
+    const vals = Object.values(row).map(v => String(v || ''));
+    const combined = vals.join(' ');
+    if (/\b(?:checkpoint|checkpoints|cp run|5km)\b/i.test(combined)) {
+      const match = combined.match(/([0-9]+)\s*(?:checkpoint|checkpoints|cp)/i);
+      const cpVal = match ? parseInt(match[1], 10) : 1;
+      const lastName = String(row[k3] || '').trim();
+      if (lastName && lastName.toUpperCase() !== 'LAST NAME' && lastName.toUpperCase() !== 'NAME') {
+        checkpointRowIndices.add(idx);
+        checkpoints.push({
+          id: `cp-s1-${idx}-${lastName}`,
+          name: lastName,
+          rank: String(row[k2] || '3CL').trim(),
+          picture: getCadetImageUrl(lastName, '', lastName) || '',
+          offense: String(row[k4] || 'Special Punishment Checkpoint').trim(),
+          classOfOffense: String(row[k5] || '').trim(),
+          natureOfOffense: String(row[k6] || '').trim(),
+          checkpointsTotal: cpVal,
+          checkpointsServed: 0,
+          checkpointsRemaining: cpVal,
+          kmPerCheckpoint: 5,
+          totalKm: cpVal * 5,
+          servedKm: 0,
+          remainingKm: cpVal * 5,
+          reference: String(row[k17] || '').trim(),
+          remarks: String(row[k18] || '').trim(),
+          date: '',
+          status: 'ACTIVE'
+        });
+      }
+    }
+  });
+
+  return { checkpoints, checkpointRowIndices };
+}
+
 export default async function ExoPunishmentPage() {
-  const [data, breakdownData] = await Promise.all([
+  const [data, breakdownData, cp1, cp2, cp3, cp4] = await Promise.all([
     getSheetData('1kdpf8pdHx2ETbfLqyJfyxcOnWGiz08JxI__FvJIRH3M', 'Sheet 1'),
-    getSheetBreakdown('1kdpf8pdHx2ETbfLqyJfyxcOnWGiz08JxI__FvJIRH3M', 'BREAKDOWN')
+    getSheetBreakdown('1kdpf8pdHx2ETbfLqyJfyxcOnWGiz08JxI__FvJIRH3M', 'BREAKDOWN'),
+    getSheetData('1kdpf8pdHx2ETbfLqyJfyxcOnWGiz08JxI__FvJIRH3M', 'CHECKPOINT'),
+    getSheetData('1kdpf8pdHx2ETbfLqyJfyxcOnWGiz08JxI__FvJIRH3M', 'CHECKPOINTS'),
+    getSheetData('1kdpf8pdHx2ETbfLqyJfyxcOnWGiz08JxI__FvJIRH3M', 'CHECK POINT'),
+    getSheetData('1kdpf8pdHx2ETbfLqyJfyxcOnWGiz08JxI__FvJIRH3M', 'CHECK POINTS')
   ]);
 
   if (!data || data.length === 0) {
@@ -17,7 +211,7 @@ export default async function ExoPunishmentPage() {
           <h1>F/SGT's Punishment Monitoring</h1>
           <p>Monitoring Dashboard for Cadet Punishments</p>
         </header>
-        <ExoPunishmentClient initialCadets={[]} breakdownData={breakdownData || []} />
+        <ExoPunishmentClient initialCadets={[]} breakdownData={breakdownData || []} checkpointData={[]} />
       </div>
     );
   }
@@ -85,9 +279,29 @@ export default async function ExoPunishmentPage() {
   const updatedRow = data.find(row => String(row[k1] || '').toUpperCase().includes('UPDATED AS OF'));
   if (updatedRow) updatedAsOf = String(updatedRow[k5] || updatedRow[k4] || '').trim();
 
+  // Checkpoint Extraction
+  const dedicatedCpRows = (cp1 && cp1.length > 0) ? cp1
+    : (cp2 && cp2.length > 0) ? cp2
+    : (cp3 && cp3.length > 0) ? cp3
+    : (cp4 && cp4.length > 0) ? cp4
+    : [];
+
+  let checkpointData = [];
+  let s1CpRowIndices = new Set();
+
+  if (dedicatedCpRows.length > 0) {
+    checkpointData = parseCheckpointTable(dedicatedCpRows);
+  } else if (data && data.length > 0) {
+    const s1Result = extractCheckpointsFromSheet1(data, keys, k1, k2, k3, k4, k5, k6, k17, k18);
+    checkpointData = s1Result.checkpoints;
+    s1CpRowIndices = s1Result.checkpointRowIndices;
+  }
+
   // Filter valid rows: must have a LAST NAME and not be a header row
+  // Exclude rows isolated as Checkpoint special punishments to avoid mixing
   let lastSeenRank = '3CL';
-  const validRows = data.filter(row => {
+  const validRows = data.filter((row, idx) => {
+    if (s1CpRowIndices.has(idx)) return false;
     const lastName = String(row[k3] || '').trim();
     if (!lastName || lastName.toUpperCase() === 'LAST NAME' || lastName.toUpperCase() === 'NAME') {
       return false;
@@ -371,7 +585,7 @@ export default async function ExoPunishmentPage() {
         </div>
       </header>
 
-      <ExoPunishmentClient initialCadets={cadets} violationsOverTime={violationsOverTime} breakdownData={breakdownData || []} />
+      <ExoPunishmentClient initialCadets={cadets} violationsOverTime={violationsOverTime} breakdownData={breakdownData || []} checkpointData={checkpointData} />
     </div>
   );
 }

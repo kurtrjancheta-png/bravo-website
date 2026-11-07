@@ -338,7 +338,7 @@ export function isOffenseArchived(off) {
   return isFirstTerm && isOffenseServed(off);
 }
 
-export default function ExoPunishmentClient({ initialCadets, violationsOverTime, breakdownData }) {
+export default function ExoPunishmentClient({ initialCadets, violationsOverTime, breakdownData, checkpointData = [] }) {
   const [viewModes, setViewModes] = useState({});
   const [showClassLines, setShowClassLines] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -350,6 +350,10 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
   const [sortBy, setSortBy] = useState('active');
   const [copiedRollCall, setCopiedRollCall] = useState(false);
   const [selectedOffenseModal, setSelectedOffenseModal] = useState(null);
+  const [isCheckpointModalOpen, setIsCheckpointModalOpen] = useState(false);
+  const [checkpointSearch, setCheckpointSearch] = useState('');
+  const [checkpointFilter, setCheckpointFilter] = useState('ALL');
+  const [copiedCheckpointRollCall, setCopiedCheckpointRollCall] = useState(false);
   const { adminUser } = useAuth();
 
   const chartData = (violationsOverTime || [])
@@ -454,13 +458,16 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
   // Executive KPI stats aggregated across all company cadets
   const kpiStats = useMemo(() => {
     let activeCadetsCount = 0;
+    let activePunishmentsCount = 0;
     let confinedCadetsCount = 0;
+    let touringCadetsCount = 0;
     let totalTouringRemaining = 0;
     let criticalDemeritsCount = 0;
 
     (initialCadets || []).forEach(cadet => {
       let isCadetActive = false;
       let isCadetConfined = false;
+      let isCadetTouring = false;
       let cadetTourRemaining = 0;
 
       const maxDem = getMaxDemerits(cadet.rank);
@@ -470,36 +477,130 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
       }
 
       (cadet.offenses || []).forEach(off => {
-        if (off.isConfined && off.confStart && off.confEnd) {
-          const stats = getConfinementStats(off.confStart, off.confEnd);
-          if (stats.remaining > 0) {
-            isCadetConfined = true;
-          }
-        }
-        const progress = (off.tourServed || 0) + (off.tourConverted || 0);
-        const rem = Math.max(0, (off.tourTotal || 0) - progress);
-        cadetTourRemaining += rem;
-
         const stats = getConfinementStats(off.confStart, off.confEnd);
+        const progress = (off.tourServed || 0) + (off.tourConverted || 0);
         const confDone = !off.isConfined || (stats.total > 0 && stats.remaining === 0);
         const tourDone = (off.tourTotal || 0) === 0 || progress >= (off.tourTotal || 0);
-        if (!confDone || !tourDone) {
+        const isOffenseActive = !confDone || !tourDone;
+
+        if (isOffenseActive) {
+          activePunishmentsCount++;
           isCadetActive = true;
+        }
+
+        if (off.isConfined && off.confStart && off.confEnd && stats.remaining > 0) {
+          isCadetConfined = true;
+        }
+
+        const rem = Math.max(0, (off.tourTotal || 0) - progress);
+        cadetTourRemaining += rem;
+        if (rem > 0) {
+          isCadetTouring = true;
         }
       });
 
       if (isCadetActive) activeCadetsCount++;
       if (isCadetConfined) confinedCadetsCount++;
+      if (isCadetTouring) touringCadetsCount++;
       totalTouringRemaining += cadetTourRemaining;
     });
 
     return {
       activeCadetsCount,
+      activePunishmentsCount,
       confinedCadetsCount,
+      touringCadetsCount,
       totalTouringRemaining,
       criticalDemeritsCount
     };
   }, [initialCadets]);
+
+  // Checkpoint special punishment statistics
+  const checkpointStats = useMemo(() => {
+    let totalCp = 0;
+    let servedCp = 0;
+    let remainingCp = 0;
+    let activeRunners = 0;
+
+    (checkpointData || []).forEach(item => {
+      const tot = item.checkpointsTotal || 0;
+      const srv = item.checkpointsServed || 0;
+      const rem = item.checkpointsRemaining !== undefined ? item.checkpointsRemaining : Math.max(0, tot - srv);
+      totalCp += tot;
+      servedCp += srv;
+      remainingCp += rem;
+      if (rem > 0 || item.status === 'ACTIVE') {
+        activeRunners++;
+      }
+    });
+
+    return {
+      totalCp,
+      servedCp,
+      remainingCp,
+      totalKm: Number((totalCp * 5).toFixed(1)),
+      servedKm: Number((servedCp * 5).toFixed(1)),
+      remainingKm: Number((remainingCp * 5).toFixed(1)),
+      activeRunners,
+      clearedRunners: Math.max(0, (checkpointData || []).length - activeRunners)
+    };
+  }, [checkpointData]);
+
+  const activeCheckpointCount = checkpointStats.activeRunners;
+
+  // Filtered checkpoints
+  const filteredCheckpoints = useMemo(() => {
+    return (checkpointData || []).filter(item => {
+      const isItemActive = (item.checkpointsRemaining || 0) > 0 || item.status === 'ACTIVE';
+      if (checkpointFilter === 'ACTIVE' && !isItemActive) return false;
+      if (checkpointFilter === 'COMPLETED' && isItemActive) return false;
+
+      if (checkpointSearch) {
+        const q = checkpointSearch.toLowerCase().trim();
+        const nMatch = (item.name || '').toLowerCase().includes(q);
+        const rMatch = (item.rank || '').toLowerCase().includes(q);
+        const oMatch = (item.offense || '').toLowerCase().includes(q);
+        const refMatch = (item.reference || '').toLowerCase().includes(q);
+        if (!nMatch && !rMatch && !oMatch && !refMatch) return false;
+      }
+
+      return true;
+    });
+  }, [checkpointData, checkpointFilter, checkpointSearch]);
+
+  const handleCopyCheckpointRollCall = () => {
+    const todayStr = new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+    const nowTimeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    let text = `========================================\n`;
+    text += `🏃 BRAVO CO. CHECKPOINT SPECIAL PUNISHMENT ROSTER\n`;
+    text += `📏 Rate: 5.0 KM PT Run per Checkpoint\n`;
+    text += `📅 As of: ${todayStr} ${nowTimeStr}\n`;
+    text += `========================================\n\n`;
+
+    const activeList = (checkpointData || []).filter(item => (item.checkpointsRemaining || 0) > 0 || item.status === 'ACTIVE');
+
+    if (activeList.length === 0) {
+      text += `(No cadets with pending checkpoint runs - List is clear)\n`;
+    } else {
+      activeList.forEach((item, idx) => {
+        text += `${idx + 1}. CDT ${item.rank} ${item.name} - ${item.remainingKm} KM (${item.checkpointsRemaining} CPs) [Served: ${item.servedKm}/${item.totalKm} KM]\n`;
+        text += `   Offense: ${item.offense || 'Checkpoint Physical Demerit'}\n`;
+        if (item.reference) text += `   Authority: ${item.reference}\n`;
+        if (item.remarks) text += `   Remarks: ${item.remarks}\n`;
+        text += `\n`;
+      });
+      const totalPendingKm = activeList.reduce((acc, c) => acc + (c.remainingKm || 0), 0);
+      text += `----------------------------------------\n`;
+      text += `Total Checkpoint Distance Pending: ${totalPendingKm} KM across ${activeList.length} Cadet(s)\n`;
+    }
+    text += `========================================\n`;
+
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedCheckpointRollCall(true);
+      setTimeout(() => setCopiedCheckpointRollCall(false), 2500);
+    });
+  };
 
   // One-click CCQ / Touring roll-call clipboard generator
   const handleCopyRollCall = () => {
@@ -628,6 +729,15 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
   const statusFilteredCadets = statusFilter === 'ALL'
     ? classFilteredCadets
     : classFilteredCadets.filter(cadet => {
+        if (statusFilter === 'ACTIVE') {
+          return (cadet.offenses || []).some(off => {
+            const stats = getConfinementStats(off.confStart, off.confEnd);
+            const progress = (off.tourServed || 0) + (off.tourConverted || 0);
+            const confDone = !off.isConfined || (stats.total > 0 && stats.remaining === 0);
+            const tourDone = (off.tourTotal || 0) === 0 || progress >= (off.tourTotal || 0);
+            return !confDone || !tourDone;
+          });
+        }
         if (statusFilter === 'CONFINED') {
           return (cadet.offenses || []).some(off => {
             if (!off.isConfined || !off.confStart || !off.confEnd) return false;
@@ -760,12 +870,12 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
         marginBottom: '1.5rem',
         width: '100%'
       }}>
-        {/* Card 1: Active Cadets */}
+        {/* Card 1: Active Punishments */}
         <div 
-          onClick={() => setStatusFilter(prev => prev === 'ALL' ? 'ALL' : 'ALL')}
+          onClick={() => setStatusFilter(prev => prev === 'ACTIVE' ? 'ALL' : 'ACTIVE')}
           style={{
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-color)',
+            background: statusFilter === 'ACTIVE' ? 'rgba(59, 130, 246, 0.15)' : 'var(--bg-secondary)',
+            border: statusFilter === 'ACTIVE' ? '1px solid #3b82f6' : '1px solid var(--border-color)',
             borderRadius: '14px',
             padding: '1rem',
             cursor: 'pointer',
@@ -778,16 +888,17 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
           }}
           onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
           onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+          title="Click to toggle filtering active punishments"
         >
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: '#3b82f6' }} />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Active Cadets</span>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Active Punishments</span>
             <span style={{ fontSize: '1.25rem' }}>🛡️</span>
           </div>
           <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--text-primary)' }}>
-            {kpiStats.activeCadetsCount}
+            {kpiStats.activePunishmentsCount}
           </div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Serving Tour / Confinement</div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{kpiStats.activeCadetsCount} Cadets Serving</div>
         </div>
 
         {/* Card 2: Currently Confined */}
@@ -820,7 +931,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
           <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Under Room / Post Confinement</div>
         </div>
 
-        {/* Card 3: Touring Remaining */}
+        {/* Card 3: Touring Cadets */}
         <div 
           onClick={() => setStatusFilter(prev => prev === 'TOURING' ? 'ALL' : 'TOURING')}
           style={{
@@ -838,16 +949,17 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
           }}
           onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
           onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+          title="Click to toggle filtering touring cadets"
         >
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: '#f59e0b' }} />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase' }}>Touring Left</span>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase' }}>Touring Cadets</span>
             <span style={{ fontSize: '1.25rem' }}>🏃</span>
           </div>
           <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#f59e0b' }}>
-            {kpiStats.totalTouringRemaining} <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>hrs</span>
+            {kpiStats.touringCadetsCount} <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>cadets</span>
           </div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Pending Touring Duty</div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{kpiStats.totalTouringRemaining} hrs remaining</div>
         </div>
 
         {/* Card 4: Critical Demerits */}
@@ -1352,6 +1464,52 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
             </span>
           )}
         </button>
+
+        {/* Special Punishment: Checkpoint Runs (5km/CP) Button */}
+        <button
+          onClick={() => setIsCheckpointModalOpen(true)}
+          style={{
+            padding: '0.85rem 1.25rem',
+            background: 'rgba(239, 68, 68, 0.12)',
+            border: '1px solid rgba(239, 68, 68, 0.35)',
+            color: '#ef4444',
+            borderRadius: '12px',
+            fontSize: '0.85rem',
+            fontWeight: 800,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            whiteSpace: 'nowrap',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(239, 68, 68, 0.15)'
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.22)';
+            e.currentTarget.style.borderColor = '#ef4444';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.12)';
+            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.35)';
+          }}
+          title="Open Special Punishment: Checkpoint Runs (5km per CP)"
+        >
+          <span style={{ fontSize: '1.1rem' }}>🏃</span>
+          <span>Checkpoint Runs (5km/CP)</span>
+          {activeCheckpointCount > 0 && (
+            <span style={{
+              background: '#ef4444',
+              color: '#ffffff',
+              padding: '0.15rem 0.5rem',
+              borderRadius: '10px',
+              fontSize: '0.75rem',
+              fontWeight: 800
+            }}>
+              {activeCheckpointCount}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Row 2: Filters & Sorting Toolbar */}
@@ -1399,6 +1557,7 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
           <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', marginRight: '4px' }}>STATUS:</span>
           {[
             { id: 'ALL', label: 'All' },
+            { id: 'ACTIVE', label: '🛡️ Active Only' },
             { id: 'CONFINED', label: '🔒 Confined' },
             { id: 'TOURING', label: '🏃 Touring' },
             { id: 'CRITICAL', label: '⚠️ Critical' }
@@ -2537,6 +2696,402 @@ export default function ExoPunishmentClient({ initialCadets, violationsOverTime,
                 }}
               >
                 Close Dossier
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Special Punishment: Checkpoint Runs Modal */}
+      {isCheckpointModalOpen && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.78)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+            animation: 'fadeIn 0.2s ease'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsCheckpointModalOpen(false);
+          }}
+        >
+          <div 
+            style={{
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '20px',
+              maxWidth: '960px',
+              width: '100%',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.7)',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+            {/* Top decorative stripe */}
+            <div style={{ height: '4px', background: 'linear-gradient(90deg, #ef4444, #f59e0b, #10b981)' }} />
+
+            {/* Modal Header */}
+            <div style={{
+              padding: '1.25rem 1.5rem',
+              borderBottom: '1px solid var(--border-color)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              background: 'rgba(0,0,0,0.1)'
+            }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.35rem', flexWrap: 'wrap' }}>
+                  <span style={{
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    color: '#ef4444',
+                    fontSize: '0.7rem',
+                    fontWeight: 800,
+                    padding: '0.2rem 0.6rem',
+                    borderRadius: '6px',
+                    letterSpacing: '0.05em'
+                  }}>
+                    SPECIAL PUNISHMENT REGIME
+                  </span>
+                  <span style={{
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    color: '#10b981',
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    padding: '0.2rem 0.6rem',
+                    borderRadius: '6px'
+                  }}>
+                    1 Checkpoint = 5.0 KM PT Run
+                  </span>
+                </div>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>🏃</span> Checkpoint Run Monitoring
+                </h2>
+                <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                  Isolated physical punishment tracking • Prescribed 5.0 km road run per awarded checkpoint
+                </p>
+              </div>
+
+              <button
+                onClick={() => setIsCheckpointModalOpen(false)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-secondary)',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1rem',
+                  fontWeight: 700,
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = '#ef4444'; }}
+                onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border-color)'; }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Body with Scroll */}
+            <div style={{ padding: '1.25rem 1.5rem', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {/* Checkpoint Executive Metrics */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+                gap: '0.75rem'
+              }}>
+                <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.85rem' }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Total Distance</div>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--text-primary)', marginTop: '0.2rem' }}>
+                    {checkpointStats.totalKm} <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>km</span>
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{checkpointStats.totalCp} Checkpoints Awarded</div>
+                </div>
+
+                <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '12px', padding: '0.85rem' }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase' }}>Distance Pending</div>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 900, color: '#ef4444', marginTop: '0.2rem' }}>
+                    {checkpointStats.remainingKm} <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>km</span>
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: '#ef4444' }}>{checkpointStats.remainingCp} Checkpoints Left</div>
+                </div>
+
+                <div style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)', borderRadius: '12px', padding: '0.85rem' }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#10b981', textTransform: 'uppercase' }}>Distance Cleared</div>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 900, color: '#10b981', marginTop: '0.2rem' }}>
+                    {checkpointStats.servedKm} <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>km</span>
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: '#10b981' }}>{checkpointStats.servedCp} Checkpoints Run</div>
+                </div>
+
+                <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.85rem' }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Active Runners</div>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--text-primary)', marginTop: '0.2rem' }}>
+                    {checkpointStats.activeRunners} <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>cadets</span>
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{checkpointStats.clearedRunners} Cleared</div>
+                </div>
+              </div>
+
+              {/* Controls inside Modal */}
+              <div style={{
+                display: 'flex',
+                flexDirection: isMobile ? 'column' : 'row',
+                justifyContent: 'space-between',
+                alignItems: isMobile ? 'stretch' : 'center',
+                gap: '0.75rem'
+              }}>
+                {/* Search */}
+                <input
+                  type="text"
+                  placeholder="Filter checkpoint by cadet or offense..."
+                  value={checkpointSearch}
+                  onChange={(e) => setCheckpointSearch(e.target.value)}
+                  style={{
+                    padding: '0.6rem 0.9rem',
+                    background: 'var(--bg-primary)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '10px',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.85rem',
+                    outline: 'none',
+                    minWidth: isMobile ? '100%' : '260px'
+                  }}
+                />
+
+                {/* Filter Tabs & Copy */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {['ALL', 'ACTIVE', 'COMPLETED'].map(f => (
+                    <button
+                      key={f}
+                      onClick={() => setCheckpointFilter(f)}
+                      style={{
+                        padding: '0.45rem 0.8rem',
+                        borderRadius: '8px',
+                        background: checkpointFilter === f ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                        border: checkpointFilter === f ? '1px solid #ef4444' : '1px solid var(--border-color)',
+                        color: checkpointFilter === f ? '#ef4444' : 'var(--text-secondary)',
+                        fontSize: '0.78rem',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {f === 'ALL' ? `All (${checkpointData.length})` : f === 'ACTIVE' ? `Pending (${checkpointStats.activeRunners})` : `Cleared (${checkpointStats.clearedRunners})`}
+                    </button>
+                  ))}
+
+                  <button
+                    onClick={handleCopyCheckpointRollCall}
+                    style={{
+                      padding: '0.45rem 0.85rem',
+                      borderRadius: '8px',
+                      background: copiedCheckpointRollCall ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.07)',
+                      border: copiedCheckpointRollCall ? '1px solid #10b981' : '1px solid var(--border-color)',
+                      color: copiedCheckpointRollCall ? '#10b981' : 'var(--text-primary)',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                    title="Copy Checkpoint PT Muster to clipboard"
+                  >
+                    <span>{copiedCheckpointRollCall ? '✓ Copied' : '📋 Copy PT Muster'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Roster of Checkpoints */}
+              {filteredCheckpoints.length === 0 ? (
+                <div style={{
+                  padding: '3rem 1.5rem',
+                  textAlign: 'center',
+                  background: 'var(--bg-primary)',
+                  borderRadius: '14px',
+                  border: '1px dashed var(--border-color)'
+                }}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🏃💨</div>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                    {checkpointData.length === 0 ? 'No Checkpoint Punishments on Record' : 'No Matching Checkpoints Found'}
+                  </h3>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', maxWidth: '480px', margin: '0.5rem auto 0 auto' }}>
+                    {checkpointData.length === 0
+                      ? 'There are currently no cadets assigned to 5km Checkpoint runs in the source spreadsheet. When Checkpoint entries are added, they will synchronize here automatically.'
+                      : 'Try clearing your search query or switching filters.'}
+                  </p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {filteredCheckpoints.map((item, idx) => {
+                    const isDone = (item.checkpointsRemaining || 0) <= 0 && item.status !== 'ACTIVE';
+                    const pct = item.totalKm > 0 ? Math.min(100, Math.round((item.servedKm / item.totalKm) * 100)) : 100;
+                    return (
+                      <div
+                        key={item.id || idx}
+                        style={{
+                          background: 'var(--bg-primary)',
+                          border: isDone ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid var(--border-color)',
+                          borderRadius: '14px',
+                          padding: '1rem',
+                          display: 'flex',
+                          flexDirection: isMobile ? 'column' : 'row',
+                          alignItems: isMobile ? 'stretch' : 'center',
+                          justifyContent: 'space-between',
+                          gap: '1rem',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        {/* Left: Cadet & Offense Info */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem', flex: 1 }}>
+                          <div style={{
+                            width: '46px',
+                            height: '46px',
+                            borderRadius: '50%',
+                            overflow: 'hidden',
+                            border: `2px solid ${isDone ? '#10b981' : '#ef4444'}`,
+                            flexShrink: 0,
+                            background: 'var(--bg-secondary)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}>
+                            {item.picture ? (
+                              <img src={item.picture} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              <span style={{ fontSize: '0.85rem', fontWeight: 800 }}>{item.name.slice(0, 2).toUpperCase()}</span>
+                            )}
+                          </div>
+
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                                CDT {item.rank} {item.name}
+                              </span>
+                              <span style={{
+                                fontSize: '0.7rem',
+                                fontWeight: 800,
+                                padding: '0.15rem 0.5rem',
+                                borderRadius: '6px',
+                                background: isDone ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                                color: isDone ? '#10b981' : '#ef4444',
+                                border: isDone ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)'
+                              }}>
+                                {isDone ? '✅ CLEARED' : `⏳ ${item.remainingKm} KM PENDING`}
+                              </span>
+                              {item.reference && (
+                                <span style={{
+                                  fontSize: '0.7rem',
+                                  color: 'var(--text-secondary)',
+                                  background: 'rgba(255, 255, 255, 0.05)',
+                                  padding: '0.15rem 0.45rem',
+                                  borderRadius: '5px',
+                                  border: '1px solid var(--border-color)'
+                                }}>
+                                  📜 {item.reference}
+                                </span>
+                              )}
+                            </div>
+
+                            <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                              <strong>Offense:</strong> {item.offense || 'Checkpoint Physical Demerit'}
+                              {item.classOfOffense && ` • Class ${item.classOfOffense}`}
+                              {item.natureOfOffense && ` • ${item.natureOfOffense}`}
+                            </div>
+
+                            {item.remarks && (
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontStyle: 'italic', marginTop: '0.15rem' }}>
+                                Remarks: {item.remarks}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Right: Distance & Progress */}
+                        <div style={{
+                          minWidth: isMobile ? '100%' : '220px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.35rem',
+                          background: 'var(--bg-secondary)',
+                          padding: '0.75rem',
+                          borderRadius: '10px',
+                          border: '1px solid var(--border-color)'
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                              {item.checkpointsRemaining} CP{item.checkpointsRemaining !== 1 ? 's' : ''} left (5km/CP)
+                            </span>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 900, color: isDone ? '#10b981' : '#ef4444' }}>
+                              {item.remainingKm} km rem
+                            </span>
+                          </div>
+
+                          {/* Progress bar */}
+                          <div style={{ height: '6px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+                            <div style={{
+                              width: `${pct}%`,
+                              height: '100%',
+                              background: isDone ? '#10b981' : 'linear-gradient(90deg, #f59e0b, #ef4444)',
+                              borderRadius: '3px'
+                            }} />
+                          </div>
+
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                            <span>Run: {item.servedKm} / {item.totalKm} km</span>
+                            <span>{pct}% done</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div style={{
+              padding: '0.85rem 1.5rem',
+              borderTop: '1px solid var(--border-color)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              background: 'rgba(0,0,0,0.1)'
+            }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                Physical Demerit Checkpoint System • 5.0 KM per checkpoint
+              </span>
+              <button
+                onClick={() => setIsCheckpointModalOpen(false)}
+                style={{
+                  padding: '0.45rem 1.1rem',
+                  borderRadius: '8px',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                Close Console
               </button>
             </div>
           </div>
